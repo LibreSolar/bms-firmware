@@ -3,8 +3,8 @@ Firmware for 24/48V BMS board using bq76930 (max. 10s cells)
 
 ---
 
-This is a development fork of the firmware for the LibreSolar BMS. See the project at http://libre.solar
-which adds some extensions:
+This is a development fork of the firmware for the LibreSolar BMS project at http://libre.solar
+to which it adds some extensions:
 
 - support for SSD1306 OLED display on I2C-bus
 
