@@ -24,6 +24,7 @@
 #define DISPLAY_ENABLED   // uncomment for DOG LCD
 // #define DISPLAY_OLED_ENABLED  // uncomment for OLED-Display
 
+#define LOGGING_CORTEX_ENABLED   // uncomment for Data logging via Cortex SDW Connector
 
 #define ADC_AVG_SAMPLES 8       // number of ADC values to read for averaging
 #define BMS_I2C_ADDRESS 0x08
@@ -88,6 +89,12 @@ Ticker tick1, tick2;
 int battery_voltage;    // mV
 int load_voltage;       // mV
 
+int sol_amp = 0;           // mA
+int load_amp = 0;           // mA
+int bat_amp = 0;           // mA
+
+
+
 //----------------------------------------------------------------------------
 // function prototypes
 
@@ -142,6 +149,38 @@ int main()
 
         //BMS.printRegisters();
 
+
+#ifdef LOGGING_CORTEX_ENABLED    // Data Logging via Cortex SDW Connector
+        serial.printf("|");
+        for (int i = 0; i < 15; i++)
+        {
+          serial.printf("%i|", BMS.getCellVoltage(i+1));
+        }
+
+        serial.printf("%i|", BMS.getBatteryVoltage());  // Bat_Volt
+
+        bat_amp = BMS.getBatteryCurrent(); // Bat_Amp
+        serial.printf("%i|", bat_amp);  // Bat_Amp
+
+        sol_amp = 0;  // not yet implemented, needs second Switch-N-Sense
+        serial.printf("%i|", sol_amp);  // Sol_Amp
+
+        load_amp = sol_amp - bat_amp;
+        serial.printf("%i|", load_amp);  // Load_Amp
+
+        serial.printf("%.2f|", BMS.getSOC());  // Bat_SOC
+        serial.printf("%.1f|", BMS.getTemperatureDegC(1));  // TempSensor1
+        serial.printf("%.1f|", BMS.getTemperatureDegC(2));  // TempSensor2
+        serial.printf("%.1f|", BMS.getTemperatureDegC(3));  // TempSensor3
+
+        serial.printf("%i|", battery_voltage);  // DCb
+        //serial.printf("%i|", balancingStatus);  // DCb
+
+        serial.printf(" \n");
+#endif // LOGGING_CORTEX_ENABLED
+
+
+
         wait(0.2);
 
         led2 = !led2;
@@ -161,7 +200,8 @@ void setup()
     // DogLCD
     lcd.init();
     lcd.view(VIEW_TOP);
-#endif
+#endif // DISPLAY_ENABLED
+
 
 #ifdef DISPLAY_OLED_ENABLED
     lcd.clearDisplay();
