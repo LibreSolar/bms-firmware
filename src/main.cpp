@@ -1,220 +1,149 @@
- /* LibreSolar MPPT charge controller firmware
-  * Copyright (c) 2016 Martin Jäger (www.libre.solar)
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  *     http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
+/* LibreSolar Battery Management System firmware
+ * Copyright (c) 2016-2018 Martin Jäger (www.libre.solar)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include "mbed.h"
-#include "DogLCD.h"
-#include "font_6x8.h"
-#include "font_8x16.h"
+#include "config.h"     // select hardware version
+#include "output.h"
+#include "output_can.h"
+#include "data_objects.h"
 #include "bq769x0.h"    // Library for Texas Instruments bq76920 battery management IC
-#include "Adafruit_SSD1306.h" // Library for SSD1306 OLED-Display, 128x64
 
-#define DISPLAY_ENABLED   // uncomment for DOG LCD
-// #define DISPLAY_OLED_ENABLED  // uncomment for OLED-Display
+//----------------------------------------------------------------------------
+// global variables
 
-#define LOGGING_CORTEX_ENABLED   // uncomment for Data logging via Cortex SDW Connector
+Serial serial(PIN_SWD_TX, PIN_SWD_RX, "serial");
+CAN can(PIN_CAN_RX, PIN_CAN_TX, 250000);  // 250 kHz
 
-#define ADC_AVG_SAMPLES 8       // number of ADC values to read for averaging
-#define BMS_I2C_ADDRESS 0x08
+I2C i2c_bq(PIN_BQ_SDA, PIN_BQ_SCL);
+bq769x0 BMS(i2c_bq, PIN_BQ_ALERT, BMS_BQ_TYPE);
+
+DigitalOut led_green(PIN_LED_GREEN);
+DigitalOut led_red(PIN_LED_RED);
+DigitalOut can_disable(PIN_CAN_STB);
+DigitalOut pchg_enable(PIN_PCHG_EN);    // precharge capacitors on the bus
+
+DigitalIn button(PIN_SW_POWER);
+Timer btnTimer;
+
+AnalogIn v_bat(PIN_V_BAT);
+AnalogIn v_load(PIN_V_LOAD);
+
+Ticker tick1, tick2, tick3;
+
+int battery_voltage;
+int battery_current;
+int load_voltage;
+int cell_voltages[15];      // max. number of cells
+float temperatures[3];
+float SOC;
+
+int balancingStatus = 0;
+bool blinkOn = false;
 
 int OCV[NUM_OCV_POINTS] = { // 100, 95, ..., 0 %
   3392, 3314, 3309, 3308, 3304, 3296, 3283, 3275, 3271, 3268, 3265,
   3264, 3262, 3252, 3240, 3226, 3213, 3190, 3177, 3132, 2833
 };
 
-int balancingStatus = 0;
-bool blinkOn = false;
-
-//----------------------------------------------------------------------------
-// global variables
-
-#ifdef DISPLAY_ENABLED
-// DOG LCD
-SPI spi(PB_5, NC, PB_3);
-DogLCD lcd(spi, PA_1, PA_3, PA_2); //  spi, cs, a0, reset
-#endif // DISPLAY_ENABLED
-
-#ifdef DISPLAY_OLED_ENABLED
-// OLED Display SSD1306 I2C
-// an I2C sub-class that provides a constructed default
-class I2CPreInit : public I2C
-{
-public:
-    I2CPreInit(PinName sda, PinName scl) : I2C(sda, scl)
-    {
-        frequency(400000);
-        start();
-    };
-};
-
-I2CPreInit gI2C(PB_7,PB_6);
-Adafruit_SSD1306_I2c lcd(gI2C,PB_5);
-
-int CURSORX[15] = { 0,0,0,0,42,42,42,42,84,84,84,84,84,32,84 };
-int CURSORY[15] = { 24,34,44,54,24,34,44,54,24,34,24,34,44,54,54 };
-
-int cellnum = 10; // real Number of cells for displaying
-
-#endif // DISPLAY_OLED_ENABLED
-
-
-Serial serial(PB_10, PB_11, "serial");
-
-I2C i2c_bq(PB_14, PB_13);
-bq769x0 BMS(i2c_bq, PB_12);    // battery management system object
-
-DigitalOut led1(PA_9);
-DigitalOut led2(PA_10);
-
-DigitalIn button(PB_15);
-Timer btnTimer;
-
-AnalogIn v_bat(PA_4);
-AnalogIn v_load(PA_5);
-
-Ticker tick1, tick2;
-
-int battery_voltage;    // mV
-int load_voltage;       // mV
-
-int sol_amp = 0;           // mA
-int load_amp = 0;           // mA
-int bat_amp = 0;           // mA
-
-
-
 //----------------------------------------------------------------------------
 // function prototypes
 
 void setup();
 void update_measurements();
-void toggleBlink();
 
-#ifdef DISPLAY_ENABLED
-void update_screen();
-#endif
+void toggleBlink();     // to blink cell voltages on display during balancing
 
 //----------------------------------------------------------------------------
 int main()
 {
-    led1 = 1;
-    led2 = 1;
+    led_green = 1;
+    led_red = 1;
+    can_disable = 0;
+    time_t last_second = time(NULL);
 
     setup();
 
-    #ifdef DISPLAY_ENABLED
-    tick1.attach(&update_screen, 0.5);
-    #endif
-
-    tick2.attach(&toggleBlink, 0.5);
+    tick1.attach(&toggleBlink, 0.2);
+    tick2.attach(&can_send_data, 1);
 
     while(1) {
 
-        // shutdown BMS if button is pressed > 3 seconds
-        if (button == 1) {
-            btnTimer.start();
-            if (btnTimer.read() > 3) {
-                BMS.shutdown();
+        can_process_outbox();
+        can_process_inbox();
+
+        // called once per second
+        if (time(NULL) - last_second >= 1) {
+            last_second = time(NULL);
+
+            // shutdown BMS if button is pressed > 3 seconds
+            if (button == 1) {
+                btnTimer.start();
+                if (btnTimer.read() > 3) {
+                    BMS.shutdown();
+                }
+            } else {
+                btnTimer.stop();
+                btnTimer.reset();
             }
-        } else {
-            btnTimer.stop();
-            btnTimer.reset();
+
+            fflush(stdout);
+
+            /*
+            // test communication
+            char buf[10];
+            buf[0] = 0x0B;
+            i2c_bq.write(BMS_I2C_ADDRESS << 1, buf, 1);
+            i2c_bq.read(BMS_I2C_ADDRESS << 1, buf, 1);
+            serial.printf("buf: 0x%x\n", buf[0]);
+            */
+
+            BMS.update();
+            update_measurements();
+
+            //BMS.printRegisters();
+            output_oled();
+
+            led_green = !led_green;
         }
 
-        fflush(stdout);
-
-        /*
-        // test communication
-        char buf[10];
-        buf[0] = 0x0B;
-        i2c_bq.write(BMS_I2C_ADDRESS << 1, buf, 1);
-        i2c_bq.read(BMS_I2C_ADDRESS << 1, buf, 1);
-        serial.printf("buf: 0x%x\n", buf[0]);
-        */
-
-        BMS.update();
-        update_measurements();
-
-        //BMS.printRegisters();
-
-
-#ifdef LOGGING_CORTEX_ENABLED    // Data Logging via Cortex SDW Connector
-        serial.printf("|");
-        for (int i = 0; i < 15; i++)
-        {
-          serial.printf("%i|", BMS.getCellVoltage(i+1));
-        }
-
-        serial.printf("%i|", BMS.getBatteryVoltage());  // Bat_Volt
-
-        bat_amp = BMS.getBatteryCurrent(); // Bat_Amp
-        serial.printf("%i|", bat_amp);  // Bat_Amp
-
-        sol_amp = 0;  // not yet implemented, needs second Switch-N-Sense
-        serial.printf("%i|", sol_amp);  // Sol_Amp
-
-        load_amp = sol_amp - bat_amp;
-        serial.printf("%i|", load_amp);  // Load_Amp
-
-        serial.printf("%.2f|", BMS.getSOC());  // Bat_SOC
-        serial.printf("%.1f|", BMS.getTemperatureDegC(1));  // TempSensor1
-        serial.printf("%.1f|", BMS.getTemperatureDegC(2));  // TempSensor2
-        serial.printf("%.1f|", BMS.getTemperatureDegC(3));  // TempSensor3
-
-        serial.printf("%i|", battery_voltage);  // DCb
-        //serial.printf("%i|", balancingStatus);  // DCb
-
-        serial.printf(" \n");
-#endif // LOGGING_CORTEX_ENABLED
-
-
-
-        wait(0.2);
-
-        led2 = !led2;
+        sleep();    // wake-up by ticker interrupts
     }
 }
 
 //----------------------------------------------------------------------------
 void setup()
 {
+    //serial.baud(9600);
     serial.baud(115200);
     serial.printf("\nSerial interface started...\n");
+    freopen("/serial", "w", stdout);    // retarget stdout to serial
 
-    // retarget stdout to serial
-    freopen("/serial", "w", stdout);
+    can.attach(&can_receive);
+    can.mode(CAN::Normal);
 
-#ifdef DISPLAY_ENABLED
-    // DogLCD
-    lcd.init();
-    lcd.view(VIEW_TOP);
-#endif // DISPLAY_ENABLED
-
-
-#ifdef DISPLAY_OLED_ENABLED
-    lcd.clearDisplay();
-#endif // DISPLAY_OLED_ENABLED
-
-
+    // TXFP: Transmit FIFO priority driven by request order (chronologically)
+    // NART: No automatic retransmission
+    CAN1->MCR |= CAN_MCR_TXFP | CAN_MCR_NART;
 
     // ToDo: Ensure that these settings are set even in case of initial communication error
     BMS.setTemperatureLimits(-20, 45, 0, 45);
-    BMS.setShuntResistorValue(1);
-    BMS.setShortCircuitProtection(14000, 200);  // delay in us
-    BMS.setOvercurrentChargeProtection(8000, 200);  // delay in ms
-    BMS.setOvercurrentDischargeProtection(8000, 320); // delay in ms
+    BMS.setShuntResistorValue(SHUNT_RESISTOR);
+    BMS.setShortCircuitProtection(30000, 200);  // delay in us
+    BMS.setOvercurrentChargeProtection(20000, 200);  // delay in ms
+    BMS.setOvercurrentDischargeProtection(20000, 320); // delay in ms
     BMS.setCellUndervoltageProtection(2800, 2); // delay in s
     BMS.setCellOvervoltageProtection(3650, 2);  // delay in s
 
@@ -228,6 +157,11 @@ void setup()
     BMS.setIdleCurrentThreshold(100);
     BMS.enableAutoBalancing();
 
+    // TODO: watch voltage rise before stopping pre-charge
+    pchg_enable = 1;
+    wait(2);
+    pchg_enable = 0;
+
     BMS.enableDischarging();
     BMS.enableCharging();
 
@@ -235,119 +169,10 @@ void setup()
 }
 
 //----------------------------------------------------------------------------
-
 void toggleBlink()
 {
     blinkOn = !blinkOn;
 }
-
-//----------------------------------------------------------------------------
-
-#ifdef DISPLAY_ENABLED
-void update_screen(void) // DOG LCD
-{
-    char str[20];
-
-    balancingStatus = BMS.getBalancingStatus();
-
-    lcd.clear_screen();
-
-    sprintf(str, "%.2fV", BMS.getBatteryVoltage()/1000.0);
-    lcd.string(0,0,font_8x16, str);
-
-    sprintf(str, "%.2fA", BMS.getBatteryCurrent()/1000.0);
-    lcd.string(7*8,0,font_8x16, str);
-
-    sprintf(str, "T:%.1f", BMS.getTemperatureDegC(1));
-    lcd.string(0,2,font_6x8, str);
-
-    sprintf(str, "SOC:%.2f", BMS.getSOC());
-    lcd.string(6*7,2,font_6x8, str);
-
-    sprintf(str, "DC bus: %.2fV", battery_voltage/1000.0);
-    lcd.string(0,3,font_6x8, str);
-
-    if (blinkOn || !(balancingStatus & (1 << 0))) {
-        sprintf(str, "1:%.3fV", BMS.getCellVoltage(1)/1000.0);
-        lcd.string(0,4,font_6x8, str);
-    }
-
-    if (blinkOn || !(balancingStatus & (1 << 1))) {
-        sprintf(str, "2:%.3fV", BMS.getCellVoltage(2)/1000.0);
-        lcd.string(51,4,font_6x8, str);
-    }
-
-    if (blinkOn || !(balancingStatus & (1 << 2))) {
-        sprintf(str, "3:%.3fV", BMS.getCellVoltage(3)/1000.0);
-        lcd.string(0,5,font_6x8, str);
-    }
-
-    if (blinkOn || !(balancingStatus & (1 << 4))) {
-        sprintf(str, "4:%.3fV", BMS.getCellVoltage(5)/1000.0);
-        lcd.string(51,5,font_6x8, str);
-    }
-
-    if (blinkOn || !(balancingStatus & (1 << 5))) {
-        sprintf(str, "5:%.3fV", BMS.getCellVoltage(6)/1000.0);
-        lcd.string(0,6,font_6x8, str);
-    }
-
-    if (blinkOn || !(balancingStatus & (1 << 6))) {
-        sprintf(str, "6:%.3fV", BMS.getCellVoltage(7)/1000.0);
-        lcd.string(51,6,font_6x8, str);
-    }
-
-    if (blinkOn || !(balancingStatus & (1 << 7))) {
-        sprintf(str, "7:%.3fV", BMS.getCellVoltage(8)/1000.0);
-        lcd.string(0,7,font_6x8, str);
-    }
-
-    if (blinkOn || !(balancingStatus & (1 << 9))) {
-        sprintf(str, "8:%.3fV", BMS.getCellVoltage(10)/1000.0);
-        lcd.string(51,7,font_6x8, str);
-    }
-}
-#endif // DISPLAY_ENABLED
-//----------------------------------------------------------------------------
-
-#ifdef DISPLAY_OLED_ENABLED
-void update_screen(void)     // OLED SSD1306
-{
-    char str[20];
-    int i;
-    balancingStatus = BMS.getBalancingStatus();
-
-    lcd.clearDisplay();
-
-    sprintf(str, "%.2fV", BMS.getBatteryVoltage()/1000.0);
-    lcd.setTextCursor(0,0);        lcd.printf("%s",str);
-
-    sprintf(str, "%.2fA", BMS.getBatteryCurrent()/1000.0);
-    lcd.setTextCursor(48,0);        lcd.printf("%s",str);
-
-    sprintf(str, "T:%.1f", BMS.getTemperatureDegC(1));
-    lcd.setTextCursor(88,0);        lcd.printf("%s",str);
-
-    sprintf(str, "SOC:%.2f", BMS.getSOC());
-    lcd.setTextCursor(0,10);        lcd.printf("%s",str);
-
-    sprintf(str, "DCb:%.2fV", battery_voltage/1000.0);
-    lcd.setTextCursor(63,10);        lcd.printf("%s",str);
-
-
-    for(i=0; i<cellnum; i++) {
-      if (blinkOn || !(balancingStatus & (1 << i))) {
-        sprintf(str, "%.3f", BMS.getCellVoltage(1)/1000.0);
-        lcd.setTextCursor(CURSORX[i],CURSORY[i]);        lcd.printf("%s",str);
-      }
-    }
-
-    lcd.display();
-
-} // update_screen
-#endif // DISPLAY_OLED_ENABLED
-
-
 
 //----------------------------------------------------------------------------
 void update_measurements(void)
@@ -355,17 +180,28 @@ void update_measurements(void)
     const int vcc = 3300;     // mV
     unsigned long sum_adc_readings;
 
+/*
     // battery voltage divider o-- 100k --o-- 5.6k --o
     sum_adc_readings = 0;
     for (int i = 0; i < ADC_AVG_SAMPLES; i++) {
         sum_adc_readings += v_bat.read_u16();
     }
-    battery_voltage = (sum_adc_readings / ADC_AVG_SAMPLES) * 1056 / 56 * vcc / 0xFFFF;
-
+    battery_voltage = (sum_adc_readings / ADC_AVG_SAMPLES) * 110 / 10 * vcc / 0xFFFF;
+*/
     // load voltage divider o-- 100k --o-- 5.6k --o
     sum_adc_readings = 0;
     for (int i = 0; i < ADC_AVG_SAMPLES; i++) {
         sum_adc_readings += v_load.read_u16();
     }
-    load_voltage = (sum_adc_readings / ADC_AVG_SAMPLES) * 1056 / 56 * vcc / 0xFFFF;
+    load_voltage = (sum_adc_readings / ADC_AVG_SAMPLES) * 110 / 10 * vcc / 0xFFFF;
+
+    battery_voltage = BMS.getBatteryVoltage();
+    battery_current = BMS.getBatteryCurrent();
+    cell_voltages[0] = BMS.getCellVoltage(1);
+    cell_voltages[1] = BMS.getCellVoltage(2);
+    cell_voltages[2] = BMS.getCellVoltage(3);
+    cell_voltages[3] = BMS.getCellVoltage(4);
+    cell_voltages[4] = BMS.getCellVoltage(5);
+    temperatures[0] = BMS.getTemperatureDegC(1);
+    SOC = BMS.getSOC();
 }

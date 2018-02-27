@@ -4,14 +4,14 @@ This is a library for our Monochrome OLEDs based on SSD1306 drivers
   Pick one up today in the adafruit shop!
   ------> http://www.adafruit.com/category/63_98
 
-These displays use SPI to communicate, 4 or 5 pins are required to
+These displays use SPI to communicate, 4 or 5 pins are required to  
 interface
 
-Adafruit invests time and resources providing this open source code,
-please support Adafruit and open-source hardware by purchasing
+Adafruit invests time and resources providing this open source code, 
+please support Adafruit and open-source hardware by purchasing 
 products from Adafruit!
 
-Written by Limor Fried/Ladyada  for Adafruit Industries.
+Written by Limor Fried/Ladyada  for Adafruit Industries.  
 BSD license, check license.txt for more information
 All text above, and the splash screen must be included in any redistribution
 *********************************************************************/
@@ -58,13 +58,13 @@ public:
 	};
 
 	void begin(uint8_t switchvcc = SSD1306_SWITCHCAPVCC);
-
+	
 	// These must be implemented in the derived transport driver
 	virtual void command(uint8_t c) = 0;
 	virtual void data(uint8_t c) = 0;
 	virtual void drawPixel(int16_t x, int16_t y, uint16_t color);
 
-	/// Clear the display buffer
+	/// Clear the display buffer    
 	void clearDisplay(void);
 	virtual void invertDisplay(bool i);
 
@@ -72,7 +72,7 @@ public:
 	void display();
 	/// Fill the buffer with the AdaFruit splash screen.
 	virtual void splash();
-
+    
 protected:
 	virtual void sendDisplayBuffer() = 0;
 	DigitalOut2 rst;
@@ -100,7 +100,7 @@ public:
 	 * @param rawHeight - the vertical number of pixels for the display, defaults to 32
 	 * @param rawWidth - the horizonal number of pixels for the display, defaults to 128
 	 */
-	Adafruit_SSD1306_Spi(SPI &spi, PinName DC, PinName RST, PinName CS, uint8_t rawHieght = 64, uint8_t rawWidth = 128)
+	Adafruit_SSD1306_Spi(SPI &spi, PinName DC, PinName RST, PinName CS, uint8_t rawHieght = 32, uint8_t rawWidth = 128)
 	    : Adafruit_SSD1306(RST, rawHieght, rawWidth)
 	    , cs(CS,true)
 	    , dc(DC,false)
@@ -170,7 +170,7 @@ public:
 	 * @param rawHeight - The vertical number of pixels for the display, defaults to 32
 	 * @param rawWidth - The horizonal number of pixels for the display, defaults to 128
 	 */
-	Adafruit_SSD1306_I2c(I2C &i2c, PinName RST, uint8_t i2cAddress = SSD_I2C_ADDRESS, uint8_t rawHeight = 64, uint8_t rawWidth = 128)
+	Adafruit_SSD1306_I2c(I2C &i2c, PinName RST, uint8_t i2cAddress = SSD_I2C_ADDRESS, uint8_t rawHeight = 32, uint8_t rawWidth = 128)
 	    : Adafruit_SSD1306(RST, rawHeight, rawWidth)
 	    , mi2c(i2c)
 	    , mi2cAddress(i2cAddress)
@@ -203,11 +203,11 @@ protected:
 		buff[0] = 0x40; // Data Mode
 
 		// send display buffer in 16 byte chunks
-		for(uint16_t i=0, q=buffer.size(); i<q; i+=16 )
+		for(uint16_t i=0, q=buffer.size(); i<q; i+=16 ) 
 		{	uint8_t x ;
 
 			// TODO - this will segfault if buffer.size() % 16 != 0
-			for(x=1; x<sizeof(buff); x++)
+			for(x=1; x<sizeof(buff); x++) 
 				buff[x] = buffer[i+x-1];
 			mi2c.write(mi2cAddress, buff, sizeof(buff));
 		}

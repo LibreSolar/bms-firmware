@@ -1,15 +1,5 @@
-# BMS_24V_software
-Firmware for 24/48V BMS board using bq76930 (max. 10s cells)
+# Libre Solar BMS software
 
----
+Firmware for [5s](https://github.com/LibreSolar/BMS-5s) and [48V](https://github.com/LibreSolar/BMS48V) BMS boards using bq769x0 IC from Texas Instruments.
 
-This is a development fork of the firmware for the LibreSolar BMS project at http://libre.solar
-to which it adds some extensions:
-
-- support for SSD1306 OLED display on I2C-bus
-
-- continuos output of logging samples via USART TX/RX on the Cortex SWD connector of the BMS. 
-It can be used with a ST-LINK/V2-1 debugger/programmer of a Nucleo board (F072RB) for updating and debugging 
-the firmware and for transmitting the logging-data.
-
-
+See [here](http://libre.solar/docs/flashing/) for an explanation how to flash the software to your board.
