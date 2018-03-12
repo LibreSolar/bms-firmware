@@ -20,8 +20,8 @@
 #include "bq769x0.h"
 
 // select BMS board
-//#define BMS_PCB_5S
-#define BMS_PCB_48V
+#define BMS_PCB_5S
+//#define BMS_PCB_48V
 
 #define ADC_AVG_SAMPLES 8       // number of ADC values to read for averaging
 

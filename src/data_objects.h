@@ -38,18 +38,21 @@ typedef struct {
 #define TS_T_NEG_INT16 5
 #define TS_T_NEG_INT32 6
 #define TS_T_NEG_INT64 7
-#define TS_T_BYTE_STRING 8
-#define TS_T_UTF8_STRING 12
-#define TS_T_FLOAT32 30
-#define TS_T_FLOAT64 31
+#define TS_T_BYTE_STRING 8  
+#define TS_T_UTF8_STRING 12  // 0x0C
+#define TS_T_FLOAT32 30  // 0x1E
+#define TS_T_FLOAT64 31  // 0x1F
+
+#define TS_T_ARRAY 16    // 0x10
+#define TS_T_MAP   20    // 0x14
 
 // ThingSet CAN special types and simple values
-#define TS_T_TIMESTAMP    33
-#define TS_T_DECIMAL_FRAC 35
-#define TS_T_FALSE        44
-#define TS_T_TRUE         45
-#define TS_T_NULL         46
-#define TS_T_UNDEFINED    47
+#define TS_T_TIMESTAMP    32  // 0x20
+#define TS_T_DECIMAL_FRAC 36  // 0x24
+#define TS_T_FALSE        60  // 0x3C
+#define TS_T_TRUE         61  // 0x3D
+#define TS_T_NULL         62  // 0x3E
+#define TS_T_UNDEFINED    63  // 0x3F
 
 // C variable types
 #define T_BOOL 0

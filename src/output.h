@@ -20,6 +20,8 @@
 
 void output_serial();
 void output_oled();
+
+void init_doglcd();
 void output_doglcd();
 
 #endif

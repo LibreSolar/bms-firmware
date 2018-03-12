@@ -62,14 +62,18 @@ void output_serial()
     serial.printf(" \n");
 }
 
+void init_doglcd()
+{
+    lcd.init();
+    lcd.view(VIEW_TOP);
+}
+
 void output_doglcd()    // EA DOG
 {
     char str[20];
 
     int balancingStatus = BMS.getBalancingStatus();
 
-    lcd.init();
-    lcd.view(VIEW_TOP);
     lcd.clear_screen();
 
     sprintf(str, "%.2fV", BMS.getBatteryVoltage()/1000.0);
@@ -87,10 +91,10 @@ void output_doglcd()    // EA DOG
     sprintf(str, "Load: %.2fV", load_voltage/1000.0);
     lcd.string(0,3,font_6x8, str);
 
-    for (int i = 0; i <= BMS.getNumberOfCells(); i++) {
+    for (int i = 0; i < BMS.getNumberOfCells(); i++) {
         if (blinkOn || !(balancingStatus & (1 << i))) {
             sprintf(str, "%d:%.3fV", i+1, BMS.getCellVoltage(i+1)/1000.0);
-            lcd.string((i % 2 == 0) ? 0 : 51, (i / 2) * 4, font_6x8, str);
+            lcd.string((i % 2 == 0) ? 0 : 51, 4 + (i / 2), font_6x8, str);
         }
     }
 }

@@ -115,6 +115,7 @@ int main()
 
             //BMS.printRegisters();
             output_oled();
+            //output_doglcd();
 
             led_green = !led_green;
         }
@@ -128,11 +129,14 @@ void setup()
 {
     //serial.baud(9600);
     serial.baud(115200);
-    serial.printf("\nSerial interface started...\n");
+    serial.printf("\nSerial interface started. Time: %d\n", time(NULL));
     freopen("/serial", "w", stdout);    // retarget stdout to serial
 
     can.attach(&can_receive);
     can.mode(CAN::Normal);
+
+    // not needed if doglcd not used. remove if other device connected to UEXT SPI port
+    init_doglcd();
 
     // TXFP: Transmit FIFO priority driven by request order (chronologically)
     // NART: No automatic retransmission
@@ -141,8 +145,8 @@ void setup()
     // ToDo: Ensure that these settings are set even in case of initial communication error
     BMS.setTemperatureLimits(-20, 45, 0, 45);
     BMS.setShuntResistorValue(SHUNT_RESISTOR);
-    BMS.setShortCircuitProtection(30000, 200);  // delay in us
-    BMS.setOvercurrentChargeProtection(20000, 200);  // delay in ms
+    BMS.setShortCircuitProtection(35000, 200);  // delay in us
+    BMS.setOvercurrentChargeProtection(25000, 200);  // delay in ms
     BMS.setOvercurrentDischargeProtection(20000, 320); // delay in ms
     BMS.setCellUndervoltageProtection(2800, 2); // delay in s
     BMS.setCellOvervoltageProtection(3650, 2);  // delay in s
@@ -151,9 +155,8 @@ void setup()
     BMS.setBatteryCapacity(45000);  // mAh
 
     BMS.update();   // get voltage and temperature measurements before switching on
-    BMS.resetSOC();
 
-    BMS.setBalancingThresholds(1, 3200, 10);  // minIdleTime_min, minCellV_mV, maxVoltageDiff_mV
+    BMS.setBalancingThresholds(10, 3200, 10);  // minIdleTime_min, minCellV_mV, maxVoltageDiff_mV
     BMS.setIdleCurrentThreshold(100);
     BMS.enableAutoBalancing();
 
@@ -162,6 +165,8 @@ void setup()
     wait(2);
     pchg_enable = 0;
 
+    BMS.update();
+    BMS.resetSOC();
     BMS.enableDischarging();
     BMS.enableCharging();
 

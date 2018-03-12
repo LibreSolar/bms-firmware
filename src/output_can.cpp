@@ -83,18 +83,24 @@ int CANMsgQueue::first(CANMessage& msg) {
 // preliminary simple CAN functions to send data to the bus for logging
 // Data format based on CBOR specification (except for first byte, which uses
 // only 6 bit to specify type and transport protocol)
+//
+// Protocol details:
+// https://github.com/LibreSolar/ThingSet/blob/master/can.md
+
 void can_pub_msg(DataObject_t data_obj)
 {
     union float2bytes { float f; char b[4]; } f2b;     // for conversion of float to single bytes
 
     int msg_priority = 6;
-    int msg_id_template = msg_priority << 26 | can_node_id;
 
     CANMessage msg;
     msg.format = CANExtended;
     msg.type = CANData;
 
-    msg.id = msg_id_template | data_obj.id << 8;
+    msg.id = msg_priority << 26
+        | (1U << 24) | (1U << 25)   // identify as publication message
+        | data_obj.id << 8
+        | can_node_id;
 
     // first byte: TinyTP-header or data type for single frame message
     // currently: no multi-frame and no timestamp
@@ -167,10 +173,10 @@ void can_pub_msg(DataObject_t data_obj)
         case T_BOOL:
             msg.len = 1;
             if (*((bool*)data_obj.data) == true) {
-                msg.data[4] = 0xf5;     // simple type: true
+                msg.data[0] = TS_T_TRUE;     // simple type: true
             }
             else {
-                msg.data[4] = 0xf4;     // simple type: false
+                msg.data[0] = TS_T_FALSE;     // simple type: false
             }
             break;
         case T_STRING:

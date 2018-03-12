@@ -1,3 +1,0 @@
-[submodule "lib/bq769x0"]
-	path = lib/bq769x0
-	url = https://github.com/LibreSolar/bq769x0_mbed_lib
