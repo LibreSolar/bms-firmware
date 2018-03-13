@@ -150,7 +150,7 @@ void can_pub_msg(DataObject_t data_obj)
                     msg.data[2] = exponent_abs;
                 }
                 else if (data_obj.exponent < 0 && data_obj.exponent > -24) {
-                    msg.data[2] = (exponent_abs - 1) & 0x20;      // negative uint8
+                    msg.data[2] = (exponent_abs - 1) | 0x20;      // negative uint8
                 }
 
                 // value as positive or negative uint32

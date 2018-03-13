@@ -96,16 +96,16 @@ static uint16_t oid;
 
 static const DataObject_t dataObjects[] {
     // output data
-    {oid=0, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(battery_voltage), "vBat"},        // 0
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(load_voltage), "vLoad"},          // 1
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(cell_voltages[0]), "vCell1"},     // 2
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(cell_voltages[1]), "vCell2"},     // 3
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(cell_voltages[2]), "vCell3"},     // 4
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(cell_voltages[3]), "vCell4"},     // 5
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(cell_voltages[4]), "vCell5"},     // 6
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(battery_current), "iBat"},        // 7
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32, 0, (void*) &(temperatures[0]), "tempBat"},     // 8
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32, 0, (void*) &(SOC), "SOC"}                      // 9
+    {oid=0x4001, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(battery_voltage), "vBat"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(load_voltage), "vLoad"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(cell_voltages[0]), "vCell1"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(cell_voltages[1]), "vCell2"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(cell_voltages[2]), "vCell3"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(cell_voltages[3]), "vCell4"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(cell_voltages[4]), "vCell5"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(battery_current), "iBat"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32, 0, (void*) &(temperatures[0]), "tempBat"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32, 0, (void*) &(SOC), "SOC"} 
 };
 
 
