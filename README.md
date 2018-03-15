@@ -11,7 +11,7 @@ For 5s version:
 #define BMS_PCB_5S
 ```
 
-For 5s version:
+For 10s/15s (48V) version:
 ```
 #define BMS_PCB_48V
 ```
