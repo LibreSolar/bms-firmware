@@ -84,6 +84,8 @@ int main()
         can_process_outbox();
         can_process_inbox();
 
+        BMS.update();
+      
         // called once per second
         if (time(NULL) - last_second >= 1) {
             last_second = time(NULL);
@@ -110,7 +112,6 @@ int main()
             serial.printf("buf: 0x%x\n", buf[0]);
             */
 
-            BMS.update();
             update_measurements();
 
             //BMS.printRegisters();
