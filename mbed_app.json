@@ -1,0 +1,9 @@
+{
+    "target_overrides": {
+        "NUCLEO_F072RB": {
+            "target.lse_available" : 0,
+            "target.stdio_uart_tx" : "PA_9",
+            "target.stdio_uart_rx" : "PA_10"
+        }
+    }
+}
