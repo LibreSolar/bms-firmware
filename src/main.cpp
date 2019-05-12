@@ -19,7 +19,8 @@
 #include "output.h"
 #include "output_can.h"
 #include "data_objects.h"
-#include "bq769x0.h"    // Library for Texas Instruments bq76920 battery management IC
+
+#include "bms.h"
 
 //----------------------------------------------------------------------------
 // global variables
@@ -28,7 +29,7 @@ Serial serial(PIN_SWD_TX, PIN_SWD_RX, "serial");
 CAN can(PIN_CAN_RX, PIN_CAN_TX, 250000);  // 250 kHz
 
 I2C i2c_bq(PIN_BQ_SDA, PIN_BQ_SCL);
-bq769x0 BMS(i2c_bq, PIN_BQ_ALERT, BMS_BQ_TYPE);
+BMS bms(i2c_bq, PIN_BQ_ALERT, BMS_BQ_TYPE);
 
 DigitalOut led_green(PIN_LED_GREEN);
 DigitalOut led_red(PIN_LED_RED);
@@ -84,8 +85,8 @@ int main()
         can_process_outbox();
         can_process_inbox();
 
-        BMS.update();
-      
+        bms.update();
+
         // called once per second
         if (time(NULL) - last_second >= 1) {
             last_second = time(NULL);
@@ -94,7 +95,7 @@ int main()
             if (button == 1) {
                 btnTimer.start();
                 if (btnTimer.read() > 3) {
-                    BMS.shutdown();
+                    bms.shutdown();
                 }
             } else {
                 btnTimer.stop();
@@ -144,32 +145,32 @@ void setup()
     CAN1->MCR |= CAN_MCR_TXFP | CAN_MCR_NART;
 
     // ToDo: Ensure that these settings are set even in case of initial communication error
-    BMS.setTemperatureLimits(-20, 45, 0, 45);
-    BMS.setShuntResistorValue(SHUNT_RESISTOR);
-    BMS.setShortCircuitProtection(35000, 200);  // delay in us
-    BMS.setOvercurrentChargeProtection(25000, 200);  // delay in ms
-    BMS.setOvercurrentDischargeProtection(20000, 320); // delay in ms
-    BMS.setCellUndervoltageProtection(2800, 2); // delay in s
-    BMS.setCellOvervoltageProtection(3650, 2);  // delay in s
+    bms.setTemperatureLimits(-20, 45, 0, 45);
+    bms.setShuntResistorValue(SHUNT_RESISTOR);
+    bms.setShortCircuitProtection(35000, 200);  // delay in us
+    bms.setOvercurrentChargeProtection(25000, 200);  // delay in ms
+    bms.setOvercurrentDischargeProtection(20000, 320); // delay in ms
+    bms.setCellUndervoltageProtection(2800, 2); // delay in s
+    bms.setCellOvervoltageProtection(3650, 2);  // delay in s
 
-    BMS.setOCV(OCV);
-    BMS.setBatteryCapacity(45000);  // mAh
+    bms.setOCV(OCV);
+    bms.setBatteryCapacity(45000);  // mAh
 
-    BMS.update();   // get voltage and temperature measurements before switching on
+    bms.update();   // get voltage and temperature measurements before switching on
 
-    BMS.setBalancingThresholds(10, 3200, 10);  // minIdleTime_min, minCellV_mV, maxVoltageDiff_mV
-    BMS.setIdleCurrentThreshold(100);
-    BMS.enableAutoBalancing();
+    bms.setBalancingThresholds(10, 3200, 10);  // minIdleTime_min, minCellV_mV, maxVoltageDiff_mV
+    bms.setIdleCurrentThreshold(100);
+    bms.enableAutoBalancing();
 
     // TODO: watch voltage rise before stopping pre-charge
     pchg_enable = 1;
     wait(2);
     pchg_enable = 0;
 
-    BMS.update();
-    BMS.resetSOC();
-    BMS.enableDischarging();
-    BMS.enableCharging();
+    bms.update();
+    bms.resetSOC();
+    bms.enableDischarging();
+    bms.enableCharging();
 
     update_measurements();
 }
@@ -201,13 +202,13 @@ void update_measurements(void)
     }
     load_voltage = (sum_adc_readings / ADC_AVG_SAMPLES) * 110 / 10 * vcc / 0xFFFF;
 
-    battery_voltage = BMS.getBatteryVoltage();
-    battery_current = BMS.getBatteryCurrent();
-    cell_voltages[0] = BMS.getCellVoltage(1);
-    cell_voltages[1] = BMS.getCellVoltage(2);
-    cell_voltages[2] = BMS.getCellVoltage(3);
-    cell_voltages[3] = BMS.getCellVoltage(4);
-    cell_voltages[4] = BMS.getCellVoltage(5);
-    temperatures[0] = BMS.getTemperatureDegC(1);
-    SOC = BMS.getSOC();
+    battery_voltage = bms.getBatteryVoltage();
+    battery_current = bms.getBatteryCurrent();
+    cell_voltages[0] = bms.getCellVoltage(1);
+    cell_voltages[1] = bms.getCellVoltage(2);
+    cell_voltages[2] = bms.getCellVoltage(3);
+    cell_voltages[3] = bms.getCellVoltage(4);
+    cell_voltages[4] = bms.getCellVoltage(5);
+    temperatures[0] = bms.getTemperatureDegC(1);
+    SOC = bms.getSOC();
 }

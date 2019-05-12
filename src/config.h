@@ -17,7 +17,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "bq769x0.h"
+#include "bms.h"
 
 // select BMS board
 #define BMS_PCB_5S
