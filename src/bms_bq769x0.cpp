@@ -20,6 +20,17 @@
 #include "bms_bq769x0_registers.h"
 #include "mbed.h"
 
+// static (private) variables
+//----------------------------------------------------------------------------
+
+static int adc_gain;    // factory-calibrated, read out from chip (uV/LSB)
+static int adc_offset;  // factory-calibrated, read out from chip (mV)
+
+// indicates if a new current reading or an error is available from BMS IC
+static bool alert_interrupt_flag;
+
+//----------------------------------------------------------------------------
+
 const char *byte2char(int x)
 {
     static char b[9];
@@ -62,48 +73,48 @@ BMS::BMS(I2C& bqI2C, PinName alertPin, int bqType, int bqI2CAddress, bool crc):
     _i2c(bqI2C), _alertInterrupt(alertPin)
 {
     _timer.start();
-    _alertInterrupt.rise(callback(this, &BMS::setAlertInterruptFlag));
+    _alertInterrupt.rise(callback(this, &BMS::set_alert_interrupt_flag));
 
     // set some safe default values
-    autoBalancingEnabled = false;
-    balancingMinIdleTime_s = 1800;    // default: 30 minutes
-    idleCurrentThreshold = 30; // mA
+    auto_balancing_enabled = false;
+    balancing_min_idle_s = 1800;    // default: 30 minutes
+    idle_current_threshold = 30; // mA
 
-    thermistorBetaValue = 3435;  // typical value for Semitec 103AT-5 thermistor
+    thermistor_beta = 3435;  // typical value for Semitec 103AT-5 thermistor
 
-    alertInterruptFlag = true;   // init with true to check and clear errors at start-up
+    alert_interrupt_flag = true;   // init with true to check and clear errors at start-up
 
-    type = bqType;
-    if (type == bq76920) {
-        numberOfCells = 5;
-    } else if (type == bq76930) {
-        numberOfCells = 10;
+    bq_type = bqType;
+    if (bq_type == bq76920) {
+        num_cells_max = 5;
+    } else if (bq_type == bq76930) {
+        num_cells_max = 10;
     } else {
-        numberOfCells = 15;
+        num_cells_max = 15;
     }
 
     // initialize variables
-    for (int i = 0; i < numberOfCells - 1; i++) {
-        cellVoltages[i] = 0;
+    for (int i = 0; i < num_cells_max - 1; i++) {
+        cell_voltages[i] = 0;
     }
 
-    //crcEnabled = crc;
+    //crc_enabled = crc;
     //I2CAddress = bqI2CAddress;
 
-    if (determineAddressAndCrc())
+    if (determine_address_and_crc())
     {
         // initial settings for bq769x0
-        writeRegister(SYS_CTRL1, 0b00011000);  // switch external thermistor and ADC on
-        writeRegister(SYS_CTRL2, 0b01000000);  // switch CC_EN on
+        write_register(SYS_CTRL1, 0b00011000);  // switch external thermistor and ADC on
+        write_register(SYS_CTRL2, 0b01000000);  // switch CC_EN on
 
         // get ADC offset and gain
-        adcOffset = (signed int) readRegister(ADCOFFSET);  // convert from 2's complement
-        adcGain = 365 + (((readRegister(ADCGAIN1) & 0b00001100) << 1) |
-            ((readRegister(ADCGAIN2) & 0b11100000) >> 5)); // uV/LSB
+        adc_offset = (signed int) read_register(ADCOFFSET);  // convert from 2's complement
+        adc_gain = 365 + (((read_register(ADCGAIN1) & 0b00001100) << 1) |
+            ((read_register(ADCGAIN2) & 0b11100000) >> 5)); // uV/LSB
     }
     else {
         // TODO: do something else... e.g. set error flag
-#if BQ769X0_DEBUG
+#if BMS_DEBUG
         printf("BMS communication error\n");
 #endif
     }
@@ -112,33 +123,33 @@ BMS::BMS(I2C& bqI2C, PinName alertPin, int bqType, int bqI2CAddress, bool crc):
 //----------------------------------------------------------------------------
 // automatically find out address and CRC setting
 
-bool BMS::determineAddressAndCrc(void)
+bool BMS::determine_address_and_crc(void)
 {
     I2CAddress = 0x08;
-    crcEnabled = true;
-    writeRegister(CC_CFG, 0x19);
-    if (readRegister(CC_CFG) == 0x19) {
+    crc_enabled = true;
+    write_register(CC_CFG, 0x19);
+    if (read_register(CC_CFG) == 0x19) {
         return true;
     }
 
     I2CAddress = 0x18;
-    crcEnabled = true;
-    writeRegister(CC_CFG, 0x19);
-    if (readRegister(CC_CFG) == 0x19) {
+    crc_enabled = true;
+    write_register(CC_CFG, 0x19);
+    if (read_register(CC_CFG) == 0x19) {
         return true;
     }
 
     I2CAddress = 0x08;
-    crcEnabled = false;
-    writeRegister(CC_CFG, 0x19);
-    if (readRegister(CC_CFG) == 0x19) {
+    crc_enabled = false;
+    write_register(CC_CFG, 0x19);
+    if (read_register(CC_CFG) == 0x19) {
         return true;
     }
 
     I2CAddress = 0x18;
-    crcEnabled = false;
-    writeRegister(CC_CFG, 0x19);
-    if (readRegister(CC_CFG) == 0x19) {
+    crc_enabled = false;
+    write_register(CC_CFG, 0x19);
+    if (read_register(CC_CFG) == 0x19) {
         return true;
     }
 
@@ -163,157 +174,157 @@ void BMS::boot(PinName bootPin)
 // Fast function to check whether BMS has an error
 // (returns 0 if everything is OK)
 
-int BMS::checkStatus()
+int BMS::check_status()
 {
-    //  printf("errorStatus: ");
-    //  printf(errorStatus);
-    if (_alertInterrupt == 0 && errorStatus == 0) {
+    //  printf("error_status: ");
+    //  printf(error_status);
+    if (_alertInterrupt == 0 && error_status == 0) {
         return 0;
     } else {
 
         regSYS_STAT_t sys_stat;
-        sys_stat.regByte = readRegister(SYS_STAT);
+        sys_stat.regByte = read_register(SYS_STAT);
 
         // first check, if only a new CC reading is available
         if (sys_stat.bits.CC_READY == 1) {
             //printf("Interrupt: CC ready");
-            updateCurrent();  // automatically clears CC ready flag
+            update_current();  // automatically clears CC ready flag
         }
 
         // Serious error occured
         if (sys_stat.regByte & 0b00111111)
         {
-            if (alertInterruptFlag == true) {
-                secSinceErrorCounter = 0;
+            if (alert_interrupt_flag == true) {
+                sec_since_error_counter = 0;
             }
-            errorStatus = sys_stat.regByte;
+            error_status = sys_stat.regByte;
 
-            unsigned int secSinceInterrupt = (_timer.read_ms() - interruptTimestamp) / 1000;
+            unsigned int secSinceInterrupt = (_timer.read_ms() - interrupt_timestamp) / 1000;
 
             // check for overrun of _timer.read_ms() or very slow running program
-            if (abs((long)(secSinceInterrupt - secSinceErrorCounter)) > 2) {
-                secSinceErrorCounter = secSinceInterrupt;
+            if (abs((long)(secSinceInterrupt - sec_since_error_counter)) > 2) {
+                sec_since_error_counter = secSinceInterrupt;
             }
 
             // called only once per second
-            if (secSinceInterrupt >= secSinceErrorCounter)
+            if (secSinceInterrupt >= sec_since_error_counter)
             {
                 if (sys_stat.regByte & 0b00100000) { // XR error
                     // datasheet recommendation: try to clear after waiting a few seconds
-                    if (secSinceErrorCounter % 3 == 0) {
-                        #if BQ769X0_DEBUG
+                    if (sec_since_error_counter % 3 == 0) {
+                        #if BMS_DEBUG
                         printf("Attempting to clear XR error");
                         #endif
-                        writeRegister(SYS_STAT, 0b00100000);
-                        enableCharging();
-                        enableDischarging();
+                        write_register(SYS_STAT, 0b00100000);
+                        chg_switch(true);
+                        dis_switch(true);
                     }
                 }
                 if (sys_stat.regByte & 0b00010000) { // Alert error
-                    if (secSinceErrorCounter % 10 == 0) {
-                        #if BQ769X0_DEBUG
+                    if (sec_since_error_counter % 10 == 0) {
+                        #if BMS_DEBUG
                         printf("Attempting to clear Alert error");
                         #endif
-                        writeRegister(SYS_STAT, 0b00010000);
-                        enableCharging();
-                        enableDischarging();
+                        write_register(SYS_STAT, 0b00010000);
+                        chg_switch(true);
+                        dis_switch(true);
                     }
                 }
                 if (sys_stat.regByte & 0b00001000) { // UV error
-                    updateVoltages();
-                    if (cellVoltages[idCellMinVoltage] > minCellVoltage) {
-                        #if BQ769X0_DEBUG
+                    update_voltages();
+                    if (cell_voltages[id_cell_voltage_min] > cell_voltage_limit_min) {
+                        #if BMS_DEBUG
                         printf("Attempting to clear UV error");
                         #endif
-                        writeRegister(SYS_STAT, 0b00001000);
-                        enableDischarging();
+                        write_register(SYS_STAT, 0b00001000);
+                        dis_switch(true);
                     }
                 }
                 if (sys_stat.regByte & 0b00000100) { // OV error
-                    updateVoltages();
-                    if (cellVoltages[idCellMaxVoltage] < maxCellVoltage) {
-                        #if BQ769X0_DEBUG
+                    update_voltages();
+                    if (cell_voltages[id_cell_voltage_max] < cell_voltage_limit_max) {
+                        #if BMS_DEBUG
                         printf("Attempting to clear OV error");
                         #endif
-                        writeRegister(SYS_STAT, 0b00000100);
-                        enableCharging();
+                        write_register(SYS_STAT, 0b00000100);
+                        chg_switch(true);
                     }
                 }
                 if (sys_stat.regByte & 0b00000010) { // SCD
-                    if (secSinceErrorCounter % 60 == 0) {
-                        #if BQ769X0_DEBUG
+                    if (sec_since_error_counter % 60 == 0) {
+                        #if BMS_DEBUG
                         printf("Attempting to clear SCD error");
                         #endif
-                        writeRegister(SYS_STAT, 0b00000010);
-                        enableDischarging();
+                        write_register(SYS_STAT, 0b00000010);
+                        dis_switch(true);
                     }
                 }
                 if (sys_stat.regByte & 0b00000001) { // OCD
-                    if (secSinceErrorCounter % 60 == 0) {
-                        #if BQ769X0_DEBUG
+                    if (sec_since_error_counter % 60 == 0) {
+                        #if BMS_DEBUG
                         printf("Attempting to clear OCD error");
                         #endif
-                        writeRegister(SYS_STAT, 0b00000001);
-                        enableDischarging();
+                        write_register(SYS_STAT, 0b00000001);
+                        dis_switch(true);
                     }
                 }
-                secSinceErrorCounter++;
+                sec_since_error_counter++;
             }
         }
         else {
-            errorStatus = 0;
+            error_status = 0;
         }
 
-        return errorStatus;
+        return error_status;
     }
 }
 
 //----------------------------------------------------------------------------
 // checks if temperatures are within the limits, otherwise disables CHG/DSG FET
 
-void BMS::checkCellTemp()
+void BMS::check_cell_temp()
 {
-    int numberOfThermistors = numberOfCells/5;
+    int numberOfThermistors = num_cells_max/5;
     bool cellTempChargeError = 0;
     bool cellTempDischargeError = 0;
 
     for (int thermistor = 0; thermistor < numberOfThermistors; thermistor++) {
         cellTempChargeError |=
-            temperatures[thermistor] > maxCellTempCharge - cellTempChargeErrorFlag ? cellTempHysteresis : 0 ||
-            temperatures[thermistor] < minCellTempCharge + cellTempChargeErrorFlag ? cellTempHysteresis : 0;
+            temperatures[thermistor] > chg_temp_limit_max - chg_temp_error_flag ? temp_limit_hysteresis : 0 ||
+            temperatures[thermistor] < chg_temp_limit_min + chg_temp_error_flag ? temp_limit_hysteresis : 0;
 
         cellTempDischargeError |=
-            temperatures[thermistor] > maxCellTempDischarge - cellTempDischargeErrorFlag ? cellTempHysteresis : 0 ||
-            temperatures[thermistor] < minCellTempDischarge + cellTempDischargeErrorFlag ? cellTempHysteresis : 0;
+            temperatures[thermistor] > dis_temp_limit_max - dis_temp_error_flag ? temp_limit_hysteresis : 0 ||
+            temperatures[thermistor] < dis_temp_limit_min + dis_temp_error_flag ? temp_limit_hysteresis : 0;
     }
 
-    if (cellTempChargeErrorFlag != cellTempChargeError) {
-        cellTempChargeErrorFlag = cellTempChargeError;
+    if (chg_temp_error_flag != cellTempChargeError) {
+        chg_temp_error_flag = cellTempChargeError;
         if (cellTempChargeError) {
-            disableCharging();
-            #if BQ769X0_DEBUG
+            chg_switch(false);
+            #if BMS_DEBUG
             printf("Temperature error (CHG)");
             #endif
         }
         else {
-            enableCharging();
-            #if BQ769X0_DEBUG
+            chg_switch(true);
+            #if BMS_DEBUG
             printf("Clearing temperature error (CHG)");
             #endif
         }
     }
 
-    if (cellTempDischargeErrorFlag != cellTempDischargeError) {
-        cellTempDischargeErrorFlag = cellTempDischargeError;
+    if (dis_temp_error_flag != cellTempDischargeError) {
+        dis_temp_error_flag = cellTempDischargeError;
         if (cellTempDischargeError) {
-            disableDischarging();
-            #if BQ769X0_DEBUG
+            dis_switch(false);
+            #if BMS_DEBUG
             printf("Temperature error (DSG)");
             #endif
         }
         else {
-            enableDischarging();
-            #if BQ769X0_DEBUG
+            dis_switch(true);
+            #if BMS_DEBUG
             printf("Clearing temperature error (DSG)");
             #endif
         }
@@ -325,144 +336,142 @@ void BMS::checkCellTemp()
 
 void BMS::shutdown()
 {
-    writeRegister(SYS_CTRL1, 0x0);
-    writeRegister(SYS_CTRL1, 0x1);
-    writeRegister(SYS_CTRL1, 0x2);
+    write_register(SYS_CTRL1, 0x0);
+    write_register(SYS_CTRL1, 0x1);
+    write_register(SYS_CTRL1, 0x2);
 }
 
 //----------------------------------------------------------------------------
 
-bool BMS::enableCharging()
+bool BMS::chg_switch(bool enable)
 {
-    #if BQ769X0_DEBUG
-    printf("checkStatus() = %d\n", checkStatus());
-    printf("Umax = %d\n", cellVoltages[idCellMaxVoltage]);
-    printf("temperatures[0] = %d\n", temperatures[0]);
-    #endif
+    if (enable) {
+        #if BMS_DEBUG
+        printf("check_status() = %d\n", check_status());
+        printf("Umax = %d\n", cell_voltages[id_cell_voltage_max]);
+        printf("temperatures[0] = %d\n", temperatures[0]);
+        #endif
 
-    int numberOfThermistors = numberOfCells/5;
-    bool cellTempChargeError = 0;
+        int numberOfThermistors = num_cells_max/5;
+        bool cellTempChargeError = 0;
 
-    for (int thermistor = 0; thermistor < numberOfThermistors; thermistor++) {
-        cellTempChargeError |=
-            temperatures[thermistor] > maxCellTempCharge ||
-            temperatures[thermistor] < minCellTempCharge;
+        for (int thermistor = 0; thermistor < numberOfThermistors; thermistor++) {
+            cellTempChargeError |=
+                temperatures[thermistor] > chg_temp_limit_max ||
+                temperatures[thermistor] < chg_temp_limit_min;
+        }
+
+        if (check_status() == 0 &&
+            cell_voltages[id_cell_voltage_max] < cell_voltage_limit_max &&
+            cellTempChargeError == 0)
+        {
+            int sys_ctrl2;
+            sys_ctrl2 = read_register(SYS_CTRL2);
+            write_register(SYS_CTRL2, sys_ctrl2 | 0b00000001);  // switch CHG on
+            #if BMS_DEBUG
+            printf("Enabling CHG FET\n");
+            #endif
+            return true;
+        }
+        else {
+            return false;
+        }
     }
-
-    if (checkStatus() == 0 &&
-        cellVoltages[idCellMaxVoltage] < maxCellVoltage &&
-        cellTempChargeError == 0)
-    {
+    else {
         int sys_ctrl2;
-        sys_ctrl2 = readRegister(SYS_CTRL2);
-        writeRegister(SYS_CTRL2, sys_ctrl2 | 0b00000001);  // switch CHG on
-        #if BQ769X0_DEBUG
-        printf("Enabling CHG FET\n");
+        sys_ctrl2 = read_register(SYS_CTRL2);
+        write_register(SYS_CTRL2, sys_ctrl2 & ~0b00000001);  // switch CHG off
+        #if BMS_DEBUG
+        printf("Disabling CHG FET\n");
         #endif
         return true;
     }
-    else {
-        return false;
-    }
 }
 
 //----------------------------------------------------------------------------
 
-void BMS::disableCharging()
+bool BMS::dis_switch(bool enable)
 {
-    int sys_ctrl2;
-    sys_ctrl2 = readRegister(SYS_CTRL2);
-    writeRegister(SYS_CTRL2, sys_ctrl2 & ~0b00000001);  // switch CHG off
-    #if BQ769X0_DEBUG
-    printf("Disabling CHG FET\n");
-    #endif
-}
-
-//----------------------------------------------------------------------------
-
-bool BMS::enableDischarging()
-{
-    #if BQ769X0_DEBUG
-    printf("checkStatus() = %d\n", checkStatus());
-    printf("Umin = %d\n", cellVoltages[idCellMinVoltage]);
+    #if BMS_DEBUG
+    printf("check_status() = %d\n", check_status());
+    printf("Umin = %d\n", cell_voltages[id_cell_voltage_min]);
     printf("temperatures[0] = %d\n", temperatures[0]);
     #endif
 
-    int numberOfThermistors = numberOfCells/5;
-    bool cellTempDischargeError = 0;
+    if (enable) {
+        int numberOfThermistors = num_cells_max/5;
+        bool cellTempDischargeError = 0;
 
-    for (int thermistor = 0; thermistor < numberOfThermistors; thermistor++) {
-        cellTempDischargeError |=
-            temperatures[thermistor] > maxCellTempDischarge ||
-            temperatures[thermistor] < minCellTempDischarge;
-    }
+        for (int thermistor = 0; thermistor < numberOfThermistors; thermistor++) {
+            cellTempDischargeError |=
+                temperatures[thermistor] > dis_temp_limit_max ||
+                temperatures[thermistor] < dis_temp_limit_min;
+        }
 
-    if (checkStatus() == 0 &&
-        cellVoltages[idCellMinVoltage] > minCellVoltage &&
-        cellTempDischargeError == 0)
-    {
-        int sys_ctrl2;
-        sys_ctrl2 = readRegister(SYS_CTRL2);
-        writeRegister(SYS_CTRL2, sys_ctrl2 | 0b00000010);  // switch DSG on
-        return true;
+        if (check_status() == 0 &&
+            cell_voltages[id_cell_voltage_min] > cell_voltage_limit_min &&
+            cellTempDischargeError == 0)
+        {
+            int sys_ctrl2;
+            sys_ctrl2 = read_register(SYS_CTRL2);
+            write_register(SYS_CTRL2, sys_ctrl2 | 0b00000010);  // switch DSG on
+            return true;
+        }
+        else {
+            return false;
+        }
     }
     else {
-        return false;
+        int sys_ctrl2;
+        sys_ctrl2 = read_register(SYS_CTRL2);
+        write_register(SYS_CTRL2, sys_ctrl2 & ~0b00000010);  // switch DSG off
+        #if BMS_DEBUG
+        printf("Disabling DISCHG FET\n");
+        #endif
+        return true;
     }
 }
 
 //----------------------------------------------------------------------------
 
-void BMS::disableDischarging()
+void BMS::auto_balancing(bool enabled)
 {
-    int sys_ctrl2;
-    sys_ctrl2 = readRegister(SYS_CTRL2);
-    writeRegister(SYS_CTRL2, sys_ctrl2 & ~0b00000010);  // switch DSG off
-    #if BQ769X0_DEBUG
-    printf("Disabling DISCHG FET\n");
-    #endif
-}
-
-//----------------------------------------------------------------------------
-
-void BMS::enableAutoBalancing(void)
-{
-    autoBalancingEnabled = true;
+    auto_balancing_enabled = enabled;
 }
 
 
 //----------------------------------------------------------------------------
 
-void BMS::setBalancingThresholds(int idleTime_min, int absVoltage_mV, int voltageDifference_mV)
+void BMS::balancing_thresholds(int idleTime_min, int absVoltage_mV, int voltageDifference_mV)
 {
-    balancingMinIdleTime_s = idleTime_min * 60;
-    balancingMinCellVoltage_mV = absVoltage_mV;
-    balancingMaxVoltageDifference_mV = voltageDifference_mV;
+    balancing_min_idle_s = idleTime_min * 60;
+    balancing_cell_voltage_min = absVoltage_mV;
+    balancing_voltage_diff_target = voltageDifference_mV;
 }
 
 //----------------------------------------------------------------------------
 // sets balancing registers if balancing is allowed
 // (sufficient idle time + voltage)
 
-void BMS::updateBalancingSwitches(void)
+void BMS::update_balancing_switches(void)
 {
-    long idleSeconds = (_timer.read_ms() - idleTimestamp) / 1000;
-    int numberOfSections = numberOfCells/5;
+    long idleSeconds = (_timer.read_ms() - idle_timestamp) / 1000;
+    int numberOfSections = num_cells_max/5;
 
     // check for _timer.read_ms() overflow
     if (idleSeconds < 0) {
-        idleTimestamp = 0;
+        idle_timestamp = 0;
         idleSeconds = _timer.read_ms() / 1000;
     }
 
     // check if balancing allowed
-    if (checkStatus() == 0 &&
-        idleSeconds >= balancingMinIdleTime_s &&
-        cellVoltages[idCellMaxVoltage] > balancingMinCellVoltage_mV &&
-        (cellVoltages[idCellMaxVoltage] - cellVoltages[idCellMinVoltage]) > balancingMaxVoltageDifference_mV)
+    if (check_status() == 0 &&
+        idleSeconds >= balancing_min_idle_s &&
+        cell_voltages[id_cell_voltage_max] > balancing_cell_voltage_min &&
+        (cell_voltages[id_cell_voltage_max] - cell_voltages[id_cell_voltage_min]) > balancing_voltage_diff_target)
     {
         //printf("Balancing enabled!");
-        balancingStatus = 0;  // current status will be set in following loop
+        balancing_status = 0;  // current status will be set in following loop
 
         //regCELLBAL_t cellbal;
         int balancingFlags;
@@ -475,9 +484,9 @@ void BMS::updateBalancingSwitches(void)
             int cellCounter = 0;
             for (int i = 0; i < 5; i++)
             {
-                if ((cellVoltages[section*5 + i] - cellVoltages[idCellMinVoltage]) > balancingMaxVoltageDifference_mV) {
+                if ((cell_voltages[section*5 + i] - cell_voltages[id_cell_voltage_min]) > balancing_voltage_diff_target) {
                     int j = cellCounter;
-                    while (j > 0 && cellVoltages[section*5 + cellList[j - 1]] < cellVoltages[section*5 + i])
+                    while (j > 0 && cell_voltages[section*5 + cellList[j - 1]] < cell_voltages[section*5 + i])
                     {
                         cellList[j] = cellList[j - 1];
                         j--;
@@ -503,56 +512,55 @@ void BMS::updateBalancingSwitches(void)
                 }
             }
 
-            #if BQ769X0_DEBUG
+            #if BMS_DEBUG
             //printf("Setting CELLBAL%d register to: %s\n", section+1, byte2char(balancingFlags));
             #endif
 
-            balancingStatus |= balancingFlags << section*5;
+            balancing_status |= balancingFlags << section*5;
 
             // set balancing register for this section
-            writeRegister(CELLBAL1+section, balancingFlags);
+            write_register(CELLBAL1+section, balancingFlags);
 
         } // section loop
     }
-    else if (balancingStatus > 0)
+    else if (balancing_status > 0)
     {
         // clear all CELLBAL registers
         for (int section = 0; section < numberOfSections; section++)
         {
-            #if BQ769X0_DEBUG
+            #if BMS_DEBUG
             printf("Clearing Register CELLBAL%d\n", section+1);
             #endif
 
-            writeRegister(CELLBAL1+section, 0x0);
+            write_register(CELLBAL1+section, 0x0);
         }
 
-        balancingStatus = 0;
+        balancing_status = 0;
     }
 }
 
 //----------------------------------------------------------------------------
 
-int BMS::getBalancingStatus()
+int BMS::get_balancing_status()
 {
-    return balancingStatus;
+    return balancing_status;
 }
 
 //----------------------------------------------------------------------------
 
-void BMS::setTemperatureLimits(int minDischarge_degC, int maxDischarge_degC,
-  int minCharge_degC, int maxCharge_degC, int hysteresis_degC)
+void BMS::temperature_limits(int min_dis_degC, int max_dis_degC, int min_chg_degC, int max_chg_degC, int hysteresis_degC)
 {
     // Temperature limits (°C/10)
-    minCellTempDischarge = minDischarge_degC * 10;
-    maxCellTempDischarge = maxDischarge_degC * 10;
-    minCellTempCharge = minCharge_degC * 10;
-    maxCellTempCharge = maxCharge_degC * 10;
-    cellTempHysteresis = hysteresis_degC * 10;
+    dis_temp_limit_min = min_dis_degC * 10;
+    dis_temp_limit_max = max_dis_degC * 10;
+    chg_temp_limit_min = min_chg_degC * 10;
+    chg_temp_limit_max = max_chg_degC * 10;
+    temp_limit_hysteresis = hysteresis_degC * 10;
 }
 
 //----------------------------------------------------------------------------
 
-long BMS::setShortCircuitProtection(long current_mA, int delay_us)
+long BMS::dis_sc_limit(long current_mA, int delay_us)
 {
     regPROTECT1_t protect1;
 
@@ -561,7 +569,7 @@ long BMS::setShortCircuitProtection(long current_mA, int delay_us)
 
     protect1.bits.SCD_THRESH = 0;
     for (int i = sizeof(SCD_threshold_setting)-1; i > 0; i--) {
-        if (current_mA * shuntResistorValue_mOhm / 1000 >= SCD_threshold_setting[i]) {
+        if (current_mA * shunt_res_mOhm / 1000 >= SCD_threshold_setting[i]) {
             protect1.bits.SCD_THRESH = i;
             break;
         }
@@ -575,16 +583,16 @@ long BMS::setShortCircuitProtection(long current_mA, int delay_us)
         }
     }
 
-    writeRegister(PROTECT1, protect1.regByte);
+    write_register(PROTECT1, protect1.regByte);
 
     // returns the actual current threshold value
     return (long)SCD_threshold_setting[protect1.bits.SCD_THRESH] * 1000 /
-        shuntResistorValue_mOhm;
+        shunt_res_mOhm;
 }
 
 //----------------------------------------------------------------------------
 
-long BMS::setOvercurrentChargeProtection(long current_mA, int delay_ms)
+long BMS::chg_oc_limit(long current_mA, int delay_ms)
 {
     // ToDo: Software protection for charge overcurrent
     return 0;
@@ -592,7 +600,7 @@ long BMS::setOvercurrentChargeProtection(long current_mA, int delay_ms)
 
 //----------------------------------------------------------------------------
 
-long BMS::setOvercurrentDischargeProtection(long current_mA, int delay_ms)
+long BMS::dis_oc_limit(long current_mA, int delay_ms)
 {
     regPROTECT2_t protect2;
 
@@ -600,7 +608,7 @@ long BMS::setOvercurrentDischargeProtection(long current_mA, int delay_ms)
 
     protect2.bits.OCD_THRESH = 0;
     for (int i = sizeof(OCD_threshold_setting)-1; i > 0; i--) {
-        if (current_mA * shuntResistorValue_mOhm / 1000 >= OCD_threshold_setting[i]) {
+        if (current_mA * shunt_res_mOhm / 1000 >= OCD_threshold_setting[i]) {
             protect2.bits.OCD_THRESH = i;
             break;
         }
@@ -614,28 +622,28 @@ long BMS::setOvercurrentDischargeProtection(long current_mA, int delay_ms)
         }
     }
 
-    writeRegister(PROTECT2, protect2.regByte);
+    write_register(PROTECT2, protect2.regByte);
 
     // returns the actual current threshold value
     return (long)OCD_threshold_setting[protect2.bits.OCD_THRESH] * 1000 /
-        shuntResistorValue_mOhm;
+        shunt_res_mOhm;
 }
 
 
 //----------------------------------------------------------------------------
 
-int BMS::setCellUndervoltageProtection(int voltage_mV, int delay_s)
+int BMS::cell_uv_limit(int voltage_mV, int delay_s)
 {
     regPROTECT3_t protect3;
     int uv_trip = 0;
 
-    minCellVoltage = voltage_mV;
+    cell_voltage_limit_min = voltage_mV;
 
-    protect3.regByte = readRegister(PROTECT3);
+    protect3.regByte = read_register(PROTECT3);
 
-    uv_trip = ((((long)voltage_mV - adcOffset) * 1000 / adcGain) >> 4) & 0x00FF;
+    uv_trip = ((((long)voltage_mV - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
     uv_trip += 1;   // always round up for lower cell voltage
-    writeRegister(UV_TRIP, uv_trip);
+    write_register(UV_TRIP, uv_trip);
 
     protect3.bits.UV_DELAY = 0;
     for (int i = sizeof(UV_delay_setting)-1; i > 0; i--) {
@@ -645,25 +653,25 @@ int BMS::setCellUndervoltageProtection(int voltage_mV, int delay_s)
         }
     }
 
-    writeRegister(PROTECT3, protect3.regByte);
+    write_register(PROTECT3, protect3.regByte);
 
     // returns the actual current threshold value
-    return ((long)1 << 12 | uv_trip << 4) * adcGain / 1000 + adcOffset;
+    return ((long)1 << 12 | uv_trip << 4) * adc_gain / 1000 + adc_offset;
 }
 
 //----------------------------------------------------------------------------
 
-int BMS::setCellOvervoltageProtection(int voltage_mV, int delay_s)
+int BMS::cell_ov_limit(int voltage_mV, int delay_s)
 {
     regPROTECT3_t protect3;
     int ov_trip = 0;
 
-    maxCellVoltage = voltage_mV;
+    cell_voltage_limit_max = voltage_mV;
 
-    protect3.regByte = readRegister(PROTECT3);
+    protect3.regByte = read_register(PROTECT3);
 
-    ov_trip = ((((long)voltage_mV - adcOffset) * 1000 / adcGain) >> 4) & 0x00FF;
-    writeRegister(OV_TRIP, ov_trip);
+    ov_trip = ((((long)voltage_mV - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
+    write_register(OV_TRIP, ov_trip);
 
     protect3.bits.OV_DELAY = 0;
     for (int i = sizeof(OV_delay_setting)-1; i > 0; i--) {
@@ -673,16 +681,16 @@ int BMS::setCellOvervoltageProtection(int voltage_mV, int delay_s)
         }
     }
 
-    writeRegister(PROTECT3, protect3.regByte);
+    write_register(PROTECT3, protect3.regByte);
 
     // returns the actual current threshold value
-    return ((long)1 << 13 | ov_trip << 4) * adcGain / 1000 + adcOffset;
+    return ((long)1 << 13 | ov_trip << 4) * adc_gain / 1000 + adc_offset;
 }
 
 
 //----------------------------------------------------------------------------
 
-void BMS::updateTemperatures()
+void BMS::update_temperatures()
 {
     float tmp = 0;
     int adcVal = 0;
@@ -690,29 +698,29 @@ void BMS::updateTemperatures()
     unsigned long rts = 0;
 
     // calculate R_thermistor according to bq769x0 datasheet
-    adcVal = (readRegister(TS1_HI_BYTE) & 0b00111111) << 8 | readRegister(TS1_LO_BYTE);
+    adcVal = (read_register(TS1_HI_BYTE) & 0b00111111) << 8 | read_register(TS1_LO_BYTE);
     vtsx = adcVal * 0.382; // mV
     rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
 
     // Temperature calculation using Beta equation
     // - According to bq769x0 datasheet, only 10k thermistors should be used
     // - 25°C reference temperature for Beta equation assumed
-    tmp = 1.0/(1.0/(273.15+25) + 1.0/thermistorBetaValue*log(rts/10000.0)); // K
+    tmp = 1.0/(1.0/(273.15+25) + 1.0/thermistor_beta*log(rts/10000.0)); // K
     temperatures[0] = (tmp - 273.15) * 10.0;
 
-    if (type == bq76930 || type == bq76940) {
-        adcVal = (readRegister(TS2_HI_BYTE) & 0b00111111) << 8 | readRegister(TS2_LO_BYTE);
+    if (bq_type == bq76930 || bq_type == bq76940) {
+        adcVal = (read_register(TS2_HI_BYTE) & 0b00111111) << 8 | read_register(TS2_LO_BYTE);
         vtsx = adcVal * 0.382; // mV
         rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
-        tmp = 1.0/(1.0/(273.15+25) + 1.0/thermistorBetaValue*log(rts/10000.0)); // K
+        tmp = 1.0/(1.0/(273.15+25) + 1.0/thermistor_beta*log(rts/10000.0)); // K
         temperatures[1] = (tmp - 273.15) * 10.0;
     }
 
-    if (type == bq76940) {
-        adcVal = (readRegister(TS3_HI_BYTE) & 0b00111111) << 8 | readRegister(TS3_LO_BYTE);
+    if (bq_type == bq76940) {
+        adcVal = (read_register(TS3_HI_BYTE) & 0b00111111) << 8 | read_register(TS3_LO_BYTE);
         vtsx = adcVal * 0.382; // mV
         rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
-        tmp = 1.0/(1.0/(273.15+25) + 1.0/thermistorBetaValue*log(rts/10000.0)); // K
+        tmp = 1.0/(1.0/(273.15+25) + 1.0/thermistor_beta*log(rts/10000.0)); // K
         temperatures[2] = (tmp - 273.15) * 10.0;
     }
 }
@@ -720,44 +728,44 @@ void BMS::updateTemperatures()
 
 //----------------------------------------------------------------------------
 
-void BMS::updateCurrent()
+void BMS::update_current()
 {
     int adcVal = 0;
     regSYS_STAT_t sys_stat;
-    sys_stat.regByte = readRegister(SYS_STAT);
+    sys_stat.regByte = read_register(SYS_STAT);
 
     // check if new current reading available
     if (sys_stat.bits.CC_READY == 1)
     {
         //printf("reading CC register...\n");
-        adcVal = (readRegister(CC_HI_BYTE) << 8) | readRegister(CC_LO_BYTE);
-        batCurrent = (int16_t) adcVal * 8.44 / shuntResistorValue_mOhm;  // mA
+        adcVal = (read_register(CC_HI_BYTE) << 8) | read_register(CC_LO_BYTE);
+        battery_current = (int16_t) adcVal * 8.44 / shunt_res_mOhm;  // mA
 
-        coulombCounter += batCurrent / 4;  // is read every 250 ms
+        coulomb_counter += battery_current / 4;  // is read every 250 ms
 
         // reduce resolution for actual current value
-        if (batCurrent > -10 && batCurrent < 10) {
-            batCurrent = 0;
+        if (battery_current > -10 && battery_current < 10) {
+            battery_current = 0;
         }
 
-        // reset idleTimestamp
-        if (abs(batCurrent) > idleCurrentThreshold) {
-            idleTimestamp = _timer.read_ms();
+        // reset idle_timestamp
+        if (abs(battery_current) > idle_current_threshold) {
+            idle_timestamp = _timer.read_ms();
         }
 
         // no error occured which caused alert
         if (!(sys_stat.regByte & 0b00111111)) {
-            alertInterruptFlag = false;
+            alert_interrupt_flag = false;
         }
 
-        writeRegister(SYS_STAT, 0b10000000);  // Clear CC ready flag
+        write_register(SYS_STAT, 0b10000000);  // Clear CC ready flag
     }
 }
 
 //----------------------------------------------------------------------------
-// reads all cell voltages to array cellVoltages[NUM_CELLS] and updates batVoltage
+// reads all cell voltages to array cell_voltages[NUM_CELLS] and updates battery_voltage
 
-void BMS::updateVoltages()
+void BMS::update_voltages()
 {
     long adcVal = 0;
     char buf[4];
@@ -769,11 +777,11 @@ void BMS::updateVoltages()
     buf[0] = (char) VC1_HI_BYTE;
     _i2c.write(I2CAddress << 1, buf, 1);;
 
-    idCellMaxVoltage = 0;
-    idCellMinVoltage = 0;
-    for (int i = 0; i < numberOfCells; i++)
+    id_cell_voltage_max = 0;
+    id_cell_voltage_min = 0;
+    for (int i = 0; i < num_cells_max; i++)
     {
-        if (crcEnabled == true) {
+        if (crc_enabled == true) {
             _i2c.read(I2CAddress << 1, buf, 4);
             adcVal = (buf[0] & 0b00111111) << 8 | buf[2];
 
@@ -791,29 +799,29 @@ void BMS::updateVoltages()
             adcVal = (buf[0] & 0b00111111) << 8 | buf[1];
         }
 
-        cellVoltages[i] = adcVal * adcGain / 1000 + adcOffset;
+        cell_voltages[i] = adcVal * adc_gain / 1000 + adc_offset;
 
-        if (cellVoltages[i] > 500) {
+        if (cell_voltages[i] > 500) {
             connectedCellsTemp++;
         }
 
-        if (cellVoltages[i] > cellVoltages[idCellMaxVoltage]) {
-            idCellMaxVoltage = i;
+        if (cell_voltages[i] > cell_voltages[id_cell_voltage_max]) {
+            id_cell_voltage_max = i;
         }
-        if (cellVoltages[i] < cellVoltages[idCellMinVoltage] && cellVoltages[i] > 500) {
-            idCellMinVoltage = i;
+        if (cell_voltages[i] < cell_voltages[id_cell_voltage_min] && cell_voltages[i] > 500) {
+            id_cell_voltage_min = i;
         }
     }
-    connectedCells = connectedCellsTemp;
+    connected_cells = connectedCellsTemp;
 
     // read battery pack voltage
-    adcVal = (readRegister(BAT_HI_BYTE) << 8) | readRegister(BAT_LO_BYTE);
-    batVoltage = 4.0 * adcGain * adcVal / 1000.0 + connectedCells * adcOffset;
+    adcVal = (read_register(BAT_HI_BYTE) << 8) | read_register(BAT_LO_BYTE);
+    battery_voltage = 4.0 * adc_gain * adcVal / 1000.0 + connected_cells * adc_offset;
 }
 
 //----------------------------------------------------------------------------
 
-void BMS::writeRegister(int address, int data)
+void BMS::write_register(int address, int data)
 {
     uint8_t crc = 0;
     char buf[3];
@@ -821,7 +829,7 @@ void BMS::writeRegister(int address, int data)
     buf[0] = (char) address;
     buf[1] = data;
 
-    if (crcEnabled == true) {
+    if (crc_enabled == true) {
         // CRC is calculated over the slave address (including R/W bit), register address, and data.
         crc = _crc8_ccitt_update(crc, (I2CAddress << 1) | 0);
         crc = _crc8_ccitt_update(crc, buf[0]);
@@ -836,19 +844,19 @@ void BMS::writeRegister(int address, int data)
 
 //----------------------------------------------------------------------------
 
-int BMS::readRegister(int address)
+int BMS::read_register(int address)
 {
     uint8_t crc = 0;
     char buf[2];
 
-    #if BQ769X0_DEBUG
+    #if BMS_DEBUG
     //printf("Read register: 0x%x \n", address);
     #endif
 
     buf[0] = (char)address;
     _i2c.write(I2CAddress << 1, buf, 1);;
 
-    if (crcEnabled == true) {
+    if (crc_enabled == true) {
         do {
             _i2c.read(I2CAddress << 1, buf, 2);
             // CRC is calculated over the slave address (including R/W bit) and data.
@@ -867,35 +875,35 @@ int BMS::readRegister(int address)
 // The bq769x0 drives the ALERT pin high if the SYS_STAT register contains
 // a new value (either new CC reading or an error)
 
-void BMS::setAlertInterruptFlag()
+void BMS::set_alert_interrupt_flag()
 {
-    interruptTimestamp = _timer.read_ms();
-    alertInterruptFlag = true;
+    interrupt_timestamp = _timer.read_ms();
+    alert_interrupt_flag = true;
 }
 
-#if BQ769X0_DEBUG
+#if BMS_DEBUG
 
 //----------------------------------------------------------------------------
 // for debug purposes
 
-void BMS::printRegisters()
+void BMS::print_registers()
 {
-    printf("0x00 SYS_STAT:  %s\n", byte2char(readRegister(SYS_STAT)));
-    printf("0x01 CELLBAL1:  %s\n", byte2char(readRegister(CELLBAL1)));
-    printf("0x04 SYS_CTRL1: %s\n", byte2char(readRegister(SYS_CTRL1)));
-    printf("0x05 SYS_CTRL2: %s\n", byte2char(readRegister(SYS_CTRL2)));
-    printf("0x06 PROTECT1:  %s\n", byte2char(readRegister(PROTECT1)));
-    printf("0x07 PROTECT2:  %s\n", byte2char(readRegister(PROTECT2)));
-    printf("0x08 PROTECT3:  %s\n", byte2char(readRegister(PROTECT3)));
-    printf("0x09 OV_TRIP:   %s\n", byte2char(readRegister(OV_TRIP)));
-    printf("0x0A UV_TRIP:   %s\n", byte2char(readRegister(UV_TRIP)));
-    printf("0x0B CC_CFG:    %s\n", byte2char(readRegister(CC_CFG)));
-    printf("0x32 CC_HI:     %s\n", byte2char(readRegister(CC_HI_BYTE)));
-    printf("0x33 CC_LO:     %s\n", byte2char(readRegister(CC_LO_BYTE)));
+    printf("0x00 SYS_STAT:  %s\n", byte2char(read_register(SYS_STAT)));
+    printf("0x01 CELLBAL1:  %s\n", byte2char(read_register(CELLBAL1)));
+    printf("0x04 SYS_CTRL1: %s\n", byte2char(read_register(SYS_CTRL1)));
+    printf("0x05 SYS_CTRL2: %s\n", byte2char(read_register(SYS_CTRL2)));
+    printf("0x06 PROTECT1:  %s\n", byte2char(read_register(PROTECT1)));
+    printf("0x07 PROTECT2:  %s\n", byte2char(read_register(PROTECT2)));
+    printf("0x08 PROTECT3:  %s\n", byte2char(read_register(PROTECT3)));
+    printf("0x09 OV_TRIP:   %s\n", byte2char(read_register(OV_TRIP)));
+    printf("0x0A UV_TRIP:   %s\n", byte2char(read_register(UV_TRIP)));
+    printf("0x0B CC_CFG:    %s\n", byte2char(read_register(CC_CFG)));
+    printf("0x32 CC_HI:     %s\n", byte2char(read_register(CC_HI_BYTE)));
+    printf("0x33 CC_LO:     %s\n", byte2char(read_register(CC_LO_BYTE)));
     /*
-    printf("0x50 ADCGAIN1:  %s\n", byte2char(readRegister(ADCGAIN1)));
-    printf("0x51 ADCOFFSET: %s\n", byte2char(readRegister(ADCOFFSET)));
-    printf("0x59 ADCGAIN2:  %s\n", byte2char(readRegister(ADCGAIN2)));
+    printf("0x50 ADCGAIN1:  %s\n", byte2char(read_register(ADCGAIN1)));
+    printf("0x51 ADCOFFSET: %s\n", byte2char(read_register(ADCOFFSET)));
+    printf("0x59 ADCGAIN2:  %s\n", byte2char(read_register(ADCGAIN2)));
     */
 }
 

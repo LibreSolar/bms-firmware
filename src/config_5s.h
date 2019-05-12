@@ -39,8 +39,8 @@
 #define PIN_LED_RED   PB_14
 #define PIN_LED_GREEN PB_15
 
-#define PIN_BQ_SCL    PB_10
-#define PIN_BQ_SDA    PB_11
+#define PIN_BMS_SCL    PB_10
+#define PIN_BMS_SDA    PB_11
 #define PIN_BQ_ALERT  PB_12
 #define PIN_PCHG_EN   PB_2
 #define PIN_SW_POWER  PA_8

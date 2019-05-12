@@ -24,72 +24,72 @@
 
 void BMS::update()
 {
-    updateCurrent();  // will only read new current value if alert was triggered
-    updateVoltages();
-    updateTemperatures();
-    updateBalancingSwitches();
+    update_current();  // will only read new current value if alert was triggered
+    update_voltages();
+    update_temperatures();
+    update_balancing_switches();
 }
 
 //----------------------------------------------------------------------------
 
-void BMS::setShuntResistorValue(float res_mOhm)
+void BMS::set_shunt_res(float res_mOhm)
 {
-    shuntResistorValue_mOhm = res_mOhm;
+    shunt_res_mOhm = res_mOhm;
 }
 
 //----------------------------------------------------------------------------
 
-void BMS::setThermistorBetaValue(int beta_K)
+void BMS::set_thermistor_beta(int beta_K)
 {
-    thermistorBetaValue = beta_K;
+    thermistor_beta = beta_K;
 }
 
 //----------------------------------------------------------------------------
 
-void BMS::setBatteryCapacity(long capacity_mAh)
+void BMS::set_battery_capacity(long capacity_mAh)
 {
-    nominalCapacity = capacity_mAh * 3600;
+    nominal_capacity = capacity_mAh * 3600;
 }
 
 //----------------------------------------------------------------------------
 
-void BMS::setOCV(int voltageVsSOC[NUM_OCV_POINTS])
+void BMS::set_ocv(int voltageVsSOC[NUM_OCV_POINTS])
 {
     OCV = voltageVsSOC;
 }
 
 //----------------------------------------------------------------------------
 
-float BMS::getSOC(void)
+float BMS::get_soc(void)
 {
-    return (double) coulombCounter / nominalCapacity * 100;
+    return (double) coulomb_counter / nominal_capacity * 100;
 }
 
 //----------------------------------------------------------------------------
 // SOC calculation based on average cell open circuit voltage
 
-void BMS::resetSOC(int percent)
+void BMS::reset_soc(int percent)
 {
     if (percent <= 100 && percent >= 0)
     {
-        coulombCounter = nominalCapacity * (percent / 100.0);
+        coulomb_counter = nominal_capacity * (percent / 100.0);
     }
     else  // reset based on OCV
     {
-        printf("NumCells: %d, voltage: %d V\n", getNumberOfConnectedCells(), getBatteryVoltage());
-        int voltage = getBatteryVoltage() / getNumberOfConnectedCells();
+        printf("NumCells: %d, voltage: %d V\n", get_connected_cells(), pack_voltage());
+        int voltage = pack_voltage() / get_connected_cells();
 
-        coulombCounter = 0;  // initialize with totally depleted battery (0% SOC)
+        coulomb_counter = 0;  // initialize with totally depleted battery (0% SOC)
 
         for (int i = 0; i < NUM_OCV_POINTS; i++)
         {
             if (OCV[i] <= voltage) {
                 if (i == 0) {
-                    coulombCounter = nominalCapacity;  // 100% full
+                    coulomb_counter = nominal_capacity;  // 100% full
                 }
                 else {
                     // interpolate between OCV[i] and OCV[i-1]
-                    coulombCounter = (double) nominalCapacity / (NUM_OCV_POINTS - 1.0) *
+                    coulomb_counter = (double) nominal_capacity / (NUM_OCV_POINTS - 1.0) *
                     (NUM_OCV_POINTS - 1.0 - i + ((float)voltage - OCV[i])/(OCV[i-1] - OCV[i]));
                 }
                 return;
@@ -101,63 +101,63 @@ void BMS::resetSOC(int percent)
 
 //----------------------------------------------------------------------------
 
-void BMS::setIdleCurrentThreshold(int current_mA)
+void BMS::set_idle_current_threshold(int current_mA)
 {
-    idleCurrentThreshold = current_mA;
+    idle_current_threshold = current_mA;
 }
 
 //----------------------------------------------------------------------------
 
-int BMS::getBatteryCurrent()
+int BMS::pack_current()
 {
-    return batCurrent;
+    return battery_current;
 }
 
 //----------------------------------------------------------------------------
 
-int BMS::getBatteryVoltage()
+int BMS::pack_voltage()
 {
-    return batVoltage;
+    return battery_voltage;
 }
 
 //----------------------------------------------------------------------------
 
-int BMS::getMaxCellVoltage()
+int BMS::cell_voltage_max()
 {
-    return cellVoltages[idCellMaxVoltage];
+    return cell_voltages[id_cell_voltage_max];
 }
 
 //----------------------------------------------------------------------------
 
-int BMS::getMinCellVoltage()
+int BMS::cell_voltage_min()
 {
-    return cellVoltages[idCellMinVoltage];
+    return cell_voltages[id_cell_voltage_min];
 }
 
 //----------------------------------------------------------------------------
 
-int BMS::getCellVoltage(int idCell)
+int BMS::cell_voltage(int idCell)
 {
-    return cellVoltages[idCell-1];
+    return cell_voltages[idCell-1];
 }
 
 //----------------------------------------------------------------------------
 
-int BMS::getNumberOfCells(void)
+int BMS::get_num_cells_max(void)
 {
-    return numberOfCells;
+    return num_cells_max;
 }
 
 //----------------------------------------------------------------------------
 
-int BMS::getNumberOfConnectedCells(void)
+int BMS::get_connected_cells(void)
 {
-    return connectedCells;
+    return connected_cells;
 }
 
 //----------------------------------------------------------------------------
 
-float BMS::getTemperatureDegC(int channel)
+float BMS::get_temp_degC(int channel)
 {
     if (channel >= 1 && channel <= 3) {
         return (float)temperatures[channel-1] / 10.0;
@@ -169,8 +169,8 @@ float BMS::getTemperatureDegC(int channel)
 
 //----------------------------------------------------------------------------
 
-float BMS::getTemperatureDegF(int channel)
+float BMS::get_temp_degF(int channel)
 {
-    return getTemperatureDegC(channel) * 1.8 + 32;
+    return get_temp_degC(channel) * 1.8 + 32;
 }
 

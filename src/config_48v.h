@@ -38,8 +38,8 @@
 #define PIN_LED_RED   PA_9     // changed in BMS-5s
 #define PIN_LED_GREEN PA_10    // changed in BMS-5s
 
-#define PIN_BQ_SCL    PB_13    // changed in BMS-5s
-#define PIN_BQ_SDA    PB_14    // changed in BMS-5s
+#define PIN_BMS_SCL    PB_13    // changed in BMS-5s
+#define PIN_BMS_SDA    PB_14    // changed in BMS-5s
 #define PIN_BQ_ALERT  PB_12
 #define PIN_PCHG_EN   PB_2
 #define PIN_SW_POWER  PA_8

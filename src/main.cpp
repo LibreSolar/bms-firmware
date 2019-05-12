@@ -28,7 +28,7 @@
 Serial serial(PIN_SWD_TX, PIN_SWD_RX, "serial");
 CAN can(PIN_CAN_RX, PIN_CAN_TX, 250000);  // 250 kHz
 
-I2C i2c_bq(PIN_BQ_SDA, PIN_BQ_SCL);
+I2C i2c_bq(PIN_BMS_SDA, PIN_BMS_SCL);
 BMS bms(i2c_bq, PIN_BQ_ALERT, BMS_BQ_TYPE);
 
 DigitalOut led_green(PIN_LED_GREEN);
@@ -115,7 +115,7 @@ int main()
 
             update_measurements();
 
-            //BMS.printRegisters();
+            //BMS.print_registers();
             output_oled();
             //output_doglcd();
 
@@ -131,7 +131,7 @@ void setup()
 {
     //serial.baud(9600);
     serial.baud(115200);
-    serial.printf("\nSerial interface started. Time: %d\n", time(NULL));
+    serial.printf("\nSerial interface started. Time: %d\n", (unsigned int)time(NULL));
     freopen("/serial", "w", stdout);    // retarget stdout to serial
 
     can.attach(&can_receive);
@@ -145,22 +145,22 @@ void setup()
     CAN1->MCR |= CAN_MCR_TXFP | CAN_MCR_NART;
 
     // ToDo: Ensure that these settings are set even in case of initial communication error
-    bms.setTemperatureLimits(-20, 45, 0, 45);
-    bms.setShuntResistorValue(SHUNT_RESISTOR);
-    bms.setShortCircuitProtection(35000, 200);  // delay in us
-    bms.setOvercurrentChargeProtection(25000, 200);  // delay in ms
-    bms.setOvercurrentDischargeProtection(20000, 320); // delay in ms
-    bms.setCellUndervoltageProtection(2800, 2); // delay in s
-    bms.setCellOvervoltageProtection(3650, 2);  // delay in s
+    bms.temperature_limits(-20, 45, 0, 45);
+    bms.set_shunt_res(SHUNT_RESISTOR);
+    bms.dis_sc_limit(35000, 200);  // delay in us
+    bms.chg_oc_limit(25000, 200);  // delay in ms
+    bms.dis_oc_limit(20000, 320); // delay in ms
+    bms.cell_uv_limit(2800, 2); // delay in s
+    bms.cell_ov_limit(3650, 2);  // delay in s
 
-    bms.setOCV(OCV);
-    bms.setBatteryCapacity(45000);  // mAh
+    bms.set_ocv(OCV);
+    bms.set_battery_capacity(45000);  // mAh
 
     bms.update();   // get voltage and temperature measurements before switching on
 
-    bms.setBalancingThresholds(10, 3200, 10);  // minIdleTime_min, minCellV_mV, maxVoltageDiff_mV
-    bms.setIdleCurrentThreshold(100);
-    bms.enableAutoBalancing();
+    bms.balancing_thresholds(10, 3200, 10);  // minIdleTime_min, minCellV_mV, maxVoltageDiff_mV
+    bms.set_idle_current_threshold(100);
+    bms.auto_balancing(true);
 
     // TODO: watch voltage rise before stopping pre-charge
     pchg_enable = 1;
@@ -168,9 +168,9 @@ void setup()
     pchg_enable = 0;
 
     bms.update();
-    bms.resetSOC();
-    bms.enableDischarging();
-    bms.enableCharging();
+    bms.reset_soc();
+    bms.dis_switch(true);
+    bms.chg_switch(true);
 
     update_measurements();
 }
@@ -202,13 +202,13 @@ void update_measurements(void)
     }
     load_voltage = (sum_adc_readings / ADC_AVG_SAMPLES) * 110 / 10 * vcc / 0xFFFF;
 
-    battery_voltage = bms.getBatteryVoltage();
-    battery_current = bms.getBatteryCurrent();
-    cell_voltages[0] = bms.getCellVoltage(1);
-    cell_voltages[1] = bms.getCellVoltage(2);
-    cell_voltages[2] = bms.getCellVoltage(3);
-    cell_voltages[3] = bms.getCellVoltage(4);
-    cell_voltages[4] = bms.getCellVoltage(5);
-    temperatures[0] = bms.getTemperatureDegC(1);
-    SOC = bms.getSOC();
+    battery_voltage = bms.pack_voltage();
+    battery_current = bms.pack_current();
+    cell_voltages[0] = bms.cell_voltage(1);
+    cell_voltages[1] = bms.cell_voltage(2);
+    cell_voltages[2] = bms.cell_voltage(3);
+    cell_voltages[3] = bms.cell_voltage(4);
+    cell_voltages[4] = bms.cell_voltage(5);
+    temperatures[0] = bms.get_temp_degC(1);
+    SOC = bms.get_soc();
 }

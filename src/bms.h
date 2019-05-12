@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef BQ769X0_H
-#define BQ769X0_H
+#ifndef BMS_H
+#define BMS_H
 
 #include "mbed.h"
 
@@ -29,68 +29,65 @@
 #define bq76940 3
 
 // output information to serial console for debugging
-#define BQ769X0_DEBUG 1
+#define BMS_DEBUG 1
 
 class BMS {
 
 public:
     // initialization, status update and shutdown
     BMS(I2C& bqI2C, PinName alertPin, int bqType = bq76930, int bqI2CAddress = 0x08, bool crc = true);
-    int checkStatus();  // returns 0 if everything is OK
+    int check_status();  // returns 0 if everything is OK
     void update(void);
     void boot(PinName bootPin);
     void shutdown(void);
 
-    // charging control
-    bool enableCharging(void);
-    void disableCharging(void);
-    bool enableDischarging(void);
-    void disableDischarging(void);
+    // charging/discharging MOSFET control
+    bool chg_switch(bool enable);
+    bool dis_switch(bool enable);
 
     // hardware settings
-    void setShuntResistorValue(float res_mOhm);
-    void setThermistorBetaValue(int beta_K);
+    void set_shunt_res(float res_mOhm);
+    void set_thermistor_beta(int beta_K);
 
-    void resetSOC(int percent = -1);    // 0-100 %, -1 for automatic reset based on OCV
-    void setBatteryCapacity(long capacity_mAh);
-    void setOCV(int voltageVsSOC[NUM_OCV_POINTS]);
+    void reset_soc(int percent = -1);    // 0-100 %, -1 for automatic reset based on OCV
+    void set_battery_capacity(long capacity_mAh);
+    void set_ocv(int voltageVsSOC[NUM_OCV_POINTS]);
 
-    int getNumberOfCells(void);
-    int getNumberOfConnectedCells(void);
+    int get_num_cells_max(void);
+    int get_connected_cells(void);
 
     // limit settings (for battery protection)
-    void setTemperatureLimits(int minDischarge_degC, int maxDischarge_degC, int minCharge_degC, int maxCharge_degC, int hysteresis_degC = 2);    // °C
-    long setShortCircuitProtection(long current_mA, int delay_us = 70);
-    long setOvercurrentChargeProtection(long current_mA, int delay_ms = 8);
-    long setOvercurrentDischargeProtection(long current_mA, int delay_ms = 8);
-    int setCellUndervoltageProtection(int voltage_mV, int delay_s = 1);
-    int setCellOvervoltageProtection(int voltage_mV, int delay_s = 1);
+    void temperature_limits(int min_dis_degC, int max_dis_degC, int min_chg_degC, int max_chg_degC, int hysteresis_degC = 2);    // °C
+    long dis_sc_limit(long current_mA, int delay_us = 70);
+    long chg_oc_limit(long current_mA, int delay_ms = 8);
+    long dis_oc_limit(long current_mA, int delay_ms = 8);
+    int cell_uv_limit(int voltage_mV, int delay_s = 1);
+    int cell_ov_limit(int voltage_mV, int delay_s = 1);
 
     // balancing settings
-    void setBalancingThresholds(int idleTime_min = 30, int absVoltage_mV = 3400, int voltageDifference_mV = 20);
-    void setIdleCurrentThreshold(int current_mA);
+    void balancing_thresholds(int idleTime_min = 30, int absVoltage_mV = 3400, int voltageDifference_mV = 20);
+    void set_idle_current_threshold(int current_mA);
 
     // automatic balancing when battery is within balancing thresholds
-    void enableAutoBalancing(void);
-    void disableAutoBalancing(void);
+    void auto_balancing(bool enable);
 
     // battery status
-    int  getBatteryCurrent(void);
-    int  getBatteryVoltage(void);
-    int  getCellVoltage(int idCell);    // from 1 to 15
-    int  getMinCellVoltage(void);
-    int  getMaxCellVoltage(void);
-    int  getAvgCellVoltage(void);
-    float getTemperatureDegC(int channel = 1);
-    float getTemperatureDegF(int channel = 1);
-    float getSOC(void);
-    int getBalancingStatus(void);
+    int  pack_current(void);
+    int  pack_voltage(void);
+    int  cell_voltage(int idCell);    // from 1 to 15
+    int  cell_voltage_min(void);
+    int  cell_voltage_max(void);
+    //int  cell_voltage_avg(void);
+    float get_temp_degC(int channel = 1);
+    float get_temp_degF(int channel = 1);
+    float get_soc(void);
+    int get_balancing_status(void);
 
     // interrupt handling (not to be called manually!)
-    void setAlertInterruptFlag(void);
+    void set_alert_interrupt_flag(void);
 
-    #if BQ769X0_DEBUG
-    void printRegisters(void);
+    #if BMS_DEBUG
+    void print_registers(void);
     #endif
 
 private:
@@ -102,76 +99,70 @@ private:
     InterruptIn _alertInterrupt;
 
     int I2CAddress;
-    int type;
-    bool crcEnabled;
+    int bq_type;
+    bool crc_enabled;
 
-    float shuntResistorValue_mOhm;
-    int thermistorBetaValue;  // typical value for Semitec 103AT-5 thermistor: 3435
+    float shunt_res_mOhm;
+    int thermistor_beta;  // typical value for Semitec 103AT-5 thermistor: 3435
     int *OCV;  // Open Circuit Voltage of cell for SOC 100%, 95%, ..., 5%, 0%
 
-    // indicates if a new current reading or an error is available from BMS IC
-    bool alertInterruptFlag;
-
-    int numberOfCells;                      // number of cells allowed by IC
-    int connectedCells;                     // actual number of cells connected
-    int cellVoltages[MAX_NUMBER_OF_CELLS];          // mV
-    int idCellMaxVoltage;
-    int idCellMinVoltage;
-    long batVoltage;                                // mV
-    long batCurrent;                                // mA
+    int num_cells_max;                      // number of cells allowed by IC
+    int connected_cells;                     // actual number of cells connected
+    int cell_voltages[MAX_NUMBER_OF_CELLS];          // mV
+    int id_cell_voltage_max;
+    int id_cell_voltage_min;
+    long battery_voltage;                                // mV
+    long battery_current;                                // mA
     int temperatures[MAX_NUMBER_OF_THERMISTORS];    // °C/10
 
-    long nominalCapacity;    // mAs, nominal capacity of battery pack, max. 1193 Ah possible
-    long coulombCounter;     // mAs (= milli Coulombs) for current integration
+    long nominal_capacity;    // mAs, nominal capacity of battery pack, max. 1193 Ah possible
+    long coulomb_counter;     // mAs (= milli Coulombs) for current integration
 
     // Current limits (mA)
-    long maxChargeCurrent;
-    long maxDischargeCurrent;
-    int idleCurrentThreshold; // mA
+    //long charge_current_limit_max;
+    //long discharge_current_limit_max;
+    int idle_current_threshold; // mA
 
-    // Temperature limits (°C/10)
-    int minCellTempCharge;
-    int minCellTempDischarge;
-    int maxCellTempCharge;
-    int maxCellTempDischarge;
-    int cellTempHysteresis;
+    // temperature limits (°C/10)
+    int chg_temp_limit_min;
+    int dis_temp_limit_min;
+    int chg_temp_limit_max;
+    int dis_temp_limit_max;
+    int temp_limit_hysteresis;
 
-    // Cell voltage limits (mV)
-    int maxCellVoltage;
-    int minCellVoltage;
-    int balancingMinCellVoltage_mV;
-    int balancingMaxVoltageDifference_mV;
+    // cell voltage limits (mV)
+    int cell_voltage_limit_max;
+    int cell_voltage_limit_min;
+    int balancing_cell_voltage_min;     // mV
+    int balancing_voltage_diff_target;   // mV
 
-    int adcGain;    // uV/LSB
-    int adcOffset;  // mV
+    int error_status;
+    bool auto_balancing_enabled;
+    unsigned int balancing_status;     // holds on/off status of balancing switches
+    int balancing_min_idle_s;
+    unsigned long idle_timestamp;
 
-    int errorStatus;
-    bool autoBalancingEnabled;
-    unsigned int balancingStatus;     // holds on/off status of balancing switches
-    int balancingMinIdleTime_s;
-    unsigned long idleTimestamp;
+    unsigned int sec_since_error_counter;
+    unsigned long interrupt_timestamp;
 
-    unsigned int secSinceErrorCounter;
-    unsigned long interruptTimestamp;
-
-    bool cellTempChargeErrorFlag;
-    bool cellTempDischargeErrorFlag;
+    bool chg_temp_error_flag;
+    bool dis_temp_error_flag;
 
     // Methods
 
-    bool determineAddressAndCrc(void);
+    bool determine_address_and_crc(void);
 
-    void updateVoltages(void);
-    void updateCurrent(void);
-    void updateTemperatures(void);
+    void update_voltages(void);
+    void update_current(void);
+    void update_temperatures(void);
 
-    void updateBalancingSwitches(void);
+    void update_balancing_switches(void);
 
-    void checkCellTemp(void);
+    void check_cell_temp(void);
 
-    int  readRegister(int address);
-    void writeRegister(int address, int data);
+    int  read_register(int address);
+    void write_register(int address, int data);
 
 };
 
-#endif // BQ769X0_H
+#endif // BMS_H
