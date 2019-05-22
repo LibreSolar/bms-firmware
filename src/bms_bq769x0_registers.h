@@ -17,7 +17,7 @@
     <http://www.gnu.org/licenses/>.
 */
 
-#include "mbed.h"
+#include <stdint.h>
 
 // register map
 #define SYS_STAT        0x00
@@ -96,112 +96,101 @@
 #define STAT_FLAGS              (0x3F)
 
 // maps for settings in protection registers
-
 const int SCD_delay_setting [4] =
-  { 70, 100, 200, 400 }; // us
+    { 70, 100, 200, 400 }; // us
 const int SCD_threshold_setting [8] =
-  { 44, 67, 89, 111, 133, 155, 178, 200 }; // mV
+    { 44, 67, 89, 111, 133, 155, 178, 200 }; // mV
 
 const int OCD_delay_setting [8] =
-  { 8, 20, 40, 80, 160, 320, 640, 1280 }; // ms
+    { 8, 20, 40, 80, 160, 320, 640, 1280 }; // ms
 const int OCD_threshold_setting [16] =
-  { 17, 22, 28, 33, 39, 44, 50, 56, 61, 67, 72, 78, 83, 89, 94, 100 };  // mV
+    { 17, 22, 28, 33, 39, 44, 50, 56, 61, 67, 72, 78, 83, 89, 94, 100 };  // mV
 
 const int UV_delay_setting [4] = { 1, 4, 8, 16 };  // s
 const int OV_delay_setting [4] = { 1, 2, 4, 8 };   // s
 
 typedef union regSYS_STAT {
-  struct
-  {
-    uint8_t OCD            :1;
-    uint8_t SCD            :1;
-    uint8_t OV             :1;
-    uint8_t UV             :1;
-    uint8_t OVRD_ALERT     :1;
-    uint8_t DEVICE_XREADY  :1;
-    uint8_t WAKE           :1;
-    uint8_t CC_READY       :1;
-  } bits;
-  uint8_t regByte;
+    struct {
+        uint8_t OCD            :1;
+        uint8_t SCD            :1;
+        uint8_t OV             :1;
+        uint8_t UV             :1;
+        uint8_t OVRD_ALERT     :1;
+        uint8_t DEVICE_XREADY  :1;
+        uint8_t WAKE           :1;
+        uint8_t CC_READY       :1;
+    } bits;
+    uint8_t regByte;
 } regSYS_STAT_t;
 
 typedef union regSYS_CTRL1 {
-  struct
-  {
-    uint8_t SHUT_B        :1;
-    uint8_t SHUT_A        :1;
-    uint8_t RSVD1         :1;
-    uint8_t TEMP_SEL      :1;
-    uint8_t ADC_EN        :1;
-    uint8_t RSVD2         :2;
-    uint8_t LOAD_PRESENT  :1;
-  } bits;
-  uint8_t regByte;
+    struct {
+        uint8_t SHUT_B        :1;
+        uint8_t SHUT_A        :1;
+        uint8_t RSVD1         :1;
+        uint8_t TEMP_SEL      :1;
+        uint8_t ADC_EN        :1;
+        uint8_t RSVD2         :2;
+        uint8_t LOAD_PRESENT  :1;
+    } bits;
+    uint8_t regByte;
 } regSYS_CTRL1_t;
 
 typedef union regSYS_CTRL2 {
-  struct
-  {
-    uint8_t CHG_ON      :1;
-    uint8_t DSG_ON      :1;
-    uint8_t WAKE_T      :2;
-    uint8_t WAKE_EN     :1;
-    uint8_t CC_ONESHOT  :1;
-    uint8_t CC_EN       :1;
-    uint8_t DELAY_DIS   :1;
-  } bits;
-  uint8_t regByte;
+    struct {
+        uint8_t CHG_ON      :1;
+        uint8_t DSG_ON      :1;
+        uint8_t WAKE_T      :2;
+        uint8_t WAKE_EN     :1;
+        uint8_t CC_ONESHOT  :1;
+        uint8_t CC_EN       :1;
+        uint8_t DELAY_DIS   :1;
+    } bits;
+    uint8_t regByte;
 } regSYS_CTRL2_t;
 
 typedef union regPROTECT1 {
-  struct
-  {
-      uint8_t SCD_THRESH      :3;
-      uint8_t SCD_DELAY       :2;
-      uint8_t RSVD            :2;
-      uint8_t RSNS            :1;
-  } bits;
-  uint8_t regByte;
+    struct {
+        uint8_t SCD_THRESH      :3;
+        uint8_t SCD_DELAY       :2;
+        uint8_t RSVD            :2;
+        uint8_t RSNS            :1;
+    } bits;
+    uint8_t regByte;
 } regPROTECT1_t;
 
 typedef union regPROTECT2 {
-  struct
-  {
-    uint8_t OCD_THRESH      :4;
-    uint8_t OCD_DELAY       :3;
-    uint8_t RSVD            :1;
-  } bits;
-  uint8_t regByte;
+    struct {
+        uint8_t OCD_THRESH      :4;
+        uint8_t OCD_DELAY       :3;
+        uint8_t RSVD            :1;
+    } bits;
+    uint8_t regByte;
 } regPROTECT2_t;
 
 typedef union regPROTECT3 {
-  struct
-  {
-    uint8_t RSVD            :4;
-    uint8_t OV_DELAY        :2;
-    uint8_t UV_DELAY        :2;
-  } bits;
-  uint8_t regByte;
+    struct {
+        uint8_t RSVD            :4;
+        uint8_t OV_DELAY        :2;
+        uint8_t UV_DELAY        :2;
+    } bits;
+    uint8_t regByte;
 } regPROTECT3_t;
 
-typedef union regCELLBAL
-{
-  struct
-  {
-      uint8_t RSVD        :3;
-      uint8_t CB5         :1;
-      uint8_t CB4         :1;
-      uint8_t CB3         :1;
-      uint8_t CB2         :1;
-      uint8_t CB1         :1;
-  } bits;
-  uint8_t regByte;
+typedef union regCELLBAL {
+    struct {
+        uint8_t RSVD        :3;
+        uint8_t CB5         :1;
+        uint8_t CB4         :1;
+        uint8_t CB3         :1;
+        uint8_t CB2         :1;
+        uint8_t CB1         :1;
+    } bits;
+    uint8_t regByte;
 } regCELLBAL_t;
 
-typedef union regVCELL
-{
-    struct
-    {
+typedef union regVCELL {
+    struct {
         uint8_t VC_HI;
         uint8_t VC_LO;
     } bytes;

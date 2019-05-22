@@ -16,6 +16,7 @@
 
 #include "mbed.h"
 #include "config.h"     // select hardware version
+#include "pcb.h"
 #include "output.h"
 #include "output_can.h"
 #include "data_objects.h"
@@ -28,8 +29,7 @@
 Serial serial(PIN_SWD_TX, PIN_SWD_RX, "serial");
 CAN can(PIN_CAN_RX, PIN_CAN_TX, 250000);  // 250 kHz
 
-I2C i2c_bq(PIN_BMS_SDA, PIN_BMS_SCL);
-BMS bms(i2c_bq, PIN_BQ_ALERT, BMS_BQ_TYPE);
+BMS bms;
 
 DigitalOut led_green(PIN_LED_GREEN);
 DigitalOut led_red(PIN_LED_RED);
@@ -54,7 +54,7 @@ float SOC;
 int balancingStatus = 0;
 bool blinkOn = false;
 
-int OCV[NUM_OCV_POINTS] = { // 100, 95, ..., 0 %
+int OCV[] = { // 100, 95, ..., 0 %
   3392, 3314, 3309, 3308, 3304, 3296, 3283, 3275, 3271, 3268, 3265,
   3264, 3262, 3252, 3240, 3226, 3213, 3190, 3177, 3132, 2833
 };
@@ -153,7 +153,7 @@ void setup()
     bms.cell_uv_limit(2800, 2); // delay in s
     bms.cell_ov_limit(3650, 2);  // delay in s
 
-    bms.set_ocv(OCV);
+    bms.set_ocv(OCV, sizeof(OCV)/sizeof(int));
     bms.set_battery_capacity(45000);  // mAh
 
     bms.update();   // get voltage and temperature measurements before switching on

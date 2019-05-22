@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-#include <math.h>     // log for thermistor calculation
+#include "config.h"
+#include "pcb.h"
+
+#if defined(BMS_BQ76920) || defined(BMS_BQ76930) || defined(BMS_BQ76940)
 
 #include "bms.h"
 #include "bms_bq769x0_registers.h"
+
+#include <math.h>     // log for thermistor calculation
 #include "mbed.h"
 
 // static (private) variables
@@ -28,6 +33,15 @@ static int adc_offset;  // factory-calibrated, read out from chip (mV)
 
 // indicates if a new current reading or an error is available from BMS IC
 static bool alert_interrupt_flag;
+
+static I2C bq_i2c(PIN_BMS_SDA, PIN_BMS_SCL);
+static Timer _timer;
+static InterruptIn _alertInterrupt(PIN_BQ_ALERT);
+
+
+static int I2CAddress;
+//static int bq_type;
+static bool crc_enabled;
 
 //----------------------------------------------------------------------------
 
@@ -69,8 +83,7 @@ uint8_t _crc8_ccitt_update (uint8_t inCrc, uint8_t inData)
 
 //----------------------------------------------------------------------------
 
-BMS::BMS(I2C& bqI2C, PinName alertPin, int bqType, int bqI2CAddress, bool crc):
-    _i2c(bqI2C), _alertInterrupt(alertPin)
+BMS::BMS()
 {
     _timer.start();
     _alertInterrupt.rise(callback(this, &BMS::set_alert_interrupt_flag));
@@ -84,7 +97,8 @@ BMS::BMS(I2C& bqI2C, PinName alertPin, int bqType, int bqI2CAddress, bool crc):
 
     alert_interrupt_flag = true;   // init with true to check and clear errors at start-up
 
-    bq_type = bqType;
+/*
+    bq_type = BMS_BQ_TYPE;
     if (bq_type == bq76920) {
         num_cells_max = 5;
     } else if (bq_type == bq76930) {
@@ -92,14 +106,13 @@ BMS::BMS(I2C& bqI2C, PinName alertPin, int bqType, int bqI2CAddress, bool crc):
     } else {
         num_cells_max = 15;
     }
+*/
+    num_cells_max = NUM_CELLS_MAX;
 
     // initialize variables
     for (int i = 0; i < num_cells_max - 1; i++) {
         cell_voltages[i] = 0;
     }
-
-    //crc_enabled = crc;
-    //I2CAddress = bqI2CAddress;
 
     if (determine_address_and_crc())
     {
@@ -157,8 +170,8 @@ bool BMS::determine_address_and_crc(void)
 }
 
 //----------------------------------------------------------------------------
-// Boot IC by pulling the boot pin TS1 high for some ms
-
+// Boot IC by pulling the boot pin TS1 high for some milliseconds
+/*
 void BMS::boot(PinName bootPin)
 {
     DigitalInOut boot(bootPin);
@@ -168,12 +181,9 @@ void BMS::boot(PinName bootPin)
     boot.input();         // don't disturb temperature measurement
     wait_ms(10);  // wait for device to boot up completely (datasheet: max. 10 ms)
 }
-
+*/
 
 //----------------------------------------------------------------------------
-// Fast function to check whether BMS has an error
-// (returns 0 if everything is OK)
-
 int BMS::check_status()
 {
     //  printf("error_status: ");
@@ -280,8 +290,6 @@ int BMS::check_status()
 }
 
 //----------------------------------------------------------------------------
-// checks if temperatures are within the limits, otherwise disables CHG/DSG FET
-
 void BMS::check_cell_temp()
 {
     int numberOfThermistors = num_cells_max/5;
@@ -450,8 +458,6 @@ void BMS::balancing_thresholds(int idleTime_min, int absVoltage_mV, int voltageD
 }
 
 //----------------------------------------------------------------------------
-// sets balancing registers if balancing is allowed
-// (sufficient idle time + voltage)
 
 void BMS::update_balancing_switches(void)
 {
@@ -708,7 +714,7 @@ void BMS::update_temperatures()
     tmp = 1.0/(1.0/(273.15+25) + 1.0/thermistor_beta*log(rts/10000.0)); // K
     temperatures[0] = (tmp - 273.15) * 10.0;
 
-    if (bq_type == bq76930 || bq_type == bq76940) {
+    if (NUM_THERMISTORS_MAX >= 2) {     // bq76930 or bq76940
         adcVal = (read_register(TS2_HI_BYTE) & 0b00111111) << 8 | read_register(TS2_LO_BYTE);
         vtsx = adcVal * 0.382; // mV
         rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
@@ -716,7 +722,7 @@ void BMS::update_temperatures()
         temperatures[1] = (tmp - 273.15) * 10.0;
     }
 
-    if (bq_type == bq76940) {
+    if (NUM_THERMISTORS_MAX == 3) {     // bq76940
         adcVal = (read_register(TS3_HI_BYTE) & 0b00111111) << 8 | read_register(TS3_LO_BYTE);
         vtsx = adcVal * 0.382; // mV
         rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
@@ -763,7 +769,6 @@ void BMS::update_current()
 }
 
 //----------------------------------------------------------------------------
-// reads all cell voltages to array cell_voltages[NUM_CELLS] and updates battery_voltage
 
 void BMS::update_voltages()
 {
@@ -775,14 +780,14 @@ void BMS::update_voltages()
 
     // read cell voltages
     buf[0] = (char) VC1_HI_BYTE;
-    _i2c.write(I2CAddress << 1, buf, 1);;
+    bq_i2c.write(I2CAddress << 1, buf, 1);;
 
     id_cell_voltage_max = 0;
     id_cell_voltage_min = 0;
     for (int i = 0; i < num_cells_max; i++)
     {
         if (crc_enabled == true) {
-            _i2c.read(I2CAddress << 1, buf, 4);
+            bq_i2c.read(I2CAddress << 1, buf, 4);
             adcVal = (buf[0] & 0b00111111) << 8 | buf[2];
 
             // CRC of first bytes includes slave address (including R/W bit) and data
@@ -795,7 +800,7 @@ void BMS::update_voltages()
             if (crc != buf[3]) return; // don't save corrupted value
         }
         else {
-            _i2c.read(I2CAddress << 1, buf, 2);
+            bq_i2c.read(I2CAddress << 1, buf, 2);
             adcVal = (buf[0] & 0b00111111) << 8 | buf[1];
         }
 
@@ -835,10 +840,10 @@ void BMS::write_register(int address, int data)
         crc = _crc8_ccitt_update(crc, buf[0]);
         crc = _crc8_ccitt_update(crc, buf[1]);
         buf[2] = crc;
-        _i2c.write(I2CAddress << 1, buf, 3);
+        bq_i2c.write(I2CAddress << 1, buf, 3);
     }
     else {
-        _i2c.write(I2CAddress << 1, buf, 2);
+        bq_i2c.write(I2CAddress << 1, buf, 2);
     }
 }
 
@@ -854,11 +859,11 @@ int BMS::read_register(int address)
     #endif
 
     buf[0] = (char)address;
-    _i2c.write(I2CAddress << 1, buf, 1);;
+    bq_i2c.write(I2CAddress << 1, buf, 1);;
 
     if (crc_enabled == true) {
         do {
-            _i2c.read(I2CAddress << 1, buf, 2);
+            bq_i2c.read(I2CAddress << 1, buf, 2);
             // CRC is calculated over the slave address (including R/W bit) and data.
             crc = _crc8_ccitt_update(crc, (I2CAddress << 1) | 1);
             crc = _crc8_ccitt_update(crc, buf[0]);
@@ -866,7 +871,7 @@ int BMS::read_register(int address)
         return buf[0];
     }
     else {
-        _i2c.read(I2CAddress << 1, buf, 1);
+        bq_i2c.read(I2CAddress << 1, buf, 1);
         return buf[0];
     }
 }
@@ -908,3 +913,5 @@ void BMS::print_registers()
 }
 
 #endif
+
+#endif // defined BQ769x0

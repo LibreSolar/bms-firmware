@@ -17,16 +17,10 @@
 #ifndef BMS_H
 #define BMS_H
 
-#include "mbed.h"
+#include "pcb.h"
 
-#define MAX_NUMBER_OF_CELLS 15
-#define MAX_NUMBER_OF_THERMISTORS 3
-#define NUM_OCV_POINTS 21
-
-// IC type/size
-#define bq76920 1
-#define bq76930 2
-#define bq76940 3
+#include <stdint.h>
+#include <stddef.h>
 
 // output information to serial console for debugging
 #define BMS_DEBUG 1
@@ -34,24 +28,45 @@
 class BMS {
 
 public:
-    // initialization, status update and shutdown
-    BMS(I2C& bqI2C, PinName alertPin, int bqType = bq76930, int bqI2CAddress = 0x08, bool crc = true);
-    int check_status();  // returns 0 if everything is OK
+    /** Initialization of BMS
+     */
+    BMS();
+
+    /** Fast function to check if BMS has an error
+     *
+     * @returns 0 if everything is OK
+     */
+    int check_status();
+
+    /** Update and check important measurements
+     *
+     * Should be called at least once every 250 ms to get correct coulomb counting
+     */
     void update(void);
-    void boot(PinName bootPin);
+
+    /** Shut down BMS IC and entire PCB power supply
+     */
     void shutdown(void);
 
-    // charging/discharging MOSFET control
+    /** Enable/disable charge MOSFET
+     */
     bool chg_switch(bool enable);
+
+    /** Enable/disable discharge MOSFET
+     */
     bool dis_switch(bool enable);
 
     // hardware settings
     void set_shunt_res(float res_mOhm);
     void set_thermistor_beta(int beta_K);
 
-    void reset_soc(int percent = -1);    // 0-100 %, -1 for automatic reset based on OCV
+    /** SOC calculation based on average cell open circuit voltage
+     *
+     * @param percent 0-100 %, -1 for automatic reset based on OCV
+     */
+    void reset_soc(int percent = -1);
     void set_battery_capacity(long capacity_mAh);
-    void set_ocv(int voltageVsSOC[NUM_OCV_POINTS]);
+    void set_ocv(int *voltage_vs_soc, size_t num_points);
 
     int get_num_cells_max(void);
     int get_connected_cells(void);
@@ -94,26 +109,20 @@ private:
 
     // Variables
 
-    I2C& _i2c;
-    Timer _timer;
-    InterruptIn _alertInterrupt;
-
-    int I2CAddress;
-    int bq_type;
-    bool crc_enabled;
-
     float shunt_res_mOhm;
     int thermistor_beta;  // typical value for Semitec 103AT-5 thermistor: 3435
+
     int *OCV;  // Open Circuit Voltage of cell for SOC 100%, 95%, ..., 5%, 0%
+    size_t num_ocv_points;
 
     int num_cells_max;                      // number of cells allowed by IC
     int connected_cells;                     // actual number of cells connected
-    int cell_voltages[MAX_NUMBER_OF_CELLS];          // mV
+    int cell_voltages[NUM_CELLS_MAX];          // mV
     int id_cell_voltage_max;
     int id_cell_voltage_min;
     long battery_voltage;                                // mV
     long battery_current;                                // mA
-    int temperatures[MAX_NUMBER_OF_THERMISTORS];    // °C/10
+    int temperatures[NUM_THERMISTORS_MAX];    // °C/10
 
     long nominal_capacity;    // mAs, nominal capacity of battery pack, max. 1193 Ah possible
     long coulomb_counter;     // mAs (= milli Coulombs) for current integration
@@ -152,12 +161,19 @@ private:
 
     bool determine_address_and_crc(void);
 
+    /** Reads all cell voltages to array cell_voltages[NUM_CELLS] and updates battery_voltage
+     */
     void update_voltages(void);
+
     void update_current(void);
     void update_temperatures(void);
 
+    /** Sets balancing registers if balancing is allowed (i.e. sufficient idle time + voltage)
+     */
     void update_balancing_switches(void);
 
+    /** Checks if temperatures are within the limits, otherwise disables CHG/DSG FET
+     */
     void check_cell_temp(void);
 
     int  read_register(int address);

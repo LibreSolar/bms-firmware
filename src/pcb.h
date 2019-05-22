@@ -14,15 +14,31 @@
  * limitations under the License.
  */
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef PCB_H
+#define PCB_H
 
-#define ADC_AVG_SAMPLES 8       // number of ADC values to read for averaging
-
-// general configuration
+// board-specific confirugation
 //----------------------------------------------------------------------------
 
-#define CAN_SPEED 250
-#define CAN_NODE_ID 0
+// 5s BMS with bq76920
+// https://github.com/LibreSolar/BMS-5s
+#ifdef BMS_PCB_3_5S
+#define BMS_BQ76920
+#include "pcbs/pcb_3-5s.h"
+#endif
 
-#endif // CONFIG_H
+// 48V BMS with bq76930
+// https://github.com/LibreSolar/BMS48V
+#ifdef BMS_PCB_6_10S
+#define BMS_BQ76930
+#include "pcbs/pcb_6-15s.h"
+#endif
+
+// 48V BMS with bq76940
+// https://github.com/LibreSolar/BMS48V
+#ifdef BMS_PCB_9_15S
+#define BMS_BQ76940
+#include "pcbs/pcb_6-15s.h"
+#endif
+
+#endif // PCB_H

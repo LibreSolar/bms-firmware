@@ -15,6 +15,7 @@
  */
 
 #include "config.h"
+#include "pcb.h"
 
 #include "Adafruit_SSD1306.h" // Library for SSD1306 OLED-Display, 128x64
 #include "DogLCD.h"

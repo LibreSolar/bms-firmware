@@ -20,7 +20,6 @@
 #include "mbed.h"
 
 //----------------------------------------------------------------------------
-// should be called at least once every 250 ms to get correct coulomb counting
 
 void BMS::update()
 {
@@ -53,9 +52,10 @@ void BMS::set_battery_capacity(long capacity_mAh)
 
 //----------------------------------------------------------------------------
 
-void BMS::set_ocv(int voltageVsSOC[NUM_OCV_POINTS])
+void BMS::set_ocv(int *voltage_vs_soc, size_t num_points)
 {
-    OCV = voltageVsSOC;
+    OCV = voltage_vs_soc;
+    num_ocv_points = num_points;
 }
 
 //----------------------------------------------------------------------------
@@ -66,7 +66,6 @@ float BMS::get_soc(void)
 }
 
 //----------------------------------------------------------------------------
-// SOC calculation based on average cell open circuit voltage
 
 void BMS::reset_soc(int percent)
 {
@@ -81,7 +80,7 @@ void BMS::reset_soc(int percent)
 
         coulomb_counter = 0;  // initialize with totally depleted battery (0% SOC)
 
-        for (int i = 0; i < NUM_OCV_POINTS; i++)
+        for (unsigned int i = 0; i < num_ocv_points; i++)
         {
             if (OCV[i] <= voltage) {
                 if (i == 0) {
@@ -89,8 +88,8 @@ void BMS::reset_soc(int percent)
                 }
                 else {
                     // interpolate between OCV[i] and OCV[i-1]
-                    coulomb_counter = (double) nominal_capacity / (NUM_OCV_POINTS - 1.0) *
-                    (NUM_OCV_POINTS - 1.0 - i + ((float)voltage - OCV[i])/(OCV[i-1] - OCV[i]));
+                    coulomb_counter = (double) nominal_capacity / (num_ocv_points - 1.0) *
+                    (num_ocv_points - 1.0 - i + ((float)voltage - OCV[i])/(OCV[i-1] - OCV[i]));
                 }
                 return;
             }
