@@ -16,7 +16,6 @@
 
 #include "mbed.h"
 #include "config.h"
-#include "output.h"
 #include "output_can.h"
 
 #include "data_objects.h"

@@ -14,31 +14,32 @@
  * limitations under the License.
  */
 
-#ifndef PCB_H
-#define PCB_H
+#ifndef UEXT_H
+#define UEXT_H
 
-// board-specific confirugation
-//----------------------------------------------------------------------------
+/** @file
+ *
+ * @brief
+ * Communication interfaces connected to UEXT port
+ */
 
-// 5s BMS with bq76920
-// https://github.com/LibreSolar/BMS-5s
-#ifdef BMS_PCB_3_5S
-#define BMS_BQ76920
-#include "pcbs/pcb_3-5s.h"
-#endif
+/* UEXT interface initialization
+ *
+ * This function is called only once at startup.
+ */
+void uext_init();
 
-// 48V BMS with bq76930
-// https://github.com/LibreSolar/BMS48V
-#ifdef BMS_PCB_6_10S
-#define BMS_BQ76930
-#include "pcbs/pcb_6-15s.h"
-#endif
+/** UEXT interface process function
+ *
+ * This function is called in each main loop, as soon as all other tasks finished.
+ */
+void uext_process_asap();
 
-// 48V BMS with bq76940
-// https://github.com/LibreSolar/BMS48V
-#ifdef BMS_PCB_9_15S
-#define BMS_BQ76940
-#include "pcbs/pcb_6-15s.h"
-#endif
+/** UEXT interface process function
+ *
+ * This function is called every second, if no other task was blocking for a longer time.
+ * It should be used for state machines, etc.
+ */
+void uext_process_1s();
 
-#endif // PCB_H
+#endif /* UEXT_H */

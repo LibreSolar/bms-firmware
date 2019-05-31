@@ -19,6 +19,18 @@
 
 #define ADC_AVG_SAMPLES 8       // number of ADC values to read for averaging
 
+// UEXT interfaces
+//----------------------------------------------------------------------------
+
+/// OLED display at UEXT port
+#define OLED_ENABLED
+
+/// DOG LCD display at UEXT port
+//#define DOGLCD_ENABLED
+
+// Empty UEXT port
+//#define UEXT_DUMMY_ENABLED
+
 // general configuration
 //----------------------------------------------------------------------------
 

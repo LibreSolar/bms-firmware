@@ -1,5 +1,5 @@
 /* LibreSolar Battery Management System firmware
- * Copyright (c) 2016-2018 Martin Jäger (www.libre.solar)
+ * Copyright (c) 2016-2019 Martin Jäger (www.libre.solar)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,21 @@
  * limitations under the License.
  */
 
+#ifndef UNIT_TEST
+
 #include "config.h"
+
+#ifdef OLED_ENABLED     // otherwise don't compile code to reduce firmware size
+
 #include "pcb.h"
 
 #include "Adafruit_SSD1306.h" // Library for SSD1306 OLED-Display, 128x64
-#include "DogLCD.h"
-#include "font_6x8.h"
-#include "font_8x16.h"
 
 #include "bms.h"
 #include "data_objects.h"
 
-Serial serial_uext(PIN_UEXT_TX, PIN_UEXT_RX, "serial_uext");
-
 I2C i2c(PIN_UEXT_SDA, PIN_UEXT_SCL);
 Adafruit_SSD1306_I2c oled(i2c, PB_2, 0x78, 64, 128);
-
-SPI spi(PIN_UEXT_MOSI, NC, PIN_UEXT_SCK);
-DogLCD lcd(spi, PIN_UEXT_SSEL, PIN_UEXT_RX, PIN_UEXT_TX); //  spi, cs, a0, reset
 
 extern bool blinkOn;
 
@@ -45,62 +42,9 @@ extern int cell_voltages[15];      // max. number of cells
 extern float temperatures[3];
 extern float SOC;
 
-void output_serial()
-{
-    serial.printf("|");
-    for (int i = 1; i <= 5; i++) {
-        serial.printf("%i|", bms.cell_voltage(i));
-    }
-    serial.printf("%i|", bms.pack_voltage());
-    serial.printf("%i|", bms.pack_current());
-    serial.printf("%.2f|", bms.get_soc());
-    serial.printf("%.1f|", bms.get_temp_degC(1));
-    //serial.printf("%.1f|", bms.getTemperatureDegC(2));
-    //serial.printf("%.1f|", bms.getTemperatureDegC(3));
-    serial.printf("%i|", load_voltage);
-    serial.printf("%i|", bms.get_balancing_status());
+void uext_init() {;}    // not needed
 
-    serial.printf(" \n");
-}
-
-void init_doglcd()
-{
-    lcd.init();
-    lcd.view(VIEW_TOP);
-}
-
-void output_doglcd()    // EA DOG
-{
-    char str[20];
-
-    int balancingStatus = bms.get_balancing_status();
-
-    lcd.clear_screen();
-
-    sprintf(str, "%.2fV", bms.pack_voltage()/1000.0);
-    lcd.string(0,0,font_8x16, str);
-
-    sprintf(str, "%.2fA", bms.pack_current()/1000.0);
-    lcd.string(7*8,0,font_8x16, str);
-
-    sprintf(str, "T:%.1f", bms.get_temp_degC(1));
-    lcd.string(0,2,font_6x8, str);
-
-    sprintf(str, "SOC:%.2f", bms.get_soc());
-    lcd.string(6*7,2,font_6x8, str);
-
-    sprintf(str, "Load: %.2fV", load_voltage/1000.0);
-    lcd.string(0,3,font_6x8, str);
-
-    for (int i = 0; i < NUM_CELLS_MAX; i++) {
-        if (blinkOn || !(balancingStatus & (1 << i))) {
-            sprintf(str, "%d:%.3fV", i+1, bms.cell_voltage(i+1)/1000.0);
-            lcd.string((i % 2 == 0) ? 0 : 51, 4 + (i / 2), font_6x8, str);
-        }
-    }
-}
-
-void output_oled()    // OLED SSD1306
+void uext_process_1s()    // OLED SSD1306
 {
     int balancingStatus = bms.get_balancing_status();
 
@@ -129,3 +73,7 @@ void output_oled()    // OLED SSD1306
 
     oled.display();
 }
+
+#endif /* OLED_ENABLED */
+
+#endif /* UNIT_TEST */

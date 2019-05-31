@@ -17,8 +17,9 @@
 #include "mbed.h"
 #include "config.h"     // select hardware version
 #include "pcb.h"
-#include "output.h"
+#include "uext.h"
 #include "output_can.h"
+#include "output_serial.h"
 #include "data_objects.h"
 
 #include "bms.h"
@@ -104,20 +105,11 @@ int main()
 
             fflush(stdout);
 
-            /*
-            // test communication
-            char buf[10];
-            buf[0] = 0x0B;
-            i2c_bq.write(BMS_I2C_ADDRESS << 1, buf, 1);
-            i2c_bq.read(BMS_I2C_ADDRESS << 1, buf, 1);
-            serial.printf("buf: 0x%x\n", buf[0]);
-            */
-
             update_measurements();
 
+            uext_process_1s();
+
             //BMS.print_registers();
-            output_oled();
-            //output_doglcd();
 
             led_green = !led_green;
         }
@@ -137,8 +129,7 @@ void setup()
     can.attach(&can_receive);
     can.mode(CAN::Normal);
 
-    // not needed if doglcd not used. remove if other device connected to UEXT SPI port
-    init_doglcd();
+    uext_init();
 
     // TXFP: Transmit FIFO priority driven by request order (chronologically)
     // NART: No automatic retransmission
