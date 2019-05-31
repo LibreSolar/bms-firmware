@@ -25,6 +25,24 @@
 // output information to serial console for debugging
 #define BMS_DEBUG 1
 
+
+/** BMS error flags
+ */
+enum error_flag_t {
+    ERR_CELL_UNDERVOLTAGE,  ///< Cell undervoltage flag
+    ERR_CELL_OVERVOLTAGE,   ///< Cell undervoltage flag
+    ERR_SHORT_CIRCUIT,      ///< Pack short circuit (discharge direction)
+    ERR_DIS_OVERCURRENT,    ///< Pack overcurrent (discharge direction)
+    ERR_CHG_OVERCURRENT,    ///< Pack overcurrent (charge direction)
+    ERR_OPEN_WIRE,          ///< Cell open wire
+    ERR_DIS_UNDERTEMP,      ///< Temperature below discharge minimum limit
+    ERR_DIS_OVERTEMP,       ///< Temperature above discharge maximum limit
+    ERR_CHG_UNDERTEMP,      ///< Temperature below charge maximum limit
+    ERR_CHG_OVERTEMP,       ///< Temperature above charge maximum limit
+    ERR_INT_OVERTEMP,       ///< Internal temperature above limit (e.g. MOSFETs or IC)
+    ERR_CELL_FAILURE        ///< Cell failure (too high voltage difference)
+};
+
 class BMS {
 
 public:
@@ -68,7 +86,6 @@ public:
     void set_battery_capacity(long capacity_mAh);
     void set_ocv(int *voltage_vs_soc, size_t num_points);
 
-    int get_num_cells_max(void);
     int get_connected_cells(void);
 
     // limit settings (for battery protection)
@@ -98,34 +115,28 @@ public:
     float get_soc(void);
     int get_balancing_status(void);
 
-    // interrupt handling (not to be called manually!)
-    void set_alert_interrupt_flag(void);
-
     #if BMS_DEBUG
     void print_registers(void);
     #endif
 
 private:
 
-    // Variables
-
     float shunt_res_mOhm;
-    int thermistor_beta;  // typical value for Semitec 103AT-5 thermistor: 3435
+    int thermistor_beta;                    ///< typical value for Semitec 103AT-5 thermistor: 3435
 
-    int *OCV;  // Open Circuit Voltage of cell for SOC 100%, 95%, ..., 5%, 0%
-    size_t num_ocv_points;
+    int *OCV;                               ///< Open Circuit Voltage of cell for SOC 100%, 95%, ..., 5%, 0%
+    size_t num_ocv_points;                  ///< Number of point in OCV array
 
-    int num_cells_max;                      // number of cells allowed by IC
-    int connected_cells;                     // actual number of cells connected
-    int cell_voltages[NUM_CELLS_MAX];          // mV
-    int id_cell_voltage_max;
-    int id_cell_voltage_min;
-    long battery_voltage;                                // mV
-    long battery_current;                                // mA
-    int temperatures[NUM_THERMISTORS_MAX];    // °C/10
+    int connected_cells;                    ///< Actual number of cells connected (might be less than NUM_CELLS_MAX)
+    int cell_voltages[NUM_CELLS_MAX];       ///< Single cell voltages (mV)
+    int id_cell_voltage_max;                ///< ID of cell with maximum voltage
+    int id_cell_voltage_min;                ///< ID of cell with minimum voltage
+    long battery_voltage;                   ///< Battery pack voltage (mV)
+    long battery_current;                   ///< Battery pack current (mA)
+    int temperatures[NUM_THERMISTORS_MAX];  ///< Temperatures (°C/10)
 
-    long nominal_capacity;    // mAs, nominal capacity of battery pack, max. 1193 Ah possible
-    long coulomb_counter;     // mAs (= milli Coulombs) for current integration
+    long nominal_capacity;                  ///< Nominal capacity of battery pack (mA, max. 1193 Ah possible)
+    long coulomb_counter;                   ///< Current integration (mAs = milli Coulombs)
 
     // Current limits (mA)
     //long charge_current_limit_max;
@@ -152,20 +163,22 @@ private:
     unsigned long idle_timestamp;
 
     unsigned int sec_since_error_counter;
-    unsigned long interrupt_timestamp;
 
     bool chg_temp_error_flag;
     bool dis_temp_error_flag;
 
-    // Methods
-
-    bool determine_address_and_crc(void);
+    uint32_t error_flags;       ///< New variable to store all different errors
 
     /** Reads all cell voltages to array cell_voltages[NUM_CELLS] and updates battery_voltage
      */
     void update_voltages(void);
 
+    /** Reads pack current
+     */
     void update_current(void);
+
+    /** Reads all temperature sensors
+     */
     void update_temperatures(void);
 
     /** Sets balancing registers if balancing is allowed (i.e. sufficient idle time + voltage)
@@ -175,10 +188,6 @@ private:
     /** Checks if temperatures are within the limits, otherwise disables CHG/DSG FET
      */
     void check_cell_temp(void);
-
-    int  read_register(int address);
-    void write_register(int address, int data);
-
 };
 
 #endif // BMS_H

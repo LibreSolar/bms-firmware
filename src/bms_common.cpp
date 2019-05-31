@@ -142,13 +142,6 @@ int BMS::cell_voltage(int idCell)
 
 //----------------------------------------------------------------------------
 
-int BMS::get_num_cells_max(void)
-{
-    return num_cells_max;
-}
-
-//----------------------------------------------------------------------------
-
 int BMS::get_connected_cells(void)
 {
     return connected_cells;

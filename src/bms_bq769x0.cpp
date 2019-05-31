@@ -28,20 +28,16 @@
 // static (private) variables
 //----------------------------------------------------------------------------
 
+static I2C bq_i2c(PIN_BMS_SDA, PIN_BMS_SCL);
+static int i2c_address;
+static bool crc_enabled;
+
 static int adc_gain;    // factory-calibrated, read out from chip (uV/LSB)
 static int adc_offset;  // factory-calibrated, read out from chip (mV)
 
-// indicates if a new current reading or an error is available from BMS IC
-static bool alert_interrupt_flag;
-
-static I2C bq_i2c(PIN_BMS_SDA, PIN_BMS_SCL);
-static Timer _timer;
-static InterruptIn _alertInterrupt(PIN_BQ_ALERT);
-
-
-static int I2CAddress;
-//static int bq_type;
-static bool crc_enabled;
+static InterruptIn alert_interrupt(PIN_BQ_ALERT);
+static bool alert_interrupt_flag;   // indicates if a new current reading or an error is available from BMS IC
+static time_t alert_interrupt_timestamp;
 
 //----------------------------------------------------------------------------
 
@@ -82,11 +78,107 @@ uint8_t _crc8_ccitt_update (uint8_t inCrc, uint8_t inData)
 }
 
 //----------------------------------------------------------------------------
+// The bq769x0 drives the ALERT pin high if the SYS_STAT register contains
+// a new value (either new CC reading or an error)
+void bq_alert_isr()
+{
+    alert_interrupt_timestamp = time(NULL);
+    alert_interrupt_flag = true;
+}
+
+//----------------------------------------------------------------------------
+
+void write_register(int address, int data)
+{
+    uint8_t crc = 0;
+    char buf[3];
+
+    buf[0] = (char) address;
+    buf[1] = data;
+
+    if (crc_enabled == true) {
+        // CRC is calculated over the slave address (including R/W bit), register address, and data.
+        crc = _crc8_ccitt_update(crc, (i2c_address << 1) | 0);
+        crc = _crc8_ccitt_update(crc, buf[0]);
+        crc = _crc8_ccitt_update(crc, buf[1]);
+        buf[2] = crc;
+        bq_i2c.write(i2c_address << 1, buf, 3);
+    }
+    else {
+        bq_i2c.write(i2c_address << 1, buf, 2);
+    }
+}
+
+//----------------------------------------------------------------------------
+
+int read_register(int address)
+{
+    uint8_t crc = 0;
+    char buf[2];
+
+    #if BMS_DEBUG
+    //printf("Read register: 0x%x \n", address);
+    #endif
+
+    buf[0] = (char)address;
+    bq_i2c.write(i2c_address << 1, buf, 1);;
+
+    if (crc_enabled == true) {
+        do {
+            bq_i2c.read(i2c_address << 1, buf, 2);
+            // CRC is calculated over the slave address (including R/W bit) and data.
+            crc = _crc8_ccitt_update(crc, (i2c_address << 1) | 1);
+            crc = _crc8_ccitt_update(crc, buf[0]);
+        } while (crc != buf[1]);
+        return buf[0];
+    }
+    else {
+        bq_i2c.read(i2c_address << 1, buf, 1);
+        return buf[0];
+    }
+}
+
+//----------------------------------------------------------------------------
+// automatically find out address and CRC setting
+
+bool determine_address_and_crc(void)
+{
+    i2c_address = 0x08;
+    crc_enabled = true;
+    write_register(CC_CFG, 0x19);
+    if (read_register(CC_CFG) == 0x19) {
+        return true;
+    }
+
+    i2c_address = 0x18;
+    crc_enabled = true;
+    write_register(CC_CFG, 0x19);
+    if (read_register(CC_CFG) == 0x19) {
+        return true;
+    }
+
+    i2c_address = 0x08;
+    crc_enabled = false;
+    write_register(CC_CFG, 0x19);
+    if (read_register(CC_CFG) == 0x19) {
+        return true;
+    }
+
+    i2c_address = 0x18;
+    crc_enabled = false;
+    write_register(CC_CFG, 0x19);
+    if (read_register(CC_CFG) == 0x19) {
+        return true;
+    }
+
+    return false;
+}
+
+//----------------------------------------------------------------------------
 
 BMS::BMS()
 {
-    _timer.start();
-    _alertInterrupt.rise(callback(this, &BMS::set_alert_interrupt_flag));
+    alert_interrupt.rise(bq_alert_isr);
 
     // set some safe default values
     auto_balancing_enabled = false;
@@ -97,20 +189,8 @@ BMS::BMS()
 
     alert_interrupt_flag = true;   // init with true to check and clear errors at start-up
 
-/*
-    bq_type = BMS_BQ_TYPE;
-    if (bq_type == bq76920) {
-        num_cells_max = 5;
-    } else if (bq_type == bq76930) {
-        num_cells_max = 10;
-    } else {
-        num_cells_max = 15;
-    }
-*/
-    num_cells_max = NUM_CELLS_MAX;
-
     // initialize variables
-    for (int i = 0; i < num_cells_max - 1; i++) {
+    for (int i = 0; i < NUM_CELLS_MAX; i++) {
         cell_voltages[i] = 0;
     }
 
@@ -134,61 +214,11 @@ BMS::BMS()
 }
 
 //----------------------------------------------------------------------------
-// automatically find out address and CRC setting
-
-bool BMS::determine_address_and_crc(void)
-{
-    I2CAddress = 0x08;
-    crc_enabled = true;
-    write_register(CC_CFG, 0x19);
-    if (read_register(CC_CFG) == 0x19) {
-        return true;
-    }
-
-    I2CAddress = 0x18;
-    crc_enabled = true;
-    write_register(CC_CFG, 0x19);
-    if (read_register(CC_CFG) == 0x19) {
-        return true;
-    }
-
-    I2CAddress = 0x08;
-    crc_enabled = false;
-    write_register(CC_CFG, 0x19);
-    if (read_register(CC_CFG) == 0x19) {
-        return true;
-    }
-
-    I2CAddress = 0x18;
-    crc_enabled = false;
-    write_register(CC_CFG, 0x19);
-    if (read_register(CC_CFG) == 0x19) {
-        return true;
-    }
-
-    return false;
-}
-
-//----------------------------------------------------------------------------
-// Boot IC by pulling the boot pin TS1 high for some milliseconds
-/*
-void BMS::boot(PinName bootPin)
-{
-    DigitalInOut boot(bootPin);
-
-    boot = 1;
-    wait_ms(5);   // wait 5 ms for device to receive boot signal (datasheet: max. 2 ms)
-    boot.input();         // don't disturb temperature measurement
-    wait_ms(10);  // wait for device to boot up completely (datasheet: max. 10 ms)
-}
-*/
-
-//----------------------------------------------------------------------------
 int BMS::check_status()
 {
     //  printf("error_status: ");
     //  printf(error_status);
-    if (_alertInterrupt == 0 && error_status == 0) {
+    if (alert_interrupt == 0 && error_status == 0) {
         return 0;
     } else {
 
@@ -209,8 +239,9 @@ int BMS::check_status()
             }
             error_status = sys_stat.regByte;
 
-            unsigned int secSinceInterrupt = (_timer.read_ms() - interrupt_timestamp) / 1000;
+            unsigned int secSinceInterrupt = time(NULL) - alert_interrupt_timestamp;
 
+            // TODO!!
             // check for overrun of _timer.read_ms() or very slow running program
             if (abs((long)(secSinceInterrupt - sec_since_error_counter)) > 2) {
                 sec_since_error_counter = secSinceInterrupt;
@@ -292,7 +323,7 @@ int BMS::check_status()
 //----------------------------------------------------------------------------
 void BMS::check_cell_temp()
 {
-    int numberOfThermistors = num_cells_max/5;
+    int numberOfThermistors = NUM_CELLS_MAX/5;
     bool cellTempChargeError = 0;
     bool cellTempDischargeError = 0;
 
@@ -360,7 +391,7 @@ bool BMS::chg_switch(bool enable)
         printf("temperatures[0] = %d\n", temperatures[0]);
         #endif
 
-        int numberOfThermistors = num_cells_max/5;
+        int numberOfThermistors = NUM_CELLS_MAX/5;
         bool cellTempChargeError = 0;
 
         for (int thermistor = 0; thermistor < numberOfThermistors; thermistor++) {
@@ -407,7 +438,7 @@ bool BMS::dis_switch(bool enable)
     #endif
 
     if (enable) {
-        int numberOfThermistors = num_cells_max/5;
+        int numberOfThermistors = NUM_CELLS_MAX/5;
         bool cellTempDischargeError = 0;
 
         for (int thermistor = 0; thermistor < numberOfThermistors; thermistor++) {
@@ -461,13 +492,13 @@ void BMS::balancing_thresholds(int idleTime_min, int absVoltage_mV, int voltageD
 
 void BMS::update_balancing_switches(void)
 {
-    long idleSeconds = (_timer.read_ms() - idle_timestamp) / 1000;
-    int numberOfSections = num_cells_max/5;
+    long idleSeconds = time(NULL) - idle_timestamp;
+    int numberOfSections = NUM_CELLS_MAX/5;
 
     // check for _timer.read_ms() overflow
     if (idleSeconds < 0) {
         idle_timestamp = 0;
-        idleSeconds = _timer.read_ms() / 1000;
+        idleSeconds = time(NULL);
     }
 
     // check if balancing allowed
@@ -756,7 +787,7 @@ void BMS::update_current()
 
         // reset idle_timestamp
         if (abs(battery_current) > idle_current_threshold) {
-            idle_timestamp = _timer.read_ms();
+            idle_timestamp = time(NULL);
         }
 
         // no error occured which caused alert
@@ -780,18 +811,18 @@ void BMS::update_voltages()
 
     // read cell voltages
     buf[0] = (char) VC1_HI_BYTE;
-    bq_i2c.write(I2CAddress << 1, buf, 1);;
+    bq_i2c.write(i2c_address << 1, buf, 1);;
 
     id_cell_voltage_max = 0;
     id_cell_voltage_min = 0;
-    for (int i = 0; i < num_cells_max; i++)
+    for (int i = 0; i < NUM_CELLS_MAX; i++)
     {
         if (crc_enabled == true) {
-            bq_i2c.read(I2CAddress << 1, buf, 4);
+            bq_i2c.read(i2c_address << 1, buf, 4);
             adcVal = (buf[0] & 0b00111111) << 8 | buf[2];
 
             // CRC of first bytes includes slave address (including R/W bit) and data
-            crc = _crc8_ccitt_update(0, (I2CAddress << 1) | 1);
+            crc = _crc8_ccitt_update(0, (i2c_address << 1) | 1);
             crc = _crc8_ccitt_update(crc, buf[0]);
             if (crc != buf[1]) return; // don't save corrupted value
 
@@ -800,7 +831,7 @@ void BMS::update_voltages()
             if (crc != buf[3]) return; // don't save corrupted value
         }
         else {
-            bq_i2c.read(I2CAddress << 1, buf, 2);
+            bq_i2c.read(i2c_address << 1, buf, 2);
             adcVal = (buf[0] & 0b00111111) << 8 | buf[1];
         }
 
@@ -824,67 +855,6 @@ void BMS::update_voltages()
     battery_voltage = 4.0 * adc_gain * adcVal / 1000.0 + connected_cells * adc_offset;
 }
 
-//----------------------------------------------------------------------------
-
-void BMS::write_register(int address, int data)
-{
-    uint8_t crc = 0;
-    char buf[3];
-
-    buf[0] = (char) address;
-    buf[1] = data;
-
-    if (crc_enabled == true) {
-        // CRC is calculated over the slave address (including R/W bit), register address, and data.
-        crc = _crc8_ccitt_update(crc, (I2CAddress << 1) | 0);
-        crc = _crc8_ccitt_update(crc, buf[0]);
-        crc = _crc8_ccitt_update(crc, buf[1]);
-        buf[2] = crc;
-        bq_i2c.write(I2CAddress << 1, buf, 3);
-    }
-    else {
-        bq_i2c.write(I2CAddress << 1, buf, 2);
-    }
-}
-
-//----------------------------------------------------------------------------
-
-int BMS::read_register(int address)
-{
-    uint8_t crc = 0;
-    char buf[2];
-
-    #if BMS_DEBUG
-    //printf("Read register: 0x%x \n", address);
-    #endif
-
-    buf[0] = (char)address;
-    bq_i2c.write(I2CAddress << 1, buf, 1);;
-
-    if (crc_enabled == true) {
-        do {
-            bq_i2c.read(I2CAddress << 1, buf, 2);
-            // CRC is calculated over the slave address (including R/W bit) and data.
-            crc = _crc8_ccitt_update(crc, (I2CAddress << 1) | 1);
-            crc = _crc8_ccitt_update(crc, buf[0]);
-        } while (crc != buf[1]);
-        return buf[0];
-    }
-    else {
-        bq_i2c.read(I2CAddress << 1, buf, 1);
-        return buf[0];
-    }
-}
-
-//----------------------------------------------------------------------------
-// The bq769x0 drives the ALERT pin high if the SYS_STAT register contains
-// a new value (either new CC reading or an error)
-
-void BMS::set_alert_interrupt_flag()
-{
-    interrupt_timestamp = _timer.read_ms();
-    alert_interrupt_flag = true;
-}
 
 #if BMS_DEBUG
 

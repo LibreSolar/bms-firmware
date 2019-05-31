@@ -92,7 +92,7 @@ void output_doglcd()    // EA DOG
     sprintf(str, "Load: %.2fV", load_voltage/1000.0);
     lcd.string(0,3,font_6x8, str);
 
-    for (int i = 0; i < bms.get_num_cells_max(); i++) {
+    for (int i = 0; i < NUM_CELLS_MAX; i++) {
         if (blinkOn || !(balancingStatus & (1 << i))) {
             sprintf(str, "%d:%.3fV", i+1, bms.cell_voltage(i+1)/1000.0);
             lcd.string((i % 2 == 0) ? 0 : 51, 4 + (i / 2), font_6x8, str);
@@ -120,7 +120,7 @@ void output_oled()    // OLED SSD1306
     oled.setTextCursor(0, 16);
     oled.printf("Load: %.2fV", load_voltage/1000.0);
 
-    for (int i = 0; i < bms.get_num_cells_max(); i++) {
+    for (int i = 0; i < NUM_CELLS_MAX; i++) {
         if (blinkOn || !(balancingStatus & (1 << i))) {
             oled.setTextCursor((i % 2 == 0) ? 0 : 64, 24 + (i / 2) * 8);
             oled.printf("%d:%.3f V", i+1, bms.cell_voltage(i+1)/1000.0);
