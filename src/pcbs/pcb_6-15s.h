@@ -54,7 +54,7 @@
 
 #define PIN_V_REF    PA_0      // not existing in 48V board
 #define PIN_V_BAT    PA_4
-#define PIN_V_LOAD   PA_5
+#define PIN_V_EXT    PA_5
 #define PIN_TEMP_1   PA_6      // not existing in 48V board
 #define PIN_TEMP_2   PA_7      // not existing in 48V board
 

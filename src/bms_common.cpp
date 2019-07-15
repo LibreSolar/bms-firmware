@@ -15,81 +15,81 @@
  */
 
 #include <math.h>     // log for thermistor calculation
+#include <stdio.h>
 
 #include "bms.h"
-#include "mbed.h"
 
 //----------------------------------------------------------------------------
 
-void BMS::update()
+void bms_update(bms_t *bms)
 {
-    update_current();  // will only read new current value if alert was triggered
-    update_voltages();
-    update_temperatures();
-    update_balancing_switches();
+    bms_update_current(bms);  // will only read new current value if alert was triggered
+    bms_update_voltages(bms);
+    bms_update_temperatures(bms);
+    bms_update_balancing_switches(bms);
 }
 
 //----------------------------------------------------------------------------
 
-void BMS::set_shunt_res(float res_mOhm)
+void bms_set_shunt_res(bms_t *bms, float res_mOhm)
 {
-    shunt_res_mOhm = res_mOhm;
+    bms->shunt_res_mOhm = res_mOhm;
 }
 
 //----------------------------------------------------------------------------
 
-void BMS::set_thermistor_beta(int beta_K)
+void bms_set_thermistor_beta(bms_t *bms, int beta_K)
 {
-    thermistor_beta = beta_K;
+    bms->thermistor_beta = beta_K;
 }
 
 //----------------------------------------------------------------------------
 
-void BMS::set_battery_capacity(long capacity_mAh)
+void bms_set_battery_capacity(bms_t *bms, long capacity_mAh)
 {
-    nominal_capacity = capacity_mAh * 3600;
+    bms->nominal_capacity = capacity_mAh * 3600;
 }
 
 //----------------------------------------------------------------------------
 
-void BMS::set_ocv(int *voltage_vs_soc, size_t num_points)
+void bms_set_ocv(bms_t *bms, int *voltage_vs_soc, size_t num_points)
 {
-    OCV = voltage_vs_soc;
-    num_ocv_points = num_points;
+    bms->OCV = voltage_vs_soc;
+    bms->num_ocv_points = num_points;
 }
 
 //----------------------------------------------------------------------------
 
-float BMS::get_soc(void)
+float bms_get_soc(bms_t *bms)
 {
-    return (double) coulomb_counter / nominal_capacity * 100;
+    return (double) bms->coulomb_counter / bms->nominal_capacity * 100;
 }
 
 //----------------------------------------------------------------------------
 
-void BMS::reset_soc(int percent)
+void bms_reset_soc(bms_t *bms, int percent)
 {
     if (percent <= 100 && percent >= 0)
     {
-        coulomb_counter = nominal_capacity * (percent / 100.0);
+        bms->coulomb_counter = bms->nominal_capacity * (percent / 100.0);
     }
     else  // reset based on OCV
     {
-        printf("NumCells: %d, voltage: %d V\n", get_connected_cells(), pack_voltage());
-        int voltage = pack_voltage() / get_connected_cells();
+        printf("NumCells: %d, voltage: %d V\n", bms_get_connected_cells(bms), bms_pack_voltage(bms));
+        int voltage = bms_pack_voltage(bms) / bms_get_connected_cells(bms);
 
-        coulomb_counter = 0;  // initialize with totally depleted battery (0% SOC)
+        bms->coulomb_counter = 0;  // initialize with totally depleted battery (0% SOC)
 
-        for (unsigned int i = 0; i < num_ocv_points; i++)
+        for (unsigned int i = 0; i < bms->num_ocv_points; i++)
         {
-            if (OCV[i] <= voltage) {
+            if (bms->OCV[i] <= voltage) {
                 if (i == 0) {
-                    coulomb_counter = nominal_capacity;  // 100% full
+                    bms->coulomb_counter = bms->nominal_capacity;  // 100% full
                 }
                 else {
                     // interpolate between OCV[i] and OCV[i-1]
-                    coulomb_counter = (double) nominal_capacity / (num_ocv_points - 1.0) *
-                    (num_ocv_points - 1.0 - i + ((float)voltage - OCV[i])/(OCV[i-1] - OCV[i]));
+                    bms->coulomb_counter = (double) bms->nominal_capacity / (bms->num_ocv_points - 1.0) *
+                    (bms->num_ocv_points - 1.0 - i + ((float)voltage - bms->OCV[i])/(bms->OCV[i-1] - bms->OCV[i]));
                 }
                 return;
             }
@@ -100,59 +100,59 @@ void BMS::reset_soc(int percent)
 
 //----------------------------------------------------------------------------
 
-void BMS::set_idle_current_threshold(int current_mA)
+void bms_set_idle_current_threshold(bms_t *bms, int current_mA)
 {
-    idle_current_threshold = current_mA;
+    bms->idle_current_threshold = current_mA;
 }
 
 //----------------------------------------------------------------------------
 
-int BMS::pack_current()
+int bms_pack_current(bms_t *bms)
 {
-    return battery_current;
+    return bms->battery_current;
 }
 
 //----------------------------------------------------------------------------
 
-int BMS::pack_voltage()
+int bms_pack_voltage(bms_t *bms)
 {
-    return battery_voltage;
+    return bms->battery_voltage;
 }
 
 //----------------------------------------------------------------------------
 
-int BMS::cell_voltage_max()
+int bms_cell_voltage_max(bms_t *bms)
 {
-    return cell_voltages[id_cell_voltage_max];
+    return bms->cell_voltages[bms->id_cell_voltage_max];
 }
 
 //----------------------------------------------------------------------------
 
-int BMS::cell_voltage_min()
+int bms_cell_voltage_min(bms_t *bms)
 {
-    return cell_voltages[id_cell_voltage_min];
+    return bms->cell_voltages[bms->id_cell_voltage_min];
 }
 
 //----------------------------------------------------------------------------
 
-int BMS::cell_voltage(int idCell)
+int bms_cell_voltage(bms_t *bms, int idCell)
 {
-    return cell_voltages[idCell-1];
+    return bms->cell_voltages[idCell-1];
 }
 
 //----------------------------------------------------------------------------
 
-int BMS::get_connected_cells(void)
+int bms_get_connected_cells(bms_t *bms)
 {
-    return connected_cells;
+    return bms->connected_cells;
 }
 
 //----------------------------------------------------------------------------
 
-float BMS::get_temp_degC(int channel)
+float bms_get_temp_degC(bms_t *bms, int channel)
 {
     if (channel >= 1 && channel <= 3) {
-        return (float)temperatures[channel-1] / 10.0;
+        return (float)bms->temperatures[channel-1] / 10.0;
     }
     else {
         return -273.15;   // Error: Return absolute minimum temperature
@@ -161,8 +161,8 @@ float BMS::get_temp_degC(int channel)
 
 //----------------------------------------------------------------------------
 
-float BMS::get_temp_degF(int channel)
+float bms_get_temp_degF(bms_t *bms, int channel)
 {
-    return get_temp_degC(channel) * 1.8 + 32;
+    return bms_get_temp_degC(bms, channel) * 1.8 + 32;
 }
 

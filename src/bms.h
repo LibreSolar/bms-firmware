@@ -26,101 +26,8 @@
 #define BMS_DEBUG 1
 
 
-/** BMS error flags
- */
-enum error_flag_t {
-    ERR_CELL_UNDERVOLTAGE,  ///< Cell undervoltage flag
-    ERR_CELL_OVERVOLTAGE,   ///< Cell undervoltage flag
-    ERR_SHORT_CIRCUIT,      ///< Pack short circuit (discharge direction)
-    ERR_DIS_OVERCURRENT,    ///< Pack overcurrent (discharge direction)
-    ERR_CHG_OVERCURRENT,    ///< Pack overcurrent (charge direction)
-    ERR_OPEN_WIRE,          ///< Cell open wire
-    ERR_DIS_UNDERTEMP,      ///< Temperature below discharge minimum limit
-    ERR_DIS_OVERTEMP,       ///< Temperature above discharge maximum limit
-    ERR_CHG_UNDERTEMP,      ///< Temperature below charge maximum limit
-    ERR_CHG_OVERTEMP,       ///< Temperature above charge maximum limit
-    ERR_INT_OVERTEMP,       ///< Internal temperature above limit (e.g. MOSFETs or IC)
-    ERR_CELL_FAILURE        ///< Cell failure (too high voltage difference)
-};
-
-class BMS {
-
-public:
-    /** Initialization of BMS
-     */
-    BMS();
-
-    /** Fast function to check if BMS has an error
-     *
-     * @returns 0 if everything is OK
-     */
-    int check_status();
-
-    /** Update and check important measurements
-     *
-     * Should be called at least once every 250 ms to get correct coulomb counting
-     */
-    void update(void);
-
-    /** Shut down BMS IC and entire PCB power supply
-     */
-    void shutdown(void);
-
-    /** Enable/disable charge MOSFET
-     */
-    bool chg_switch(bool enable);
-
-    /** Enable/disable discharge MOSFET
-     */
-    bool dis_switch(bool enable);
-
-    // hardware settings
-    void set_shunt_res(float res_mOhm);
-    void set_thermistor_beta(int beta_K);
-
-    /** SOC calculation based on average cell open circuit voltage
-     *
-     * @param percent 0-100 %, -1 for automatic reset based on OCV
-     */
-    void reset_soc(int percent = -1);
-    void set_battery_capacity(long capacity_mAh);
-    void set_ocv(int *voltage_vs_soc, size_t num_points);
-
-    int get_connected_cells(void);
-
-    // limit settings (for battery protection)
-    void temperature_limits(int min_dis_degC, int max_dis_degC, int min_chg_degC, int max_chg_degC, int hysteresis_degC = 2);    // °C
-    long dis_sc_limit(long current_mA, int delay_us = 70);
-    long chg_oc_limit(long current_mA, int delay_ms = 8);
-    long dis_oc_limit(long current_mA, int delay_ms = 8);
-    int cell_uv_limit(int voltage_mV, int delay_s = 1);
-    int cell_ov_limit(int voltage_mV, int delay_s = 1);
-
-    // balancing settings
-    void balancing_thresholds(int idleTime_min = 30, int absVoltage_mV = 3400, int voltageDifference_mV = 20);
-    void set_idle_current_threshold(int current_mA);
-
-    // automatic balancing when battery is within balancing thresholds
-    void auto_balancing(bool enable);
-
-    // battery status
-    int  pack_current(void);
-    int  pack_voltage(void);
-    int  cell_voltage(int idCell);    // from 1 to 15
-    int  cell_voltage_min(void);
-    int  cell_voltage_max(void);
-    //int  cell_voltage_avg(void);
-    float get_temp_degC(int channel = 1);
-    float get_temp_degF(int channel = 1);
-    float get_soc(void);
-    int get_balancing_status(void);
-
-    #if BMS_DEBUG
-    void print_registers(void);
-    #endif
-
-private:
-
+typedef struct
+{
     float shunt_res_mOhm;
     int thermistor_beta;                    ///< typical value for Semitec 103AT-5 thermistor: 3435
 
@@ -168,26 +75,119 @@ private:
     bool dis_temp_error_flag;
 
     uint32_t error_flags;       ///< New variable to store all different errors
+} bms_t;
 
-    /** Reads all cell voltages to array cell_voltages[NUM_CELLS] and updates battery_voltage
-     */
-    void update_voltages(void);
-
-    /** Reads pack current
-     */
-    void update_current(void);
-
-    /** Reads all temperature sensors
-     */
-    void update_temperatures(void);
-
-    /** Sets balancing registers if balancing is allowed (i.e. sufficient idle time + voltage)
-     */
-    void update_balancing_switches(void);
-
-    /** Checks if temperatures are within the limits, otherwise disables CHG/DSG FET
-     */
-    void check_cell_temp(void);
+/** BMS error flags
+ */
+enum error_flag_t {
+    ERR_CELL_UNDERVOLTAGE,  ///< Cell undervoltage flag
+    ERR_CELL_OVERVOLTAGE,   ///< Cell undervoltage flag
+    ERR_SHORT_CIRCUIT,      ///< Pack short circuit (discharge direction)
+    ERR_DIS_OVERCURRENT,    ///< Pack overcurrent (discharge direction)
+    ERR_CHG_OVERCURRENT,    ///< Pack overcurrent (charge direction)
+    ERR_OPEN_WIRE,          ///< Cell open wire
+    ERR_DIS_UNDERTEMP,      ///< Temperature below discharge minimum limit
+    ERR_DIS_OVERTEMP,       ///< Temperature above discharge maximum limit
+    ERR_CHG_UNDERTEMP,      ///< Temperature below charge maximum limit
+    ERR_CHG_OVERTEMP,       ///< Temperature above charge maximum limit
+    ERR_INT_OVERTEMP,       ///< Internal temperature above limit (e.g. MOSFETs or IC)
+    ERR_CELL_FAILURE        ///< Cell failure (too high voltage difference)
 };
+
+/** Initialization of BMS
+ */
+void bms_init(bms_t *bms);
+
+/** Fast function to check if BMS has an error
+ *
+ * @returns 0 if everything is OK
+ */
+int bms_check_status(bms_t *bms);
+
+/** Update and check important measurements
+ *
+ * Should be called at least once every 250 ms to get correct coulomb counting
+ */
+void bms_update(bms_t *bms);
+
+/** Shut down BMS IC and entire PCB power supply
+ */
+void bms_shutdown(bms_t *bms);
+
+/** Enable/disable charge MOSFET
+ */
+bool bms_chg_switch(bms_t *bms, bool enable);
+
+/** Enable/disable discharge MOSFET
+ */
+bool bms_dis_switch(bms_t *bms, bool enable);
+
+// hardware settings
+void bms_set_shunt_res(bms_t *bms, float res_mOhm);
+void bms_set_thermistor_beta(bms_t *bms, int beta_K);
+
+/** SOC calculation based on average cell open circuit voltage
+ *
+ * @param percent 0-100 %, -1 for automatic reset based on OCV
+ */
+void bms_reset_soc(bms_t *bms, int percent = -1);
+void bms_set_battery_capacity(bms_t *bms, long capacity_mAh);
+void bms_set_ocv(bms_t *bms, int *voltage_vs_soc, size_t num_points);
+
+int bms_get_connected_cells(bms_t *bms);
+
+// limit settings (for battery protection)
+void bms_temperature_limits(bms_t *bms, int min_dis_degC, int max_dis_degC, int min_chg_degC, int max_chg_degC, int hysteresis_degC = 2);    // °C
+long bms_dis_sc_limit(bms_t *bms, long current_mA, int delay_us = 70);
+long bms_chg_oc_limit(bms_t *bms, long current_mA, int delay_ms = 8);
+long bms_dis_oc_limit(bms_t *bms, long current_mA, int delay_ms = 8);
+int bms_cell_uv_limit(bms_t *bms, int voltage_mV, int delay_s = 1);
+int bms_cell_ov_limit(bms_t *bms, int voltage_mV, int delay_s = 1);
+
+// balancing settings
+void bms_balancing_thresholds(bms_t *bms, int idleTime_min = 30, int absVoltage_mV = 3400, int voltageDifference_mV = 20);
+void bms_set_idle_current_threshold(bms_t *bms, int current_mA);
+
+// automatic balancing when battery is within balancing thresholds
+void bms_auto_balancing(bms_t *bms, bool enable);
+
+// battery status
+int  bms_pack_current(bms_t *bms);
+int  bms_pack_voltage(bms_t *bms);
+int  bms_cell_voltage(bms_t *bms, int idCell);    // from 1 to 15
+int  bms_cell_voltage_min(bms_t *bms);
+int  bms_cell_voltage_max(bms_t *bms);
+//int  cell_voltage_avg(void);
+float bms_get_temp_degC(bms_t *bms, int channel = 1);
+float bms_get_temp_degF(bms_t *bms, int channel = 1);
+float bms_get_soc(bms_t *bms);
+int bms_get_balancing_status(bms_t *bms);
+
+#if BMS_DEBUG
+void bms_print_registers();
+#endif
+
+//private:
+
+/** Reads all cell voltages to array cell_voltages[NUM_CELLS] and updates battery_voltage
+ */
+void bms_update_voltages(bms_t *bms);
+
+/** Reads pack current
+ */
+void bms_update_current(bms_t *bms);
+
+/** Reads all temperature sensors
+ */
+void bms_update_temperatures(bms_t *bms);
+
+/** Sets balancing registers if balancing is allowed (i.e. sufficient idle time + voltage)
+ */
+void bms_update_balancing_switches(bms_t *bms);
+
+/** Checks if temperatures are within the limits, otherwise disables CHG/DSG FET
+ */
+void bms_check_cell_temp(bms_t *bms);
+
 
 #endif // BMS_H

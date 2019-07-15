@@ -32,7 +32,7 @@ Adafruit_SSD1306_I2c oled(i2c, PB_2, 0x78, 64, 128);
 
 extern bool blinkOn;
 
-extern BMS bms;
+extern bms_t bms;
 extern Serial serial;
 
 extern int battery_voltage;
@@ -46,20 +46,20 @@ void uext_init() {;}    // not needed
 
 void uext_process_1s()    // OLED SSD1306
 {
-    int balancingStatus = bms.get_balancing_status();
+    int balancingStatus = bms_get_balancing_status(&bms);
 
     i2c.frequency(400000);
     oled.clearDisplay();
 
     oled.setTextCursor(0, 0);
-    oled.printf("%.2f V", bms.pack_voltage()/1000.0);
+    oled.printf("%.2f V", bms_pack_voltage(&bms)/1000.0);
     oled.setTextCursor(64, 0);
-    oled.printf("%.2f A", bms.pack_current()/1000.0);
+    oled.printf("%.2f A", bms_pack_current(&bms)/1000.0);
 
     oled.setTextCursor(0, 8);
-    oled.printf("T:%.1f C", bms.get_temp_degC(1));
+    oled.printf("T:%.1f C", bms_get_temp_degC(&bms, 1));
     oled.setTextCursor(64, 8);
-    oled.printf("SOC:%.2f", bms.get_soc());
+    oled.printf("SOC:%.2f", bms_get_soc(&bms));
 
     oled.setTextCursor(0, 16);
     oled.printf("Load: %.2fV", load_voltage/1000.0);
@@ -67,7 +67,7 @@ void uext_process_1s()    // OLED SSD1306
     for (int i = 0; i < NUM_CELLS_MAX; i++) {
         if (blinkOn || !(balancingStatus & (1 << i))) {
             oled.setTextCursor((i % 2 == 0) ? 0 : 64, 24 + (i / 2) * 8);
-            oled.printf("%d:%.3f V", i+1, bms.cell_voltage(i+1)/1000.0);
+            oled.printf("%d:%.3f V", i+1, bms_cell_voltage(&bms, i+1)/1000.0);
         }
     }
 

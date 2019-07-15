@@ -30,18 +30,22 @@
 Serial serial(PIN_SWD_TX, PIN_SWD_RX, "serial");
 CAN can(PIN_CAN_RX, PIN_CAN_TX, 250000);  // 250 kHz
 
-BMS bms;
+bms_t bms;
 
 DigitalOut led_green(PIN_LED_GREEN);
 DigitalOut led_red(PIN_LED_RED);
 DigitalOut can_disable(PIN_CAN_STB);
+#ifdef PIN_PCHG_EN
 DigitalOut pchg_enable(PIN_PCHG_EN);    // precharge capacitors on the bus
+#endif
 
 DigitalIn button(PIN_SW_POWER);
 Timer btnTimer;
 
+#ifdef PIN_V_BAT
 AnalogIn v_bat(PIN_V_BAT);
-AnalogIn v_load(PIN_V_LOAD);
+#endif
+AnalogIn v_ext(PIN_V_EXT);
 
 Ticker tick1, tick2, tick3;
 
@@ -86,7 +90,7 @@ int main()
         can_process_outbox();
         can_process_inbox();
 
-        bms.update();
+        bms_update(&bms);
 
         // called once per second
         if (time(NULL) - last_second >= 1) {
@@ -96,7 +100,7 @@ int main()
             if (button == 1) {
                 btnTimer.start();
                 if (btnTimer.read() > 3) {
-                    bms.shutdown();
+                    bms_shutdown(&bms);
                 }
             } else {
                 btnTimer.stop();
@@ -109,7 +113,7 @@ int main()
 
             uext_process_1s();
 
-            //BMS.print_registers();
+            //bms_print_registers();
 
             led_green = !led_green;
         }
@@ -136,32 +140,34 @@ void setup()
     CAN1->MCR |= CAN_MCR_TXFP | CAN_MCR_NART;
 
     // ToDo: Ensure that these settings are set even in case of initial communication error
-    bms.temperature_limits(-20, 45, 0, 45);
-    bms.set_shunt_res(SHUNT_RESISTOR);
-    bms.dis_sc_limit(35000, 200);  // delay in us
-    bms.chg_oc_limit(25000, 200);  // delay in ms
-    bms.dis_oc_limit(20000, 320); // delay in ms
-    bms.cell_uv_limit(2800, 2); // delay in s
-    bms.cell_ov_limit(3650, 2);  // delay in s
+    bms_temperature_limits(&bms, -20, 45, 0, 45);
+    bms_set_shunt_res(&bms, SHUNT_RESISTOR);
+    bms_dis_sc_limit(&bms, 35000, 200);  // delay in us
+    bms_chg_oc_limit(&bms, 25000, 200);  // delay in ms
+    bms_dis_oc_limit(&bms, 20000, 320); // delay in ms
+    bms_cell_uv_limit(&bms, 2800, 2); // delay in s
+    bms_cell_ov_limit(&bms, 3650, 2);  // delay in s
 
-    bms.set_ocv(OCV, sizeof(OCV)/sizeof(int));
-    bms.set_battery_capacity(45000);  // mAh
+    bms_set_ocv(&bms, OCV, sizeof(OCV)/sizeof(int));
+    bms_set_battery_capacity(&bms, 45000);  // mAh
 
-    bms.update();   // get voltage and temperature measurements before switching on
+    bms_update(&bms);   // get voltage and temperature measurements before switching on
 
-    bms.balancing_thresholds(10, 3200, 10);  // minIdleTime_min, minCellV_mV, maxVoltageDiff_mV
-    bms.set_idle_current_threshold(100);
-    bms.auto_balancing(true);
+    bms_balancing_thresholds(&bms, 10, 3200, 10);  // minIdleTime_min, minCellV_mV, maxVoltageDiff_mV
+    bms_set_idle_current_threshold(&bms, 100);
+    bms_auto_balancing(&bms, true);
 
     // TODO: watch voltage rise before stopping pre-charge
+#ifdef PIN_PCHG_EN
     pchg_enable = 1;
     wait(2);
     pchg_enable = 0;
+#endif
 
-    bms.update();
-    bms.reset_soc();
-    bms.dis_switch(true);
-    bms.chg_switch(true);
+    bms_update(&bms);
+    bms_reset_soc(&bms);
+    bms_dis_switch(&bms, true);
+    bms_chg_switch(&bms, true);
 
     update_measurements();
 }
@@ -189,17 +195,17 @@ void update_measurements(void)
     // load voltage divider o-- 100k --o-- 5.6k --o
     sum_adc_readings = 0;
     for (int i = 0; i < ADC_AVG_SAMPLES; i++) {
-        sum_adc_readings += v_load.read_u16();
+        sum_adc_readings += v_ext.read_u16();
     }
     load_voltage = (sum_adc_readings / ADC_AVG_SAMPLES) * 110 / 10 * vcc / 0xFFFF;
 
-    battery_voltage = bms.pack_voltage();
-    battery_current = bms.pack_current();
-    cell_voltages[0] = bms.cell_voltage(1);
-    cell_voltages[1] = bms.cell_voltage(2);
-    cell_voltages[2] = bms.cell_voltage(3);
-    cell_voltages[3] = bms.cell_voltage(4);
-    cell_voltages[4] = bms.cell_voltage(5);
-    temperatures[0] = bms.get_temp_degC(1);
-    SOC = bms.get_soc();
+    battery_voltage = bms_pack_voltage(&bms);
+    battery_current = bms_pack_current(&bms);
+    cell_voltages[0] = bms_cell_voltage(&bms, 1);
+    cell_voltages[1] = bms_cell_voltage(&bms, 2);
+    cell_voltages[2] = bms_cell_voltage(&bms, 3);
+    cell_voltages[3] = bms_cell_voltage(&bms, 4);
+    cell_voltages[4] = bms_cell_voltage(&bms, 5);
+    temperatures[0] = bms_get_temp_degC(&bms, 1);
+    SOC = bms_get_soc(&bms);
 }

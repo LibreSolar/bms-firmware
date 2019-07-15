@@ -10,7 +10,7 @@ Serial serial_uext(PIN_UEXT_TX, PIN_UEXT_RX, "serial_uext");
 
 extern bool blinkOn;
 
-extern BMS bms;
+extern bms_t bms;
 extern Serial serial;
 
 extern int battery_voltage;
@@ -24,16 +24,16 @@ void output_serial()
 {
     serial.printf("|");
     for (int i = 1; i <= 5; i++) {
-        serial.printf("%i|", bms.cell_voltage(i));
+        serial.printf("%i|", bms_cell_voltage(&bms, i));
     }
-    serial.printf("%i|", bms.pack_voltage());
-    serial.printf("%i|", bms.pack_current());
-    serial.printf("%.2f|", bms.get_soc());
-    serial.printf("%.1f|", bms.get_temp_degC(1));
-    //serial.printf("%.1f|", bms.getTemperatureDegC(2));
-    //serial.printf("%.1f|", bms.getTemperatureDegC(3));
+    serial.printf("%i|", bms_pack_voltage(&bms));
+    serial.printf("%i|", bms_pack_current(&bms));
+    serial.printf("%.2f|", bms_get_soc(&bms));
+    serial.printf("%.1f|", bms_get_temp_degC(&bms, 1));
+    //serial.printf("%.1f|", bms_getTemperatureDegC(2));
+    //serial.printf("%.1f|", bms_getTemperatureDegC(3));
     serial.printf("%i|", load_voltage);
-    serial.printf("%i|", bms.get_balancing_status());
+    serial.printf("%i|", bms_get_balancing_status(&bms));
 
     serial.printf(" \n");
 }

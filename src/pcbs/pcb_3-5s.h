@@ -49,7 +49,7 @@
 
 #define PIN_V_REF    PA_0
 #define PIN_V_BAT    PA_4
-#define PIN_V_LOAD   PA_5
+#define PIN_V_EXT    PA_5
 #define PIN_TEMP_1   PA_6
 #define PIN_TEMP_2   PA_7
 
