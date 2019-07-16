@@ -30,7 +30,7 @@
 Serial serial(PIN_SWD_TX, PIN_SWD_RX, "serial");
 CAN can(PIN_CAN_RX, PIN_CAN_TX, 250000);  // 250 kHz
 
-bms_t bms;
+BMS bms;
 
 DigitalOut led_green(PIN_LED_GREEN);
 DigitalOut led_red(PIN_LED_RED);
@@ -140,7 +140,7 @@ void setup()
     CAN1->MCR |= CAN_MCR_TXFP | CAN_MCR_NART;
 
     // ToDo: Ensure that these settings are set even in case of initial communication error
-    bms_temperature_limits(&bms, -20, 45, 0, 45);
+    bms_temperature_limits(&bms, -20, 45, 0, 45, 2);
     bms_set_shunt_res(&bms, SHUNT_RESISTOR);
     bms_dis_sc_limit(&bms, 35000, 200);  // delay in us
     bms_chg_oc_limit(&bms, 25000, 200);  // delay in ms
@@ -165,7 +165,7 @@ void setup()
 #endif
 
     bms_update(&bms);
-    bms_reset_soc(&bms);
+    bms_reset_soc(&bms, -1);
     bms_dis_switch(&bms, true);
     bms_chg_switch(&bms, true);
 

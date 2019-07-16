@@ -19,7 +19,12 @@
 
 #include "pcb.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
+#include <stdbool.h>
 #include <stddef.h>
 
 // output information to serial console for debugging
@@ -75,7 +80,7 @@ typedef struct
     bool dis_temp_error_flag;
 
     uint32_t error_flags;       ///< New variable to store all different errors
-} bms_t;
+} BMS;
 
 /** BMS error flags
  */
@@ -96,72 +101,72 @@ enum error_flag_t {
 
 /** Initialization of BMS
  */
-void bms_init(bms_t *bms);
+void bms_init(BMS *bms);
 
 /** Fast function to check if BMS has an error
  *
  * @returns 0 if everything is OK
  */
-int bms_check_status(bms_t *bms);
+int bms_check_status(BMS *bms);
 
 /** Update and check important measurements
  *
  * Should be called at least once every 250 ms to get correct coulomb counting
  */
-void bms_update(bms_t *bms);
+void bms_update(BMS *bms);
 
 /** Shut down BMS IC and entire PCB power supply
  */
-void bms_shutdown(bms_t *bms);
+void bms_shutdown(BMS *bms);
 
 /** Enable/disable charge MOSFET
  */
-bool bms_chg_switch(bms_t *bms, bool enable);
+bool bms_chg_switch(BMS *bms, bool enable);
 
 /** Enable/disable discharge MOSFET
  */
-bool bms_dis_switch(bms_t *bms, bool enable);
+bool bms_dis_switch(BMS *bms, bool enable);
 
 // hardware settings
-void bms_set_shunt_res(bms_t *bms, float res_mOhm);
-void bms_set_thermistor_beta(bms_t *bms, int beta_K);
+void bms_set_shunt_res(BMS *bms, float res_mOhm);
+void bms_set_thermistor_beta(BMS *bms, int beta_K);
 
 /** SOC calculation based on average cell open circuit voltage
  *
  * @param percent 0-100 %, -1 for automatic reset based on OCV
  */
-void bms_reset_soc(bms_t *bms, int percent = -1);
-void bms_set_battery_capacity(bms_t *bms, long capacity_mAh);
-void bms_set_ocv(bms_t *bms, int *voltage_vs_soc, size_t num_points);
+void bms_reset_soc(BMS *bms, int percent);
+void bms_set_battery_capacity(BMS *bms, long capacity_mAh);
+void bms_set_ocv(BMS *bms, int *voltage_vs_soc, size_t num_points);
 
-int bms_get_connected_cells(bms_t *bms);
+int bms_get_connected_cells(BMS *bms);
 
 // limit settings (for battery protection)
-void bms_temperature_limits(bms_t *bms, int min_dis_degC, int max_dis_degC, int min_chg_degC, int max_chg_degC, int hysteresis_degC = 2);    // °C
-long bms_dis_sc_limit(bms_t *bms, long current_mA, int delay_us = 70);
-long bms_chg_oc_limit(bms_t *bms, long current_mA, int delay_ms = 8);
-long bms_dis_oc_limit(bms_t *bms, long current_mA, int delay_ms = 8);
-int bms_cell_uv_limit(bms_t *bms, int voltage_mV, int delay_s = 1);
-int bms_cell_ov_limit(bms_t *bms, int voltage_mV, int delay_s = 1);
+void bms_temperature_limits(BMS *bms, int min_dis_degC, int max_dis_degC, int min_chg_degC, int max_chg_degC, int hysteresis_degC);    // °C
+long bms_dis_sc_limit(BMS *bms, long current_mA, int delay_us);
+long bms_chg_oc_limit(BMS *bms, long current_mA, int delay_ms);
+long bms_dis_oc_limit(BMS *bms, long current_mA, int delay_ms);
+int bms_cell_uv_limit(BMS *bms, int voltage_mV, int delay_s);
+int bms_cell_ov_limit(BMS *bms, int voltage_mV, int delay_s);
 
 // balancing settings
-void bms_balancing_thresholds(bms_t *bms, int idleTime_min = 30, int absVoltage_mV = 3400, int voltageDifference_mV = 20);
-void bms_set_idle_current_threshold(bms_t *bms, int current_mA);
+void bms_balancing_thresholds(BMS *bms, int idle_time_min, int abs_voltage_mV, int voltage_difference_mV);
+void bms_set_idle_current_threshold(BMS *bms, int current_mA);
 
 // automatic balancing when battery is within balancing thresholds
-void bms_auto_balancing(bms_t *bms, bool enable);
+void bms_auto_balancing(BMS *bms, bool enable);
 
 // battery status
-int  bms_pack_current(bms_t *bms);
-int  bms_pack_voltage(bms_t *bms);
-int  bms_cell_voltage(bms_t *bms, int idCell);    // from 1 to 15
-int  bms_cell_voltage_min(bms_t *bms);
-int  bms_cell_voltage_max(bms_t *bms);
+int  bms_pack_current(BMS *bms);
+int  bms_pack_voltage(BMS *bms);
+int  bms_cell_voltage(BMS *bms, int idCell);    // from 1 to 15
+int  bms_cell_voltage_min(BMS *bms);
+int  bms_cell_voltage_max(BMS *bms);
 //int  cell_voltage_avg(void);
-float bms_get_temp_degC(bms_t *bms, int channel = 1);
-float bms_get_temp_degF(bms_t *bms, int channel = 1);
-float bms_get_soc(bms_t *bms);
-int bms_get_balancing_status(bms_t *bms);
+float bms_get_temp_degC(BMS *bms, int channel);
+float bms_get_temp_degF(BMS *bms, int channel);
+float bms_get_soc(BMS *bms);
+int bms_get_balancing_status(BMS *bms);
 
 #if BMS_DEBUG
 void bms_print_registers();
@@ -171,23 +176,26 @@ void bms_print_registers();
 
 /** Reads all cell voltages to array cell_voltages[NUM_CELLS] and updates battery_voltage
  */
-void bms_update_voltages(bms_t *bms);
+void bms_update_voltages(BMS *bms);
 
 /** Reads pack current
  */
-void bms_update_current(bms_t *bms);
+void bms_update_current(BMS *bms);
 
 /** Reads all temperature sensors
  */
-void bms_update_temperatures(bms_t *bms);
+void bms_update_temperatures(BMS *bms);
 
 /** Sets balancing registers if balancing is allowed (i.e. sufficient idle time + voltage)
  */
-void bms_update_balancing_switches(bms_t *bms);
+void bms_update_balancing_switches(BMS *bms);
 
 /** Checks if temperatures are within the limits, otherwise disables CHG/DSG FET
  */
-void bms_check_cell_temp(bms_t *bms);
+void bms_check_cell_temp(BMS *bms);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif // BMS_H

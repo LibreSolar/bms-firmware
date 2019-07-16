@@ -10,7 +10,7 @@ Serial serial_uext(PIN_UEXT_TX, PIN_UEXT_RX, "serial_uext");
 
 extern bool blinkOn;
 
-extern bms_t bms;
+extern BMS bms;
 extern Serial serial;
 
 extern int battery_voltage;

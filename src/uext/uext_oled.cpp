@@ -32,7 +32,7 @@ Adafruit_SSD1306_I2c oled(i2c, PB_2, 0x78, 64, 128);
 
 extern bool blinkOn;
 
-extern bms_t bms;
+extern BMS bms;
 extern Serial serial;
 
 extern int battery_voltage;
