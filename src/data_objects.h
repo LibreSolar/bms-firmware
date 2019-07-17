@@ -18,6 +18,7 @@
 #define DATA_OBJECTS_H
 
 #include "stdint.h"
+#include "bms.h"
 
 typedef struct {
     const uint16_t id;
@@ -38,7 +39,7 @@ typedef struct {
 #define TS_T_NEG_INT16 5
 #define TS_T_NEG_INT32 6
 #define TS_T_NEG_INT64 7
-#define TS_T_BYTE_STRING 8  
+#define TS_T_BYTE_STRING 8
 #define TS_T_UTF8_STRING 12  // 0x0C
 #define TS_T_FLOAT32 30  // 0x1E
 #define TS_T_FLOAT64 31  // 0x1F
@@ -84,28 +85,23 @@ typedef struct {
 #define TS_OBJ_NAME 0x04
 #define TS_LIST     0x05
 
-
-extern int battery_voltage;
-extern int battery_current;
 extern int load_voltage;
-extern int cell_voltages[15];      // max. number of cells
-extern float temperatures[3];
-extern float SOC;
+extern BmsStatus bms_status;
 
 static uint16_t oid;
 
 static const DataObject_t dataObjects[] {
     // output data
-    {oid=0x4001, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(battery_voltage), "vBat"},
+    {oid=0x4001, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(bms_status.pack_voltage), "vBat"},
     {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(load_voltage), "vLoad"},
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(cell_voltages[0]), "vCell1"},
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(cell_voltages[1]), "vCell2"},
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(cell_voltages[2]), "vCell3"},
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(cell_voltages[3]), "vCell4"},
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(cell_voltages[4]), "vCell5"},
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(battery_current), "iBat"},
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32, 0, (void*) &(temperatures[0]), "tempBat"},
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32, 0, (void*) &(SOC), "SOC"} 
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(bms_status.cell_voltages[0]), "vCell1"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(bms_status.cell_voltages[1]), "vCell2"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(bms_status.cell_voltages[2]), "vCell3"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(bms_status.cell_voltages[3]), "vCell4"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(bms_status.cell_voltages[4]), "vCell5"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(bms_status.pack_current), "iBat"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32, 0, (void*) &(bms_status.temperatures[0]), "tempBat"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32, 0, (void*) &(bms_status.soc), "SOC"}
 };
 
 

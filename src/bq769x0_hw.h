@@ -17,6 +17,12 @@
 #ifndef BQ769X0_HW
 #define BQ769X0_HW
 
+/** @file
+ *
+ * @brief
+ * Hardware interface for bq769x0 IC
+ */
+
 #include "pcb.h"
 
 #ifdef __cplusplus
@@ -25,8 +31,22 @@ extern "C" {
 
 #include <time.h>
 
+/**
+ * Initialization of bq769x0 IC
+ *
+ * - Determines I2C address
+ * - Sets ALERT pin interrupt
+ */
 void bq769x0_init();
+
+/**
+ * Writes one byte to bq769x0 IC
+ */
 void bq769x0_write_byte(int address, int data);
+
+/**
+ * Read 1 byte from bq769x0 IC
+ */
 int bq769x0_read_byte(int address);
 
 /**
@@ -36,8 +56,19 @@ int bq769x0_read_byte(int address);
  */
 int bq769x0_read_word(char reg);
 
+/**
+ * \returns status of the alert pin
+ */
 bool bq769x0_alert_flag();
+
+/**
+ * Reset alert pin interrupt flag
+ */
 void bq769x0_alert_flag_reset();
+
+/**
+ * Returns the time when the interrupt was triggered
+ */
 time_t bq769x0_alert_timestamp();
 
 #ifdef __cplusplus

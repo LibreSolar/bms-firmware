@@ -96,18 +96,18 @@
 #define STAT_FLAGS              (0x3F)
 
 // maps for settings in protection registers
-const int SCD_delay_setting [4] =
+const uint16_t SCD_delay_setting [4] =
     { 70, 100, 200, 400 }; // us
-const int SCD_threshold_setting [8] =
+const uint16_t SCD_threshold_setting [8] =
     { 44, 67, 89, 111, 133, 155, 178, 200 }; // mV
 
-const int OCD_delay_setting [8] =
+const uint16_t OCD_delay_setting [8] =
     { 8, 20, 40, 80, 160, 320, 640, 1280 }; // ms
-const int OCD_threshold_setting [16] =
+const uint16_t OCD_threshold_setting [16] =
     { 17, 22, 28, 33, 39, 44, 50, 56, 61, 67, 72, 78, 83, 89, 94, 100 };  // mV
 
-const int UV_delay_setting [4] = { 1, 4, 8, 16 };  // s
-const int OV_delay_setting [4] = { 1, 2, 4, 8 };   // s
+const uint16_t UV_delay_setting [4] = { 1, 4, 8, 16 };  // s
+const uint16_t OV_delay_setting [4] = { 1, 2, 4, 8 };   // s
 
 typedef union regSYS_STAT {
     struct {

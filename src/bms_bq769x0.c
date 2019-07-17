@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-#include "config.h"
 #include "pcb.h"
 
 #if defined(BMS_BQ76920) || defined(BMS_BQ76930) || defined(BMS_BQ76940)
 
 #include "bms.h"
-#include "bms_bq769x0_registers.h"
+#include "bq769x0_registers.h"
 #include "bq769x0_hw.h"
+
+#include "config.h"
 
 #include <math.h>       // log for thermistor calculation
 #include <stdlib.h>     // for abs() function
@@ -37,7 +38,16 @@ static int adc_offset;  // factory-calibrated, read out from chip (mV)
 
 //----------------------------------------------------------------------------
 
-const char *byte2char(int x)
+
+/**
+ * Checks if temperatures are within the limits, otherwise disables CHG/DSG FET
+ *
+ * This function is necessary as bq769x0 doesn't support temperature protection
+ */
+void bms_check_cell_temp(BmsConfig *conf, BmsStatus *status);
+
+
+static const char *byte2char(int x)
 {
     static char b[9];
     b[0] = '\0';
@@ -51,34 +61,20 @@ const char *byte2char(int x)
     return b;
 }
 
-//----------------------------------------------------------------------------
-
-void bms_init(BMS *bms)
+void bms_init()
 {
     bq769x0_init();
-
-    // set some safe default values
-    bms->auto_balancing_enabled = false;
-    bms->balancing_min_idle_s = 1800;    // default: 30 minutes
-    bms->idle_current_threshold = 30; // mA
-
-    bms->thermistor_beta = 3435;  // typical value for Semitec 103AT-5 thermistor
-
-    // initialize variables
-    for (int i = 0; i < NUM_CELLS_MAX; i++) {
-        bms->cell_voltages[i] = 0;
-    }
-
 }
 
-//----------------------------------------------------------------------------
-int bms_check_status(BMS *bms)
+int bms_quickcheck(BmsConfig *conf, BmsStatus *status)
 {
-    //  printf("error_status: ");
-    //  printf(error_status);
-    if (!bq769x0_alert_flag() && bms->error_status == 0) {
+    static uint16_t error_status = 0;
+    static uint32_t sec_since_error = 0;
+
+    if (!bq769x0_alert_flag() && error_status == 0) {
         return 0;
-    } else {
+    }
+    else {
 
         regSYS_STAT_t sys_stat;
         sys_stat.regByte = bq769x0_read_byte(SYS_STAT);
@@ -86,180 +82,190 @@ int bms_check_status(BMS *bms)
         // first check, if only a new CC reading is available
         if (sys_stat.bits.CC_READY == 1) {
             //printf("Interrupt: CC ready");
-            bms_update_current(bms);  // automatically clears CC ready flag
+            bms_read_current(conf, status);  // automatically clears CC ready flag
         }
 
         // Serious error occured
         if (sys_stat.regByte & 0b00111111)
         {
             if (bq769x0_alert_flag() == true) {
-                bms->sec_since_error_counter = 0;
+                sec_since_error = 0;
             }
-            bms->error_status = sys_stat.regByte;
+            error_status = sys_stat.regByte;
 
-            unsigned int secSinceInterrupt = time(NULL) - bq769x0_alert_timestamp();
+            unsigned int sec_since_interrupt = time(NULL) - bq769x0_alert_timestamp();
 
             // TODO!!
             // check for overrun of _timer.read_ms() or very slow running program
-            if (abs((long)(secSinceInterrupt - bms->sec_since_error_counter)) > 2) {
-                bms->sec_since_error_counter = secSinceInterrupt;
+            if (abs((long)(sec_since_interrupt - sec_since_error)) > 2) {
+                sec_since_error = sec_since_interrupt;
             }
 
             // called only once per second
-            if (secSinceInterrupt >= bms->sec_since_error_counter)
+            if (sec_since_interrupt >= sec_since_error)
             {
                 if (sys_stat.regByte & 0b00100000) { // XR error
                     // datasheet recommendation: try to clear after waiting a few seconds
-                    if (bms->sec_since_error_counter % 3 == 0) {
+                    if (sec_since_error % 3 == 0) {
                         #if BMS_DEBUG
                         printf("Attempting to clear XR error");
                         #endif
                         bq769x0_write_byte(SYS_STAT, 0b00100000);
-                        bms_chg_switch(bms, true);
-                        bms_dis_switch(bms, true);
+                        bms_chg_switch(conf, status, true);
+                        bms_dis_switch(conf, status, true);
                     }
                 }
                 if (sys_stat.regByte & 0b00010000) { // Alert error
-                    if (bms->sec_since_error_counter % 10 == 0) {
+                    if (sec_since_error % 10 == 0) {
                         #if BMS_DEBUG
                         printf("Attempting to clear Alert error");
                         #endif
                         bq769x0_write_byte(SYS_STAT, 0b00010000);
-                        bms_chg_switch(bms, true);
-                        bms_dis_switch(bms, true);
+                        bms_chg_switch(conf, status, true);
+                        bms_dis_switch(conf, status, true);
                     }
                 }
                 if (sys_stat.regByte & 0b00001000) { // UV error
-                    bms_update_voltages(bms);
-                    if (bms->cell_voltages[bms->id_cell_voltage_min] > bms->cell_voltage_limit_min) {
+                    bms_read_voltages(status);
+                    if (status->cell_voltages[status->id_cell_voltage_min] > conf->cell_uv_limit_mV) {
                         #if BMS_DEBUG
                         printf("Attempting to clear UV error");
                         #endif
                         bq769x0_write_byte(SYS_STAT, 0b00001000);
-                        bms_dis_switch(bms, true);
+                        bms_dis_switch(conf, status, true);
                     }
                 }
                 if (sys_stat.regByte & 0b00000100) { // OV error
-                    bms_update_voltages(bms);
-                    if (bms->cell_voltages[bms->id_cell_voltage_max] < bms->cell_voltage_limit_max) {
+                    bms_read_voltages(status);
+                    if (status->cell_voltages[status->id_cell_voltage_max] < conf->cell_ov_limit_mV) {
                         #if BMS_DEBUG
                         printf("Attempting to clear OV error");
                         #endif
                         bq769x0_write_byte(SYS_STAT, 0b00000100);
-                        bms_chg_switch(bms, true);
+                        bms_chg_switch(conf, status, true);
                     }
                 }
                 if (sys_stat.regByte & 0b00000010) { // SCD
-                    if (bms->sec_since_error_counter % 60 == 0) {
+                    if (sec_since_error % 60 == 0) {
                         #if BMS_DEBUG
                         printf("Attempting to clear SCD error");
                         #endif
                         bq769x0_write_byte(SYS_STAT, 0b00000010);
-                        bms_dis_switch(bms, true);
+                        bms_dis_switch(conf, status, true);
                     }
                 }
                 if (sys_stat.regByte & 0b00000001) { // OCD
-                    if (bms->sec_since_error_counter % 60 == 0) {
+                    if (sec_since_error % 60 == 0) {
                         #if BMS_DEBUG
                         printf("Attempting to clear OCD error");
                         #endif
                         bq769x0_write_byte(SYS_STAT, 0b00000001);
-                        bms_dis_switch(bms, true);
+                        bms_dis_switch(conf, status, true);
                     }
                 }
-                bms->sec_since_error_counter++;
+                sec_since_error++;
             }
         }
         else {
-            bms->error_status = 0;
+            error_status = 0;
         }
 
-        return bms->error_status;
+        return error_status;
     }
 }
 
-//----------------------------------------------------------------------------
-void bms_check_cell_temp(BMS *bms)
+void bms_update(BmsConfig *conf, BmsStatus *status)
 {
-    int numberOfThermistors = NUM_CELLS_MAX/5;
-    bool cellTempChargeError = 0;
-    bool cellTempDischargeError = 0;
+    bms_read_voltages(status);
+    bms_read_current(conf, status);
+    bms_read_temperatures(conf, status);
+    bms_check_cell_temp(conf, status);      // bq769x0 doesn't support temperature settings
+    bms_apply_balancing(conf, status);
+    bms_update_soc(conf, status);
+}
 
-    for (int thermistor = 0; thermistor < numberOfThermistors; thermistor++) {
-        cellTempChargeError |=
-            bms->temperatures[thermistor] > bms->chg_temp_limit_max - bms->chg_temp_error_flag ? bms->temp_limit_hysteresis : 0 ||
-            bms->temperatures[thermistor] < bms->chg_temp_limit_min + bms->chg_temp_error_flag ? bms->temp_limit_hysteresis : 0;
+void bms_update_error_flag(BmsConfig *conf, BmsStatus *status, uint32_t flag, bool value)
+{
+    if (value) {
+        status->error_flags |= (1UL << flag);
+        bms_chg_switch(conf, status, false);
+    }
+    else {
+        status->error_flags &= ~(1UL << flag);
+        bms_chg_switch(conf, status, true);
+    }
+    #if BMS_DEBUG
+    printf("Error flag %lu changed to: %d\n", flag, value);
+    #endif
+}
 
-        cellTempDischargeError |=
-            bms->temperatures[thermistor] > bms->dis_temp_limit_max - bms->dis_temp_error_flag ? bms->temp_limit_hysteresis : 0 ||
-            bms->temperatures[thermistor] < bms->dis_temp_limit_min + bms->dis_temp_error_flag ? bms->temp_limit_hysteresis : 0;
+void bms_check_cell_temp(BmsConfig *conf, BmsStatus *status)
+{
+    bool chg_overtemp = 0;
+    bool chg_undertemp = 0;
+    bool dis_overtemp = 0;
+    bool dis_undertemp = 0;
+
+    for (int thermistor = 0; thermistor < NUM_CELLS_MAX/5; thermistor++) {
+
+        chg_overtemp |= status->temperatures[thermistor] > conf->chg_ot_limit -
+            ((status->error_flags & (1UL << ERR_CHG_OVERTEMP)) ? conf->t_limit_hyst : 0);
+
+        chg_undertemp |= status->temperatures[thermistor] < conf->chg_ut_limit +
+            ((status->error_flags & (1UL << ERR_CHG_UNDERTEMP)) ? conf->t_limit_hyst : 0);
+
+        dis_overtemp |= status->temperatures[thermistor] > conf->dis_ot_limit -
+            ((status->error_flags & (1UL << ERR_DIS_OVERTEMP)) ? conf->t_limit_hyst : 0);
+
+        dis_undertemp |= status->temperatures[thermistor] < conf->dis_ut_limit +
+            ((status->error_flags & (1UL << ERR_DIS_OVERTEMP)) ? conf->t_limit_hyst : 0);
     }
 
-    if (bms->chg_temp_error_flag != cellTempChargeError) {
-        bms->chg_temp_error_flag = cellTempChargeError;
-        if (cellTempChargeError) {
-            bms_chg_switch(bms, false);
-            #if BMS_DEBUG
-            printf("Temperature error (CHG)");
-            #endif
-        }
-        else {
-            bms_chg_switch(bms, true);
-            #if BMS_DEBUG
-            printf("Clearing temperature error (CHG)");
-            #endif
-        }
+    if (chg_overtemp != (status->error_flags & (1UL << ERR_CHG_OVERTEMP))) {
+        bms_update_error_flag(conf, status, ERR_CHG_OVERTEMP, chg_overtemp);
     }
 
-    if (bms->dis_temp_error_flag != cellTempDischargeError) {
-        bms->dis_temp_error_flag = cellTempDischargeError;
-        if (cellTempDischargeError) {
-            bms_dis_switch(bms, false);
-            #if BMS_DEBUG
-            printf("Temperature error (DSG)");
-            #endif
-        }
-        else {
-            bms_dis_switch(bms, true);
-            #if BMS_DEBUG
-            printf("Clearing temperature error (DSG)");
-            #endif
-        }
+    if (chg_undertemp != (status->error_flags & (1UL << ERR_CHG_UNDERTEMP))) {
+        bms_update_error_flag(conf, status, ERR_CHG_UNDERTEMP, chg_undertemp);
+    }
+
+    if (dis_overtemp != (status->error_flags & (1UL << ERR_DIS_OVERTEMP))) {
+        bms_update_error_flag(conf, status, ERR_DIS_OVERTEMP, dis_overtemp);
+    }
+
+    if (dis_undertemp != (status->error_flags & (1UL << ERR_DIS_UNDERTEMP))) {
+        bms_update_error_flag(conf, status, ERR_DIS_UNDERTEMP, dis_undertemp);
     }
 }
 
-//----------------------------------------------------------------------------
-// puts BMS IC into SHIP mode (i.e. switched off)
-
-void bms_shutdown(BMS *bms)
+void bms_shutdown()
 {
+    // puts BMS IC into SHIP mode (i.e. switched off)
     bq769x0_write_byte(SYS_CTRL1, 0x0);
     bq769x0_write_byte(SYS_CTRL1, 0x1);
     bq769x0_write_byte(SYS_CTRL1, 0x2);
 }
 
-//----------------------------------------------------------------------------
-
-bool bms_chg_switch(BMS *bms, bool enable)
+bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
     if (enable) {
         #if BMS_DEBUG
-        printf("check_status() = %d\n", bms_check_status(bms));
-        printf("Umax = %d\n", bms->cell_voltages[bms->id_cell_voltage_max]);
-        printf("temperatures[0] = %d\n", bms->temperatures[0]);
+        printf("check_status() = %d\n", bms_quickcheck(conf, status));
+        printf("Umax = %d\n", status->cell_voltages[status->id_cell_voltage_max]);
+        printf("temperatures[0] = %d\n", status->temperatures[0]);
         #endif
 
-        int numberOfThermistors = NUM_CELLS_MAX/5;
+        int num_thermistors = NUM_CELLS_MAX/5;
         bool cellTempChargeError = 0;
 
-        for (int thermistor = 0; thermistor < numberOfThermistors; thermistor++) {
+        for (int thermistor = 0; thermistor < num_thermistors; thermistor++) {
             cellTempChargeError |=
-                bms->temperatures[thermistor] > bms->chg_temp_limit_max ||
-                bms->temperatures[thermistor] < bms->chg_temp_limit_min;
+                status->temperatures[thermistor] > conf->chg_ot_limit ||
+                status->temperatures[thermistor] < conf->chg_ut_limit;
         }
 
-        if (bms_check_status(bms) == 0 &&
-            bms->cell_voltages[bms->id_cell_voltage_max] < bms->cell_voltage_limit_max &&
+        if (bms_quickcheck(conf, status) == 0 &&
+            status->cell_voltages[status->id_cell_voltage_max] < conf->cell_ov_limit_mV &&
             cellTempChargeError == 0)
         {
             int sys_ctrl2;
@@ -285,28 +291,26 @@ bool bms_chg_switch(BMS *bms, bool enable)
     }
 }
 
-//----------------------------------------------------------------------------
-
-bool bms_dis_switch(BMS *bms, bool enable)
+bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
     #if BMS_DEBUG
-    printf("check_status() = %d\n", bms_check_status(bms));
-    printf("Umin = %d\n", bms->cell_voltages[bms->id_cell_voltage_min]);
-    printf("temperatures[0] = %d\n", bms->temperatures[0]);
+    printf("check_status() = %d\n", bms_quickcheck(conf, status));
+    printf("Umin = %d\n", status->cell_voltages[status->id_cell_voltage_min]);
+    printf("temperatures[0] = %d\n", status->temperatures[0]);
     #endif
 
     if (enable) {
-        int numberOfThermistors = NUM_CELLS_MAX/5;
+        int num_thermistors = NUM_CELLS_MAX/5;
         bool cellTempDischargeError = 0;
 
-        for (int thermistor = 0; thermistor < numberOfThermistors; thermistor++) {
+        for (int thermistor = 0; thermistor < num_thermistors; thermistor++) {
             cellTempDischargeError |=
-                bms->temperatures[thermistor] > bms->dis_temp_limit_max ||
-                bms->temperatures[thermistor] < bms->dis_temp_limit_min;
+                status->temperatures[thermistor] > conf->dis_ot_limit ||
+                status->temperatures[thermistor] < conf->dis_ut_limit;
         }
 
-        if (bms_check_status(bms) == 0 &&
-            bms->cell_voltages[bms->id_cell_voltage_min] > bms->cell_voltage_limit_min &&
+        if (bms_quickcheck(conf, status) == 0 &&
+            status->cell_voltages[status->id_cell_voltage_min] > conf->cell_uv_limit_mV &&
             cellTempDischargeError == 0)
         {
             int sys_ctrl2;
@@ -329,44 +333,25 @@ bool bms_dis_switch(BMS *bms, bool enable)
     }
 }
 
-//----------------------------------------------------------------------------
-
-void bms_auto_balancing(BMS *bms, bool enabled)
+void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
 {
-    bms->auto_balancing_enabled = enabled;
-}
-
-
-//----------------------------------------------------------------------------
-
-void bms_balancing_thresholds(BMS *bms, int idleTime_min, int absVoltage_mV, int voltageDifference_mV)
-{
-    bms->balancing_min_idle_s = idleTime_min * 60;
-    bms->balancing_cell_voltage_min = absVoltage_mV;
-    bms->balancing_voltage_diff_target = voltageDifference_mV;
-}
-
-//----------------------------------------------------------------------------
-
-void bms_update_balancing_switches(BMS *bms)
-{
-    long idleSeconds = time(NULL) - bms->idle_timestamp;
+    long idleSeconds = time(NULL) - status->no_idle_timestamp;
     int numberOfSections = NUM_CELLS_MAX/5;
 
     // check for _timer.read_ms() overflow
     if (idleSeconds < 0) {
-        bms->idle_timestamp = 0;
+        status->no_idle_timestamp = 0;
         idleSeconds = time(NULL);
     }
 
     // check if balancing allowed
-    if (bms_check_status(bms) == 0 &&
-        idleSeconds >= bms->balancing_min_idle_s &&
-        bms->cell_voltages[bms->id_cell_voltage_max] > bms->balancing_cell_voltage_min &&
-        (bms->cell_voltages[bms->id_cell_voltage_max] - bms->cell_voltages[bms->id_cell_voltage_min]) > bms->balancing_voltage_diff_target)
+    if (bms_quickcheck(conf, status) == 0 &&
+        idleSeconds >= conf->balancing_min_idle_s &&
+        status->cell_voltages[status->id_cell_voltage_max] > conf->balancing_cell_voltage_min &&
+        (status->cell_voltages[status->id_cell_voltage_max] - status->cell_voltages[status->id_cell_voltage_min]) > conf->balancing_voltage_diff_target)
     {
         //printf("Balancing enabled!");
-        bms->balancing_status = 0;  // current status will be set in following loop
+        status->balancing_status = 0;  // current status will be set in following loop
 
         //regCELLBAL_t cellbal;
         int balancingFlags;
@@ -379,9 +364,9 @@ void bms_update_balancing_switches(BMS *bms)
             int cellCounter = 0;
             for (int i = 0; i < 5; i++)
             {
-                if ((bms->cell_voltages[section*5 + i] - bms->cell_voltages[bms->id_cell_voltage_min]) > bms->balancing_voltage_diff_target) {
+                if ((status->cell_voltages[section*5 + i] - status->cell_voltages[status->id_cell_voltage_min]) > conf->balancing_voltage_diff_target) {
                     int j = cellCounter;
-                    while (j > 0 && bms->cell_voltages[section*5 + cellList[j - 1]] < bms->cell_voltages[section*5 + i])
+                    while (j > 0 && status->cell_voltages[section*5 + cellList[j - 1]] < status->cell_voltages[section*5 + i])
                     {
                         cellList[j] = cellList[j - 1];
                         j--;
@@ -411,14 +396,14 @@ void bms_update_balancing_switches(BMS *bms)
             //printf("Setting CELLBAL%d register to: %s\n", section+1, byte2char(balancingFlags));
             #endif
 
-            bms->balancing_status |= balancingFlags << section*5;
+            status->balancing_status |= balancingFlags << section*5;
 
             // set balancing register for this section
             bq769x0_write_byte(CELLBAL1+section, balancingFlags);
 
         } // section loop
     }
-    else if (bms->balancing_status > 0)
+    else if (status->balancing_status > 0)
     {
         // clear all CELLBAL registers
         for (int section = 0; section < numberOfSections; section++)
@@ -430,32 +415,11 @@ void bms_update_balancing_switches(BMS *bms)
             bq769x0_write_byte(CELLBAL1+section, 0x0);
         }
 
-        bms->balancing_status = 0;
+        status->balancing_status = 0;
     }
 }
 
-//----------------------------------------------------------------------------
-
-int bms_get_balancing_status(BMS *bms)
-{
-    return bms->balancing_status;
-}
-
-//----------------------------------------------------------------------------
-
-void bms_temperature_limits(BMS *bms, int min_dis_degC, int max_dis_degC, int min_chg_degC, int max_chg_degC, int hysteresis_degC)
-{
-    // Temperature limits (°C/10)
-    bms->dis_temp_limit_min = min_dis_degC * 10;
-    bms->dis_temp_limit_max = max_dis_degC * 10;
-    bms->chg_temp_limit_min = min_chg_degC * 10;
-    bms->chg_temp_limit_max = max_chg_degC * 10;
-    bms->temp_limit_hysteresis = hysteresis_degC * 10;
-}
-
-//----------------------------------------------------------------------------
-
-long bms_dis_sc_limit(BMS *bms, long current_mA, int delay_us)
+int bms_apply_dis_scp(BmsConfig *conf)
 {
     regPROTECT1_t protect1;
 
@@ -464,7 +428,7 @@ long bms_dis_sc_limit(BMS *bms, long current_mA, int delay_us)
 
     protect1.bits.SCD_THRESH = 0;
     for (int i = sizeof(SCD_threshold_setting)-1; i > 0; i--) {
-        if (current_mA * bms->shunt_res_mOhm / 1000 >= SCD_threshold_setting[i]) {
+        if (conf->dis_sc_limit_mA * conf->shunt_res_mOhm / 1000 >= SCD_threshold_setting[i]) {
             protect1.bits.SCD_THRESH = i;
             break;
         }
@@ -472,7 +436,7 @@ long bms_dis_sc_limit(BMS *bms, long current_mA, int delay_us)
 
     protect1.bits.SCD_DELAY = 0;
     for (int i = sizeof(SCD_delay_setting)-1; i > 0; i--) {
-        if (delay_us >= SCD_delay_setting[i]) {
+        if (conf->dis_sc_delay_us >= SCD_delay_setting[i]) {
             protect1.bits.SCD_DELAY = i;
             break;
         }
@@ -482,20 +446,16 @@ long bms_dis_sc_limit(BMS *bms, long current_mA, int delay_us)
 
     // returns the actual current threshold value
     return (long)SCD_threshold_setting[protect1.bits.SCD_THRESH] * 1000 /
-        bms->shunt_res_mOhm;
+        conf->shunt_res_mOhm;
 }
 
-//----------------------------------------------------------------------------
-
-long bms_chg_oc_limit(BMS *bms, long current_mA, int delay_ms)
+int bms_apply_chg_ocp(BmsConfig *conf)
 {
     // ToDo: Software protection for charge overcurrent
     return 0;
 }
 
-//----------------------------------------------------------------------------
-
-long bms_dis_oc_limit(BMS *bms, long current_mA, int delay_ms)
+int bms_apply_dis_ocp(BmsConfig *conf)
 {
     regPROTECT2_t protect2;
 
@@ -503,7 +463,7 @@ long bms_dis_oc_limit(BMS *bms, long current_mA, int delay_ms)
 
     protect2.bits.OCD_THRESH = 0;
     for (int i = sizeof(OCD_threshold_setting)-1; i > 0; i--) {
-        if (current_mA * bms->shunt_res_mOhm / 1000 >= OCD_threshold_setting[i]) {
+        if (conf->dis_oc_limit_mA * conf->shunt_res_mOhm / 1000 >= OCD_threshold_setting[i]) {
             protect2.bits.OCD_THRESH = i;
             break;
         }
@@ -511,7 +471,7 @@ long bms_dis_oc_limit(BMS *bms, long current_mA, int delay_ms)
 
     protect2.bits.OCD_DELAY = 0;
     for (int i = sizeof(OCD_delay_setting)-1; i > 0; i--) {
-        if (delay_ms >= OCD_delay_setting[i]) {
+        if (conf->dis_oc_delay_ms >= OCD_delay_setting[i]) {
             protect2.bits.OCD_DELAY = i;
             break;
         }
@@ -521,28 +481,23 @@ long bms_dis_oc_limit(BMS *bms, long current_mA, int delay_ms)
 
     // returns the actual current threshold value
     return (long)OCD_threshold_setting[protect2.bits.OCD_THRESH] * 1000 /
-        bms->shunt_res_mOhm;
+        conf->shunt_res_mOhm;
 }
 
-
-//----------------------------------------------------------------------------
-
-int bms_cell_uv_limit(BMS *bms, int voltage_mV, int delay_s)
+int bms_apply_cell_uvp(BmsConfig *conf)
 {
     regPROTECT3_t protect3;
     int uv_trip = 0;
 
-    bms->cell_voltage_limit_min = voltage_mV;
-
     protect3.regByte = bq769x0_read_byte(PROTECT3);
 
-    uv_trip = ((((long)voltage_mV - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
+    uv_trip = ((((long)conf->cell_uv_limit_mV - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
     uv_trip += 1;   // always round up for lower cell voltage
     bq769x0_write_byte(UV_TRIP, uv_trip);
 
     protect3.bits.UV_DELAY = 0;
     for (int i = sizeof(UV_delay_setting)-1; i > 0; i--) {
-        if (delay_s >= UV_delay_setting[i]) {
+        if (conf->cell_uv_delay_ms >= UV_delay_setting[i]) {
             protect3.bits.UV_DELAY = i;
             break;
         }
@@ -556,21 +511,19 @@ int bms_cell_uv_limit(BMS *bms, int voltage_mV, int delay_s)
 
 //----------------------------------------------------------------------------
 
-int bms_cell_ov_limit(BMS *bms, int voltage_mV, int delay_s)
+int bms_apply_cell_ovp(BmsConfig *conf)
 {
     regPROTECT3_t protect3;
     int ov_trip = 0;
 
-    bms->cell_voltage_limit_max = voltage_mV;
-
     protect3.regByte = bq769x0_read_byte(PROTECT3);
 
-    ov_trip = ((((long)voltage_mV - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
+    ov_trip = ((((long)conf->cell_ov_limit_mV - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
     bq769x0_write_byte(OV_TRIP, ov_trip);
 
     protect3.bits.OV_DELAY = 0;
     for (int i = sizeof(OV_delay_setting)-1; i > 0; i--) {
-        if (delay_s >= OV_delay_setting[i]) {
+        if (conf->cell_ov_delay_ms >= OV_delay_setting[i]) {
             protect3.bits.OV_DELAY = i;
             break;
         }
@@ -582,10 +535,14 @@ int bms_cell_ov_limit(BMS *bms, int voltage_mV, int delay_s)
     return ((long)1 << 13 | ov_trip << 4) * adc_gain / 1000 + adc_offset;
 }
 
+void bms_apply_temp_limits(BmsConfig *bms)
+{
+    // bq769x0 don't support temperature limits --> has to be solved in software
+}
 
 //----------------------------------------------------------------------------
 
-void bms_update_temperatures(BMS *bms)
+void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
 {
     float tmp = 0;
     int adcVal = 0;
@@ -600,30 +557,27 @@ void bms_update_temperatures(BMS *bms)
     // Temperature calculation using Beta equation
     // - According to bq769x0 datasheet, only 10k thermistors should be used
     // - 25°C reference temperature for Beta equation assumed
-    tmp = 1.0/(1.0/(273.15+25) + 1.0/bms->thermistor_beta*log(rts/10000.0)); // K
-    bms->temperatures[0] = (tmp - 273.15) * 10.0;
+    tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
+    status->temperatures[0] = (tmp - 273.15) * 10.0;
 
     if (NUM_THERMISTORS_MAX >= 2) {     // bq76930 or bq76940
         adcVal = (bq769x0_read_byte(TS2_HI_BYTE) & 0b00111111) << 8 | bq769x0_read_byte(TS2_LO_BYTE);
         vtsx = adcVal * 0.382; // mV
         rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
-        tmp = 1.0/(1.0/(273.15+25) + 1.0/bms->thermistor_beta*log(rts/10000.0)); // K
-        bms->temperatures[1] = (tmp - 273.15) * 10.0;
+        tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
+        status->temperatures[1] = (tmp - 273.15) * 10.0;
     }
 
     if (NUM_THERMISTORS_MAX == 3) {     // bq76940
         adcVal = (bq769x0_read_byte(TS3_HI_BYTE) & 0b00111111) << 8 | bq769x0_read_byte(TS3_LO_BYTE);
         vtsx = adcVal * 0.382; // mV
         rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
-        tmp = 1.0/(1.0/(273.15+25) + 1.0/bms->thermistor_beta*log(rts/10000.0)); // K
-        bms->temperatures[2] = (tmp - 273.15) * 10.0;
+        tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
+        status->temperatures[2] = (tmp - 273.15) * 10.0;
     }
 }
 
-
-//----------------------------------------------------------------------------
-
-void bms_update_current(BMS *bms)
+void bms_read_current(BmsConfig *conf, BmsStatus *status)
 {
     int adcVal = 0;
     regSYS_STAT_t sys_stat;
@@ -634,18 +588,18 @@ void bms_update_current(BMS *bms)
     {
         //printf("reading CC register...\n");
         adcVal = (bq769x0_read_byte(CC_HI_BYTE) << 8) | bq769x0_read_byte(CC_LO_BYTE);
-        bms->battery_current = (int16_t) adcVal * 8.44 / bms->shunt_res_mOhm;  // mA
+        status->pack_current = (int16_t) adcVal * 8.44 / conf->shunt_res_mOhm;  // mA
 
-        bms->coulomb_counter += bms->battery_current / 4;  // is read every 250 ms
+        status->coulomb_counter += status->pack_current / 4;  // is read every 250 ms
 
         // reduce resolution for actual current value
-        if (bms->battery_current > -10 && bms->battery_current < 10) {
-            bms->battery_current = 0;
+        if (status->pack_current > -10 && status->pack_current < 10) {
+            status->pack_current = 0;
         }
 
-        // reset idle_timestamp
-        if (abs(bms->battery_current) > bms->idle_current_threshold) {
-            bms->idle_timestamp = time(NULL);
+        // reset no_idle_timestamp
+        if (abs(status->pack_current) > conf->idle_current_threshold) {
+            status->no_idle_timestamp = time(NULL);
         }
 
         // no error occured which caused alert
@@ -657,44 +611,39 @@ void bms_update_current(BMS *bms)
     }
 }
 
-//----------------------------------------------------------------------------
-
-void bms_update_voltages(BMS *bms)
+void bms_read_voltages(BmsStatus *status)
 {
     int adc_val = 0;
     int connectedCellsTemp = 0;
 
-    bms->id_cell_voltage_max = 0;
-    bms->id_cell_voltage_min = 0;
+    status->id_cell_voltage_max = 0;
+    status->id_cell_voltage_min = 0;
     for (int i = 0; i < NUM_CELLS_MAX; i++)
     {
         adc_val = bq769x0_read_word(VC1_HI_BYTE + i*2) & 0x3FFF;
 
-        bms->cell_voltages[i] = adc_val * adc_gain / 1000 + adc_offset;
+        status->cell_voltages[i] = adc_val * adc_gain / 1000 + adc_offset;
 
-        if (bms->cell_voltages[i] > 500) {
+        if (status->cell_voltages[i] > 500) {
             connectedCellsTemp++;
         }
 
-        if (bms->cell_voltages[i] > bms->cell_voltages[bms->id_cell_voltage_max]) {
-            bms->id_cell_voltage_max = i;
+        if (status->cell_voltages[i] > status->cell_voltages[status->id_cell_voltage_max]) {
+            status->id_cell_voltage_max = i;
         }
-        if (bms->cell_voltages[i] < bms->cell_voltages[bms->id_cell_voltage_min] && bms->cell_voltages[i] > 500) {
-            bms->id_cell_voltage_min = i;
+        if (status->cell_voltages[i] < status->cell_voltages[status->id_cell_voltage_min] && status->cell_voltages[i] > 500) {
+            status->id_cell_voltage_min = i;
         }
     }
-    bms->connected_cells = connectedCellsTemp;
+    status->connected_cells = connectedCellsTemp;
 
     // read battery pack voltage
     adc_val = bq769x0_read_word(BAT_HI_BYTE);
-    bms->battery_voltage = 4.0 * adc_gain * adc_val / 1000.0 + bms->connected_cells * adc_offset;
+    status->pack_voltage = 4.0 * adc_gain * adc_val / 1000.0 + status->connected_cells * adc_offset;
 }
 
 
 #if BMS_DEBUG
-
-//----------------------------------------------------------------------------
-// for debug purposes
 
 void bms_print_registers()
 {

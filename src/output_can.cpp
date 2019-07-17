@@ -23,12 +23,7 @@
 extern Serial serial;
 extern CAN can;
 
-extern int battery_voltage;
-extern int battery_current;
 extern int load_voltage;
-extern int cell_voltages[15];      // max. number of cells
-extern float temperatures[3];
-extern float SOC;
 
 CANMsgQueue can_tx_queue;
 CANMsgQueue can_rx_queue;
