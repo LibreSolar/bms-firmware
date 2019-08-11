@@ -17,28 +17,25 @@
 #ifndef PCB_H
 #define PCB_H
 
-// board-specific confirugation
-//----------------------------------------------------------------------------
+/* Board-specific configuration
+ */
 
-// 5s BMS with bq76920
-// https://github.com/LibreSolar/BMS-5s
-#ifdef BMS_PCB_3_5S
-#define BMS_BQ76920
-#include "pcbs/pcb_3-5s.h"
+// 12V BMS with bq76920
+// https://github.com/LibreSolar/bms-5s50-sc
+#ifdef BMS_5S50_SC
+#include "pcbs/bms_5s50_sc.h"
 #endif
 
-// 48V BMS with bq76930
-// https://github.com/LibreSolar/BMS48V
-#ifdef BMS_PCB_6_10S
-#define BMS_BQ76930
-#include "pcbs/pcb_6-15s.h"
+// 24 to 48V BMS with bq76930/40
+// https://github.com/LibreSolar/bms-15s80-sc
+#ifdef BMS_15S80_SC
+#include "pcbs/bms_15s80_sc.h"
 #endif
 
-// 48V BMS with bq76940
-// https://github.com/LibreSolar/BMS48V
-#ifdef BMS_PCB_9_15S
-#define BMS_BQ76940
-#include "pcbs/pcb_6-15s.h"
+// 24V BMS with ISL94202
+// https://github.com/LibreSolar/bms-8s50-ic
+#ifdef BMS_8S50_IC
+#include "pcbs/bms_8s50_ic.h"
 #endif
 
 #endif // PCB_H

@@ -29,7 +29,7 @@ addons:
 
 script:
     #- cp src/config.h_template src/config.h
-    - platformio run -e bms_bq769x0
+    - platformio run -e bms-5s50-sc
     - doxygen Doxyfile
 
 deploy:
