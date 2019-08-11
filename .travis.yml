@@ -1,0 +1,41 @@
+language: python
+python:
+    - "2.7"
+
+# Cache PlatformIO packages using Travis CI container-based infrastructure
+sudo: false
+cache:
+    directories:
+        - "~/.platformio"
+
+env:
+    - PLATFORMIO_CI_SRC=src
+
+install:
+    - pip install -U platformio
+    - platformio update
+
+    #
+    # Libraries from PlatformIO Library Registry:
+    #
+    # https://platformio.org/lib/show/4ee/
+    # https://platformio.org/lib/show/c23/
+    # - platformio lib -g install 4ee c23
+
+addons:
+    apt:
+        packages:
+            - doxygen
+
+script:
+    #- cp src/config.h_template src/config.h
+    - platformio run -e bms_bq769x0
+    - doxygen Doxyfile
+
+deploy:
+    provider: pages
+    skip_cleanup: true
+    local_dir: html
+    github_token: $GH_REPO_TOKEN
+    on:
+        branch: master

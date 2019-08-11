@@ -16,10 +16,13 @@
 
 #include "mbed.h"
 #include "config.h"     // select hardware version
-#include "output.h"
+#include "pcb.h"
+#include "uext.h"
 #include "output_can.h"
+#include "output_serial.h"
 #include "data_objects.h"
-#include "bq769x0.h"    // Library for Texas Instruments bq76920 battery management IC
+
+#include "bms.h"
 
 //----------------------------------------------------------------------------
 // global variables
@@ -27,8 +30,7 @@
 Serial serial(PIN_SWD_TX, PIN_SWD_RX, "serial");
 CAN can(PIN_CAN_RX, PIN_CAN_TX, 250000);  // 250 kHz
 
-I2C i2c_bq(PIN_BQ_SDA, PIN_BQ_SCL);
-bq769x0 BMS(i2c_bq, PIN_BQ_ALERT, BMS_BQ_TYPE);
+BMS bms;
 
 DigitalOut led_green(PIN_LED_GREEN);
 DigitalOut led_red(PIN_LED_RED);
@@ -53,7 +55,7 @@ float SOC;
 int balancingStatus = 0;
 bool blinkOn = false;
 
-int OCV[NUM_OCV_POINTS] = { // 100, 95, ..., 0 %
+int OCV[] = { // 100, 95, ..., 0 %
   3392, 3314, 3309, 3308, 3304, 3296, 3283, 3275, 3271, 3268, 3265,
   3264, 3262, 3252, 3240, 3226, 3213, 3190, 3177, 3132, 2833
 };
@@ -84,8 +86,8 @@ int main()
         can_process_outbox();
         can_process_inbox();
 
-        BMS.update();
-      
+        bms.update();
+
         // called once per second
         if (time(NULL) - last_second >= 1) {
             last_second = time(NULL);
@@ -94,7 +96,7 @@ int main()
             if (button == 1) {
                 btnTimer.start();
                 if (btnTimer.read() > 3) {
-                    BMS.shutdown();
+                    bms.shutdown();
                 }
             } else {
                 btnTimer.stop();
@@ -103,20 +105,11 @@ int main()
 
             fflush(stdout);
 
-            /*
-            // test communication
-            char buf[10];
-            buf[0] = 0x0B;
-            i2c_bq.write(BMS_I2C_ADDRESS << 1, buf, 1);
-            i2c_bq.read(BMS_I2C_ADDRESS << 1, buf, 1);
-            serial.printf("buf: 0x%x\n", buf[0]);
-            */
-
             update_measurements();
 
-            //BMS.printRegisters();
-            output_oled();
-            //output_doglcd();
+            uext_process_1s();
+
+            //BMS.print_registers();
 
             led_green = !led_green;
         }
@@ -130,46 +123,45 @@ void setup()
 {
     //serial.baud(9600);
     serial.baud(115200);
-    serial.printf("\nSerial interface started. Time: %d\n", time(NULL));
+    serial.printf("\nSerial interface started. Time: %d\n", (unsigned int)time(NULL));
     freopen("/serial", "w", stdout);    // retarget stdout to serial
 
     can.attach(&can_receive);
     can.mode(CAN::Normal);
 
-    // not needed if doglcd not used. remove if other device connected to UEXT SPI port
-    init_doglcd();
+    uext_init();
 
     // TXFP: Transmit FIFO priority driven by request order (chronologically)
     // NART: No automatic retransmission
     CAN1->MCR |= CAN_MCR_TXFP | CAN_MCR_NART;
 
     // ToDo: Ensure that these settings are set even in case of initial communication error
-    BMS.setTemperatureLimits(-20, 45, 0, 45);
-    BMS.setShuntResistorValue(SHUNT_RESISTOR);
-    BMS.setShortCircuitProtection(35000, 200);  // delay in us
-    BMS.setOvercurrentChargeProtection(25000, 200);  // delay in ms
-    BMS.setOvercurrentDischargeProtection(20000, 320); // delay in ms
-    BMS.setCellUndervoltageProtection(2800, 2); // delay in s
-    BMS.setCellOvervoltageProtection(3650, 2);  // delay in s
+    bms.temperature_limits(-20, 45, 0, 45);
+    bms.set_shunt_res(SHUNT_RESISTOR);
+    bms.dis_sc_limit(35000, 200);  // delay in us
+    bms.chg_oc_limit(25000, 200);  // delay in ms
+    bms.dis_oc_limit(20000, 320); // delay in ms
+    bms.cell_uv_limit(2800, 2); // delay in s
+    bms.cell_ov_limit(3650, 2);  // delay in s
 
-    BMS.setOCV(OCV);
-    BMS.setBatteryCapacity(45000);  // mAh
+    bms.set_ocv(OCV, sizeof(OCV)/sizeof(int));
+    bms.set_battery_capacity(45000);  // mAh
 
-    BMS.update();   // get voltage and temperature measurements before switching on
+    bms.update();   // get voltage and temperature measurements before switching on
 
-    BMS.setBalancingThresholds(10, 3200, 10);  // minIdleTime_min, minCellV_mV, maxVoltageDiff_mV
-    BMS.setIdleCurrentThreshold(100);
-    BMS.enableAutoBalancing();
+    bms.balancing_thresholds(10, 3200, 10);  // minIdleTime_min, minCellV_mV, maxVoltageDiff_mV
+    bms.set_idle_current_threshold(100);
+    bms.auto_balancing(true);
 
     // TODO: watch voltage rise before stopping pre-charge
     pchg_enable = 1;
     wait(2);
     pchg_enable = 0;
 
-    BMS.update();
-    BMS.resetSOC();
-    BMS.enableDischarging();
-    BMS.enableCharging();
+    bms.update();
+    bms.reset_soc();
+    bms.dis_switch(true);
+    bms.chg_switch(true);
 
     update_measurements();
 }
@@ -201,13 +193,13 @@ void update_measurements(void)
     }
     load_voltage = (sum_adc_readings / ADC_AVG_SAMPLES) * 110 / 10 * vcc / 0xFFFF;
 
-    battery_voltage = BMS.getBatteryVoltage();
-    battery_current = BMS.getBatteryCurrent();
-    cell_voltages[0] = BMS.getCellVoltage(1);
-    cell_voltages[1] = BMS.getCellVoltage(2);
-    cell_voltages[2] = BMS.getCellVoltage(3);
-    cell_voltages[3] = BMS.getCellVoltage(4);
-    cell_voltages[4] = BMS.getCellVoltage(5);
-    temperatures[0] = BMS.getTemperatureDegC(1);
-    SOC = BMS.getSOC();
+    battery_voltage = bms.pack_voltage();
+    battery_current = bms.pack_current();
+    cell_voltages[0] = bms.cell_voltage(1);
+    cell_voltages[1] = bms.cell_voltage(2);
+    cell_voltages[2] = bms.cell_voltage(3);
+    cell_voltages[3] = bms.cell_voltage(4);
+    cell_voltages[4] = bms.cell_voltage(5);
+    temperatures[0] = bms.get_temp_degC(1);
+    SOC = bms.get_soc();
 }
