@@ -1,4 +1,4 @@
-/* LibreSolar Battery Management System firmware
+/* Libre Solar Battery Management System firmware
  * Copyright (c) 2016-2019 Martin Jäger (www.libre.solar)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

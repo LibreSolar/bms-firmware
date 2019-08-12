@@ -535,9 +535,10 @@ int bms_apply_cell_ovp(BmsConfig *conf)
     return ((long)1 << 13 | ov_trip << 4) * adc_gain / 1000 + adc_offset;
 }
 
-void bms_apply_temp_limits(BmsConfig *bms)
+int bms_apply_temp_limits(BmsConfig *bms)
 {
     // bq769x0 don't support temperature limits --> has to be solved in software
+    return 0;
 }
 
 //----------------------------------------------------------------------------

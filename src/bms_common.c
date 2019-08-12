@@ -18,7 +18,7 @@
 
 #include <stdio.h>
 
-void bms_config_init(BmsConfig *conf)
+void bms_init_config(BmsConfig *conf)
 {
     // set some safe default values
     conf->auto_balancing_enabled = false;

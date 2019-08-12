@@ -29,6 +29,7 @@
 extern "C" {
 #endif
 
+#include <stdio.h>
 #include <time.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -175,13 +176,15 @@ void bms_reset_soc(BmsConfig *conf, BmsStatus *status, int percent);
  * Apply charge/discharge temperature limits.
  *
  * @param conf BMS configuration containing the limit settings
+ * @returns 1 for success or 0 in case of error
  */
-void bms_apply_temp_limits(BmsConfig *conf);
+int bms_apply_temp_limits(BmsConfig *conf);
 
 /**
  * Apply discharge short circuit protection (SCP) current threshold and delay.
  *
  * @param conf BMS configuration containing the limit settings
+ * @returns applied current threshold value or 0 in case of error
  */
 int bms_apply_dis_scp(BmsConfig *conf);
 
@@ -189,6 +192,7 @@ int bms_apply_dis_scp(BmsConfig *conf);
  * Apply discharge overcurrent protection (OCP) threshold and delay.
  *
  * @param conf BMS configuration containing the limit settings
+ * @returns applied current threshold value or 0 in case of error
  */
 int bms_apply_dis_ocp(BmsConfig *conf);
 
@@ -196,6 +200,7 @@ int bms_apply_dis_ocp(BmsConfig *conf);
  * Apply charge overcurrent protection (OCP) threshold and delay.
  *
  * @param conf BMS configuration containing the limit settings
+ * @returns applied current threshold value or 0 in case of error
  */
 int bms_apply_chg_ocp(BmsConfig *conf);
 
@@ -203,6 +208,7 @@ int bms_apply_chg_ocp(BmsConfig *conf);
  * Apply cell undervoltage protection (UVP) threshold and delay.
  *
  * @param conf BMS configuration containing the limit settings
+ * @returns 1 for success or 0 in case of error
  */
 int bms_apply_cell_uvp(BmsConfig *conf);
 
@@ -210,6 +216,7 @@ int bms_apply_cell_uvp(BmsConfig *conf);
  * Apply cell overvoltage protection (OVP) threshold and delay.
  *
  * @param conf BMS configuration containing the limit settings
+ * @returns 1 for success or 0 in case of error
  */
 int bms_apply_cell_ovp(BmsConfig *conf);
 

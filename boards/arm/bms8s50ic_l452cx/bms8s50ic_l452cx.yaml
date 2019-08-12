@@ -1,0 +1,17 @@
+identifier: bms8s50ic_l452cx
+name: BMS-8S50-IC-L452CX
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+ram: 64
+flash: 256
+supported:
+  - nvs
+  - pwm
+  - can
+  - rtc
+  - counter
+  - spi
