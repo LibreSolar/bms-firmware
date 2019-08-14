@@ -111,20 +111,28 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
 
 int bms_apply_dis_scp(BmsConfig *conf)
 {
-    /* ToDo */
+    return isl94202_apply_current_limit(ISL94202_OCCT_OCC,
+        DSC_Thresholds, sizeof(DSC_Thresholds),
+        conf->dis_sc_limit_mA / 1000, conf->shunt_res_mOhm,
+        ISL94202_DELAY_US, conf->dis_sc_delay_us);
     return 0;
 }
 
 int bms_apply_chg_ocp(BmsConfig *conf)
 {
-    /* ToDo */
+    return isl94202_apply_current_limit(ISL94202_OCCT_OCC,
+        OCC_Thresholds, sizeof(OCC_Thresholds),
+        conf->chg_oc_limit_mA / 1000, conf->shunt_res_mOhm,
+        ISL94202_DELAY_MS, conf->chg_oc_delay_ms);
     return 0;
 }
 
 int bms_apply_dis_ocp(BmsConfig *conf)
 {
-    /* ToDo */
-    return 0;
+    return isl94202_apply_current_limit(ISL94202_OCDT_OCD,
+        OCD_Thresholds, sizeof(OCD_Thresholds),
+        conf->dis_oc_limit_mA / 1000, conf->shunt_res_mOhm,
+        ISL94202_DELAY_MS, conf->dis_oc_delay_ms);
 }
 
 int bms_apply_cell_uvp(BmsConfig *conf)

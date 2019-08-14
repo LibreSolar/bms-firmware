@@ -288,13 +288,13 @@
 #define ISL94202__Msk       (0xFFFU << )
 */
 
-static const int OCD_thresholds [8] =
+static const uint16_t OCD_Thresholds[] =
     { 4, 8, 16, 24, 32, 48, 64, 96 }; // mV
 
-static const int OCC_thresholds [8] =
+static const uint16_t OCC_Thresholds[] =
     { 1, 2, 4, 6, 8, 12, 16, 24 }; // mV
 
-static const int DSC_thresholds [8] =
+static const uint16_t DSC_Thresholds[] =
     { 16, 24, 32, 48, 64, 96, 128, 256 }; // mV
 
 // Scale Value for delay times (first 2 bytes)

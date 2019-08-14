@@ -91,4 +91,39 @@ void isl94202_init() {;}
 
 #endif // ZEPHYR
 
+int isl94202_write_word(uint8_t reg_addr, uint16_t word)
+{
+	uint8_t buf[2];
+	buf[0] = word;
+	buf[1] = word >> 8;
+	return isl94202_write_bytes(reg_addr, buf, 2);
+}
+
+float isl94202_apply_current_limit(uint8_t reg_addr,
+    const uint16_t *voltage_thresholds_mV, int num_thresholds,
+	float current_limit, float shunt_res_mOhm,
+    uint8_t delay_unit, uint16_t delay_value)
+{
+    uint16_t reg = 0;
+    float actual_current_limit = 0;
+
+	if (delay_value > 1023 || delay_unit > ISL94202_DELAY_MIN) {
+		return 0;
+	}
+
+	// delay value: bits 0-9, unit: bits A-B
+	reg = (delay_unit << 0xA) + delay_value;
+
+    for (int i = num_thresholds - 1; i > 0; i--) {
+        if (current_limit * shunt_res_mOhm / 1000 >= voltage_thresholds_mV[i]) {
+            reg = i << 0xC;	// threshold: bits C-E
+            actual_current_limit = voltage_thresholds_mV[i] * 1000 / shunt_res_mOhm;
+            break;
+        }
+    }
+    isl94202_write_word(reg_addr, reg);
+
+	return actual_current_limit;
+}
+
 #endif // BMS_ISL94202
