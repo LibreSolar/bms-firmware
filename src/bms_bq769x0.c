@@ -127,7 +127,7 @@ int bms_quickcheck(BmsConfig *conf, BmsStatus *status)
                 }
                 if (sys_stat.regByte & 0b00001000) { // UV error
                     bms_read_voltages(status);
-                    if (status->cell_voltages[status->id_cell_voltage_min] > conf->cell_uv_limit_mV) {
+                    if (status->cell_voltages[status->id_cell_voltage_min] > conf->cell_uv_limit) {
                         #if BMS_DEBUG
                         printf("Attempting to clear UV error");
                         #endif
@@ -137,7 +137,7 @@ int bms_quickcheck(BmsConfig *conf, BmsStatus *status)
                 }
                 if (sys_stat.regByte & 0b00000100) { // OV error
                     bms_read_voltages(status);
-                    if (status->cell_voltages[status->id_cell_voltage_max] < conf->cell_ov_limit_mV) {
+                    if (status->cell_voltages[status->id_cell_voltage_max] < conf->cell_ov_limit) {
                         #if BMS_DEBUG
                         printf("Attempting to clear OV error");
                         #endif
@@ -251,8 +251,8 @@ bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
     if (enable) {
         #if BMS_DEBUG
         printf("check_status() = %d\n", bms_quickcheck(conf, status));
-        printf("Umax = %d\n", status->cell_voltages[status->id_cell_voltage_max]);
-        printf("temperatures[0] = %d\n", status->temperatures[0]);
+        printf("Umax = %.2f\n", status->cell_voltages[status->id_cell_voltage_max]);
+        printf("temperatures[0] = %.1f\n", status->temperatures[0]);
         #endif
 
         int num_thermistors = NUM_CELLS_MAX/5;
@@ -265,7 +265,7 @@ bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
         }
 
         if (bms_quickcheck(conf, status) == 0 &&
-            status->cell_voltages[status->id_cell_voltage_max] < conf->cell_ov_limit_mV &&
+            status->cell_voltages[status->id_cell_voltage_max] < conf->cell_ov_limit &&
             cellTempChargeError == 0)
         {
             int sys_ctrl2;
@@ -295,8 +295,8 @@ bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
     #if BMS_DEBUG
     printf("check_status() = %d\n", bms_quickcheck(conf, status));
-    printf("Umin = %d\n", status->cell_voltages[status->id_cell_voltage_min]);
-    printf("temperatures[0] = %d\n", status->temperatures[0]);
+    printf("Umin = %.2f\n", status->cell_voltages[status->id_cell_voltage_min]);
+    printf("temperatures[0] = %.1f\n", status->temperatures[0]);
     #endif
 
     if (enable) {
@@ -310,7 +310,7 @@ bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
         }
 
         if (bms_quickcheck(conf, status) == 0 &&
-            status->cell_voltages[status->id_cell_voltage_min] > conf->cell_uv_limit_mV &&
+            status->cell_voltages[status->id_cell_voltage_min] > conf->cell_uv_limit &&
             cellTempDischargeError == 0)
         {
             int sys_ctrl2;
@@ -428,7 +428,7 @@ int bms_apply_dis_scp(BmsConfig *conf)
 
     protect1.bits.SCD_THRESH = 0;
     for (int i = sizeof(SCD_threshold_setting)-1; i > 0; i--) {
-        if (conf->dis_sc_limit_mA * conf->shunt_res_mOhm / 1000 >= SCD_threshold_setting[i]) {
+        if (conf->dis_sc_limit * conf->shunt_res_mOhm >= SCD_threshold_setting[i]) {
             protect1.bits.SCD_THRESH = i;
             break;
         }
@@ -463,7 +463,7 @@ int bms_apply_dis_ocp(BmsConfig *conf)
 
     protect2.bits.OCD_THRESH = 0;
     for (int i = sizeof(OCD_threshold_setting)-1; i > 0; i--) {
-        if (conf->dis_oc_limit_mA * conf->shunt_res_mOhm / 1000 >= OCD_threshold_setting[i]) {
+        if (conf->dis_oc_limit * conf->shunt_res_mOhm >= OCD_threshold_setting[i]) {
             protect2.bits.OCD_THRESH = i;
             break;
         }
@@ -491,7 +491,7 @@ int bms_apply_cell_uvp(BmsConfig *conf)
 
     protect3.regByte = bq769x0_read_byte(PROTECT3);
 
-    uv_trip = ((((long)conf->cell_uv_limit_mV - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
+    uv_trip = ((((long)conf->cell_uv_limit * 1000 - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
     uv_trip += 1;   // always round up for lower cell voltage
     bq769x0_write_byte(UV_TRIP, uv_trip);
 
@@ -518,7 +518,7 @@ int bms_apply_cell_ovp(BmsConfig *conf)
 
     protect3.regByte = bq769x0_read_byte(PROTECT3);
 
-    ov_trip = ((((long)conf->cell_ov_limit_mV - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
+    ov_trip = ((((long)conf->cell_ov_limit * 1000 - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
     bq769x0_write_byte(OV_TRIP, ov_trip);
 
     protect3.bits.OV_DELAY = 0;
@@ -589,17 +589,19 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
     {
         //printf("reading CC register...\n");
         adcVal = (bq769x0_read_byte(CC_HI_BYTE) << 8) | bq769x0_read_byte(CC_LO_BYTE);
-        status->pack_current = (int16_t) adcVal * 8.44 / conf->shunt_res_mOhm;  // mA
+        int32_t pack_current_mA = (int16_t) adcVal * 8.44 / conf->shunt_res_mOhm;
 
-        status->coulomb_counter += status->pack_current / 4;  // is read every 250 ms
+        status->coulomb_counter_mAs += pack_current_mA / 4;  // is read every 250 ms
 
         // reduce resolution for actual current value
-        if (status->pack_current > -10 && status->pack_current < 10) {
-            status->pack_current = 0;
+        if (pack_current_mA > -10 && pack_current_mA < 10) {
+            pack_current_mA = 0;
         }
 
+        status->pack_current = pack_current_mA / 1000;
+
         // reset no_idle_timestamp
-        if (abs(status->pack_current) > conf->idle_current_threshold) {
+        if (fabs(status->pack_current) > conf->idle_current_threshold) {
             status->no_idle_timestamp = time(NULL);
         }
 
@@ -623,16 +625,16 @@ void bms_read_voltages(BmsStatus *status)
     {
         adc_val = bq769x0_read_word(VC1_HI_BYTE + i*2) & 0x3FFF;
 
-        status->cell_voltages[i] = adc_val * adc_gain / 1000 + adc_offset;
+        status->cell_voltages[i] = (adc_val * adc_gain * 1e-3F + adc_offset) * 1e-3F;
 
-        if (status->cell_voltages[i] > 500) {
+        if (status->cell_voltages[i] > 0.5F) {
             connectedCellsTemp++;
         }
 
         if (status->cell_voltages[i] > status->cell_voltages[status->id_cell_voltage_max]) {
             status->id_cell_voltage_max = i;
         }
-        if (status->cell_voltages[i] < status->cell_voltages[status->id_cell_voltage_min] && status->cell_voltages[i] > 500) {
+        if (status->cell_voltages[i] < status->cell_voltages[status->id_cell_voltage_min] && status->cell_voltages[i] > 0.5) {
             status->id_cell_voltage_min = i;
         }
     }
@@ -640,7 +642,7 @@ void bms_read_voltages(BmsStatus *status)
 
     // read battery pack voltage
     adc_val = bq769x0_read_word(BAT_HI_BYTE);
-    status->pack_voltage = 4.0 * adc_gain * adc_val / 1000.0 + status->connected_cells * adc_offset;
+    status->pack_voltage = (4.0 * adc_gain * adc_val * 1e-3F + status->connected_cells * adc_offset) * 1e-3F;
 }
 
 

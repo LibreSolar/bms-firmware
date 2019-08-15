@@ -26,7 +26,7 @@
 
 #define CAN_QUEUE_SIZE 30
 
-static uint8_t can_node_id = CAN_NODE_ID;
+const uint8_t can_node_id = CAN_NODE_ID;
 
 class CANMsgQueue {
 public:

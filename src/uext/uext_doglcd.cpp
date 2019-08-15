@@ -34,15 +34,9 @@ DogLCD lcd(spi, PIN_UEXT_SSEL, PIN_UEXT_RX, PIN_UEXT_TX); //  spi, cs, a0, reset
 
 extern bool blinkOn;
 
-extern BMS bms;
-extern Serial serial;
+extern BmsStatus bms_status;
 
-extern int battery_voltage;
-extern int battery_current;
-extern int load_voltage;
-extern int cell_voltages[15];      // max. number of cells
-extern float temperatures[3];
-extern float SOC;
+extern float load_voltage;
 
 void uext_init()
 {
@@ -54,28 +48,26 @@ void uext_process_1s()
 {
     char str[20];
 
-    int balancingStatus = bms.get_balancing_status();
-
     lcd.clear_screen();
 
-    sprintf(str, "%.2fV", bms.pack_voltage()/1000.0);
+    sprintf(str, "%.2fV", bms_status.pack_voltage);
     lcd.string(0,0,font_8x16, str);
 
-    sprintf(str, "%.2fA", bms.pack_current()/1000.0);
+    sprintf(str, "%.2fA", bms_status.pack_current);
     lcd.string(7*8,0,font_8x16, str);
 
-    sprintf(str, "T:%.1f", bms.get_temp_degC(1));
+    sprintf(str, "T:%.1f", bms_status.temperatures[1]);
     lcd.string(0,2,font_6x8, str);
 
-    sprintf(str, "SOC:%.2f", bms.get_soc());
+    sprintf(str, "SOC:%d", bms_status.soc);
     lcd.string(6*7,2,font_6x8, str);
 
-    sprintf(str, "Load: %.2fV", load_voltage/1000.0);
+    sprintf(str, "Load: %.2fV", load_voltage);
     lcd.string(0,3,font_6x8, str);
 
     for (int i = 0; i < NUM_CELLS_MAX; i++) {
-        if (blinkOn || !(balancingStatus & (1 << i))) {
-            sprintf(str, "%d:%.3fV", i+1, bms.cell_voltage(i+1)/1000.0);
+        if (blinkOn || !(bms_status.balancing_status & (1 << i))) {
+            sprintf(str, "%d:%.3fV", i+1, bms_status.cell_voltages[i]);
             lcd.string((i % 2 == 0) ? 0 : 51, 4 + (i / 2), font_6x8, str);
         }
     }

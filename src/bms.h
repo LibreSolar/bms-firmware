@@ -44,7 +44,7 @@ extern "C" {
  */
 typedef struct
 {
-    /// Effective resistance of the current measurement shunt(s) on the PCB (micro-Ohms)
+    /// Effective resistance of the current measurement shunt(s) on the PCB (milli-Ohms)
     float shunt_res_mOhm;
 
     /// Beta value of the used thermistor. Typical value for Semitec 103AT-5 thermistor: 3435
@@ -52,38 +52,38 @@ typedef struct
 
     /// \brief Pointer to an array containing the Open Circuit Voltage of the cell vs. SOC.
     /// SOC must be equally spaced in descending order (100%, 95%, ..., 5%, 0%)
-    uint16_t *ocv;
+    float *ocv;
     size_t num_ocv_points;          ///< Number of point in OCV array
 
-    uint32_t nominal_capacity;      ///< Nominal capacity of battery pack (mAh)
+    float nominal_capacity_Ah;      ///< Nominal capacity of battery pack (Ah)
 
-    // Current limits (mA)
-    uint32_t dis_sc_limit_mA;       ///< Discharge short circuit limit (mA)
+    // Current limits
+    float dis_sc_limit;             ///< Discharge short circuit limit (A)
     uint32_t dis_sc_delay_us;       ///< Discharge short circuit delay (us)
-    uint32_t dis_oc_limit_mA;       ///< Discharge over-current limit (mA)
+    float dis_oc_limit;             ///< Discharge over-current limit (A)
     uint32_t dis_oc_delay_ms;       ///< Discharge over-current delay (ms)
-    uint32_t chg_oc_limit_mA;       ///< Charge over-current limit (mA)
+    float chg_oc_limit;             ///< Charge over-current limit (A)
     uint32_t chg_oc_delay_ms;       ///< Charge over-current delay (ms)
 
-    // Cell voltage limits (mV)
-    uint32_t cell_ov_limit_mV;      ///< Cell over-voltage limit (mV)
+    // Cell voltage limits
+    float cell_ov_limit;            ///< Cell over-voltage limit (V)
     uint32_t cell_ov_delay_ms;      ///< Cell over-voltage delay (ms)
-    uint32_t cell_uv_limit_mV;      ///< Cell under-voltage limit (mV)
+    float cell_uv_limit;            ///< Cell under-voltage limit (V)
     uint32_t cell_uv_delay_ms;      ///< Cell under-voltage delay (ms)
 
     // Temperature limits (°C)
-    int16_t dis_ot_limit;           ///< Discharge over-temperature (DOT) limit (°C)
-    int16_t dis_ut_limit;           ///< Discharge under-temperature (DUT) limit (°C)
-    int16_t chg_ot_limit;           ///< Charge over-temperature (COT) limit (°C)
-    int16_t chg_ut_limit;           ///< Charge under-temperature (CUT) limit (°C)
-    int16_t t_limit_hyst;           ///< Temperature limit hysteresis (°C)
+    float dis_ot_limit;             ///< Discharge over-temperature (DOT) limit (°C)
+    float dis_ut_limit;             ///< Discharge under-temperature (DUT) limit (°C)
+    float chg_ot_limit;             ///< Charge over-temperature (COT) limit (°C)
+    float chg_ut_limit;             ///< Charge under-temperature (CUT) limit (°C)
+    float t_limit_hyst;             ///< Temperature limit hysteresis (°C)
 
     // Balancing settings
     bool auto_balancing_enabled;            ///< Enable automatic balancing
-    uint16_t balancing_voltage_diff_target; ///< Balancing voltage difference target (mV)
-    uint16_t balancing_cell_voltage_min;    ///< Minimum voltage to start balancing (mV)
+    float balancing_voltage_diff_target;    ///< Balancing voltage difference target (V)
+    float balancing_cell_voltage_min;       ///< Minimum voltage to start balancing (V)
     uint16_t balancing_min_idle_s;          ///< Minimum idle duration before balancing (s)
-    uint16_t idle_current_threshold;        ///< Current threshold to be considered idle (mA)
+    float idle_current_threshold;           ///< Current threshold to be considered idle (A)
 } BmsConfig;
 
 
@@ -91,15 +91,15 @@ typedef struct
 {
     uint16_t connected_cells;                   ///< \brief Actual number of cells connected (might
                                                 ///< be less than NUM_CELLS_MAX)
-    uint16_t cell_voltages[NUM_CELLS_MAX];      ///< Single cell voltages (mV)
+    float cell_voltages[NUM_CELLS_MAX];         ///< Single cell voltages (V)
     uint16_t id_cell_voltage_max;               ///< ID of cell with maximum voltage
     uint16_t id_cell_voltage_min;               ///< ID of cell with minimum voltage
-    uint32_t pack_voltage;                      ///< Battery pack voltage (mV)
-    int32_t pack_current;                       ///< Battery pack current (mA)
-    int16_t temperatures[NUM_THERMISTORS_MAX];  ///< Temperatures (°C/10)
+    float pack_voltage;                         ///< Battery pack voltage (V)
+    float pack_current;                         ///< Battery pack current (A)
+    float temperatures[NUM_THERMISTORS_MAX];    ///< Temperatures (°C)
 
     uint16_t soc;                               ///< Calculated state of charge (SOC)
-    uint32_t coulomb_counter;                   ///< Current integration (mAs = milli Coulombs)
+    uint32_t coulomb_counter_mAs;               ///< Current integration (mAs = milli Coulombs)
 
     uint32_t balancing_status;                  ///< holds on/off status of balancing switches
     time_t no_idle_timestamp;                   ///< Stores last time of current > idle threshold

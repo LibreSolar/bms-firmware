@@ -53,7 +53,7 @@ void main(void)
 		cnt++;
 
 		bms_read_voltages(&bms_status);
-		printf("Cell voltages: %d, %d, %d, %d, %d, %d, %d, %d\n",
+		printf("Cell voltages: %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
 			bms_status.cell_voltages[0], bms_status.cell_voltages[1],
 			bms_status.cell_voltages[2], bms_status.cell_voltages[3],
 			bms_status.cell_voltages[4], bms_status.cell_voltages[5],

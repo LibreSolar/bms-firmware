@@ -30,31 +30,31 @@ void bms_init_config(BmsConfig *conf)
 
 void bms_update_soc(BmsConfig *conf, BmsStatus *status)
 {
-    status->soc = (double) status->coulomb_counter / conf->nominal_capacity * 100;
+    status->soc = status->coulomb_counter_mAs / (conf->nominal_capacity_Ah * 360); // %
 }
 
 void bms_reset_soc(BmsConfig *conf, BmsStatus *status, int percent)
 {
     if (percent <= 100 && percent >= 0)
     {
-        status->coulomb_counter = conf->nominal_capacity * (percent / 100.0);
+        status->coulomb_counter_mAs = conf->nominal_capacity_Ah * 3.6e6F * (percent / 100.0);
     }
     else  // reset based on OCV
     {
-        printf("NumCells: %d, voltage: %lu V\n", status->connected_cells, status->pack_voltage);
+        printf("NumCells: %d, voltage: %.2f V\n", status->connected_cells, status->pack_voltage);
         int voltage = status->pack_voltage / status->connected_cells;
 
-        status->coulomb_counter = 0;  // initialize with totally depleted battery (0% SOC)
+        status->coulomb_counter_mAs = 0;  // initialize with totally depleted battery (0% SOC)
 
         for (unsigned int i = 0; i < conf->num_ocv_points; i++)
         {
             if (conf->ocv[i] <= voltage) {
                 if (i == 0) {
-                    status->coulomb_counter = conf->nominal_capacity;  // 100% full
+                    status->coulomb_counter_mAs = conf->nominal_capacity_Ah * 3.6e6F;  // 100% full
                 }
                 else {
                     // interpolate between OCV[i] and OCV[i-1]
-                    status->coulomb_counter = (double) conf->nominal_capacity / (conf->num_ocv_points - 1.0) *
+                    status->coulomb_counter_mAs = conf->nominal_capacity_Ah * 3.6e6F / (conf->num_ocv_points - 1.0) *
                     (conf->num_ocv_points - 1.0 - i + ((float)voltage - conf->ocv[i])/(conf->ocv[i-1] - conf->ocv[i]));
                 }
                 return;

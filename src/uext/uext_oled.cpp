@@ -34,7 +34,7 @@ extern bool blinkOn;
 
 extern BmsStatus bms_status;
 
-extern int load_voltage;
+extern float load_voltage;
 
 void uext_init() {;}    // not needed
 
@@ -59,7 +59,7 @@ void uext_process_1s()    // OLED SSD1306
     for (int i = 0; i < NUM_CELLS_MAX; i++) {
         if (blinkOn || !(bms_status.balancing_status & (1 << i))) {
             oled.setTextCursor((i % 2 == 0) ? 0 : 64, 24 + (i / 2) * 8);
-            oled.printf("%d:%.3f V", i+1, bms_status.cell_voltages[i]/1000.0);
+            oled.printf("%d:%.3f V", i+1, bms_status.cell_voltages[i]);
         }
     }
 

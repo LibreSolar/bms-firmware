@@ -23,8 +23,6 @@
 extern Serial serial;
 extern CAN can;
 
-extern int load_voltage;
-
 CANMsgQueue can_tx_queue;
 CANMsgQueue can_rx_queue;
 

@@ -113,7 +113,7 @@ int bms_apply_dis_scp(BmsConfig *conf)
 {
     return isl94202_apply_current_limit(ISL94202_OCCT_OCC,
         DSC_Thresholds, sizeof(DSC_Thresholds),
-        conf->dis_sc_limit_mA / 1000, conf->shunt_res_mOhm,
+        conf->dis_sc_limit, conf->shunt_res_mOhm,
         ISL94202_DELAY_US, conf->dis_sc_delay_us);
     return 0;
 }
@@ -122,7 +122,7 @@ int bms_apply_chg_ocp(BmsConfig *conf)
 {
     return isl94202_apply_current_limit(ISL94202_OCCT_OCC,
         OCC_Thresholds, sizeof(OCC_Thresholds),
-        conf->chg_oc_limit_mA / 1000, conf->shunt_res_mOhm,
+        conf->chg_oc_limit, conf->shunt_res_mOhm,
         ISL94202_DELAY_MS, conf->chg_oc_delay_ms);
     return 0;
 }
@@ -131,7 +131,7 @@ int bms_apply_dis_ocp(BmsConfig *conf)
 {
     return isl94202_apply_current_limit(ISL94202_OCDT_OCD,
         OCD_Thresholds, sizeof(OCD_Thresholds),
-        conf->dis_oc_limit_mA / 1000, conf->shunt_res_mOhm,
+        conf->dis_oc_limit, conf->shunt_res_mOhm,
         ISL94202_DELAY_MS, conf->dis_oc_delay_ms);
 }
 
@@ -173,7 +173,7 @@ void bms_read_voltages(BmsStatus *status)
     for (int i = 0; i < NUM_CELLS_MAX; i++) {
         isl94202_read_bytes(ISL94202_CELL1 + i*2, buf, 2);
         uint32_t tmp = (buf[0] + (buf[1] << 8)) & 0x0FFF;
-        status->cell_voltages[i] = tmp * 18 * 800 / 4095 / 3;
+        status->cell_voltages[i] = (float)tmp * 18 * 800 / 4095 / 3 / 1000;
     }
 }
 

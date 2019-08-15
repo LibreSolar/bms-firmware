@@ -85,21 +85,21 @@ typedef struct {
 #define TS_OBJ_NAME 0x04
 #define TS_LIST     0x05
 
-extern int load_voltage;
+extern float load_voltage;
 extern BmsStatus bms_status;
 
 static uint16_t oid;
 
-static const DataObject_t dataObjects[] {
+static const DataObject_t dataObjects[] = {
     // output data
-    {oid=0x4001, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(bms_status.pack_voltage), "vBat"},
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(load_voltage), "vLoad"},
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(bms_status.cell_voltages[0]), "vCell1"},
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(bms_status.cell_voltages[1]), "vCell2"},
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(bms_status.cell_voltages[2]), "vCell3"},
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(bms_status.cell_voltages[3]), "vCell4"},
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(bms_status.cell_voltages[4]), "vCell5"},
-    {++oid, ACCESS_READ, TS_C_OUTPUT, T_INT32,  -3, (void*) &(bms_status.pack_current), "iBat"},
+    {oid=0x4001, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32,  0, (void*) &(bms_status.pack_voltage), "vBat"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32, 0, (void*) &(load_voltage), "vLoad"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32, 0, (void*) &(bms_status.cell_voltages[0]), "vCell1"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32, 0, (void*) &(bms_status.cell_voltages[1]), "vCell2"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32, 0, (void*) &(bms_status.cell_voltages[2]), "vCell3"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32, 0, (void*) &(bms_status.cell_voltages[3]), "vCell4"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32, 0, (void*) &(bms_status.cell_voltages[4]), "vCell5"},
+    {++oid, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32, 0, (void*) &(bms_status.pack_current), "iBat"},
     {++oid, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32, 0, (void*) &(bms_status.temperatures[0]), "tempBat"},
     {++oid, ACCESS_READ, TS_C_OUTPUT, T_FLOAT32, 0, (void*) &(bms_status.soc), "SOC"}
 };
