@@ -8,7 +8,7 @@ include($ENV{ZEPHYR_BASE}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
 
 project(libre_solar_bms)
 
-add_definitions(-DBMS_8S50_IC)
+add_definitions(-DBMS_8S50_IC -DZEPHYR)
 include_directories(src)
 
 target_sources(app PRIVATE src/main_zephyr.cpp)

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#ifndef UNIT_TEST
+
 #include "mbed.h"
 #include "config.h"     // select hardware version
 #include "pcb.h"
@@ -224,3 +226,5 @@ void update_measurements(void)
 
     bms_update(&bms_conf, &bms_status);
 }
+
+#endif /* UNIT_TEST */

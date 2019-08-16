@@ -1,4 +1,6 @@
 
+#ifndef UNIT_TEST
+
 #include "config.h"
 #include "pcb.h"
 #include "bms.h"
@@ -30,3 +32,5 @@ void output_serial()
 
     serial.printf(" \n");
 }
+
+#endif /* UNIT_TEST */

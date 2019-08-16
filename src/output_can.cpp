@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#ifndef UNIT_TEST
+
 #include "mbed.h"
 #include "config.h"
 #include "output_can.h"
@@ -217,3 +219,5 @@ void can_receive()
         }
     }
 }
+
+#endif /* UNIT_TEST */
