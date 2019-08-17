@@ -160,11 +160,25 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
 
 void bms_read_current(BmsConfig *conf, BmsStatus *status)
 {
-    /* ToDo */
     uint8_t buf[2];
+
+    // gain
+    isl94202_read_bytes(ISL94202_CG, buf, 1);
+    uint8_t gain_reg = (buf[0] & ISL94202_CG_Msk) >> ISL94202_CG_Pos;
+    int gain = gain_reg < 3 ? ISL94202_Current_Gain[gain_reg] : 500;
+
+    // direction / sign
+    int sign = 0;
+    isl94202_read_bytes(ISL94202_CHING, buf, 1);
+    sign += (buf[0] & ISL94202_CHING_Msk) >> ISL94202_CHING_Pos;
+    isl94202_read_bytes(ISL94202_DCHING, buf, 1);
+    sign -= (buf[0] & ISL94202_DCHING_Msk) >> ISL94202_DCHING_Pos;
+
+    // ADC value
     isl94202_read_bytes(ISL94202_ISNS, buf, 2);
     uint16_t tmp = (buf[0] + (buf[1] << 8)) & 0x0FFF;
-    //status->cell_voltages[i] = tmp * 1800 / 4095 / 3;
+
+    status->pack_current = (float)(sign * tmp * 1800) / 4095 / gain / conf->shunt_res_mOhm;
 }
 
 void bms_read_voltages(BmsStatus *status)
@@ -174,7 +188,18 @@ void bms_read_voltages(BmsStatus *status)
         isl94202_read_bytes(ISL94202_CELL1 + i*2, buf, 2);
         uint32_t tmp = (buf[0] + (buf[1] << 8)) & 0x0FFF;
         status->cell_voltages[i] = (float)tmp * 18 * 800 / 4095 / 3 / 1000;
+
+        if (status->cell_voltages[i] > status->cell_voltages[status->id_cell_voltage_max]) {
+            status->id_cell_voltage_max = i;
+        }
+        if (status->cell_voltages[i] < status->cell_voltages[status->id_cell_voltage_min] && status->cell_voltages[i] > 0.5) {
+            status->id_cell_voltage_min = i;
+        }
     }
+
+    isl94202_read_bytes(ISL94202_VBATT, buf, 2);
+    uint32_t tmp = (buf[0] + (buf[1] << 8)) & 0x0FFF;
+    status->pack_voltage = (float)tmp * 1.8 * 32 / 4095;
 }
 
 #if BMS_DEBUG

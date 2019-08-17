@@ -66,8 +66,7 @@ void setup()
     bms_chg_switch(&bms_conf, &bms_status, true);
 }
 
-
 int main()
 {
-    //run_tests();
+    isl94202_tests();
 }

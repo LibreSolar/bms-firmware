@@ -262,6 +262,21 @@
 
 // RAM registers
 
+// Charging direction indicator
+#define ISL94202_CHING      (0x82U)
+#define ISL94202_CHING_Pos  (0x2U)
+#define ISL94202_CHING_Msk  (0x1U << ISL94202_CHING_Pos)
+
+// Discharging direction indicator
+#define ISL94202_DCHING     (0x82U)
+#define ISL94202_DCHING_Pos (0x3U)
+#define ISL94202_DCHING_Msk (0x1U << ISL94202_DCHING_Pos)
+
+// Current sensor gain
+#define ISL94202_CG         (0x85U)
+#define ISL94202_CG_Pos     (0x4U)
+#define ISL94202_CG_Msk     (0x3U << ISL94202_CG_Pos)
+
 #define ISL94202_CELLMIN    (0x8AU)
 #define ISL94202_CELLMAX    (0x8CU)
 #define ISL94202_ISNS       (0x8EU)
@@ -296,6 +311,9 @@ static const uint16_t OCC_Thresholds[] =
 
 static const uint16_t DSC_Thresholds[] =
     { 16, 24, 32, 48, 64, 96, 128, 256 }; // mV
+
+static const uint16_t ISL94202_Current_Gain[] =
+    { 50, 5, 500, 500 };
 
 // Scale Value for delay times (first 2 bytes)
 #define ISL94202_DELAY_US   (0U)

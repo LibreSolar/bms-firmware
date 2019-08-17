@@ -226,7 +226,8 @@ int bms_apply_cell_ovp(BmsConfig *conf);
 void bms_apply_balancing(BmsConfig *conf, BmsStatus *status);
 
 /**
- * Reads all cell voltages to array cell_voltages[NUM_CELLS] and updates battery_voltage
+ * Reads all cell voltages to array cell_voltages[NUM_CELLS], updates battery_voltage and updates
+ * ids of cells with min/max voltage
  */
 void bms_read_voltages(BmsStatus *status);
 

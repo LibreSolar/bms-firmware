@@ -44,7 +44,7 @@ static struct device *i2c_dev;
 int isl94202_write_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes)
 {
 	uint8_t buf[5];
-	if ((reg_addr > 0x58 && reg_addr < 0x7F) || reg_addr > 0xAB || num_bytes > 4)
+	if ((reg_addr > 0x58 && reg_addr < 0x7F) || reg_addr + num_bytes > 0xAB || num_bytes > 4)
 	    return -1;
 
 	buf[0] = reg_addr;		// first byte contains register address
@@ -73,7 +73,7 @@ void isl94202_init()
 	}
 }
 
-#else // MBED
+#elif defined(__MBED__)
 
 int isl94202_write_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes)
 {
