@@ -30,6 +30,7 @@ addons:
 script:
     #- cp src/config.h_template src/config.h
     - platformio run -e bms-5s50-sc
+    - platformio test -e unit-test-native
     - doxygen Doxyfile
 
 deploy:
