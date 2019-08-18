@@ -109,28 +109,26 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
     /* ToDo */
 }
 
-int bms_apply_dis_scp(BmsConfig *conf)
+float bms_apply_dis_scp(BmsConfig *conf)
 {
-    return isl94202_apply_current_limit(ISL94202_OCCT_OCC,
-        DSC_Thresholds, sizeof(DSC_Thresholds),
+    return isl94202_apply_current_limit(ISL94202_SCDT_SCD,
+        DSC_Thresholds, sizeof(DSC_Thresholds)/sizeof(uint16_t),
         conf->dis_sc_limit, conf->shunt_res_mOhm,
         ISL94202_DELAY_US, conf->dis_sc_delay_us);
-    return 0;
 }
 
-int bms_apply_chg_ocp(BmsConfig *conf)
+float bms_apply_chg_ocp(BmsConfig *conf)
 {
     return isl94202_apply_current_limit(ISL94202_OCCT_OCC,
-        OCC_Thresholds, sizeof(OCC_Thresholds),
+        OCC_Thresholds, sizeof(OCC_Thresholds)/sizeof(uint16_t),
         conf->chg_oc_limit, conf->shunt_res_mOhm,
         ISL94202_DELAY_MS, conf->chg_oc_delay_ms);
-    return 0;
 }
 
-int bms_apply_dis_ocp(BmsConfig *conf)
+float bms_apply_dis_ocp(BmsConfig *conf)
 {
     return isl94202_apply_current_limit(ISL94202_OCDT_OCD,
-        OCD_Thresholds, sizeof(OCD_Thresholds),
+        OCD_Thresholds, sizeof(OCD_Thresholds)/sizeof(uint16_t),
         conf->dis_oc_limit, conf->shunt_res_mOhm,
         ISL94202_DELAY_MS, conf->dis_oc_delay_ms);
 }

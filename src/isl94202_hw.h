@@ -100,7 +100,7 @@ time_t isl94202_alert_timestamp();
  * @param delay_unit Unit (us, ms, s or min) of the threshold value
  * @param delay_value Value of the delay in the given unit
  *
- * @returns Actual threshold current in mA or 0 in case of error
+ * @returns Actual threshold current in A or 0 in case of error
  */
 float isl94202_apply_current_limit(uint8_t reg_addr,
     const uint16_t *voltage_thresholds_mV, int num_thresholds,

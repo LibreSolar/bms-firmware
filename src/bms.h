@@ -186,7 +186,7 @@ int bms_apply_temp_limits(BmsConfig *conf);
  * @param conf BMS configuration containing the limit settings
  * @returns applied current threshold value or 0 in case of error
  */
-int bms_apply_dis_scp(BmsConfig *conf);
+float bms_apply_dis_scp(BmsConfig *conf);
 
 /**
  * Apply discharge overcurrent protection (OCP) threshold and delay.
@@ -194,7 +194,7 @@ int bms_apply_dis_scp(BmsConfig *conf);
  * @param conf BMS configuration containing the limit settings
  * @returns applied current threshold value or 0 in case of error
  */
-int bms_apply_dis_ocp(BmsConfig *conf);
+float bms_apply_dis_ocp(BmsConfig *conf);
 
 /**
  * Apply charge overcurrent protection (OCP) threshold and delay.
@@ -202,7 +202,7 @@ int bms_apply_dis_ocp(BmsConfig *conf);
  * @param conf BMS configuration containing the limit settings
  * @returns applied current threshold value or 0 in case of error
  */
-int bms_apply_chg_ocp(BmsConfig *conf);
+float bms_apply_chg_ocp(BmsConfig *conf);
 
 /**
  * Apply cell undervoltage protection (UVP) threshold and delay.

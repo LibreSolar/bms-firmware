@@ -419,7 +419,7 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
     }
 }
 
-int bms_apply_dis_scp(BmsConfig *conf)
+float bms_apply_dis_scp(BmsConfig *conf)
 {
     regPROTECT1_t protect1;
 
@@ -449,13 +449,13 @@ int bms_apply_dis_scp(BmsConfig *conf)
         conf->shunt_res_mOhm;
 }
 
-int bms_apply_chg_ocp(BmsConfig *conf)
+float bms_apply_chg_ocp(BmsConfig *conf)
 {
     // ToDo: Software protection for charge overcurrent
     return 0;
 }
 
-int bms_apply_dis_ocp(BmsConfig *conf)
+float bms_apply_dis_ocp(BmsConfig *conf)
 {
     regPROTECT2_t protect2;
 

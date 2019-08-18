@@ -22,6 +22,8 @@
 #include "isl94202_hw.h"
 #include "isl94202_registers.h"
 
+#include <stdio.h>
+
 #ifdef ZEPHYR
 
 #include <zephyr.h>
@@ -105,7 +107,7 @@ float isl94202_apply_current_limit(uint8_t reg_addr,
     uint8_t delay_unit, uint16_t delay_value)
 {
     uint16_t reg = 0;
-    float actual_current_limit = 0;
+    float actual_current_limit = voltage_thresholds_mV[0] / shunt_res_mOhm;	// initialize with lowest value
 
 	if (delay_value > 1023 || delay_unit > ISL94202_DELAY_MIN) {
 		return 0;
@@ -114,10 +116,11 @@ float isl94202_apply_current_limit(uint8_t reg_addr,
 	// delay value: bits 0-9, unit: bits A-B
 	reg = (delay_unit << 0xA) + delay_value;
 
-    for (int i = num_thresholds - 1; i > 0; i--) {
-        if (current_limit * shunt_res_mOhm / 1000 >= voltage_thresholds_mV[i]) {
-            reg = i << 0xC;	// threshold: bits C-E
-            actual_current_limit = voltage_thresholds_mV[i] * 1000 / shunt_res_mOhm;
+	// choose lower current limit if target setting not exactly possible
+    for (int i = num_thresholds - 1; i >= 0; i--) {
+        if ((uint16_t)(current_limit * shunt_res_mOhm) >= voltage_thresholds_mV[i]) {
+			reg += (uint8_t)i << 0xC;	// threshold: bits C-E
+            actual_current_limit = voltage_thresholds_mV[i] / shunt_res_mOhm;
             break;
         }
     }
