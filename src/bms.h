@@ -67,8 +67,10 @@ typedef struct
 
     // Cell voltage limits
     float cell_ov_limit;            ///< Cell over-voltage limit (V)
+    float cell_ov_limit_hyst;       ///< Cell over-voltage limit hysteresis (V)
     uint32_t cell_ov_delay_ms;      ///< Cell over-voltage delay (ms)
     float cell_uv_limit;            ///< Cell under-voltage limit (V)
+    float cell_uv_limit_hyst;       ///< Cell under-voltage limit hysteresis (V)
     uint32_t cell_uv_delay_ms;      ///< Cell under-voltage delay (ms)
 
     // Temperature limits (°C)

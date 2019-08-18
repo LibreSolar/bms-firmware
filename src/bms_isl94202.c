@@ -111,7 +111,7 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
 
 float bms_apply_dis_scp(BmsConfig *conf)
 {
-    return isl94202_apply_current_limit(ISL94202_SCDT_SCD,
+    return isl94202_write_current_limit(ISL94202_SCDT_SCD,
         DSC_Thresholds, sizeof(DSC_Thresholds)/sizeof(uint16_t),
         conf->dis_sc_limit, conf->shunt_res_mOhm,
         ISL94202_DELAY_US, conf->dis_sc_delay_us);
@@ -119,7 +119,7 @@ float bms_apply_dis_scp(BmsConfig *conf)
 
 float bms_apply_chg_ocp(BmsConfig *conf)
 {
-    return isl94202_apply_current_limit(ISL94202_OCCT_OCC,
+    return isl94202_write_current_limit(ISL94202_OCCT_OCC,
         OCC_Thresholds, sizeof(OCC_Thresholds)/sizeof(uint16_t),
         conf->chg_oc_limit, conf->shunt_res_mOhm,
         ISL94202_DELAY_MS, conf->chg_oc_delay_ms);
@@ -127,22 +127,26 @@ float bms_apply_chg_ocp(BmsConfig *conf)
 
 float bms_apply_dis_ocp(BmsConfig *conf)
 {
-    return isl94202_apply_current_limit(ISL94202_OCDT_OCD,
+    return isl94202_write_current_limit(ISL94202_OCDT_OCD,
         OCD_Thresholds, sizeof(OCD_Thresholds)/sizeof(uint16_t),
         conf->dis_oc_limit, conf->shunt_res_mOhm,
         ISL94202_DELAY_MS, conf->dis_oc_delay_ms);
 }
 
-int bms_apply_cell_uvp(BmsConfig *conf)
-{
-    /* ToDo */
-    return 0;
-}
-
 int bms_apply_cell_ovp(BmsConfig *conf)
 {
-    /* ToDo */
-    return 0;
+    // keeping CPW at the default value of 1 ms
+    return isl94202_write_voltage(ISL94202_OVL_CPW, conf->cell_ov_limit, 1)
+        && isl94202_write_voltage(ISL94202_OVR, conf->cell_ov_limit - conf->cell_ov_limit_hyst, 0)
+        && isl94202_write_delay(ISL94202_OVDT, ISL94202_DELAY_MS, conf->cell_ov_delay_ms, 0);
+}
+
+int bms_apply_cell_uvp(BmsConfig *conf)
+{
+    // keeping LPW at the default value of 1 ms
+    return isl94202_write_voltage(ISL94202_UVL_LPW, conf->cell_uv_limit, 1)
+        && isl94202_write_voltage(ISL94202_UVR, conf->cell_uv_limit + conf->cell_uv_limit_hyst, 0)
+        && isl94202_write_delay(ISL94202_UVDT, ISL94202_DELAY_MS, conf->cell_uv_delay_ms, 0);
 }
 
 int bms_apply_temp_limits(BmsConfig *bms)

@@ -172,6 +172,30 @@ void test_apply_dis_scp_limits()
     TEST_ASSERT_EQUAL_HEX16(delay | (0x7U << 12), *((uint16_t*)&mem[0x1A]));
 }
 
+void test_apply_cell_ov_limits()
+{
+    bms_conf.cell_ov_limit = 4.251;      // default value
+    bms_conf.cell_ov_limit_hyst = 0.101;
+    bms_conf.cell_ov_delay_ms = 999;
+    uint16_t delay = 999 + (1U << 10);
+    bms_apply_cell_ovp(&bms_conf);
+    TEST_ASSERT_EQUAL_HEX16(0x1E2A, *((uint16_t*)&mem[0x00]));  // limit voltage
+    TEST_ASSERT_EQUAL_HEX16(0x0DD4, *((uint16_t*)&mem[0x02]));  // recovery voltage
+    TEST_ASSERT_EQUAL_HEX16(delay, *((uint16_t*)&mem[0x10]));   // delay
+}
+
+void test_apply_cell_uv_limits()
+{
+    bms_conf.cell_uv_limit = 2.7;       // default value
+    bms_conf.cell_uv_limit_hyst = 0.3;
+    bms_conf.cell_uv_delay_ms = 2222;
+    uint16_t delay = 2222/1000 + (2U << 10);
+    bms_apply_cell_uvp(&bms_conf);
+    TEST_ASSERT_EQUAL_HEX16(0x18FF, *((uint16_t*)&mem[0x04]));
+    TEST_ASSERT_EQUAL_HEX16(0x09FF, *((uint16_t*)&mem[0x06]));
+    TEST_ASSERT_EQUAL_HEX16(delay, *((uint16_t*)&mem[0x12]));
+}
+
 void isl94202_tests()
 {
     UNITY_BEGIN();
@@ -184,6 +208,9 @@ void isl94202_tests()
     RUN_TEST(test_apply_dis_ocp_limits);
     RUN_TEST(test_apply_chg_ocp_limits);
     RUN_TEST(test_apply_dis_scp_limits);
+
+    RUN_TEST(test_apply_cell_ov_limits);
+    RUN_TEST(test_apply_cell_uv_limits);
 
     UNITY_END();
 }

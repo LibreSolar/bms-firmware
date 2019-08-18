@@ -89,6 +89,19 @@ void isl94202_alert_flag_reset();
  */
 time_t isl94202_alert_timestamp();
 
+
+/**
+ * Writes a delay + extra bits to specified register
+ *
+ * @param reg_addr Register address
+ * @param delay_unit Unit (us, ms, s or min) of the threshold value
+ * @param delay_value Value of the delay in the given unit
+ * @param extra_bits Four extra bits C-F
+ *
+ * @returns Actual threshold current in A or 0 in case of error
+ */
+int isl94202_write_delay(uint8_t reg_addr, uint8_t delay_unit, uint16_t delay_value, uint8_t extra_bits);
+
 /**
  * Writes a current limit (threshold + delay) to specified register
  *
@@ -102,10 +115,21 @@ time_t isl94202_alert_timestamp();
  *
  * @returns Actual threshold current in A or 0 in case of error
  */
-float isl94202_apply_current_limit(uint8_t reg_addr,
+float isl94202_write_current_limit(uint8_t reg_addr,
     const uint16_t *voltage_thresholds_mV, int num_thresholds,
 	float current_limit, float shunt_res_mOhm,
     uint8_t delay_unit, uint16_t delay_value);
+
+/**
+ * Writes a voltage setting to specified register
+ *
+ * @param reg_addr Register address
+ * @param voltage Voltage setting (V)
+ * @param extra_bits Four extra bits left of voltage setting, set to 0 if not applicable
+ *
+ * @returns 1 for success or 0 in case of error
+ */
+int isl94202_write_voltage(uint8_t reg_addr, float voltage, uint8_t extra_bits);
 
 #ifdef __cplusplus
 }
