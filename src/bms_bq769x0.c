@@ -249,24 +249,8 @@ void bms_shutdown()
 bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
     if (enable) {
-        #if BMS_DEBUG
-        printf("check_status() = %d\n", bms_quickcheck(conf, status));
-        printf("Umax = %.2f\n", status->cell_voltages[status->id_cell_voltage_max]);
-        printf("temperatures[0] = %.1f\n", status->temperatures[0]);
-        #endif
-
-        int num_thermistors = NUM_CELLS_MAX/5;
-        bool cellTempChargeError = 0;
-
-        for (int thermistor = 0; thermistor < num_thermistors; thermistor++) {
-            cellTempChargeError |=
-                status->temperatures[thermistor] > conf->chg_ot_limit ||
-                status->temperatures[thermistor] < conf->chg_ut_limit;
-        }
-
         if (bms_quickcheck(conf, status) == 0 &&
-            status->cell_voltages[status->id_cell_voltage_max] < conf->cell_ov_limit &&
-            cellTempChargeError == 0)
+            bms_chg_allowed(conf, status))
         {
             int sys_ctrl2;
             sys_ctrl2 = bq769x0_read_byte(SYS_CTRL2);
@@ -293,25 +277,9 @@ bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 
 bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
-    #if BMS_DEBUG
-    printf("check_status() = %d\n", bms_quickcheck(conf, status));
-    printf("Umin = %.2f\n", status->cell_voltages[status->id_cell_voltage_min]);
-    printf("temperatures[0] = %.1f\n", status->temperatures[0]);
-    #endif
-
     if (enable) {
-        int num_thermistors = NUM_CELLS_MAX/5;
-        bool cellTempDischargeError = 0;
-
-        for (int thermistor = 0; thermistor < num_thermistors; thermistor++) {
-            cellTempDischargeError |=
-                status->temperatures[thermistor] > conf->dis_ot_limit ||
-                status->temperatures[thermistor] < conf->dis_ut_limit;
-        }
-
         if (bms_quickcheck(conf, status) == 0 &&
-            status->cell_voltages[status->id_cell_voltage_min] > conf->cell_uv_limit &&
-            cellTempDischargeError == 0)
+            bms_dis_allowed(conf, status))
         {
             int sys_ctrl2;
             sys_ctrl2 = bq769x0_read_byte(SYS_CTRL2);

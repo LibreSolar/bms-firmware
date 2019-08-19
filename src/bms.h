@@ -168,6 +168,20 @@ bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable);
 bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable);
 
 /**
+ * Charging limits check
+ *
+ * @returns if charging is allowed
+ */
+bool bms_chg_allowed(BmsConfig *conf, BmsStatus *status);
+
+/**
+ * Discharging limits check
+ *
+ * @returns if discharging is allowed
+ */
+bool bms_dis_allowed(BmsConfig *conf, BmsStatus *status);
+
+/**
  * SOC reset to specified value or calculation based on average cell open circuit voltage
  *
  * @param percent 0-100 %, -1 for calculation based on OCV

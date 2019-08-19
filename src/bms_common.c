@@ -28,6 +28,28 @@ void bms_init_config(BmsConfig *conf)
     conf->thermistor_beta = 3435;  // typical value for Semitec 103AT-5 thermistor
 }
 
+bool bms_chg_allowed(BmsConfig *conf, BmsStatus *status)
+{
+    int errors = 0;
+    for (int thermistor = 0; thermistor < NUM_THERMISTORS_MAX; thermistor++) {
+        errors += (status->temperatures[thermistor] > conf->chg_ot_limit ||
+            status->temperatures[thermistor] < conf->chg_ut_limit);
+    }
+    errors += status->cell_voltages[status->id_cell_voltage_max] > conf->cell_ov_limit;
+    return errors == 0;
+}
+
+bool bms_dis_allowed(BmsConfig *conf, BmsStatus *status)
+{
+    int errors = 0;
+    for (int thermistor = 0; thermistor < NUM_THERMISTORS_MAX; thermistor++) {
+        errors += (status->temperatures[thermistor] > conf->dis_ot_limit ||
+            status->temperatures[thermistor] < conf->dis_ut_limit);
+    }
+    errors += status->cell_voltages[status->id_cell_voltage_min] < conf->cell_uv_limit;
+    return errors == 0;
+}
+
 void bms_update_soc(BmsConfig *conf, BmsStatus *status)
 {
     status->soc = status->coulomb_counter_mAs / (conf->nominal_capacity_Ah * 360); // %
