@@ -28,6 +28,73 @@ void bms_init_config(BmsConfig *conf)
     conf->thermistor_beta = 3435;  // typical value for Semitec 103AT-5 thermistor
 }
 
+void bms_state_machine(BmsConfig *conf, BmsStatus *status)
+{
+    if (status->error_flags > 0) {
+        status->state = BMS_STATE_ERROR;
+    }
+
+    switch(status->state) {
+        case BMS_STATE_INIT:
+            /* TODO checks */
+            status->state = BMS_STATE_IDLE;
+            break;
+        case BMS_STATE_IDLE:
+            if (bms_dis_allowed(conf, status)) {
+                bms_dis_switch(conf, status, true);
+                status->state = BMS_STATE_DIS;
+            }
+            else if (bms_chg_allowed(conf, status)) {
+                bms_chg_switch(conf, status, true);
+                status->state = BMS_STATE_CHG;
+            }
+            break;
+        case BMS_STATE_CHG:
+            if (!bms_chg_allowed(conf, status)) {
+                bms_chg_switch(conf, status, false);
+                status->state = BMS_STATE_IDLE;
+            }
+            else if (bms_dis_allowed(conf, status)) {
+                bms_dis_switch(conf, status, true);
+                status->state = BMS_STATE_NORMAL;
+            }
+            break;
+        case BMS_STATE_DIS:
+            if (!bms_dis_allowed(conf, status)) {
+                bms_dis_switch(conf, status, false);
+                status->state = BMS_STATE_IDLE;
+            }
+            else if (bms_chg_allowed(conf, status)) {
+                bms_chg_switch(conf, status, true);
+                status->state = BMS_STATE_NORMAL;
+            }
+            break;
+        case BMS_STATE_NORMAL:
+            if (!bms_dis_allowed(conf, status)) {
+                bms_dis_switch(conf, status, false);
+                status->state = BMS_STATE_CHG;
+            }
+            else if (!bms_chg_allowed(conf, status)) {
+                bms_chg_switch(conf, status, false);
+                status->state = BMS_STATE_DIS;
+            }
+            else if (bms_balancing_allowed(conf, status)) {
+                status->state = BMS_STATE_BALANCING;
+            }
+            break;
+        case BMS_STATE_BALANCING:
+            if (!bms_balancing_allowed(conf, status)) {
+                status->state = BMS_STATE_NORMAL;
+            }
+            break;
+        case BMS_STATE_ERROR:
+            if (status->error_flags == 0) {
+                status->state = BMS_STATE_IDLE;
+            }
+            break;
+    }
+}
+
 bool bms_chg_allowed(BmsConfig *conf, BmsStatus *status)
 {
     int errors = 0;
@@ -48,6 +115,17 @@ bool bms_dis_allowed(BmsConfig *conf, BmsStatus *status)
     }
     errors += status->cell_voltages[status->id_cell_voltage_min] < conf->cell_uv_limit;
     return errors == 0;
+}
+
+bool bms_balancing_allowed(BmsConfig *conf, BmsStatus *status)
+{
+    int idle_sec = time(NULL) - status->no_idle_timestamp;
+    float voltage_diff = status->cell_voltages[status->id_cell_voltage_max] -
+        status->cell_voltages[status->id_cell_voltage_min];
+
+    return idle_sec >= conf->balancing_min_idle_s &&
+        status->cell_voltages[status->id_cell_voltage_max] > conf->balancing_cell_voltage_min &&
+        voltage_diff > conf->balancing_voltage_diff_target;
 }
 
 void bms_update_soc(BmsConfig *conf, BmsStatus *status)

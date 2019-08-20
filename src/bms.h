@@ -39,6 +39,19 @@ extern "C" {
 #define BMS_DEBUG 1
 
 /**
+ * Possible BMS states
+ */
+enum BmsState {
+    BMS_STATE_INIT,         ///< Initialization state of the BMS
+    BMS_STATE_IDLE,         ///< Idle state (chg and dis FETs off)
+    BMS_STATE_CHG,          ///< Charging state (discharging disabled)
+    BMS_STATE_DIS,          ///< Discharging state (charging disabled)
+    BMS_STATE_NORMAL,       ///< Normal operating mode (both charging and discharging enabled)
+    BMS_STATE_BALANCING,    ///< Balancing mode (at low current)
+    BMS_STATE_ERROR         ///< Error state
+};
+
+/**
  * BMS configuration values, stored in RAM. The configuration is not automatically applied after
  * values are changed!
  */
@@ -91,6 +104,8 @@ typedef struct
 
 typedef struct
 {
+    uint8_t state;                              ///< Current state of the battery
+
     uint16_t connected_cells;                   ///< \brief Actual number of cells connected (might
                                                 ///< be less than NUM_CELLS_MAX)
     float cell_voltages[NUM_CELLS_MAX];         ///< Single cell voltages (V)
@@ -139,6 +154,11 @@ void bms_init();
 void bms_init_config(BmsConfig *conf);
 
 /**
+ * Main BMS state machine
+ */
+void bms_state_machine(BmsConfig *conf, BmsStatus *status);
+
+/**
  * Fast function to check if BMS has an error
  *
  * @returns 0 if everything is OK
@@ -180,6 +200,13 @@ bool bms_chg_allowed(BmsConfig *conf, BmsStatus *status);
  * @returns if discharging is allowed
  */
 bool bms_dis_allowed(BmsConfig *conf, BmsStatus *status);
+
+/**
+ * Balancing limits check
+ *
+ * @returns if balancing is allowed
+ */
+bool bms_balancing_allowed(BmsConfig *conf, BmsStatus *status);
 
 /**
  * SOC reset to specified value or calculation based on average cell open circuit voltage
