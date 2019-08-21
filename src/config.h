@@ -17,6 +17,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#define DEVICE_ID 12345678
+
 #define ADC_AVG_SAMPLES 8       // number of ADC values to read for averaging
 
 // UEXT interfaces

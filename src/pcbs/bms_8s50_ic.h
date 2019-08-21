@@ -1,5 +1,5 @@
 /* LibreSolar Battery Management System firmware
- * Copyright (c) 2016-2018 Martin Jäger (www.libre.solar)
+ * Copyright (c) 2016-2019 Martin Jäger (www.libre.solar)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 
 #ifndef BMS_8S50_IC_H
 #define BMS_8S50_IC_H
+
+#define DEVICE_TYPE "BMS-8S50-IC"
+#define HARDWARE_VERSION "v0.1"
 
 #define BMS_ISL94202
 

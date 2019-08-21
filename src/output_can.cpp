@@ -20,7 +20,7 @@
 #include "config.h"
 #include "output_can.h"
 
-#include "data_objects.h"
+#include "thingset.h"
 
 extern Serial serial;
 extern CAN can;
@@ -79,10 +79,12 @@ int CANMsgQueue::first(CANMessage& msg) {
 // only 6 bit to specify type and transport protocol)
 //
 // Protocol details:
-// https://github.com/LibreSolar/ThingSet/blob/master/can.md
+// https://thingset.github.io
 
-void can_pub_msg(DataObject_t data_obj)
+void can_pub_msg(data_object_t data_obj)
 {
+    // TODO: use ThingSet library instead of preliminary code
+    /*
     union float2bytes { float f; char b[4]; } f2b;     // for conversion of float to single bytes
 
     int msg_priority = 6;
@@ -177,13 +179,16 @@ void can_pub_msg(DataObject_t data_obj)
             break;
     }
     can_tx_queue.enqueue(msg);
+    */
 }
 
 void can_send_data()
 {
+    /*
     for (unsigned int i = 0; i < sizeof(dataObjects)/sizeof(DataObject_t); ++i) {
         can_pub_msg(dataObjects[i]);
     }
+    */
 }
 
 void can_process_outbox()

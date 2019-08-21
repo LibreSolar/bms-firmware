@@ -1,5 +1,5 @@
 /* LibreSolar Battery Management System firmware
- * Copyright (c) 2016-2018 Martin Jäger (www.libre.solar)
+ * Copyright (c) 2016-2019 Martin Jäger (www.libre.solar)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-#ifndef CONFIG_3_5S_H
-#define CONFIG_3_5S_H
+#ifndef BMS_5S50_SC_H
+#define BMS_5S50_SC_H
+
+#define DEVICE_TYPE "BMS-5S50-SC"
+#define HARDWARE_VERSION "v0.1"
 
 #define SHUNT_RESISTOR 1.0  // mOhm
 

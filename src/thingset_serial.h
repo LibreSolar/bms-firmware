@@ -1,5 +1,5 @@
 /* LibreSolar Battery Management System firmware
- * Copyright (c) 2016-2018 Martin Jäger (www.libre.solar)
+ * Copyright (c) 2016-2019 Martin Jäger (www.libre.solar)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,13 @@
  */
 
 
-#ifndef OUTPUT_SERIAL_H
-#define OUTPUT_SERIAL_H
+#ifndef THINGSET_SERIAL_H
+#define THINGSET_SERIAL_H
 
-void output_serial();
+void thingset_serial_init();
+void thingset_serial_process_asap();
+void thingset_serial_process_1s();
+
+void thingset_serial_thread();
 
 #endif

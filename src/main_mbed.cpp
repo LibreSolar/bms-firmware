@@ -20,9 +20,9 @@
 #include "config.h"     // select hardware version
 #include "pcb.h"
 #include "uext.h"
+#include "thingset.h"
+#include "thingset_serial.h"
 #include "output_can.h"
-#include "output_serial.h"
-#include "data_objects.h"
 
 #include "bms.h"
 
@@ -34,6 +34,7 @@ CAN can(PIN_CAN_RX, PIN_CAN_TX, 250000);  // 250 kHz
 
 BmsConfig bms_conf;
 BmsStatus bms_status;
+extern ThingSet ts;
 
 DigitalOut led_green(PIN_LED_GREEN);
 DigitalOut led_red(PIN_LED_RED);
@@ -132,6 +133,7 @@ void setup()
     can.mode(CAN::Normal);
 
     uext_init();
+    thingset_serial_init();
 
     // TXFP: Transmit FIFO priority driven by request order (chronologically)
     // NART: No automatic retransmission

@@ -25,7 +25,6 @@
 #include "Adafruit_SSD1306.h" // Library for SSD1306 OLED-Display, 128x64
 
 #include "bms.h"
-#include "data_objects.h"
 
 I2C i2c(PIN_UEXT_SDA, PIN_UEXT_SCL);
 Adafruit_SSD1306_I2c oled(i2c, PB_2, 0x78, 64, 128);

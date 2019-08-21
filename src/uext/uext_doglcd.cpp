@@ -27,7 +27,6 @@
 #include "font_8x16.h"
 
 #include "bms.h"
-#include "data_objects.h"
 
 SPI spi(PIN_UEXT_MOSI, NC, PIN_UEXT_SCK);
 DogLCD lcd(spi, PIN_UEXT_SSEL, PIN_UEXT_RX, PIN_UEXT_TX); //  spi, cs, a0, reset

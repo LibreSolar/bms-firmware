@@ -21,6 +21,8 @@
 
 #include "uext.h"
 #include "bms.h"
+#include "thingset.h"
+#include "thingset_serial.h"
 
 #define LED_RED_PORT DT_ALIAS_LED_RED_GPIOS_CONTROLLER
 #define LED_RED_PIN  DT_ALIAS_LED_RED_GPIOS_PIN
@@ -32,6 +34,7 @@
 
 BmsConfig bms_conf;
 BmsStatus bms_status;
+extern ThingSet ts;
 
 void main(void)
 {
@@ -53,14 +56,12 @@ void main(void)
 		cnt++;
 
 		bms_read_voltages(&bms_status);
-		printf("Cell voltages: %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
-			bms_status.cell_voltages[0], bms_status.cell_voltages[1],
-			bms_status.cell_voltages[2], bms_status.cell_voltages[3],
-			bms_status.cell_voltages[4], bms_status.cell_voltages[5],
-			bms_status.cell_voltages[6], bms_status.cell_voltages[7]);
 
 		//bms_print_registers();
 
 		k_sleep(SLEEP_TIME);
 	}
 }
+
+K_THREAD_DEFINE(ts_serial_id, 2048, thingset_serial_thread, NULL, NULL, NULL,
+		5, 0, K_NO_WAIT);

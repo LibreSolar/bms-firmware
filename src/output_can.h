@@ -19,7 +19,6 @@
 
 #include "mbed.h"
 #include "config.h"
-#include "data_objects.h"
 
 #define PUB_MULTIFRAME_EN (0x1U << 7)
 #define PUB_TIMESTAMP_EN (0x1U << 6)

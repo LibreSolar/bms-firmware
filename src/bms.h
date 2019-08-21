@@ -104,7 +104,7 @@ typedef struct
 
 typedef struct
 {
-    uint8_t state;                              ///< Current state of the battery
+    uint16_t state;                             ///< Current state of the battery
 
     uint16_t connected_cells;                   ///< \brief Actual number of cells connected (might
                                                 ///< be less than NUM_CELLS_MAX)
@@ -115,7 +115,7 @@ typedef struct
     float pack_current;                         ///< Battery pack current (A)
     float temperatures[NUM_THERMISTORS_MAX];    ///< Temperatures (°C)
 
-    uint16_t soc;                               ///< Calculated state of charge (SOC)
+    uint16_t soc;                               ///< Calculated state of charge (%)
     uint32_t coulomb_counter_mAs;               ///< Current integration (mAs = milli Coulombs)
 
     uint32_t balancing_status;                  ///< holds on/off status of balancing switches
