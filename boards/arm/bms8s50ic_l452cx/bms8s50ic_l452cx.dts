@@ -31,6 +31,7 @@
 		/* TODO: put to GPIOs or similar */
 		i2c_pu: pb_2 {
 			gpios = <&gpiob 2 GPIO_INT_ACTIVE_HIGH>;
+			label = "I2C Pull-Up";
 		};
 	};
 
