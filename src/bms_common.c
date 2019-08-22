@@ -15,72 +15,156 @@
  */
 
 #include "bms.h"
+#include "pcb.h"
 
 #include <stdio.h>
 
-void bms_init_config(BmsConfig *conf)
+void bms_init_config(BmsConfig *conf, enum CellType type, float nominal_capacity)
 {
-    // set some safe default values
-    conf->auto_balancing_enabled = false;
+    conf->auto_balancing_enabled = true;
     conf->balancing_min_idle_s = 1800;    // default: 30 minutes
-    conf->idle_current_threshold = 30; // mA
+    conf->balancing_voltage_diff_target = 0.01; // 10 mV
+    conf->idle_current_threshold = 0.1; // A
 
     conf->thermistor_beta = 3435;  // typical value for Semitec 103AT-5 thermistor
+
+    conf->nominal_capacity_Ah = nominal_capacity;
+
+    if (conf->nominal_capacity_Ah < PCB_MAX_CURRENT) {
+        // 1C should be safe for all batteries
+        conf->dis_oc_limit = conf->nominal_capacity_Ah;
+        conf->chg_oc_limit = conf->nominal_capacity_Ah;
+    }
+    else {
+        conf->dis_oc_limit = PCB_MAX_CURRENT;
+        conf->chg_oc_limit = PCB_MAX_CURRENT;
+    }
+    conf->dis_oc_delay_ms  = 320;
+    conf->chg_oc_delay_ms  = 320;
+
+    conf->dis_sc_limit  = conf->dis_oc_limit * 2;
+    conf->dis_sc_delay_us  = 200;
+
+    conf->dis_ut_limit = -20;
+    conf->dis_ot_limit = 45;
+    conf->chg_ut_limit = 0;
+    conf->chg_ot_limit = 45;
+    conf->t_limit_hyst = 2;
+
+    conf->shunt_res_mOhm = SHUNT_RESISTOR;
+
+    // TODO
+    //conf->ocv = OCV;
+    //conf->num_ocv_points = sizeof(OCV)/sizeof(int);
+
+    conf->cell_ov_delay_ms = 2000;
+    conf->cell_uv_delay_ms = 2000;
+
+    switch (type)
+    {
+        case CELL_TYPE_LFP:
+            conf->cell_chg_voltage = 3.60;
+            conf->balancing_cell_voltage_min = 3.2;
+            conf->cell_ov_limit = 3.65;
+            conf->cell_ov_limit_hyst = 0.2;
+            conf->cell_uv_limit = 2.8;
+            conf->cell_uv_limit_hyst = 0.3;
+            break;
+        case CELL_TYPE_NMC:
+            conf->cell_chg_voltage = 4.20;
+            conf->balancing_cell_voltage_min = 3.8;
+            conf->cell_ov_limit = 4.25;
+            conf->cell_ov_limit_hyst = 0.2;
+            conf->cell_uv_limit = 3.2;
+            conf->cell_uv_limit_hyst = 0.3;
+            break;
+        case CELL_TYPE_NMC_HV:
+            conf->cell_chg_voltage = 4.30;
+            conf->balancing_cell_voltage_min = 3.8;
+            conf->cell_ov_limit = 4.35;
+            conf->cell_ov_limit_hyst = 0.2;
+            conf->cell_uv_limit = 3.0;
+            conf->cell_uv_limit_hyst = 0.3;
+            break;
+        case CELL_TYPE_LTO:
+            conf->cell_chg_voltage = 2.80;
+            conf->balancing_cell_voltage_min = 2.5;
+            conf->cell_ov_limit = 2.85;
+            conf->cell_ov_limit_hyst = 0.15;
+            conf->cell_uv_limit = 1.9;
+            conf->cell_uv_limit_hyst = 0.2;
+            break;
+        case CELL_TYPE_CUSTOM:
+            break;
+    }
 }
 
 void bms_state_machine(BmsConfig *conf, BmsStatus *status)
 {
     if (status->error_flags > 0) {
         status->state = BMS_STATE_ERROR;
+        printf("Going to state ERROR\n");
     }
 
     switch(status->state) {
         case BMS_STATE_INIT:
             /* TODO checks */
             status->state = BMS_STATE_IDLE;
+            printf("Going to state IDLE\n");
             break;
         case BMS_STATE_IDLE:
             if (bms_dis_allowed(conf, status)) {
                 bms_dis_switch(conf, status, true);
                 status->state = BMS_STATE_DIS;
+                printf("Going to state DIS\n");
             }
             else if (bms_chg_allowed(conf, status)) {
                 bms_chg_switch(conf, status, true);
                 status->state = BMS_STATE_CHG;
+                printf("Going to state CHG\n");
             }
             break;
         case BMS_STATE_CHG:
             if (!bms_chg_allowed(conf, status)) {
                 bms_chg_switch(conf, status, false);
                 status->state = BMS_STATE_IDLE;
+                printf("Going back to state IDLE\n");
             }
             else if (bms_dis_allowed(conf, status)) {
                 bms_dis_switch(conf, status, true);
                 status->state = BMS_STATE_NORMAL;
+                printf("Going to state NORMAL\n");
             }
             break;
         case BMS_STATE_DIS:
             if (!bms_dis_allowed(conf, status)) {
                 bms_dis_switch(conf, status, false);
                 status->state = BMS_STATE_IDLE;
+                printf("Going back to state IDLE\n");
             }
             else if (bms_chg_allowed(conf, status)) {
                 bms_chg_switch(conf, status, true);
                 status->state = BMS_STATE_NORMAL;
+                printf("Going to state NORMAL\n");
             }
             break;
         case BMS_STATE_NORMAL:
             if (!bms_dis_allowed(conf, status)) {
                 bms_dis_switch(conf, status, false);
                 status->state = BMS_STATE_CHG;
+                printf("Going back to state CHG\n");
             }
             else if (!bms_chg_allowed(conf, status)) {
                 bms_chg_switch(conf, status, false);
                 status->state = BMS_STATE_DIS;
+                printf("Going back to state DIS\n");
             }
+#ifndef ZEPHYR  // TODO: Zephyr crashes because of time(NULL) call
             else if (bms_balancing_allowed(conf, status)) {
                 status->state = BMS_STATE_BALANCING;
+                printf("Going to state BALANCING\n");
             }
+#endif
             break;
         case BMS_STATE_BALANCING:
             if (!bms_balancing_allowed(conf, status)) {

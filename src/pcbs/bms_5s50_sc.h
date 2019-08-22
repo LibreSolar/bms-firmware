@@ -21,6 +21,7 @@
 #define HARDWARE_VERSION "v0.1"
 
 #define SHUNT_RESISTOR 1.0  // mOhm
+#define PCB_MAX_CURRENT 50  // A
 
 #define NUM_CELLS_MAX 5
 #define NUM_THERMISTORS_MAX 1

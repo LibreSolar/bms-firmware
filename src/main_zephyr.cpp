@@ -29,24 +29,24 @@ extern ThingSet ts;
 
 void main(void)
 {
-	printf("Booting Libre Solar BMS: %s\n", CONFIG_BOARD);
+    printf("Booting Libre Solar BMS: %s\n", CONFIG_BOARD);
 
-	bms_init();
-	bms_init_config(&bms_conf);
+    bms_init();
+    bms_init_config(&bms_conf, CELL_TYPE_LFP, 45);
 
-	uext_init();
+    uext_init();
 
-	while (1) {
+    while (1) {
 
-		bms_update(&bms_conf, &bms_status);
-		bms_state_machine(&bms_conf, &bms_status);
+        bms_update(&bms_conf, &bms_status);
+        bms_state_machine(&bms_conf, &bms_status);
 
-		//bms_print_registers();
+        //bms_print_registers();
 
-		k_sleep(1000);
-	}
+        k_sleep(1000);
+    }
 }
 
-K_THREAD_DEFINE(ts_serial_id, 2048, thingset_serial_thread, NULL, NULL, NULL, 5, 0, K_NO_WAIT);
+K_THREAD_DEFINE(ts_serial_id, 4096, thingset_serial_thread, NULL, NULL, NULL, 5, 0, K_NO_WAIT);
 
 K_THREAD_DEFINE(leds_id, 256, leds_update_thread, NULL, NULL, NULL,	4, 0, K_NO_WAIT);

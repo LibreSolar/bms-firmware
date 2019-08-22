@@ -25,6 +25,7 @@
 #define ISL94202_I2C_ADDRESS (0x50 >> 1)
 
 #define SHUNT_RESISTOR 1.0  // mOhm
+#define PCB_MAX_CURRENT 50  // A
 
 #define NUM_CELLS_MAX 8
 #define NUM_THERMISTORS_MAX 2

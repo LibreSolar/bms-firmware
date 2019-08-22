@@ -51,6 +51,18 @@ enum BmsState {
     BMS_STATE_ERROR         ///< Error state
 };
 
+
+/**
+ * Battery cell types
+ */
+enum CellType {
+    CELL_TYPE_CUSTOM = 0,   ///< Custom settings
+    CELL_TYPE_LFP,          ///< LiFePO4 Li-ion cells (3.3 V nominal)
+    CELL_TYPE_NMC,          ///< NMC/Graphite Li-ion cells (3.7 V nominal)
+    CELL_TYPE_NMC_HV,       ///< NMC/Graphite High Voltage Li-ion cells (3.7 V nominal, 4.35 V max)
+    CELL_TYPE_LTO           ///< NMC/Titanate (2.4 V nominal)
+};
+
 /**
  * BMS configuration values, stored in RAM. The configuration is not automatically applied after
  * values are changed!
@@ -79,6 +91,7 @@ typedef struct
     uint32_t chg_oc_delay_ms;       ///< Charge over-current delay (ms)
 
     // Cell voltage limits
+    float cell_chg_voltage;         ///< Cell target charge voltage (V)
     float cell_ov_limit;            ///< Cell over-voltage limit (V)
     float cell_ov_limit_hyst;       ///< Cell over-voltage limit hysteresis (V)
     uint32_t cell_ov_delay_ms;      ///< Cell over-voltage delay (ms)
@@ -149,9 +162,9 @@ enum BmsErrorFlag {
 void bms_init();
 
 /**
- * Initialization of BmsConfig with typical default values.
+ * Initialization of BmsConfig with typical default values for the given cell type.
  */
-void bms_init_config(BmsConfig *conf);
+void bms_init_config(BmsConfig *conf, enum CellType type, float nominal_capacity);
 
 /**
  * Main BMS state machine

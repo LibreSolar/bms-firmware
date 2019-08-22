@@ -21,6 +21,7 @@
 #define HARDWARE_VERSION "v0.1"
 
 #define SHUNT_RESISTOR 1.5  // mOhm
+#define PCB_MAX_CURRENT 80  // A
 
 #ifdef BMS_BQ76930
 #define NUM_CELLS_MAX 10

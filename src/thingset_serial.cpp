@@ -108,7 +108,7 @@ void thingset_serial_process_1s()
 void thingset_serial_thread()
 {
     uint8_t buf_req[500];
-    uint8_t buf_resp[500];
+    uint8_t buf_resp[1000];
     unsigned int req_pos = 0;
 
     console_init();
@@ -133,7 +133,7 @@ void thingset_serial_thread()
                     for (int i = 0; i < len; i++) {
                         console_putchar(buf_resp[i]);
                     }
-                    printf("\n");
+                    console_putchar('\n');
                 }
 
                 req_pos = 0;
