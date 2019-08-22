@@ -15,22 +15,13 @@
  */
 
 #include <zephyr.h>
-#include <device.h>
-#include <drivers/gpio.h>
 #include <stdio.h>
 
-#include "uext.h"
 #include "bms.h"
+#include "uext.h"
+#include "leds.h"
 #include "thingset.h"
 #include "thingset_serial.h"
-
-#define LED_RED_PORT DT_ALIAS_LED_RED_GPIOS_CONTROLLER
-#define LED_RED_PIN  DT_ALIAS_LED_RED_GPIOS_PIN
-
-#define LED_GREEN_PORT DT_ALIAS_LED_GREEN_GPIOS_CONTROLLER
-#define LED_GREEN_PIN  DT_ALIAS_LED_GREEN_GPIOS_PIN
-
-#define SLEEP_TIME 	1000		// 1000 ms = 1 s
 
 BmsConfig bms_conf;
 BmsStatus bms_status;
@@ -38,30 +29,24 @@ extern ThingSet ts;
 
 void main(void)
 {
-	printf("Hello World! %s\n", CONFIG_BOARD);
+	printf("Booting Libre Solar BMS: %s\n", CONFIG_BOARD);
+
+	bms_init();
+	bms_init_config(&bms_conf);
 
 	uext_init();
 
-	bms_init();
-	//bms_init_config(&bms_conf);
-
-	int cnt = 0;
-	struct device *led_red;
-	led_red = device_get_binding(LED_RED_PORT);
-	gpio_pin_configure(led_red, LED_RED_PIN, GPIO_DIR_OUT);
-
 	while (1) {
-		// Set pin to HIGH/LOW every 1 second
-		gpio_pin_write(led_red, LED_RED_PIN, cnt % 2);
-		cnt++;
 
-		bms_read_voltages(&bms_status);
+		bms_update(&bms_conf, &bms_status);
+		bms_state_machine(&bms_conf, &bms_status);
 
 		//bms_print_registers();
 
-		k_sleep(SLEEP_TIME);
+		k_sleep(1000);
 	}
 }
 
-K_THREAD_DEFINE(ts_serial_id, 2048, thingset_serial_thread, NULL, NULL, NULL,
-		5, 0, K_NO_WAIT);
+K_THREAD_DEFINE(ts_serial_id, 2048, thingset_serial_thread, NULL, NULL, NULL, 5, 0, K_NO_WAIT);
+
+K_THREAD_DEFINE(leds_id, 256, leds_update_thread, NULL, NULL, NULL,	4, 0, K_NO_WAIT);
