@@ -1,5 +1,5 @@
-/* Battery management system based on bq769x0 for ARM mbed
- * Copyright (c) 2015-2018 Martin Jäger (www.libre.solar)
+/* Libre Solar Battery Management System firmware
+ * Copyright (c) 2016-2019 Martin Jäger (www.libre.solar)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

@@ -105,6 +105,7 @@ const data_object_t data_objects[] = {
 #endif
     {0x78, TS_OUTPUT, TS_READ_ALL, TS_T_UINT16,  0, (void*) &(bms_status.soc),                  "SOC_%"},     // output will be uint8_t
     {0x79, TS_OUTPUT, TS_READ_ALL, TS_T_UINT16,  0, (void*) &(bms_status.state),                "BmsState"},
+    {0x7A, TS_OUTPUT, TS_READ_ALL, TS_T_UINT32,  0, (void*) &(bms_status.error_flags),          "ErrorFlags"},
 
     //{0x80, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 3, (void*) &(bms_status.cell_voltages),        "Cells_V"},   // reserved for future cell voltage array
     {0x81, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 3, (void*) &(bms_status.cell_voltages[0]),     "Cell1_V"},

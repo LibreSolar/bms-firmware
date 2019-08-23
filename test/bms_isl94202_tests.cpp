@@ -88,6 +88,53 @@ void test_read_pack_current()
     TEST_ASSERT_EQUAL_FLOAT(0, roundf(bms_status.pack_current * 100) / 100);
 }
 
+void test_read_error_flags()
+{
+    *((uint16_t*)&mem[0x80]) = 0x01U << 2;
+    bms_read_error_flags(&bms_status);
+    TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_CELL_UNDERVOLTAGE, bms_status.error_flags);
+
+    *((uint16_t*)&mem[0x80]) = 0x01U << 0;
+    bms_read_error_flags(&bms_status);
+    TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_CELL_OVERVOLTAGE, bms_status.error_flags);
+
+    *((uint16_t*)&mem[0x80]) = 0x01U << 11;
+    bms_read_error_flags(&bms_status);
+    TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_SHORT_CIRCUIT, bms_status.error_flags);
+
+    *((uint16_t*)&mem[0x80]) = 0x01U << 10;
+    bms_read_error_flags(&bms_status);
+    TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_DIS_OVERCURRENT, bms_status.error_flags);
+
+    *((uint16_t*)&mem[0x80]) = 0x01U << 9;
+    bms_read_error_flags(&bms_status);
+    TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_CHG_OVERCURRENT, bms_status.error_flags);
+
+    *((uint16_t*)&mem[0x80]) = 0x01U << 13;
+    bms_read_error_flags(&bms_status);
+    TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_OPEN_WIRE, bms_status.error_flags);
+
+    *((uint16_t*)&mem[0x80]) = 0x01U << 5;
+    bms_read_error_flags(&bms_status);
+    TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_DIS_UNDERTEMP, bms_status.error_flags);
+
+    *((uint16_t*)&mem[0x80]) = 0x01U << 4;
+    bms_read_error_flags(&bms_status);
+    TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_DIS_OVERTEMP, bms_status.error_flags);
+
+    *((uint16_t*)&mem[0x80]) = 0x01U << 7;
+    bms_read_error_flags(&bms_status);
+    TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_CHG_UNDERTEMP, bms_status.error_flags);
+
+    *((uint16_t*)&mem[0x80]) = 0x01U << 6;
+    bms_read_error_flags(&bms_status);
+    TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_CHG_OVERTEMP, bms_status.error_flags);
+
+    *((uint16_t*)&mem[0x80]) = 0x01U << 12;
+    bms_read_error_flags(&bms_status);
+    TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_CELL_FAILURE, bms_status.error_flags);
+}
+
 void test_apply_dis_ocp_limits()
 {
     float act = 0;
@@ -204,6 +251,7 @@ void isl94202_tests()
     RUN_TEST(test_read_pack_voltage);
     RUN_TEST(test_read_min_max_voltage);
     RUN_TEST(test_read_pack_current);
+    RUN_TEST(test_read_error_flags);
 
     RUN_TEST(test_apply_dis_ocp_limits);
     RUN_TEST(test_apply_chg_ocp_limits);

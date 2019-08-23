@@ -16,7 +16,7 @@
 
 #include <stdint.h>
 
-// register map (16 bit words)
+// register map (organized as 16 bit words)
 
 // Overvoltage Threshold
 // Charge Detect Pulse Width
@@ -262,15 +262,71 @@
 
 // RAM registers
 
-// Charging direction indicator
-#define ISL94202_CHING      (0x82U)
-#define ISL94202_CHING_Pos  (0x2U)
-#define ISL94202_CHING_Msk  (0x1U << ISL94202_CHING_Pos)
+// First status register (mainly errors)
+#define ISL94202_STAT1              (0x80U)
+#define ISL94202_STAT1_OV_Pos       (0x0U)
+#define ISL94202_STAT1_OV_Msk       (0x1U << ISL94202_STAT1_OV_Pos)
+#define ISL94202_STAT1_OVLO_Pos     (0x1U)
+#define ISL94202_STAT1_OVLO_Msk     (0x1U << ISL94202_STAT1_OVLO_Pos)
+#define ISL94202_STAT1_UV_Pos       (0x2U)
+#define ISL94202_STAT1_UV_Msk       (0x1U << ISL94202_STAT1_UV_Pos)
+#define ISL94202_STAT1_UVLO_Pos     (0x3U)
+#define ISL94202_STAT1_UVLO_Msk     (0x1U << ISL94202_STAT1_UVLO_Pos)
+#define ISL94202_STAT1_DOT_Pos      (0x4U)
+#define ISL94202_STAT1_DOT_Msk      (0x1U << ISL94202_STAT1_DOT_Pos)
+#define ISL94202_STAT1_DUT_Pos      (0x5U)
+#define ISL94202_STAT1_DUT_Msk      (0x1U << ISL94202_STAT1_DUT_Pos)
+#define ISL94202_STAT1_COT_Pos      (0x6U)
+#define ISL94202_STAT1_COT_Msk      (0x1U << ISL94202_STAT1_COT_Pos)
+#define ISL94202_STAT1_CUT_Pos      (0x7U)
+#define ISL94202_STAT1_CUT_Msk      (0x1U << ISL94202_STAT1_CUT_Pos)
+#define ISL94202_STAT1_IOT_Pos      (0x8U)
+#define ISL94202_STAT1_IOT_Msk      (0x1U << ISL94202_STAT1_IOT_Pos)
+#define ISL94202_STAT1_COC_Pos      (0x9U)
+#define ISL94202_STAT1_COC_Msk      (0x1U << ISL94202_STAT1_COC_Pos)
+#define ISL94202_STAT1_DOC_Pos      (0xAU)
+#define ISL94202_STAT1_DOC_Msk      (0x1U << ISL94202_STAT1_DOC_Pos)
+#define ISL94202_STAT1_DSC_Pos      (0xBU)
+#define ISL94202_STAT1_DSC_Msk      (0x1U << ISL94202_STAT1_DSC_Pos)
+#define ISL94202_STAT1_CELLF_Pos    (0xCU)
+#define ISL94202_STAT1_CELLF_Msk    (0x1U << ISL94202_STAT1_CELLF_Pos)
+#define ISL94202_STAT1_OPEN_Pos     (0xDU)
+#define ISL94202_STAT1_OPEN_Msk     (0x1U << ISL94202_STAT1_OPEN_Pos)
+#define ISL94202_STAT1_EOCHG_Pos    (0xFU)
+#define ISL94202_STAT1_EOCHG_Msk    (0x1U << ISL94202_STAT1_EOCHG_Pos)
 
-// Discharging direction indicator
-#define ISL94202_DCHING     (0x82U)
-#define ISL94202_DCHING_Pos (0x3U)
-#define ISL94202_DCHING_Msk (0x1U << ISL94202_DCHING_Pos)
+// Second status register
+#define ISL94202_STAT2              (0x82U)
+#define ISL94202_STAT2_LDPRSNT_Pos  (0x0U)
+#define ISL94202_STAT2_LDPRSNT_Msk  (0x1U << ISL94202_STAT2_LDPRSNT_Pos)
+#define ISL94202_STAT2_CHPRSNT_Pos  (0x1U)
+#define ISL94202_STAT2_CHPRSNT_Msk  (0x1U << ISL94202_STAT2_CHPRSNT_Pos)
+#define ISL94202_STAT2_CHING_Pos    (0x2U)
+#define ISL94202_STAT2_CHING_Msk    (0x1U << ISL94202_STAT2_CHING_Pos)
+#define ISL94202_STAT2_DCHING_Pos   (0x3U)
+#define ISL94202_STAT2_DCHING_Msk   (0x1U << ISL94202_STAT2_DCHING_Pos)
+#define ISL94202_STAT2_ECCUSED_Pos  (0x4U)
+#define ISL94202_STAT2_ECCUSED_Msk  (0x1U << ISL94202_STAT2_ECCUSED_Pos)
+#define ISL94202_STAT2_ECCFAIL_Pos  (0x5U)
+#define ISL94202_STAT2_ECCFAIL_Msk  (0x1U << ISL94202_STAT2_ECCFAIL_Pos)
+#define ISL94202_STAT2_INTSCAN_Pos  (0x6U)
+#define ISL94202_STAT2_INTSCAN_Msk  (0x1U << ISL94202_STAT2_INTSCAN_Pos)
+#define ISL94202_STAT2_LVCHG_Pos    (0x7U)
+#define ISL94202_STAT2_LVCHG_Msk    (0x1U << ISL94202_STAT2_LVCHG_Pos)
+#define ISL94202_STAT2_CBOT_Pos     (0x8U)
+#define ISL94202_STAT2_CBOT_Msk     (0x1U << ISL94202_STAT2_CBOT_Pos)
+#define ISL94202_STAT2_CBUT_Pos     (0x9U)
+#define ISL94202_STAT2_CBUT_Msk     (0x1U << ISL94202_STAT2_CBUT_Pos)
+#define ISL94202_STAT2_CBOV_Pos     (0xAU)
+#define ISL94202_STAT2_CBOV_Msk     (0x1U << ISL94202_STAT2_CBOV_Pos)
+#define ISL94202_STAT2_CBUV_Pos     (0xBU)
+#define ISL94202_STAT2_CBUV_Msk     (0x1U << ISL94202_STAT2_CBUV_Pos)
+#define ISL94202_STAT2_INIDLE_Pos   (0xCU)
+#define ISL94202_STAT2_INIDLE_Msk   (0x1U << ISL94202_STAT2_INIDLE_Pos)
+#define ISL94202_STAT2_INDOZE_Pos   (0xDU)
+#define ISL94202_STAT2_INDOZE_Msk   (0x1U << ISL94202_STAT2_INDOZE_Pos)
+#define ISL94202_STAT2_INSLEEP_Pos  (0xEU)
+#define ISL94202_STAT2_INSLEEP_Msk  (0x1U << ISL94202_STAT2_INSLEEP_Pos)
 
 // Current sensor gain
 #define ISL94202_CG         (0x85U)
@@ -294,14 +350,6 @@
 #define ISL94202_VBATT      (0xA6U)
 #define ISL94202_VRGO       (0xA8U)
 #define ISL94202_ADC        (0xAAU)
-/*
-#define ISL94202__Pos       (0x0U)
-#define ISL94202__Msk       (0xFFFU << )
-
-#define ISL94202_           (0xU)
-#define ISL94202__Pos       (0x0U)
-#define ISL94202__Msk       (0xFFFU << )
-*/
 
 static const uint16_t OCD_Thresholds[] =
     { 4, 8, 16, 24, 32, 48, 64, 96 }; // mV

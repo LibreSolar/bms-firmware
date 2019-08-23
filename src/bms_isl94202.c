@@ -1,5 +1,5 @@
-/* Battery management system based on bq769x0 for ARM mbed
- * Copyright (c) 2015-2018 Martin Jäger (www.libre.solar)
+/* Libre Solar Battery Management System firmware
+ * Copyright (c) 2016-2019 Martin Jäger (www.libre.solar)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ void bms_update(BmsConfig *conf, BmsStatus *status)
     bms_read_voltages(status);
     bms_read_current(conf, status);
     bms_read_temperatures(conf, status);
+    bms_read_error_flags(status);
     bms_apply_balancing(conf, status);
     bms_update_soc(conf, status);
 }
@@ -171,10 +172,10 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
 
     // direction / sign
     int sign = 0;
-    isl94202_read_bytes(ISL94202_CHING, buf, 1);
-    sign += (buf[0] & ISL94202_CHING_Msk) >> ISL94202_CHING_Pos;
-    isl94202_read_bytes(ISL94202_DCHING, buf, 1);
-    sign -= (buf[0] & ISL94202_DCHING_Msk) >> ISL94202_DCHING_Pos;
+    isl94202_read_bytes(ISL94202_STAT2, buf, 1);
+    sign += (buf[0] & ISL94202_STAT2_CHING_Msk) >> ISL94202_STAT2_CHING_Pos;
+    isl94202_read_bytes(ISL94202_STAT2, buf, 1);
+    sign -= (buf[0] & ISL94202_STAT2_DCHING_Msk) >> ISL94202_STAT2_DCHING_Pos;
 
     // ADC value
     isl94202_read_bytes(ISL94202_ISNS, buf, 2);
@@ -202,6 +203,27 @@ void bms_read_voltages(BmsStatus *status)
     isl94202_read_bytes(ISL94202_VBATT, buf, 2);
     uint32_t tmp = (buf[0] + (buf[1] << 8)) & 0x0FFF;
     status->pack_voltage = (float)tmp * 1.8 * 32 / 4095;
+}
+
+void bms_read_error_flags(BmsStatus *status)
+{
+    uint8_t buf[2];
+    isl94202_read_bytes(ISL94202_STAT1, buf, 2);
+    uint16_t stat1 = buf[0] + (buf[1] << 8);
+
+    status->error_flags = 0;
+    if (stat1 & ISL94202_STAT1_UV_Msk)      status->error_flags |= 1U << BMS_ERR_CELL_UNDERVOLTAGE;
+    if (stat1 & ISL94202_STAT1_OV_Msk)      status->error_flags |= 1U << BMS_ERR_CELL_OVERVOLTAGE;
+    if (stat1 & ISL94202_STAT1_DSC_Msk)     status->error_flags |= 1U << BMS_ERR_SHORT_CIRCUIT;
+    if (stat1 & ISL94202_STAT1_DOC_Msk)     status->error_flags |= 1U << BMS_ERR_DIS_OVERCURRENT;
+    if (stat1 & ISL94202_STAT1_COC_Msk)     status->error_flags |= 1U << BMS_ERR_CHG_OVERCURRENT;
+    if (stat1 & ISL94202_STAT1_OPEN_Msk)    status->error_flags |= 1U << BMS_ERR_OPEN_WIRE;
+    if (stat1 & ISL94202_STAT1_DUT_Msk)     status->error_flags |= 1U << BMS_ERR_DIS_UNDERTEMP;
+    if (stat1 & ISL94202_STAT1_DOT_Msk)     status->error_flags |= 1U << BMS_ERR_DIS_OVERTEMP;
+    if (stat1 & ISL94202_STAT1_CUT_Msk)     status->error_flags |= 1U << BMS_ERR_CHG_UNDERTEMP;
+    if (stat1 & ISL94202_STAT1_COT_Msk)     status->error_flags |= 1U << BMS_ERR_CHG_OVERTEMP;
+    if (stat1 & ISL94202_STAT1_IOT_Msk)     status->error_flags |= 1U << BMS_ERR_INT_OVERTEMP;
+    if (stat1 & ISL94202_STAT1_CELLF_Msk)   status->error_flags |= 1U << BMS_ERR_CELL_FAILURE;
 }
 
 #if BMS_DEBUG

@@ -36,6 +36,7 @@ void init_conf()
     }
 
     bms_status.state = BMS_STATE_IDLE;
+    bms_status.error_flags = 0;
 }
 
 void check_chg_low_temp_limits()

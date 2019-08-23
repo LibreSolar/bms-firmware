@@ -1,5 +1,5 @@
-/* Battery management system based on bq769x0 for ARM mbed
- * Copyright (c) 2015-2018 Martin Jäger (www.libre.solar)
+/* Libre Solar Battery Management System firmware
+ * Copyright (c) 2016-2019 Martin Jäger (www.libre.solar)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,18 +142,18 @@ typedef struct
  * BMS error flags
  */
 enum BmsErrorFlag {
-    ERR_CELL_UNDERVOLTAGE,  ///< Cell undervoltage flag
-    ERR_CELL_OVERVOLTAGE,   ///< Cell undervoltage flag
-    ERR_SHORT_CIRCUIT,      ///< Pack short circuit (discharge direction)
-    ERR_DIS_OVERCURRENT,    ///< Pack overcurrent (discharge direction)
-    ERR_CHG_OVERCURRENT,    ///< Pack overcurrent (charge direction)
-    ERR_OPEN_WIRE,          ///< Cell open wire
-    ERR_DIS_UNDERTEMP,      ///< Temperature below discharge minimum limit
-    ERR_DIS_OVERTEMP,       ///< Temperature above discharge maximum limit
-    ERR_CHG_UNDERTEMP,      ///< Temperature below charge maximum limit
-    ERR_CHG_OVERTEMP,       ///< Temperature above charge maximum limit
-    ERR_INT_OVERTEMP,       ///< Internal temperature above limit (e.g. MOSFETs or IC)
-    ERR_CELL_FAILURE        ///< Cell failure (too high voltage difference)
+    BMS_ERR_CELL_UNDERVOLTAGE = 0,      ///< Cell undervoltage flag
+    BMS_ERR_CELL_OVERVOLTAGE = 1,       ///< Cell undervoltage flag
+    BMS_ERR_SHORT_CIRCUIT = 2,          ///< Pack short circuit (discharge direction)
+    BMS_ERR_DIS_OVERCURRENT = 3,        ///< Pack overcurrent (discharge direction)
+    BMS_ERR_CHG_OVERCURRENT = 4,        ///< Pack overcurrent (charge direction)
+    BMS_ERR_OPEN_WIRE = 5,              ///< Cell open wire
+    BMS_ERR_DIS_UNDERTEMP = 6,          ///< Temperature below discharge minimum limit
+    BMS_ERR_DIS_OVERTEMP = 7,           ///< Temperature above discharge maximum limit
+    BMS_ERR_CHG_UNDERTEMP = 8,          ///< Temperature below charge maximum limit
+    BMS_ERR_CHG_OVERTEMP = 9,           ///< Temperature above charge maximum limit
+    BMS_ERR_INT_OVERTEMP = 10,          ///< Internal temperature above limit (e.g. MOSFETs or IC)
+    BMS_ERR_CELL_FAILURE = 11           ///< Cell failure (too high voltage difference)
 };
 
 /**
@@ -296,6 +296,11 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status);
  * Reads all temperature sensors
  */
 void bms_read_temperatures(BmsConfig *conf, BmsStatus *status);
+
+/**
+ * Reads error flags
+ */
+void bms_read_error_flags(BmsStatus *status);
 
 /**
  * Calculates new SOC value based on coloumb counter

@@ -1,5 +1,5 @@
-/* Battery management system based on bq769x0 for ARM mbed
- * Copyright (c) 2015-2018 Martin Jäger (www.libre.solar)
+/* Libre Solar Battery Management System firmware
+ * Copyright (c) 2016-2019 Martin Jäger (www.libre.solar)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -209,32 +209,32 @@ void bms_check_cell_temp(BmsConfig *conf, BmsStatus *status)
     for (int thermistor = 0; thermistor < NUM_CELLS_MAX/5; thermistor++) {
 
         chg_overtemp |= status->temperatures[thermistor] > conf->chg_ot_limit -
-            ((status->error_flags & (1UL << ERR_CHG_OVERTEMP)) ? conf->t_limit_hyst : 0);
+            ((status->error_flags & (1UL << BMS_ERR_CHG_OVERTEMP)) ? conf->t_limit_hyst : 0);
 
         chg_undertemp |= status->temperatures[thermistor] < conf->chg_ut_limit +
-            ((status->error_flags & (1UL << ERR_CHG_UNDERTEMP)) ? conf->t_limit_hyst : 0);
+            ((status->error_flags & (1UL << BMS_ERR_CHG_UNDERTEMP)) ? conf->t_limit_hyst : 0);
 
         dis_overtemp |= status->temperatures[thermistor] > conf->dis_ot_limit -
-            ((status->error_flags & (1UL << ERR_DIS_OVERTEMP)) ? conf->t_limit_hyst : 0);
+            ((status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP)) ? conf->t_limit_hyst : 0);
 
         dis_undertemp |= status->temperatures[thermistor] < conf->dis_ut_limit +
-            ((status->error_flags & (1UL << ERR_DIS_OVERTEMP)) ? conf->t_limit_hyst : 0);
+            ((status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP)) ? conf->t_limit_hyst : 0);
     }
 
-    if (chg_overtemp != (status->error_flags & (1UL << ERR_CHG_OVERTEMP))) {
-        bms_update_error_flag(conf, status, ERR_CHG_OVERTEMP, chg_overtemp);
+    if (chg_overtemp != (status->error_flags & (1UL << BMS_ERR_CHG_OVERTEMP))) {
+        bms_update_error_flag(conf, status, BMS_ERR_CHG_OVERTEMP, chg_overtemp);
     }
 
-    if (chg_undertemp != (status->error_flags & (1UL << ERR_CHG_UNDERTEMP))) {
-        bms_update_error_flag(conf, status, ERR_CHG_UNDERTEMP, chg_undertemp);
+    if (chg_undertemp != (status->error_flags & (1UL << BMS_ERR_CHG_UNDERTEMP))) {
+        bms_update_error_flag(conf, status, BMS_ERR_CHG_UNDERTEMP, chg_undertemp);
     }
 
-    if (dis_overtemp != (status->error_flags & (1UL << ERR_DIS_OVERTEMP))) {
-        bms_update_error_flag(conf, status, ERR_DIS_OVERTEMP, dis_overtemp);
+    if (dis_overtemp != (status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP))) {
+        bms_update_error_flag(conf, status, BMS_ERR_DIS_OVERTEMP, dis_overtemp);
     }
 
-    if (dis_undertemp != (status->error_flags & (1UL << ERR_DIS_UNDERTEMP))) {
-        bms_update_error_flag(conf, status, ERR_DIS_UNDERTEMP, dis_undertemp);
+    if (dis_undertemp != (status->error_flags & (1UL << BMS_ERR_DIS_UNDERTEMP))) {
+        bms_update_error_flag(conf, status, BMS_ERR_DIS_UNDERTEMP, dis_undertemp);
     }
 }
 
