@@ -33,8 +33,8 @@
 // static (private) variables
 //----------------------------------------------------------------------------
 
-static int adc_gain;    // factory-calibrated, read out from chip (uV/LSB)
-static int adc_offset;  // factory-calibrated, read out from chip (mV)
+extern int adc_gain;    // factory-calibrated, read out from chip (uV/LSB)
+extern int adc_offset;  // factory-calibrated, read out from chip (mV)
 
 //----------------------------------------------------------------------------
 
@@ -611,6 +611,30 @@ void bms_read_voltages(BmsStatus *status)
     // read battery pack voltage
     adc_raw = bq769x0_read_word(BAT_HI_BYTE);
     status->pack_voltage = (4.0 * adc_gain * adc_raw * 1e-3F + status->connected_cells * adc_offset) * 1e-3F;
+}
+
+
+void bms_read_error_flags(BmsStatus *status)
+{
+/*
+    uint8_t buf[2];
+    isl94202_read_bytes(ISL94202_STAT1, buf, 2);
+    uint16_t stat1 = buf[0] + (buf[1] << 8);
+
+    status->error_flags = 0;
+    if (stat1 & ISL94202_STAT1_UV_Msk)      status->error_flags |= 1U << BMS_ERR_CELL_UNDERVOLTAGE;
+    if (stat1 & ISL94202_STAT1_OV_Msk)      status->error_flags |= 1U << BMS_ERR_CELL_OVERVOLTAGE;
+    if (stat1 & ISL94202_STAT1_DSC_Msk)     status->error_flags |= 1U << BMS_ERR_SHORT_CIRCUIT;
+    if (stat1 & ISL94202_STAT1_DOC_Msk)     status->error_flags |= 1U << BMS_ERR_DIS_OVERCURRENT;
+    if (stat1 & ISL94202_STAT1_COC_Msk)     status->error_flags |= 1U << BMS_ERR_CHG_OVERCURRENT;
+    if (stat1 & ISL94202_STAT1_OPEN_Msk)    status->error_flags |= 1U << BMS_ERR_OPEN_WIRE;
+    if (stat1 & ISL94202_STAT1_DUT_Msk)     status->error_flags |= 1U << BMS_ERR_DIS_UNDERTEMP;
+    if (stat1 & ISL94202_STAT1_DOT_Msk)     status->error_flags |= 1U << BMS_ERR_DIS_OVERTEMP;
+    if (stat1 & ISL94202_STAT1_CUT_Msk)     status->error_flags |= 1U << BMS_ERR_CHG_UNDERTEMP;
+    if (stat1 & ISL94202_STAT1_COT_Msk)     status->error_flags |= 1U << BMS_ERR_CHG_OVERTEMP;
+    if (stat1 & ISL94202_STAT1_IOT_Msk)     status->error_flags |= 1U << BMS_ERR_INT_OVERTEMP;
+    if (stat1 & ISL94202_STAT1_CELLF_Msk)   status->error_flags |= 1U << BMS_ERR_CELL_FAILURE;
+*/
 }
 
 

@@ -15,13 +15,6 @@ install:
     - pip install -U platformio
     - platformio update
 
-    #
-    # Libraries from PlatformIO Library Registry:
-    #
-    # https://platformio.org/lib/show/4ee/
-    # https://platformio.org/lib/show/c23/
-    # - platformio lib -g install 4ee c23
-
 addons:
     apt:
         packages:
@@ -29,8 +22,8 @@ addons:
 
 script:
     #- cp src/config.h_template src/config.h
-    - platformio run -e bms-5s50-sc
-    - platformio test -e unit-test-native
+    - platformio run -e bms-5s50-sc -e bms-8s50-ic
+    - platformio test -e unit-test-isl94202 -e unit-test-bq769x0
     - doxygen Doxyfile
 
 deploy:

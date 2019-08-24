@@ -68,6 +68,11 @@ void setup()
 
 int main()
 {
-    isl94202_tests();
     common_tests();
+
+#ifdef BMS_BQ76940
+    bq769x0_tests();
+#elif defined(BMS_ISL94202)
+    isl94202_tests();
+#endif
 }

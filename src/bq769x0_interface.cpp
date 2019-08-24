@@ -22,6 +22,14 @@
 #include "bq769x0_interface.h"
 #include "bq769x0_registers.h"
 
+int adc_gain;    // factory-calibrated, read out from chip (uV/LSB)
+int adc_offset;  // factory-calibrated, read out from chip (mV)
+
+static bool alert_interrupt_flag;   // indicates if a new current reading or an error is available from BMS IC
+static time_t alert_interrupt_timestamp;
+
+#ifdef __MBED__
+
 #include "mbed.h"
 
 // static (private) variables
@@ -31,12 +39,7 @@ static I2C bq_i2c(PIN_BMS_SDA, PIN_BMS_SCL);
 static int i2c_address;
 static bool crc_enabled;
 
-static int adc_gain;    // factory-calibrated, read out from chip (uV/LSB)
-static int adc_offset;  // factory-calibrated, read out from chip (mV)
-
 static InterruptIn alert_interrupt(PIN_BQ_ALERT);
-static bool alert_interrupt_flag;   // indicates if a new current reading or an error is available from BMS IC
-static time_t alert_interrupt_timestamp;
 
 //----------------------------------------------------------------------------
 
@@ -194,21 +197,6 @@ static bool determine_address_and_crc(void)
     return false;
 }
 
-bool bq769x0_alert_flag()
-{
-    return alert_interrupt_flag;
-}
-
-void bq769x0_alert_flag_reset()
-{
-    alert_interrupt_flag = false;
-}
-
-time_t bq769x0_alert_timestamp()
-{
-    return alert_interrupt_timestamp;
-}
-
 void bq769x0_init()
 {
     alert_interrupt.rise(bq769x0_alert_isr);
@@ -231,6 +219,23 @@ void bq769x0_init()
         printf("BMS communication error\n");
 #endif
     }
+}
+
+#endif // MBED
+
+bool bq769x0_alert_flag()
+{
+    return alert_interrupt_flag;
+}
+
+void bq769x0_alert_flag_reset()
+{
+    alert_interrupt_flag = false;
+}
+
+time_t bq769x0_alert_timestamp()
+{
+    return alert_interrupt_timestamp;
 }
 
 #endif // defined BQ769x0
