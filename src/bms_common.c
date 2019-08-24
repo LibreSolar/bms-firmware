@@ -186,7 +186,7 @@ bool bms_chg_allowed(BmsConfig *conf, BmsStatus *status)
         errors += (status->temperatures[thermistor] > conf->chg_ot_limit ||
             status->temperatures[thermistor] < conf->chg_ut_limit);
     }
-    errors += status->cell_voltages[status->id_cell_voltage_max] > conf->cell_ov_limit;
+    errors += status->cell_voltage_max > conf->cell_ov_limit;
     return errors == 0;
 }
 
@@ -197,18 +197,18 @@ bool bms_dis_allowed(BmsConfig *conf, BmsStatus *status)
         errors += (status->temperatures[thermistor] > conf->dis_ot_limit ||
             status->temperatures[thermistor] < conf->dis_ut_limit);
     }
-    errors += status->cell_voltages[status->id_cell_voltage_min] < conf->cell_uv_limit;
+    errors += status->cell_voltage_min < conf->cell_uv_limit;
     return errors == 0;
 }
 
 bool bms_balancing_allowed(BmsConfig *conf, BmsStatus *status)
 {
     int idle_sec = time(NULL) - status->no_idle_timestamp;
-    float voltage_diff = status->cell_voltages[status->id_cell_voltage_max] -
-        status->cell_voltages[status->id_cell_voltage_min];
+    float voltage_diff = status->cell_voltage_max -
+        status->cell_voltage_min;
 
     return idle_sec >= conf->balancing_min_idle_s &&
-        status->cell_voltages[status->id_cell_voltage_max] > conf->balancing_cell_voltage_min &&
+        status->cell_voltage_max > conf->balancing_cell_voltage_min &&
         voltage_diff > conf->balancing_voltage_diff_target;
 }
 

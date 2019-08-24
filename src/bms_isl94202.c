@@ -168,44 +168,44 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     // Lookup-table for temperatures according to datasheet
     const float lut_adcv[] = {0.153, 0.295, 0.463, 0.710, 0.755};
     const float lut_temp[] = {80, 50, 25, 0, -40};
-    uint16_t reg;
+    uint16_t adc_raw;
 
-    // internal temperature
-    isl94202_read_word(ISL94202_IT, &reg);
-    status->ic_temp = (float)(reg & 0x0FFF) * 1.8 / 4095 * 1000 / 1.8527 - 273.15;
+    // Internal temperature
+    adc_raw = isl94202_read_word(ISL94202_IT) & 0x0FFF;
+    status->ic_temp = (float)adc_raw * 1.8 / 4095 * 1000 / 1.8527 - 273.15;
 
     // External temperature 1
-    isl94202_read_word(ISL94202_XT1, &reg);
-    float adcv = (float)(reg & 0x0FFF) * 1.8 / 4095 / 2;
+    adc_raw = isl94202_read_word(ISL94202_XT1) & 0x0FFF;
+    float adc_v = (float)adc_raw * 1.8 / 4095 / 2;
 
     status->external_temp = lut_temp[sizeof(lut_temp)/sizeof(float) - 1]; // init with -40°C
     for (unsigned int i = 0; i < sizeof(lut_temp)/sizeof(float); i++) {
-        if (adcv <= lut_adcv[i]) {
+        if (adc_v <= lut_adcv[i]) {
             if (i == 0) {
                 status->external_temp = lut_temp[0];
             }
             else {
                 // interpolate between lut_temp[i] and lut_temp[i-1]
                 status->external_temp = lut_temp[i-1] + (lut_temp[i] - lut_temp[i-1]) *
-                    (adcv - lut_adcv[i-1]) / (lut_adcv[i] - lut_adcv[i-1]);
+                    (adc_v - lut_adcv[i-1]) / (lut_adcv[i] - lut_adcv[i-1]);
             }
             break;
         }
     }
 
     // External temperature 2 (used for MOSFET temperature sensing)
-    isl94202_read_word(ISL94202_XT2, &reg);
-    adcv = (float)(reg & 0x0FFF) * 1.8 / 4095 / 2;
+    adc_raw = isl94202_read_word(ISL94202_XT2) & 0x0FFF;
+    adc_v = (float)adc_raw * 1.8 / 4095 / 2;
 
     status->mosfet_temp = lut_temp[sizeof(lut_temp)/sizeof(float) - 1]; // init with -40°C
     for (unsigned int i = 0; i < sizeof(lut_temp)/sizeof(float); i++) {
-        if (adcv <= lut_adcv[i]) {
+        if (adc_v <= lut_adcv[i]) {
             if (i == 0) {
                 status->mosfet_temp = lut_temp[0];
             }
             else {
                 status->mosfet_temp = lut_temp[i-1] + (lut_temp[i] - lut_temp[i-1]) *
-                    (adcv - lut_adcv[i-1]) / (lut_adcv[i] - lut_adcv[i-1]);
+                    (adc_v - lut_adcv[i-1]) / (lut_adcv[i] - lut_adcv[i-1]);
             }
             break;
         }
@@ -229,31 +229,43 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
     sign -= (buf[0] & ISL94202_STAT2_DCHING_Msk) >> ISL94202_STAT2_DCHING_Pos;
 
     // ADC value
-    isl94202_read_bytes(ISL94202_ISNS, buf, 2);
-    uint16_t tmp = (buf[0] + (buf[1] << 8)) & 0x0FFF;
+    uint16_t adc_raw = isl94202_read_word(ISL94202_ISNS) & 0x0FFF;
 
-    status->pack_current = (float)(sign * tmp * 1800) / 4095 / gain / conf->shunt_res_mOhm;
+    status->pack_current = (float)(sign * adc_raw * 1800) / 4095 / gain / conf->shunt_res_mOhm;
 }
 
 void bms_read_voltages(BmsStatus *status)
 {
-    uint8_t buf[2];
-    for (int i = 0; i < NUM_CELLS_MAX; i++) {
-        isl94202_read_bytes(ISL94202_CELL1 + i*2, buf, 2);
-        uint32_t tmp = (buf[0] + (buf[1] << 8)) & 0x0FFF;
-        status->cell_voltages[i] = (float)tmp * 18 * 800 / 4095 / 3 / 1000;
+    uint16_t adc_raw = 0;
+    int conn_cells = 0;
+    float sum_voltages = 0;
 
-        if (status->cell_voltages[i] > status->cell_voltages[status->id_cell_voltage_max]) {
-            status->id_cell_voltage_max = i;
+    for (int i = 0; i < NUM_CELLS_MAX; i++) {
+        adc_raw = isl94202_read_word(ISL94202_CELL1 + i*2) & 0x0FFF;
+        status->cell_voltages[i] = (float)adc_raw * 18 * 800 / 4095 / 3 / 1000;
+
+        if (i == 0) {
+            status->cell_voltage_max = status->cell_voltages[i];
+            status->cell_voltage_min = status->cell_voltages[i];
         }
-        if (status->cell_voltages[i] < status->cell_voltages[status->id_cell_voltage_min] && status->cell_voltages[i] > 0.5) {
-            status->id_cell_voltage_min = i;
+
+        if (status->cell_voltages[i] > 0.5F) {
+            conn_cells++;
+            sum_voltages += status->cell_voltages[i];
+        }
+
+        if (status->cell_voltages[i] > status->cell_voltage_max) {
+            status->cell_voltage_max = status->cell_voltages[i];
+        }
+        if (status->cell_voltages[i] < status->cell_voltage_min && status->cell_voltages[i] > 0.5) {
+            status->cell_voltage_min = status->cell_voltages[i];
         }
     }
+    status->connected_cells = conn_cells;
+    status->cell_voltage_avg = sum_voltages / conn_cells;
 
-    isl94202_read_bytes(ISL94202_VBATT, buf, 2);
-    uint32_t tmp = (buf[0] + (buf[1] << 8)) & 0x0FFF;
-    status->pack_voltage = (float)tmp * 1.8 * 32 / 4095;
+    adc_raw = isl94202_read_word(ISL94202_VBATT) & 0x0FFF;
+    status->pack_voltage = (float)adc_raw * 1.8 * 32 / 4095;
 }
 
 void bms_read_error_flags(BmsStatus *status)

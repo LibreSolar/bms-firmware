@@ -76,12 +76,11 @@ int isl94202_read_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes);
 /**
  * Reads a word from ISL94202 IC registers
  *
- * @param addr The address to read the word from
- * @param word The pointer to where the word should be stored
+ * @param addr The address of the word
  *
- * @returns 0 if successful
+ * @returns the (unsigned) word or -1 in case of CRC error
  */
-int isl94202_read_word(uint8_t reg_addr, uint16_t *word);
+int isl94202_read_word(uint8_t reg_addr);
 
 /**
  * @returns status of the alert pin

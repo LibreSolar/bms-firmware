@@ -97,16 +97,14 @@ const data_object_t data_objects[] = {
     {0x70, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 2, (void*) &(bms_status.pack_voltage),         "Bat_V"},
     {0x71, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 2, (void*) &(bms_status.pack_current),         "Bat_A"},
     {0x72, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 1, (void*) &(bms_status.external_temp),        "Bat_degC"},
-    {0x73, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 3, (void*) &(bms_status.cell_voltages[0]),     "CellMax_V"},    // ToDo
-    {0x74, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 3, (void*) &(bms_status.cell_voltages[0]),     "CellMin_V"},    // ToDo
-    //{0x75, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 1, (void*) &(mcu_temp),                        "MCU_degC"},
     {0x76, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 1, (void*) &(bms_status.ic_temp),              "IC_degC"},
+    //{0x75, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 1, (void*) &(mcu_temp),                        "MCU_degC"},
 #if defined(PIN_ADC_TEMP_FETS) || defined(MOSFET_TEMP_SENSOR)
     {0x77, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 1, (void*) &(bms_status.mosfet_temp),          "MOSFETs_degC"},
 #endif
-    {0x78, TS_OUTPUT, TS_READ_ALL, TS_T_UINT16,  0, (void*) &(bms_status.soc),                  "SOC_%"},     // output will be uint8_t
-    {0x79, TS_OUTPUT, TS_READ_ALL, TS_T_UINT16,  0, (void*) &(bms_status.state),                "BmsState"},
-    {0x7A, TS_OUTPUT, TS_READ_ALL, TS_T_UINT32,  0, (void*) &(bms_status.error_flags),          "ErrorFlags"},
+    {0x7C, TS_OUTPUT, TS_READ_ALL, TS_T_UINT16,  0, (void*) &(bms_status.soc),                  "SOC_%"},     // output will be uint8_t
+    {0x7E, TS_OUTPUT, TS_READ_ALL, TS_T_UINT32,  0, (void*) &(bms_status.error_flags),          "ErrorFlags"},
+    {0x7F, TS_OUTPUT, TS_READ_ALL, TS_T_UINT16,  0, (void*) &(bms_status.state),                "BmsState"},
 
     //{0x80, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 3, (void*) &(bms_status.cell_voltages),        "Cells_V"},   // reserved for future cell voltage array
     {0x81, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 3, (void*) &(bms_status.cell_voltages[0]),     "Cell1_V"},
@@ -133,6 +131,9 @@ const data_object_t data_objects[] = {
 #endif
 #endif
 #endif
+    {0x9A, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 3, (void*) &(bms_status.cell_voltage_avg),     "CellAvg_V"},
+    {0x9B, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 3, (void*) &(bms_status.cell_voltage_min),     "CellMin_V"},
+    {0x9C, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 3, (void*) &(bms_status.cell_voltage_max),     "CellMax_V"},
 
     // RECORDED DATA ///////////////////////////////////////////////////////
     // using IDs >= 0xA0

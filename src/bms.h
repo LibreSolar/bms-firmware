@@ -121,11 +121,15 @@ typedef struct
 
     uint16_t connected_cells;                   ///< \brief Actual number of cells connected (might
                                                 ///< be less than NUM_CELLS_MAX)
+
     float cell_voltages[NUM_CELLS_MAX];         ///< Single cell voltages (V)
-    uint16_t id_cell_voltage_max;               ///< ID of cell with maximum voltage
-    uint16_t id_cell_voltage_min;               ///< ID of cell with minimum voltage
+    float cell_voltage_max;                     ///< Maximum cell voltage (V)
+    float cell_voltage_min;                     ///< Minimum cell voltage (V)
+    float cell_voltage_avg;                     ///< Average cell voltage (V)
     float pack_voltage;                         ///< Battery pack voltage (V)
+
     float pack_current;                         ///< Battery pack current (A)
+
     float temperatures[NUM_THERMISTORS_MAX];    ///< Temperatures (°C) (deprecated)
     float external_temp;                        ///< External battery/cell temperature (°C)
     float mosfet_temp;                          ///< MOSFET temperature (°C)

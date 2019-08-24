@@ -63,12 +63,13 @@ void test_read_pack_voltage()
     TEST_ASSERT_EQUAL_FLOAT(3.3*8, roundf(bms_status.pack_voltage * 10) / 10);
 }
 
-void test_read_min_max_voltage()
+void test_read_min_max_avg_voltage()
 {
     init_ram();
     bms_read_voltages(&bms_status);
-    TEST_ASSERT_EQUAL(0, bms_status.id_cell_voltage_min);
-    TEST_ASSERT_EQUAL(7, bms_status.id_cell_voltage_max);
+    TEST_ASSERT_EQUAL_FLOAT(3.0, roundf(bms_status.cell_voltage_min * 100) / 100);
+    TEST_ASSERT_EQUAL_FLOAT(3.7, roundf(bms_status.cell_voltage_max * 100) / 100);
+    TEST_ASSERT_EQUAL_FLOAT(3.35, roundf(bms_status.cell_voltage_avg * 100) / 100);
 }
 
 void test_read_pack_current()
@@ -295,7 +296,7 @@ void isl94202_tests()
 
     RUN_TEST(test_read_cell_voltages);
     RUN_TEST(test_read_pack_voltage);
-    RUN_TEST(test_read_min_max_voltage);
+    RUN_TEST(test_read_min_max_avg_voltage);
     RUN_TEST(test_read_pack_current);
     RUN_TEST(test_read_error_flags);
     RUN_TEST(test_read_temperatures);

@@ -113,7 +113,7 @@ int bms_quickcheck(BmsConfig *conf, BmsStatus *status)
                 }
                 if (sys_stat.regByte & 0b00001000) { // UV error
                     bms_read_voltages(status);
-                    if (status->cell_voltages[status->id_cell_voltage_min] > conf->cell_uv_limit) {
+                    if (status->cell_voltage_min > conf->cell_uv_limit) {
                         #if BMS_DEBUG
                         printf("Attempting to clear UV error");
                         #endif
@@ -123,7 +123,7 @@ int bms_quickcheck(BmsConfig *conf, BmsStatus *status)
                 }
                 if (sys_stat.regByte & 0b00000100) { // OV error
                     bms_read_voltages(status);
-                    if (status->cell_voltages[status->id_cell_voltage_max] < conf->cell_ov_limit) {
+                    if (status->cell_voltage_max < conf->cell_ov_limit) {
                         #if BMS_DEBUG
                         printf("Attempting to clear OV error");
                         #endif
@@ -301,8 +301,8 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
     // check if balancing allowed
     if (bms_quickcheck(conf, status) == 0 &&
         idleSeconds >= conf->balancing_min_idle_s &&
-        status->cell_voltages[status->id_cell_voltage_max] > conf->balancing_cell_voltage_min &&
-        (status->cell_voltages[status->id_cell_voltage_max] - status->cell_voltages[status->id_cell_voltage_min]) > conf->balancing_voltage_diff_target)
+        status->cell_voltage_max > conf->balancing_cell_voltage_min &&
+        (status->cell_voltage_max - status->cell_voltage_min) > conf->balancing_voltage_diff_target)
     {
         //printf("Balancing enabled!");
         status->balancing_status = 0;  // current status will be set in following loop
@@ -318,7 +318,7 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
             int cellCounter = 0;
             for (int i = 0; i < 5; i++)
             {
-                if ((status->cell_voltages[section*5 + i] - status->cell_voltages[status->id_cell_voltage_min]) > conf->balancing_voltage_diff_target) {
+                if ((status->cell_voltages[section*5 + i] - status->cell_voltage_min) > conf->balancing_voltage_diff_target) {
                     int j = cellCounter;
                     while (j > 0 && status->cell_voltages[section*5 + cellList[j - 1]] < status->cell_voltages[section*5 + i])
                     {
@@ -500,13 +500,13 @@ int bms_apply_temp_limits(BmsConfig *bms)
 void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
 {
     float tmp = 0;
-    int adcVal = 0;
+    int adc_raw = 0;
     int vtsx = 0;
     unsigned long rts = 0;
 
     // calculate R_thermistor according to bq769x0 datasheet
-    adcVal = (bq769x0_read_byte(TS1_HI_BYTE) & 0b00111111) << 8 | bq769x0_read_byte(TS1_LO_BYTE);
-    vtsx = adcVal * 0.382; // mV
+    adc_raw = (bq769x0_read_byte(TS1_HI_BYTE) & 0b00111111) << 8 | bq769x0_read_byte(TS1_LO_BYTE);
+    vtsx = adc_raw * 0.382; // mV
     rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
 
     // Temperature calculation using Beta equation
@@ -516,16 +516,16 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     status->temperatures[0] = (tmp - 273.15) * 10.0;
 
     if (NUM_THERMISTORS_MAX >= 2) {     // bq76930 or bq76940
-        adcVal = (bq769x0_read_byte(TS2_HI_BYTE) & 0b00111111) << 8 | bq769x0_read_byte(TS2_LO_BYTE);
-        vtsx = adcVal * 0.382; // mV
+        adc_raw = (bq769x0_read_byte(TS2_HI_BYTE) & 0b00111111) << 8 | bq769x0_read_byte(TS2_LO_BYTE);
+        vtsx = adc_raw * 0.382; // mV
         rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
         tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
         status->temperatures[1] = (tmp - 273.15) * 10.0;
     }
 
     if (NUM_THERMISTORS_MAX == 3) {     // bq76940
-        adcVal = (bq769x0_read_byte(TS3_HI_BYTE) & 0b00111111) << 8 | bq769x0_read_byte(TS3_LO_BYTE);
-        vtsx = adcVal * 0.382; // mV
+        adc_raw = (bq769x0_read_byte(TS3_HI_BYTE) & 0b00111111) << 8 | bq769x0_read_byte(TS3_LO_BYTE);
+        vtsx = adc_raw * 0.382; // mV
         rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
         tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
         status->temperatures[2] = (tmp - 273.15) * 10.0;
@@ -534,7 +534,7 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
 
 void bms_read_current(BmsConfig *conf, BmsStatus *status)
 {
-    int adcVal = 0;
+    int adc_raw = 0;
     regSYS_STAT_t sys_stat;
     sys_stat.regByte = bq769x0_read_byte(SYS_STAT);
 
@@ -542,8 +542,8 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
     if (sys_stat.bits.CC_READY == 1)
     {
         //printf("reading CC register...\n");
-        adcVal = (bq769x0_read_byte(CC_HI_BYTE) << 8) | bq769x0_read_byte(CC_LO_BYTE);
-        int32_t pack_current_mA = (int16_t) adcVal * 8.44 / conf->shunt_res_mOhm;
+        adc_raw = (bq769x0_read_byte(CC_HI_BYTE) << 8) | bq769x0_read_byte(CC_LO_BYTE);
+        int32_t pack_current_mA = (int16_t) adc_raw * 8.44 / conf->shunt_res_mOhm;
 
         status->coulomb_counter_mAs += pack_current_mA / 4;  // is read every 250 ms
 
@@ -570,33 +570,32 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
 
 void bms_read_voltages(BmsStatus *status)
 {
-    int adc_val = 0;
-    int connectedCellsTemp = 0;
+    int adc_raw = 0;
+    int conn_cells = 0;
+    float sum_voltages = 0;
 
-    status->id_cell_voltage_max = 0;
-    status->id_cell_voltage_min = 0;
-    for (int i = 0; i < NUM_CELLS_MAX; i++)
-    {
-        adc_val = bq769x0_read_word(VC1_HI_BYTE + i*2) & 0x3FFF;
-
-        status->cell_voltages[i] = (adc_val * adc_gain * 1e-3F + adc_offset) * 1e-3F;
+    for (int i = 0; i < NUM_CELLS_MAX; i++) {
+        adc_raw = bq769x0_read_word(VC1_HI_BYTE + i*2) & 0x3FFF;
+        status->cell_voltages[i] = (adc_raw * adc_gain * 1e-3F + adc_offset) * 1e-3F;
 
         if (status->cell_voltages[i] > 0.5F) {
-            connectedCellsTemp++;
+            conn_cells++;
+            sum_voltages += status->cell_voltages[i];
         }
 
-        if (status->cell_voltages[i] > status->cell_voltages[status->id_cell_voltage_max]) {
-            status->id_cell_voltage_max = i;
+        if (status->cell_voltages[i] > status->cell_voltage_max) {
+            status->cell_voltage_max = status->cell_voltages[i];
         }
-        if (status->cell_voltages[i] < status->cell_voltages[status->id_cell_voltage_min] && status->cell_voltages[i] > 0.5) {
-            status->id_cell_voltage_min = i;
+        if (status->cell_voltages[i] < status->cell_voltage_min && status->cell_voltages[i] > 0.5) {
+            status->cell_voltage_min = status->cell_voltages[i];
         }
     }
-    status->connected_cells = connectedCellsTemp;
+    status->connected_cells = conn_cells;
+    status->cell_voltage_avg = sum_voltages / conn_cells;
 
     // read battery pack voltage
-    adc_val = bq769x0_read_word(BAT_HI_BYTE);
-    status->pack_voltage = (4.0 * adc_gain * adc_val * 1e-3F + status->connected_cells * adc_offset) * 1e-3F;
+    adc_raw = bq769x0_read_word(BAT_HI_BYTE);
+    status->pack_voltage = (4.0 * adc_gain * adc_raw * 1e-3F + status->connected_cells * adc_offset) * 1e-3F;
 }
 
 

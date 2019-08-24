@@ -30,6 +30,9 @@ void init_conf()
     for (int i = 0; i < NUM_CELLS_MAX; i++) {
         bms_status.cell_voltages[i] = 3.3;
     }
+    bms_status.cell_voltage_min = 3.3;
+    bms_status.cell_voltage_max = 3.3;
+    bms_status.cell_voltage_avg = 3.3;
 
     for (int i = 0; i < NUM_THERMISTORS_MAX; i++) {
         bms_status.temperatures[i] = 25;
@@ -60,7 +63,7 @@ void check_chg_low_voltage_limits()
     init_conf();
     TEST_ASSERT(bms_chg_allowed(&bms_conf, &bms_status) == true);
     bms_status.cell_voltages[3] = 3.66;
-    bms_status.id_cell_voltage_max = 3;
+    bms_status.cell_voltage_max = bms_status.cell_voltages[3];
     TEST_ASSERT(bms_chg_allowed(&bms_conf, &bms_status) == false);
 }
 
@@ -85,7 +88,7 @@ void check_dis_high_voltage_limits()
     init_conf();
     TEST_ASSERT(bms_dis_allowed(&bms_conf, &bms_status) == true);
     bms_status.cell_voltages[3] = 2.79;
-    bms_status.id_cell_voltage_min = 3;
+    bms_status.cell_voltage_min = bms_status.cell_voltages[3];
     TEST_ASSERT(bms_dis_allowed(&bms_conf, &bms_status) == false);
 }
 
@@ -116,7 +119,7 @@ void idle2chg_if_chg_ok_and_dis_nok()
 {
     init_conf();
     bms_status.cell_voltages[3] = bms_conf.cell_uv_limit - 0.1;
-    bms_status.id_cell_voltage_min = 3;
+    bms_status.cell_voltage_min = bms_status.cell_voltages[3];
     bms_state_machine(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL(BMS_STATE_CHG, bms_status.state);
 }
@@ -126,7 +129,7 @@ void chg2idle_if_chg_nok()
     init_conf();
     bms_status.state = BMS_STATE_CHG;
     bms_status.cell_voltages[3] = bms_conf.cell_ov_limit + 0.1;
-    bms_status.id_cell_voltage_max = 3;
+    bms_status.cell_voltage_max = bms_status.cell_voltages[3];
     bms_state_machine(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL(BMS_STATE_IDLE, bms_status.state);
 }
@@ -144,7 +147,7 @@ void dis2idle_if_dis_nok()
     init_conf();
     bms_status.state = BMS_STATE_DIS;
     bms_status.cell_voltages[3] = bms_conf.cell_uv_limit - 0.1;
-    bms_status.id_cell_voltage_min = 3;
+    bms_status.cell_voltage_min = bms_status.cell_voltages[3];
     bms_state_machine(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL(BMS_STATE_IDLE, bms_status.state);
 }
@@ -162,7 +165,7 @@ void normal2dis_if_chg_nok()
     init_conf();
     bms_status.state = BMS_STATE_NORMAL;
     bms_status.cell_voltages[3] = bms_conf.cell_ov_limit + 0.1;
-    bms_status.id_cell_voltage_max = 3;
+    bms_status.cell_voltage_max = bms_status.cell_voltages[3];
     bms_state_machine(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL(BMS_STATE_DIS, bms_status.state);
 }
@@ -172,7 +175,7 @@ void normal2chg_if_dis_nok()
     init_conf();
     bms_status.state = BMS_STATE_NORMAL;
     bms_status.cell_voltages[3] = bms_conf.cell_uv_limit - 0.1;
-    bms_status.id_cell_voltage_min = 3;
+    bms_status.cell_voltage_min = bms_status.cell_voltages[3];
     bms_state_machine(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL(BMS_STATE_CHG, bms_status.state);
 }
@@ -182,8 +185,8 @@ void no_normal2balancing_if_nok()
     init_conf();
     bms_status.state = BMS_STATE_NORMAL;
     bms_status.cell_voltages[3] += 0.011;
-    bms_status.id_cell_voltage_max = 3;
-    bms_status.id_cell_voltage_min = 2;
+    bms_status.cell_voltage_max = bms_status.cell_voltages[3];
+    bms_status.cell_voltage_min = bms_status.cell_voltages[2];
 
     // idle time not long enough
     bms_status.no_idle_timestamp = time(NULL) - 5*60 + 1;
@@ -193,7 +196,7 @@ void no_normal2balancing_if_nok()
     // SOC too low
     bms_status.pack_current = bms_conf.idle_current_threshold - 0.1;
     bms_status.cell_voltages[3] = bms_conf.balancing_cell_voltage_min + 0.1;
-    bms_status.id_cell_voltage_max = 3;
+    bms_status.cell_voltage_max = bms_status.cell_voltages[3];
     bms_state_machine(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL(BMS_STATE_NORMAL, bms_status.state);
 }
@@ -204,8 +207,8 @@ void normal2balancing_if_ok()
     bms_status.state = BMS_STATE_NORMAL;
     bms_status.no_idle_timestamp = time(NULL) - 5*60 - 1;
     bms_status.cell_voltages[3] += 0.011;
-    bms_status.id_cell_voltage_max = 3;
-    bms_status.id_cell_voltage_min = 2;
+    bms_status.cell_voltage_max = bms_status.cell_voltages[3];
+    bms_status.cell_voltage_min = bms_status.cell_voltages[2];
     bms_state_machine(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL(BMS_STATE_BALANCING, bms_status.state);
 }
@@ -225,9 +228,9 @@ void balancing2normal_if_done()
     bms_status.state = BMS_STATE_BALANCING;
     bms_status.no_idle_timestamp = time(NULL) - 5*60 - 1;
     bms_status.cell_voltages[3] = 3.309;
-    bms_status.id_cell_voltage_max = 3;
+    bms_status.cell_voltage_max = bms_status.cell_voltages[3];
     bms_status.cell_voltages[2] = 3.3;
-    bms_status.id_cell_voltage_min = 2;
+    bms_status.cell_voltage_min = bms_status.cell_voltages[2];
     bms_state_machine(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL(BMS_STATE_NORMAL, bms_status.state);
 }
