@@ -187,25 +187,17 @@ void bms_update_error_flag(BmsConfig *conf, BmsStatus *status, uint32_t flag, bo
 
 void bms_check_cell_temp(BmsConfig *conf, BmsStatus *status)
 {
-    bool chg_overtemp = 0;
-    bool chg_undertemp = 0;
-    bool dis_overtemp = 0;
-    bool dis_undertemp = 0;
+    bool chg_overtemp = status->bat_temp_max > conf->chg_ot_limit -
+        ((status->error_flags & (1UL << BMS_ERR_CHG_OVERTEMP)) ? conf->t_limit_hyst : 0);
 
-    for (int thermistor = 0; thermistor < NUM_CELLS_MAX/5; thermistor++) {
+    bool chg_undertemp = status->bat_temp_min < conf->chg_ut_limit +
+        ((status->error_flags & (1UL << BMS_ERR_CHG_UNDERTEMP)) ? conf->t_limit_hyst : 0);
 
-        chg_overtemp |= status->temperatures[thermistor] > conf->chg_ot_limit -
-            ((status->error_flags & (1UL << BMS_ERR_CHG_OVERTEMP)) ? conf->t_limit_hyst : 0);
+    bool dis_overtemp = status->bat_temp_max > conf->dis_ot_limit -
+        ((status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP)) ? conf->t_limit_hyst : 0);
 
-        chg_undertemp |= status->temperatures[thermistor] < conf->chg_ut_limit +
-            ((status->error_flags & (1UL << BMS_ERR_CHG_UNDERTEMP)) ? conf->t_limit_hyst : 0);
-
-        dis_overtemp |= status->temperatures[thermistor] > conf->dis_ot_limit -
-            ((status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP)) ? conf->t_limit_hyst : 0);
-
-        dis_undertemp |= status->temperatures[thermistor] < conf->dis_ut_limit +
-            ((status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP)) ? conf->t_limit_hyst : 0);
-    }
+    bool dis_undertemp = status->bat_temp_min < conf->dis_ut_limit +
+        ((status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP)) ? conf->t_limit_hyst : 0);
 
     if (chg_overtemp != (status->error_flags & (1UL << BMS_ERR_CHG_OVERTEMP))) {
         bms_update_error_flag(conf, status, BMS_ERR_CHG_OVERTEMP, chg_overtemp);
@@ -513,14 +505,27 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     // - According to bq769x0 datasheet, only 10k thermistors should be used
     // - 25°C reference temperature for Beta equation assumed
     tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
-    status->temperatures[0] = (tmp - 273.15) * 10.0;
+    status->bat_temps[0] = (tmp - 273.15) * 10.0;
+    status->bat_temp_min = status->bat_temps[0];
+    status->bat_temp_max = status->bat_temps[0];
+    int num_temps = 1;
+    float sum_temps = status->bat_temps[0];
 
     if (NUM_THERMISTORS_MAX >= 2) {     // bq76930 or bq76940
         adc_raw = (bq769x0_read_byte(TS2_HI_BYTE) & 0b00111111) << 8 | bq769x0_read_byte(TS2_LO_BYTE);
         vtsx = adc_raw * 0.382; // mV
         rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
         tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
-        status->temperatures[1] = (tmp - 273.15) * 10.0;
+        status->bat_temps[1] = (tmp - 273.15) * 10.0;
+
+        if (status->bat_temps[1] < status->bat_temp_min) {
+            status->bat_temp_min = status->bat_temps[1];
+        }
+        if (status->bat_temps[1] > status->bat_temp_max) {
+            status->bat_temp_max = status->bat_temps[1];
+        }
+        num_temps++;
+        sum_temps += status->bat_temps[1];
     }
 
     if (NUM_THERMISTORS_MAX == 3) {     // bq76940
@@ -528,8 +533,18 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
         vtsx = adc_raw * 0.382; // mV
         rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
         tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
-        status->temperatures[2] = (tmp - 273.15) * 10.0;
+        status->bat_temps[2] = (tmp - 273.15) * 10.0;
+
+        if (status->bat_temps[2] < status->bat_temp_min) {
+            status->bat_temp_min = status->bat_temps[2];
+        }
+        if (status->bat_temps[2] > status->bat_temp_max) {
+            status->bat_temp_max = status->bat_temps[2];
+        }
+        num_temps++;
+        sum_temps += status->bat_temps[2];
     }
+    status->bat_temp_avg = sum_temps / num_temps;
 }
 
 void bms_read_current(BmsConfig *conf, BmsStatus *status)

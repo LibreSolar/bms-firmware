@@ -130,8 +130,10 @@ typedef struct
 
     float pack_current;                         ///< Battery pack current (A)
 
-    float temperatures[NUM_THERMISTORS_MAX];    ///< Temperatures (°C) (deprecated)
-    float external_temp;                        ///< External battery/cell temperature (°C)
+    float bat_temps[NUM_THERMISTORS_MAX];       ///< Battery temperatures (°C)
+    float bat_temp_max;                         ///< Maximum battery temperature (°C)
+    float bat_temp_min;                         ///< Minimum battery temperature (°C)
+    float bat_temp_avg;                         ///< Average battery temperature (°C)
     float mosfet_temp;                          ///< MOSFET temperature (°C)
     float ic_temp;                              ///< Internal BMS IC temperature (°C)
     float mcu_temp;                             ///< MCU temperature (°C)

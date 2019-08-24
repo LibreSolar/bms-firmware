@@ -61,7 +61,7 @@ void uext_process_1s()
 	snprintf(buf, sizeof(buf), "%2.1fV %3.2fA", bms_status.pack_voltage, bms_status.pack_current);
 	cfb_print(dev, buf, 0, 0);
 
-	snprintf(buf, sizeof(buf), "%3.0fC SOC%3d%%S:%d E:0x%X", bms_status.external_temp, bms_status.soc,
+	snprintf(buf, sizeof(buf), "%3.0fC SOC%3d%%S:%d E:0x%X", bms_status.bat_temp_avg, bms_status.soc,
 		bms_status.state, bms_status.error_flags);
 	cfb_print(dev, buf, 1 * width, 0);
 

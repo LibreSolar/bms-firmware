@@ -178,20 +178,23 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     adc_raw = isl94202_read_word(ISL94202_XT1) & 0x0FFF;
     float adc_v = (float)adc_raw * 1.8 / 4095 / 2;
 
-    status->external_temp = lut_temp[sizeof(lut_temp)/sizeof(float) - 1]; // init with -40°C
+    status->bat_temp_avg = lut_temp[sizeof(lut_temp)/sizeof(float) - 1]; // init with -40°C
     for (unsigned int i = 0; i < sizeof(lut_temp)/sizeof(float); i++) {
         if (adc_v <= lut_adcv[i]) {
             if (i == 0) {
-                status->external_temp = lut_temp[0];
+                status->bat_temp_avg = lut_temp[0];
             }
             else {
                 // interpolate between lut_temp[i] and lut_temp[i-1]
-                status->external_temp = lut_temp[i-1] + (lut_temp[i] - lut_temp[i-1]) *
+                status->bat_temp_avg = lut_temp[i-1] + (lut_temp[i] - lut_temp[i-1]) *
                     (adc_v - lut_adcv[i-1]) / (lut_adcv[i] - lut_adcv[i-1]);
             }
             break;
         }
     }
+    // only single battery temperature measurement
+    status->bat_temp_min = status->bat_temp_avg;
+    status->bat_temp_max = status->bat_temp_avg;
 
     // External temperature 2 (used for MOSFET temperature sensing)
     adc_raw = isl94202_read_word(ISL94202_XT2) & 0x0FFF;

@@ -181,24 +181,16 @@ void bms_state_machine(BmsConfig *conf, BmsStatus *status)
 
 bool bms_chg_allowed(BmsConfig *conf, BmsStatus *status)
 {
-    int errors = 0;
-    for (int thermistor = 0; thermistor < NUM_THERMISTORS_MAX; thermistor++) {
-        errors += (status->temperatures[thermistor] > conf->chg_ot_limit ||
-            status->temperatures[thermistor] < conf->chg_ut_limit);
-    }
-    errors += status->cell_voltage_max > conf->cell_ov_limit;
-    return errors == 0;
+    return status->bat_temp_max < conf->chg_ot_limit
+        && status->bat_temp_min > conf->chg_ut_limit
+        && status->cell_voltage_max < conf->cell_ov_limit;
 }
 
 bool bms_dis_allowed(BmsConfig *conf, BmsStatus *status)
 {
-    int errors = 0;
-    for (int thermistor = 0; thermistor < NUM_THERMISTORS_MAX; thermistor++) {
-        errors += (status->temperatures[thermistor] > conf->dis_ot_limit ||
-            status->temperatures[thermistor] < conf->dis_ut_limit);
-    }
-    errors += status->cell_voltage_min < conf->cell_uv_limit;
-    return errors == 0;
+    return status->bat_temp_max < conf->dis_ot_limit
+        && status->bat_temp_min > conf->dis_ut_limit
+        && status->cell_voltage_min > conf->cell_uv_limit;
 }
 
 bool bms_balancing_allowed(BmsConfig *conf, BmsStatus *status)

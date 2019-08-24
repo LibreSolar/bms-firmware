@@ -35,8 +35,11 @@ void init_conf()
     bms_status.cell_voltage_avg = 3.3;
 
     for (int i = 0; i < NUM_THERMISTORS_MAX; i++) {
-        bms_status.temperatures[i] = 25;
+        bms_status.bat_temps[i] = 25;
     }
+    bms_status.bat_temp_min = 25;
+    bms_status.bat_temp_max = 25;
+    bms_status.bat_temp_avg = 25;
 
     bms_status.state = BMS_STATE_IDLE;
     bms_status.error_flags = 0;
@@ -46,7 +49,7 @@ void check_chg_low_temp_limits()
 {
     init_conf();
     TEST_ASSERT(bms_chg_allowed(&bms_conf, &bms_status) == true);
-    bms_status.temperatures[0] = -1;
+    bms_status.bat_temp_min = -1;
     TEST_ASSERT(bms_chg_allowed(&bms_conf, &bms_status) == false);
 }
 
@@ -54,7 +57,7 @@ void check_chg_high_temp_limits()
 {
     init_conf();
     TEST_ASSERT(bms_chg_allowed(&bms_conf, &bms_status) == true);
-    bms_status.temperatures[0] = 46;
+    bms_status.bat_temp_max = 46;
     TEST_ASSERT(bms_chg_allowed(&bms_conf, &bms_status) == false);
 }
 
@@ -71,7 +74,7 @@ void check_dis_low_temp_limits()
 {
     init_conf();
     TEST_ASSERT(bms_dis_allowed(&bms_conf, &bms_status) == true);
-    bms_status.temperatures[0] = -21;
+    bms_status.bat_temp_min = -21;
     TEST_ASSERT(bms_dis_allowed(&bms_conf, &bms_status) == false);
 }
 
@@ -79,7 +82,7 @@ void check_dis_high_temp_limits()
 {
     init_conf();
     TEST_ASSERT(bms_dis_allowed(&bms_conf, &bms_status) == true);
-    bms_status.temperatures[0] = 46;
+    bms_status.bat_temp_max = 46;
     TEST_ASSERT(bms_dis_allowed(&bms_conf, &bms_status) == false);
 }
 
@@ -95,7 +98,7 @@ void check_dis_high_voltage_limits()
 void no_idle2dis_if_dis_nok()
 {
     init_conf();
-    bms_status.temperatures[0] = bms_conf.dis_ot_limit + 1;
+    bms_status.bat_temp_max = bms_conf.dis_ot_limit + 1;
     bms_state_machine(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL(BMS_STATE_IDLE, bms_status.state);
 }
@@ -110,7 +113,7 @@ void idle2dis_if_dis_ok()
 void no_idle2chg_if_chg_ok()
 {
     init_conf();
-    bms_status.temperatures[0] = bms_conf.chg_ot_limit + 1;
+    bms_status.bat_temp_max = bms_conf.chg_ot_limit + 1;
     bms_state_machine(&bms_conf, &bms_status);
     TEST_ASSERT_NOT_EQUAL(BMS_STATE_CHG, bms_status.state);
 }

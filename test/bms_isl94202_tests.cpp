@@ -160,19 +160,19 @@ void test_read_temperatures()
     // // External temperature 1 (check incl. interpolation)
     *((uint16_t*)&mem[0xA2]) = 0.463 * 2 / 1.8 * 4095;      // 25°C
     bms_read_temperatures(&bms_conf, &bms_status);
-    TEST_ASSERT_EQUAL_FLOAT(25.0, roundf(bms_status.external_temp * 10) / 10);
+    TEST_ASSERT_EQUAL_FLOAT(25.0, roundf(bms_status.bat_temp_avg * 10) / 10);
 
     *((uint16_t*)&mem[0xA2]) = 0.150 * 2 / 1.8 * 4095;      // >80°C
     bms_read_temperatures(&bms_conf, &bms_status);
-    TEST_ASSERT_EQUAL_FLOAT(80.0, roundf(bms_status.external_temp * 10) / 10);
+    TEST_ASSERT_EQUAL_FLOAT(80.0, roundf(bms_status.bat_temp_avg * 10) / 10);
 
     *((uint16_t*)&mem[0xA2]) = 0.760 * 2 / 1.8 * 4095;      // <-40°C
     bms_read_temperatures(&bms_conf, &bms_status);
-    TEST_ASSERT_EQUAL_FLOAT(-40.0, roundf(bms_status.external_temp * 10) / 10);
+    TEST_ASSERT_EQUAL_FLOAT(-40.0, roundf(bms_status.bat_temp_avg * 10) / 10);
 
     *((uint16_t*)&mem[0xA2]) = 0.4295 * 2 / 1.8 * 4095;      // 30°C
     bms_read_temperatures(&bms_conf, &bms_status);
-    TEST_ASSERT_EQUAL_FLOAT(30.0, roundf(bms_status.external_temp * 10) / 10);
+    TEST_ASSERT_EQUAL_FLOAT(30.0, roundf(bms_status.bat_temp_avg * 10) / 10);
 
     // External temperature 2 (simple check)
     *((uint16_t*)&mem[0xA4]) = 0.463 * 2 / 1.8 * 4095;      // 25°C

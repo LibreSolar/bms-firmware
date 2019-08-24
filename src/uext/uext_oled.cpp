@@ -48,7 +48,7 @@ void uext_process_1s()    // OLED SSD1306
     oled.printf("%.2f A", bms_status.pack_current/1000.0);
 
     oled.setTextCursor(0, 8);
-    oled.printf("T:%.1f C", (float)bms_status.temperatures[0] / 10);
+    oled.printf("T:%.1f C", bms_status.bat_temp_avg);
     oled.setTextCursor(64, 8);
     oled.printf("SOC:%.2f", (float)bms_status.soc / 100);
 

@@ -96,7 +96,7 @@ const data_object_t data_objects[] = {
 
     {0x70, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 2, (void*) &(bms_status.pack_voltage),         "Bat_V"},
     {0x71, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 2, (void*) &(bms_status.pack_current),         "Bat_A"},
-    {0x72, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 1, (void*) &(bms_status.external_temp),        "Bat_degC"},
+    {0x72, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 1, (void*) &(bms_status.bat_temp_avg),         "Bat_degC"},
     {0x76, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 1, (void*) &(bms_status.ic_temp),              "IC_degC"},
     //{0x75, TS_OUTPUT, TS_READ_ALL, TS_T_FLOAT32, 1, (void*) &(mcu_temp),                        "MCU_degC"},
 #if defined(PIN_ADC_TEMP_FETS) || defined(MOSFET_TEMP_SENSOR)
