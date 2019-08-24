@@ -164,4 +164,12 @@ int isl94202_write_voltage(uint8_t reg_addr, float voltage, uint8_t extra_bits)
 	return isl94202_write_word(reg_addr, reg) == 0;
 }
 
+int isl94202_read_word(uint8_t reg_addr, uint16_t *word)
+{
+	uint8_t buf[2];
+    int res = isl94202_read_bytes(reg_addr, buf, 2);
+    *word = buf[0] + (buf[1] << 8);
+	return res;
+}
+
 #endif // BMS_ISL94202
