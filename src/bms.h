@@ -126,7 +126,11 @@ typedef struct
     uint16_t id_cell_voltage_min;               ///< ID of cell with minimum voltage
     float pack_voltage;                         ///< Battery pack voltage (V)
     float pack_current;                         ///< Battery pack current (A)
-    float temperatures[NUM_THERMISTORS_MAX];    ///< Temperatures (°C)
+    float temperatures[NUM_THERMISTORS_MAX];    ///< Temperatures (°C) (deprecated)
+    float external_temp;                        ///< External battery/cell temperature (°C)
+    float mosfet_temp;                          ///< MOSFET temperature (°C)
+    float ic_temp;                              ///< Internal BMS IC temperature (°C)
+    float mcu_temp;                             ///< MCU temperature (°C)
 
     uint16_t soc;                               ///< Calculated state of charge (%)
     uint32_t coulomb_counter_mAs;               ///< Current integration (mAs = milli Coulombs)

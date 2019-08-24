@@ -30,6 +30,18 @@ static void init_ram()
     *((uint16_t*)&mem[0xA6]) = 3.3*8 / (1.8 * 32) * 4095;
 }
 
+void test_init()
+{
+    init_ram();
+    bms_init();
+
+    // expected feature control register
+    uint16_t fc_reg = 0;
+    fc_reg |= 1U << 5;  // XT2M
+    fc_reg |= 1U << 14;  // CBDC
+    TEST_ASSERT_EQUAL_HEX16(fc_reg, *((uint16_t*)&mem[0x4A]));
+}
+
 void test_read_cell_voltages()
 {
     init_ram();
@@ -133,6 +145,38 @@ void test_read_error_flags()
     *((uint16_t*)&mem[0x80]) = 0x01U << 12;
     bms_read_error_flags(&bms_status);
     TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_CELL_FAILURE, bms_status.error_flags);
+}
+
+void test_read_temperatures()
+{
+    // assuming 22k resistor and gain 2
+
+    // Internal temperature
+    *((uint16_t*)&mem[0xA0]) = (22.0 + 273.15) * 1.8527 / 1000 / 1.8 * 4095;
+    bms_read_temperatures(&bms_conf, &bms_status);
+    TEST_ASSERT_EQUAL_FLOAT(22.0, roundf(bms_status.ic_temp * 10) / 10);
+
+    // // External temperature 1 (check incl. interpolation)
+    *((uint16_t*)&mem[0xA2]) = 0.463 * 2 / 1.8 * 4095;      // 25°C
+    bms_read_temperatures(&bms_conf, &bms_status);
+    TEST_ASSERT_EQUAL_FLOAT(25.0, roundf(bms_status.external_temp * 10) / 10);
+
+    *((uint16_t*)&mem[0xA2]) = 0.150 * 2 / 1.8 * 4095;      // >80°C
+    bms_read_temperatures(&bms_conf, &bms_status);
+    TEST_ASSERT_EQUAL_FLOAT(80.0, roundf(bms_status.external_temp * 10) / 10);
+
+    *((uint16_t*)&mem[0xA2]) = 0.760 * 2 / 1.8 * 4095;      // <-40°C
+    bms_read_temperatures(&bms_conf, &bms_status);
+    TEST_ASSERT_EQUAL_FLOAT(-40.0, roundf(bms_status.external_temp * 10) / 10);
+
+    *((uint16_t*)&mem[0xA2]) = 0.4295 * 2 / 1.8 * 4095;      // 30°C
+    bms_read_temperatures(&bms_conf, &bms_status);
+    TEST_ASSERT_EQUAL_FLOAT(30.0, roundf(bms_status.external_temp * 10) / 10);
+
+    // External temperature 2 (simple check)
+    *((uint16_t*)&mem[0xA4]) = 0.463 * 2 / 1.8 * 4095;      // 25°C
+    bms_read_temperatures(&bms_conf, &bms_status);
+    TEST_ASSERT_EQUAL_FLOAT(25.0, roundf(bms_status.mosfet_temp * 10) / 10);
 }
 
 void test_apply_dis_ocp_limits()
@@ -247,11 +291,14 @@ void isl94202_tests()
 {
     UNITY_BEGIN();
 
+    RUN_TEST(test_init);
+
     RUN_TEST(test_read_cell_voltages);
     RUN_TEST(test_read_pack_voltage);
     RUN_TEST(test_read_min_max_voltage);
     RUN_TEST(test_read_pack_current);
     RUN_TEST(test_read_error_flags);
+    RUN_TEST(test_read_temperatures);
 
     RUN_TEST(test_apply_dis_ocp_limits);
     RUN_TEST(test_apply_chg_ocp_limits);

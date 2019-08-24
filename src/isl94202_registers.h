@@ -222,43 +222,43 @@
 #define ISL94202_CELL_Msk   (0xFFU << ISL94202_CELL_Pos)
 
 // Feature Controls
-#define ISL94202_FC         (0x4AU)
-// Cell fail PSD
-#define ISL94202_CFPSD_Pos  (0x0U)
-#define ISL94202_CFPSD_Msk  (0xFFFU << ISL94202_CFPSD_Pos)
-// xTemp2 Mode Control
-#define ISL94202_XT2M_Pos   (0x0U)
-#define ISL94202_XT2M_Msk   (0xFFFU << ISL94202_XT2M_Pos)
-// External Temp Gain
-#define ISL94202_TGAIN_Pos  (0x0U)
-#define ISL94202_TGAIN_Msk  (0xFFFU << ISL94202_TGAIN_Pos)
-// Precharge FET Enable
-#define ISL94202_PCFETE_Pos (0x0U)
-#define ISL94202_PCFETE_Msk (0xFFFU << ISL94202_PCFETE_Pos)
-// Disable Open-Wire-Scan
-#define ISL94202_DOWD_Pos   (0x0U)
-#define ISL94202_DOWD_Msk   (0xFFFU << ISL94202_DOWD_Pos)
+#define ISL94202_FC                 (0x4AU)
 // Open-Wire PSD
-#define ISL94202_OWPSD_Pos  (0x0U)
-#define ISL94202_OWPSD_Msk  (0xFFFU << ISL94202_OWPSD_Pos)
-// CB during Discharge
-#define ISL94202_CBDD_Pos   (0x0U)
-#define ISL94202_CBDD_Msk   (0xFFFU << ISL94202_CBDD_Pos)
-// CB during Charge
-#define ISL94202_CBDC_Pos   (0x0U)
-#define ISL94202_CBDC_Msk   (0xFFFU << ISL94202_CBDC_Pos)
-// DFET on during UV (Charging)
-#define ISL94202_DFODUV_Pos (0x0U)
-#define ISL94202_DFODUV_Msk (0xFFFU << ISL94202_DFODUV_Pos)
-// CFET on during OV (Discharging)
-#define ISL94202_DFODOV_Pos (0x0U)
-#define ISL94202_DFODOV_Msk (0xFFFU << ISL94202_DFODOV_Pos)
-// Enable UVLO Power-Down
-#define ISL94202_UVLOPD_Pos (0x0U)
-#define ISL94202_UVLOPD_Msk (0xFFFU << ISL94202_UVLOPD_Pos)
+#define ISL94202_FC_OWPSD_Pos       (0x0U)
+#define ISL94202_FC_OWPSD_Msk       (0x1U << ISL94202_FC_OWPSD_Pos)
+// Disable Open-Wire-Scan
+#define ISL94202_FC_DOWD_Pos        (0x1U)
+#define ISL94202_FC_DOWD_Msk        (0x1U << ISL94202_FC_DOWD_Pos)
+// Precharge FET Enable
+#define ISL94202_FC_PCFETE_Pos      (0x2U)
+#define ISL94202_FC_PCFETE_Msk      (0x1U << ISL94202_FC_PCFETE_Pos)
+// External Temp Gain
+#define ISL94202_FC_TGAIN_Pos       (0x4U)
+#define ISL94202_FC_TGAIN_Msk       (0x1U << ISL94202_FC_TGAIN_Pos)
+// xTemp2 Mode Control
+#define ISL94202_FC_XT2M_Pos        (0x5U)
+#define ISL94202_FC_XT2M_Msk        (0x1U << ISL94202_FC_XT2M_Pos)
+// Cell fail PSD
+#define ISL94202_FC_CFPSD_Pos       (0x7U)
+#define ISL94202_FC_CFPSD_Msk       (0x1U << ISL94202_FC_CFPSD_Pos)
 // Enable CBAL during EOC
-#define ISL94202_CBEOC_Pos  (0x0U)
-#define ISL94202_CBEOC_Msk  (0xFFFU << ISL94202_CBEOC_Pos)
+#define ISL94202_FC_CBEOC_Pos       (0x8U)
+#define ISL94202_FC_CBEOC_Msk       (0x1U << ISL94202_FC_CBEOC_Pos)
+// Enable UVLO Power-Down
+#define ISL94202_FC_UVLOPD_Pos      (0xBU)
+#define ISL94202_FC_UVLOPD_Msk      (0x1U << ISL94202_FC_UVLOPD_Pos)
+// CFET on during OV (Discharging)
+#define ISL94202_FC_DFODOV_Pos      (0xCU)
+#define ISL94202_FC_DFODOV_Msk      (0x1U << ISL94202_FC_DFODOV_Pos)
+// DFET on during UV (Charging)
+#define ISL94202_FC_DFODUV_Pos      (0xDU)
+#define ISL94202_FC_DFODUV_Msk      (0x1U << ISL94202_FC_DFODUV_Pos)
+// CB during Charge
+#define ISL94202_FC_CBDC_Pos        (0xEU)
+#define ISL94202_FC_CBDC_Msk        (0x1U << ISL94202_FC_CBDC_Pos)
+// CB during Discharge
+#define ISL94202_FC_CBDD_Pos        (0xFU)
+#define ISL94202_FC_CBDD_Msk        (0x1U << ISL94202_FC_CBDD_Pos)
 
 // RAM registers
 

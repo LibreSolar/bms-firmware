@@ -29,6 +29,7 @@
 
 #define NUM_CELLS_MAX 8
 #define NUM_THERMISTORS_MAX 2
+#define MOSFET_TEMP_SENSOR
 
 #define PIN_UEXT_TX   PA_2
 #define PIN_UEXT_RX   PA_3

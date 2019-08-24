@@ -65,6 +65,11 @@ void bms_init()
 {
     isl94202_init();
     set_num_cells(4);
+
+    uint16_t reg = 0;
+    reg |= ISL94202_FC_XT2M_Msk;        // xTemp2 monitoring MOSFETs and not cells
+    reg |= ISL94202_FC_CBDC_Msk;        // cell balancing during charging enabled
+    isl94202_write_word(ISL94202_FC, reg);
 }
 
 int bms_quickcheck(BmsConfig *conf, BmsStatus *status)
@@ -158,7 +163,53 @@ int bms_apply_temp_limits(BmsConfig *bms)
 
 void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
 {
-    /* ToDo */
+    // using default setting TGain = 0 (GAIN = 2) with 22k resistors
+
+    // Lookup-table for temperatures according to datasheet
+    const float lut_adcv[] = {0.153, 0.295, 0.463, 0.710, 0.755};
+    const float lut_temp[] = {80, 50, 25, 0, -40};
+    uint16_t reg;
+
+    // internal temperature
+    isl94202_read_word(ISL94202_IT, &reg);
+    status->ic_temp = (float)(reg & 0x0FFF) * 1.8 / 4095 * 1000 / 1.8527 - 273.15;
+
+    // External temperature 1
+    isl94202_read_word(ISL94202_XT1, &reg);
+    float adcv = (float)(reg & 0x0FFF) * 1.8 / 4095 / 2;
+
+    status->external_temp = lut_temp[sizeof(lut_temp)/sizeof(float) - 1]; // init with -40°C
+    for (unsigned int i = 0; i < sizeof(lut_temp)/sizeof(float); i++) {
+        if (adcv <= lut_adcv[i]) {
+            if (i == 0) {
+                status->external_temp = lut_temp[0];
+            }
+            else {
+                // interpolate between lut_temp[i] and lut_temp[i-1]
+                status->external_temp = lut_temp[i-1] + (lut_temp[i] - lut_temp[i-1]) *
+                    (adcv - lut_adcv[i-1]) / (lut_adcv[i] - lut_adcv[i-1]);
+            }
+            break;
+        }
+    }
+
+    // External temperature 2 (used for MOSFET temperature sensing)
+    isl94202_read_word(ISL94202_XT2, &reg);
+    adcv = (float)(reg & 0x0FFF) * 1.8 / 4095 / 2;
+
+    status->mosfet_temp = lut_temp[sizeof(lut_temp)/sizeof(float) - 1]; // init with -40°C
+    for (unsigned int i = 0; i < sizeof(lut_temp)/sizeof(float); i++) {
+        if (adcv <= lut_adcv[i]) {
+            if (i == 0) {
+                status->mosfet_temp = lut_temp[0];
+            }
+            else {
+                status->mosfet_temp = lut_temp[i-1] + (lut_temp[i] - lut_temp[i-1]) *
+                    (adcv - lut_adcv[i-1]) / (lut_adcv[i] - lut_adcv[i-1]);
+            }
+            break;
+        }
+    }
 }
 
 void bms_read_current(BmsConfig *conf, BmsStatus *status)
