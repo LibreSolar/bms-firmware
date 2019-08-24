@@ -41,6 +41,8 @@ void main(void)
         bms_update(&bms_conf, &bms_status);
         bms_state_machine(&bms_conf, &bms_status);
 
+        uext_process_1s();
+
         //bms_print_registers();
 
         k_sleep(1000);
