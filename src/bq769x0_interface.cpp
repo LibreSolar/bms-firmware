@@ -19,7 +19,7 @@
 
 #if defined(BMS_BQ76920) || defined(BMS_BQ76930) || defined(BMS_BQ76940)
 
-#include "bq769x0_hw.h"
+#include "bq769x0_interface.h"
 #include "bq769x0_registers.h"
 
 #include "mbed.h"

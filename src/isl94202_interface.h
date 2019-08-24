@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef ISL94202_HW
-#define ISL94202_HW
+#ifndef ISL94202_INTERFACE_H
+#define ISL94202_INTERFACE_H
 
 /** @file
  *
@@ -144,4 +144,4 @@ int isl94202_write_voltage(uint8_t reg_addr, float voltage, uint8_t extra_bits);
 }
 #endif
 
-#endif // ISL94202_HW
+#endif // ISL94202_INTERFACE_H

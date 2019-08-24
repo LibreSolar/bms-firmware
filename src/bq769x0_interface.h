@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef BQ769X0_HW
-#define BQ769X0_HW
+#ifndef BQ769X0_INTERFACE_H
+#define BQ769X0_INTERFACE_H
 
 /** @file
  *
@@ -75,4 +75,4 @@ time_t bq769x0_alert_timestamp();
 }
 #endif
 
-#endif // BQ769X0_HW
+#endif // BQ769X0_INTERFACE_H

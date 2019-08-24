@@ -20,7 +20,7 @@
 
 #include "bms.h"
 #include "bq769x0_registers.h"
-#include "bq769x0_hw.h"
+#include "bq769x0_interface.h"
 
 #include "config.h"
 
@@ -38,7 +38,6 @@ static int adc_offset;  // factory-calibrated, read out from chip (mV)
 
 //----------------------------------------------------------------------------
 
-
 /**
  * Checks if temperatures are within the limits, otherwise disables CHG/DSG FET
  *
@@ -46,20 +45,7 @@ static int adc_offset;  // factory-calibrated, read out from chip (mV)
  */
 void bms_check_cell_temp(BmsConfig *conf, BmsStatus *status);
 
-
-static const char *byte2char(int x)
-{
-    static char b[9];
-    b[0] = '\0';
-
-    int z;
-    for (z = 128; z > 0; z >>= 1)
-    {
-        strcat(b, ((x & z) == z) ? "1" : "0");
-    }
-
-    return b;
-}
+//----------------------------------------------------------------------------
 
 void bms_init()
 {
@@ -616,24 +602,34 @@ void bms_read_voltages(BmsStatus *status)
 
 #if BMS_DEBUG
 
+static const char *byte2bitstr(uint8_t b)
+{
+    static char str[9];
+    str[0] = '\0';
+    for (int z = 128; z > 0; z >>= 1) {
+        strcat(str, ((b & z) == z) ? "1" : "0");
+    }
+    return str;
+}
+
 void bms_print_registers()
 {
-    printf("0x00 SYS_STAT:  %s\n", byte2char(bq769x0_read_byte(SYS_STAT)));
-    printf("0x01 CELLBAL1:  %s\n", byte2char(bq769x0_read_byte(CELLBAL1)));
-    printf("0x04 SYS_CTRL1: %s\n", byte2char(bq769x0_read_byte(SYS_CTRL1)));
-    printf("0x05 SYS_CTRL2: %s\n", byte2char(bq769x0_read_byte(SYS_CTRL2)));
-    printf("0x06 PROTECT1:  %s\n", byte2char(bq769x0_read_byte(PROTECT1)));
-    printf("0x07 PROTECT2:  %s\n", byte2char(bq769x0_read_byte(PROTECT2)));
-    printf("0x08 PROTECT3:  %s\n", byte2char(bq769x0_read_byte(PROTECT3)));
-    printf("0x09 OV_TRIP:   %s\n", byte2char(bq769x0_read_byte(OV_TRIP)));
-    printf("0x0A UV_TRIP:   %s\n", byte2char(bq769x0_read_byte(UV_TRIP)));
-    printf("0x0B CC_CFG:    %s\n", byte2char(bq769x0_read_byte(CC_CFG)));
-    printf("0x32 CC_HI:     %s\n", byte2char(bq769x0_read_byte(CC_HI_BYTE)));
-    printf("0x33 CC_LO:     %s\n", byte2char(bq769x0_read_byte(CC_LO_BYTE)));
+    printf("0x00 SYS_STAT:  %s\n", byte2bitstr(bq769x0_read_byte(SYS_STAT)));
+    printf("0x01 CELLBAL1:  %s\n", byte2bitstr(bq769x0_read_byte(CELLBAL1)));
+    printf("0x04 SYS_CTRL1: %s\n", byte2bitstr(bq769x0_read_byte(SYS_CTRL1)));
+    printf("0x05 SYS_CTRL2: %s\n", byte2bitstr(bq769x0_read_byte(SYS_CTRL2)));
+    printf("0x06 PROTECT1:  %s\n", byte2bitstr(bq769x0_read_byte(PROTECT1)));
+    printf("0x07 PROTECT2:  %s\n", byte2bitstr(bq769x0_read_byte(PROTECT2)));
+    printf("0x08 PROTECT3:  %s\n", byte2bitstr(bq769x0_read_byte(PROTECT3)));
+    printf("0x09 OV_TRIP:   %s\n", byte2bitstr(bq769x0_read_byte(OV_TRIP)));
+    printf("0x0A UV_TRIP:   %s\n", byte2bitstr(bq769x0_read_byte(UV_TRIP)));
+    printf("0x0B CC_CFG:    %s\n", byte2bitstr(bq769x0_read_byte(CC_CFG)));
+    printf("0x32 CC_HI:     %s\n", byte2bitstr(bq769x0_read_byte(CC_HI_BYTE)));
+    printf("0x33 CC_LO:     %s\n", byte2bitstr(bq769x0_read_byte(CC_LO_BYTE)));
     /*
-    printf("0x50 ADCGAIN1:  %s\n", byte2char(bq769x0_read_byte(ADCGAIN1)));
-    printf("0x51 ADCOFFSET: %s\n", byte2char(bq769x0_read_byte(ADCOFFSET)));
-    printf("0x59 ADCGAIN2:  %s\n", byte2char(bq769x0_read_byte(ADCGAIN2)));
+    printf("0x50 ADCGAIN1:  %s\n", byte2bitstr(bq769x0_read_byte(ADCGAIN1)));
+    printf("0x51 ADCOFFSET: %s\n", byte2bitstr(bq769x0_read_byte(ADCOFFSET)));
+    printf("0x59 ADCGAIN2:  %s\n", byte2bitstr(bq769x0_read_byte(ADCGAIN2)));
     */
 }
 

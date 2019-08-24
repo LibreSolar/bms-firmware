@@ -20,7 +20,7 @@
 
 #include "bms.h"
 #include "isl94202_registers.h"
-#include "isl94202_hw.h"
+#include "isl94202_interface.h"
 
 #include "config.h"
 
@@ -283,13 +283,9 @@ static const char *byte2bitstr(uint8_t b)
 {
     static char str[9];
     str[0] = '\0';
-
-    int z;
-    for (z = 128; z > 0; z >>= 1)
-    {
+    for (int z = 128; z > 0; z >>= 1) {
         strcat(str, ((b & z) == z) ? "1" : "0");
     }
-
     return str;
 }
 

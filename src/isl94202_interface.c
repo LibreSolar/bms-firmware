@@ -19,7 +19,7 @@
 
 #ifdef BMS_ISL94202
 
-#include "isl94202_hw.h"
+#include "isl94202_interface.h"
 #include "isl94202_registers.h"
 
 #include <stdio.h>
@@ -166,7 +166,7 @@ int isl94202_write_voltage(uint8_t reg_addr, float voltage, uint8_t extra_bits)
 
 int isl94202_read_word(uint8_t reg_addr, uint16_t *word)
 {
-	uint8_t buf[2];
+	uint8_t buf[2] = {0};
     int res = isl94202_read_bytes(reg_addr, buf, 2);
     *word = buf[0] + (buf[1] << 8);
 	return res;
