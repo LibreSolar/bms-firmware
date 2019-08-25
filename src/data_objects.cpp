@@ -72,18 +72,18 @@ const data_object_t data_objects[] = {
 
     // voltage limits
     {0x50, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_FLOAT32, 1, (void*) &(bms_conf.cell_ov_limit),           "CellUpLim_V"},
-    {0x51, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_FLOAT32, 1, (void*) &(bms_conf.cell_ov_limit_hyst),      "CellUpLimHyst_V"},
+    {0x51, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_FLOAT32, 1, (void*) &(bms_conf.cell_ov_reset),           "CellUpLimReset_V"},
     {0x52, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_UINT32,  0, (void*) &(bms_conf.cell_ov_delay_ms),        "CellUpLimDelay_ms"},
     {0x53, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_FLOAT32, 1, (void*) &(bms_conf.cell_uv_limit),           "CellLowLim_V"},
-    {0x54, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_FLOAT32, 1, (void*) &(bms_conf.cell_uv_limit_hyst),      "CellLowLimHyst_V"},
+    {0x54, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_FLOAT32, 1, (void*) &(bms_conf.cell_uv_reset),           "CellLowLimReset_V"},
     {0x55, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_UINT32,  0, (void*) &(bms_conf.cell_uv_delay_ms),        "CellLowLimDelay_ms"},
 
     // balancing
     {0x48, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_BOOL,    0, (void*) &(bms_conf.auto_balancing_enabled),  "AutoBalEn"},
-    {0x49, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_FLOAT32, 1, (void*) &(bms_conf.balancing_voltage_diff_target),   "CellBalDelta_V"},
-    {0x5A, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_FLOAT32, 1, (void*) &(bms_conf.balancing_cell_voltage_min),      "CellBalLowLim_V"},
-    {0x5B, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_UINT16,  0, (void*) &(bms_conf.balancing_min_idle_s),            "CellBalDelay_s"},
-    {0x5C, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_FLOAT32, 1, (void*) &(bms_conf.idle_current_threshold),          "CellBalIdleTh_A"},
+    {0x49, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_FLOAT32, 1, (void*) &(bms_conf.bal_cell_voltage_diff),   "BalCellDiff_V"},
+    {0x5A, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_FLOAT32, 1, (void*) &(bms_conf.bal_cell_voltage_min),    "BalCellLowLim_V"},
+    {0x5B, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_UINT16,  0, (void*) &(bms_conf.bal_idle_delay),          "BalIdleDelay_s"},
+    {0x5C, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_FLOAT32, 1, (void*) &(bms_conf.bal_idle_current),        "BalIdleTh_A"},
 
     // INPUT DATA /////////////////////////////////////////////////////////////
     // using IDs >= 0x60

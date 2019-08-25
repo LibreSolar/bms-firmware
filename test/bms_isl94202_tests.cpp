@@ -267,7 +267,7 @@ void test_isl94202_apply_dis_scp_limits()
 void test_isl94202_apply_cell_ov_limits()
 {
     bms_conf.cell_ov_limit = 4.251;      // default value
-    bms_conf.cell_ov_limit_hyst = 0.101;
+    bms_conf.cell_ov_reset = 4.15;
     bms_conf.cell_ov_delay_ms = 999;
     uint16_t delay = 999 + (1U << 10);
     bms_apply_cell_ovp(&bms_conf);
@@ -279,7 +279,7 @@ void test_isl94202_apply_cell_ov_limits()
 void test_isl94202_apply_cell_uv_limits()
 {
     bms_conf.cell_uv_limit = 2.7;       // default value
-    bms_conf.cell_uv_limit_hyst = 0.3;
+    bms_conf.cell_uv_reset = 3.0;
     bms_conf.cell_uv_delay_ms = 2222;
     uint16_t delay = 2222/1000 + (2U << 10);
     bms_apply_cell_uvp(&bms_conf);

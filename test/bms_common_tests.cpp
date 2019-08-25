@@ -23,9 +23,9 @@ void init_conf()
     bms_conf.chg_ot_limit = 45;
     bms_conf.t_limit_hyst = 2;
 
-    bms_conf.balancing_cell_voltage_min = 3.2;
-    bms_conf.balancing_min_idle_s = 5*60;
-    bms_conf.balancing_voltage_diff_target = 0.01;
+    bms_conf.bal_cell_voltage_min = 3.2;
+    bms_conf.bal_idle_delay = 5*60;
+    bms_conf.bal_cell_voltage_diff = 0.01;
 
     for (int i = 0; i < NUM_CELLS_MAX; i++) {
         bms_status.cell_voltages[i] = 3.3;
@@ -197,8 +197,8 @@ void no_normal2balancing_if_nok()
     TEST_ASSERT_EQUAL(BMS_STATE_NORMAL, bms_status.state);
 
     // SOC too low
-    bms_status.pack_current = bms_conf.idle_current_threshold - 0.1;
-    bms_status.cell_voltages[3] = bms_conf.balancing_cell_voltage_min + 0.1;
+    bms_status.pack_current = bms_conf.bal_idle_current - 0.1;
+    bms_status.cell_voltages[3] = bms_conf.bal_cell_voltage_min + 0.1;
     bms_status.cell_voltage_max = bms_status.cell_voltages[3];
     bms_state_machine(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL(BMS_STATE_NORMAL, bms_status.state);

@@ -105,22 +105,22 @@ void test_bq769x0_apply_cell_uv_limits()
 void bq769x0_tests()
 {
     UNITY_BEGIN();
-/*
-    RUN_TEST(test_bq769x0_init);
 
-    RUN_TEST(test_bq769x0_read_cell_voltages);
-    RUN_TEST(test_bq769x0_read_pack_voltage);
-    RUN_TEST(test_bq769x0_read_min_max_avg_voltage);
-    RUN_TEST(test_bq769x0_read_pack_current);
-    RUN_TEST(test_bq769x0_read_error_flags);
-    RUN_TEST(test_bq769x0_read_temperatures);
+    //RUN_TEST(test_bq769x0_init);
 
-    RUN_TEST(test_bq769x0_apply_dis_ocp_limits);
-    RUN_TEST(test_bq769x0_apply_chg_ocp_limits);
-    RUN_TEST(test_bq769x0_apply_dis_scp_limits);
+    //RUN_TEST(test_bq769x0_read_cell_voltages);
+    //RUN_TEST(test_bq769x0_read_pack_voltage);
+    //RUN_TEST(test_bq769x0_read_min_max_avg_voltage);
+    //RUN_TEST(test_bq769x0_read_pack_current);
+    //RUN_TEST(test_bq769x0_read_error_flags);
+    //RUN_TEST(test_bq769x0_read_temperatures);
 
-    RUN_TEST(test_bq769x0_apply_cell_ov_limits);
-    RUN_TEST(test_bq769x0_apply_cell_uv_limits);
-*/
+    //RUN_TEST(test_bq769x0_apply_dis_ocp_limits);
+    //RUN_TEST(test_bq769x0_apply_chg_ocp_limits);
+    //RUN_TEST(test_bq769x0_apply_dis_scp_limits);
+
+    //RUN_TEST(test_bq769x0_apply_cell_ov_limits);
+    //RUN_TEST(test_bq769x0_apply_cell_uv_limits);
+
     UNITY_END();
 }

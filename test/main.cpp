@@ -53,10 +53,10 @@ void setup()
 
     bms_update(&bms_conf, &bms_status);   // get voltage and temperature measurements before switching on
 
-    bms_conf.balancing_cell_voltage_min = 3.2;
-    bms_conf.balancing_min_idle_s = 10 * 60;
-    bms_conf.balancing_voltage_diff_target = 0.01;
-    bms_conf.idle_current_threshold = 0.1;
+    bms_conf.bal_cell_voltage_min = 3.2;
+    bms_conf.bal_idle_delay = 10 * 60;
+    bms_conf.bal_cell_voltage_diff = 0.01;
+    bms_conf.bal_idle_current = 0.1;
     bms_conf.auto_balancing_enabled = true;
     bms_apply_balancing(&bms_conf, &bms_status);
 

@@ -143,7 +143,7 @@ int bms_apply_cell_ovp(BmsConfig *conf)
 {
     // keeping CPW at the default value of 1 ms
     return isl94202_write_voltage(ISL94202_OVL_CPW, conf->cell_ov_limit, 1)
-        && isl94202_write_voltage(ISL94202_OVR, conf->cell_ov_limit - conf->cell_ov_limit_hyst, 0)
+        && isl94202_write_voltage(ISL94202_OVR, conf->cell_ov_reset, 0)
         && isl94202_write_delay(ISL94202_OVDT, ISL94202_DELAY_MS, conf->cell_ov_delay_ms, 0);
 }
 
@@ -151,7 +151,7 @@ int bms_apply_cell_uvp(BmsConfig *conf)
 {
     // keeping LPW at the default value of 1 ms
     return isl94202_write_voltage(ISL94202_UVL_LPW, conf->cell_uv_limit, 1)
-        && isl94202_write_voltage(ISL94202_UVR, conf->cell_uv_limit + conf->cell_uv_limit_hyst, 0)
+        && isl94202_write_voltage(ISL94202_UVR, conf->cell_uv_reset, 0)
         && isl94202_write_delay(ISL94202_UVDT, ISL94202_DELAY_MS, conf->cell_uv_delay_ms, 0);
 }
 

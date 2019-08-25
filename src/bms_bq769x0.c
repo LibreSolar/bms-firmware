@@ -181,9 +181,9 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
     }
 
     // check if balancing allowed
-    if (idleSeconds >= conf->balancing_min_idle_s &&
-        status->cell_voltage_max > conf->balancing_cell_voltage_min &&
-        (status->cell_voltage_max - status->cell_voltage_min) > conf->balancing_voltage_diff_target)
+    if (idleSeconds >= conf->bal_idle_delay &&
+        status->cell_voltage_max > conf->bal_cell_voltage_min &&
+        (status->cell_voltage_max - status->cell_voltage_min) > conf->bal_cell_voltage_diff)
     {
         //printf("Balancing enabled!");
         status->balancing_status = 0;  // current status will be set in following loop
@@ -199,7 +199,7 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
             int cellCounter = 0;
             for (int i = 0; i < 5; i++)
             {
-                if ((status->cell_voltages[section*5 + i] - status->cell_voltage_min) > conf->balancing_voltage_diff_target) {
+                if ((status->cell_voltages[section*5 + i] - status->cell_voltage_min) > conf->bal_cell_voltage_diff) {
                     int j = cellCounter;
                     while (j > 0 && status->cell_voltages[section*5 + cellList[j - 1]] < status->cell_voltages[section*5 + i])
                     {
@@ -459,7 +459,7 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
         status->pack_current = pack_current_mA / 1000;
 
         // reset no_idle_timestamp
-        if (fabs(status->pack_current) > conf->idle_current_threshold) {
+        if (fabs(status->pack_current) > conf->bal_idle_current) {
             status->no_idle_timestamp = time(NULL);
         }
 

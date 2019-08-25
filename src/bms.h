@@ -91,11 +91,12 @@ typedef struct
 
     // Cell voltage limits
     float cell_chg_voltage;         ///< Cell target charge voltage (V)
+    float cell_dis_voltage;         ///< Cell discharge voltage limit (V)
     float cell_ov_limit;            ///< Cell over-voltage limit (V)
-    float cell_ov_limit_hyst;       ///< Cell over-voltage limit hysteresis (V)
+    float cell_ov_reset;            ///< Cell over-voltage error reset threshold (V)
     uint32_t cell_ov_delay_ms;      ///< Cell over-voltage delay (ms)
     float cell_uv_limit;            ///< Cell under-voltage limit (V)
-    float cell_uv_limit_hyst;       ///< Cell under-voltage limit hysteresis (V)
+    float cell_uv_reset;            ///< Cell under-voltage error reset threshold (V)
     uint32_t cell_uv_delay_ms;      ///< Cell under-voltage delay (ms)
 
     // Temperature limits (°C)
@@ -106,11 +107,11 @@ typedef struct
     float t_limit_hyst;             ///< Temperature limit hysteresis (°C)
 
     // Balancing settings
-    bool auto_balancing_enabled;            ///< Enable automatic balancing
-    float balancing_voltage_diff_target;    ///< Balancing voltage difference target (V)
-    float balancing_cell_voltage_min;       ///< Minimum voltage to start balancing (V)
-    uint16_t balancing_min_idle_s;          ///< Minimum idle duration before balancing (s)
-    float idle_current_threshold;           ///< Current threshold to be considered idle (A)
+    bool auto_balancing_enabled;    ///< Enable automatic balancing
+    float bal_cell_voltage_diff;    ///< Balancing cell voltage target difference (V)
+    float bal_cell_voltage_min;     ///< Minimum cell voltage to start balancing (V)
+    float bal_idle_current;         ///< Current threshold to be considered idle (A)
+    uint16_t bal_idle_delay;        ///< Minimum idle duration before balancing (s)
 } BmsConfig;
 
 /**

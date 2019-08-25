@@ -22,9 +22,9 @@
 void bms_init_config(BmsConfig *conf, enum CellType type, float nominal_capacity)
 {
     conf->auto_balancing_enabled = true;
-    conf->balancing_min_idle_s = 1800;    // default: 30 minutes
-    conf->balancing_voltage_diff_target = 0.01; // 10 mV
-    conf->idle_current_threshold = 0.1; // A
+    conf->bal_idle_delay = 1800;            // default: 30 minutes
+    conf->bal_idle_current = 0.1F;          // A
+    conf->bal_cell_voltage_diff = 0.01F;    // 10 mV
 
     conf->thermistor_beta = 3435;  // typical value for Semitec 103AT-5 thermistor
 
@@ -42,14 +42,14 @@ void bms_init_config(BmsConfig *conf, enum CellType type, float nominal_capacity
     conf->dis_oc_delay_ms  = 320;
     conf->chg_oc_delay_ms  = 320;
 
-    conf->dis_sc_limit  = conf->dis_oc_limit * 2;
+    conf->dis_sc_limit = conf->dis_oc_limit * 2;
     conf->dis_sc_delay_us  = 200;
 
     conf->dis_ut_limit = -20;
-    conf->dis_ot_limit = 45;
-    conf->chg_ut_limit = 0;
-    conf->chg_ot_limit = 45;
-    conf->t_limit_hyst = 2;
+    conf->dis_ot_limit =  45;
+    conf->chg_ut_limit =   0;
+    conf->chg_ot_limit =  45;
+    conf->t_limit_hyst =   2;
 
     conf->shunt_res_mOhm = SHUNT_RESISTOR;
 
@@ -63,36 +63,40 @@ void bms_init_config(BmsConfig *conf, enum CellType type, float nominal_capacity
     switch (type)
     {
         case CELL_TYPE_LFP:
-            conf->cell_chg_voltage = 3.60;
-            conf->balancing_cell_voltage_min = 3.2;
-            conf->cell_ov_limit = 3.65;
-            conf->cell_ov_limit_hyst = 0.2;
-            conf->cell_uv_limit = 2.8;
-            conf->cell_uv_limit_hyst = 0.3;
+            conf->cell_ov_limit         = 3.65F;
+            conf->cell_chg_voltage      = 3.60F;
+            conf->cell_ov_reset         = 3.45F;
+            conf->bal_cell_voltage_min  = 3.20F;
+            conf->cell_uv_reset         = 3.10F;
+            conf->cell_dis_voltage      = 3.00F;
+            conf->cell_uv_limit         = 2.80F;
             break;
         case CELL_TYPE_NMC:
-            conf->cell_chg_voltage = 4.20;
-            conf->balancing_cell_voltage_min = 3.8;
-            conf->cell_ov_limit = 4.25;
-            conf->cell_ov_limit_hyst = 0.2;
-            conf->cell_uv_limit = 3.2;
-            conf->cell_uv_limit_hyst = 0.3;
+            conf->cell_ov_limit         = 4.25F;
+            conf->cell_chg_voltage      = 4.20F;
+            conf->cell_ov_reset         = 4.05F;
+            conf->bal_cell_voltage_min  = 3.80F;
+            conf->cell_uv_reset         = 3.50F;
+            conf->cell_dis_voltage      = 3.20F;
+            conf->cell_uv_limit         = 3.00F;
             break;
         case CELL_TYPE_NMC_HV:
-            conf->cell_chg_voltage = 4.30;
-            conf->balancing_cell_voltage_min = 3.8;
-            conf->cell_ov_limit = 4.35;
-            conf->cell_ov_limit_hyst = 0.2;
-            conf->cell_uv_limit = 3.0;
-            conf->cell_uv_limit_hyst = 0.3;
+            conf->cell_ov_limit         = 4.35F;
+            conf->cell_chg_voltage      = 4.30F;
+            conf->cell_ov_reset         = 4.15F;
+            conf->bal_cell_voltage_min  = 3.80F;
+            conf->cell_uv_reset         = 3.50F;
+            conf->cell_dis_voltage      = 3.20F;
+            conf->cell_uv_limit         = 3.00F;
             break;
         case CELL_TYPE_LTO:
-            conf->cell_chg_voltage = 2.80;
-            conf->balancing_cell_voltage_min = 2.5;
-            conf->cell_ov_limit = 2.85;
-            conf->cell_ov_limit_hyst = 0.15;
-            conf->cell_uv_limit = 1.9;
-            conf->cell_uv_limit_hyst = 0.2;
+            conf->cell_ov_limit         = 2.85F;
+            conf->cell_chg_voltage      = 2.80F;
+            conf->cell_ov_reset         = 2.70F;
+            conf->bal_cell_voltage_min  = 2.50F;
+            conf->cell_uv_reset         = 2.10F;
+            conf->cell_dis_voltage      = 2.00F;
+            conf->cell_uv_limit         = 1.90F;
             break;
         case CELL_TYPE_CUSTOM:
             break;
@@ -191,9 +195,9 @@ bool bms_balancing_allowed(BmsConfig *conf, BmsStatus *status)
     float voltage_diff = status->cell_voltage_max -
         status->cell_voltage_min;
 
-    return idle_sec >= conf->balancing_min_idle_s &&
-        status->cell_voltage_max > conf->balancing_cell_voltage_min &&
-        voltage_diff > conf->balancing_voltage_diff_target;
+    return idle_sec >= conf->bal_idle_delay &&
+        status->cell_voltage_max > conf->bal_cell_voltage_min &&
+        voltage_diff > conf->bal_cell_voltage_diff;
 }
 
 void bms_update_soc(BmsConfig *conf, BmsStatus *status)
