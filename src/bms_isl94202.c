@@ -21,6 +21,7 @@
 #include "bms.h"
 #include "isl94202_registers.h"
 #include "isl94202_interface.h"
+#include "helper.h"
 
 #include "config.h"
 
@@ -28,6 +29,10 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
+
+// Lookup-table for temperatures according to datasheet
+static const float lut_temp_volt[] = {0.153, 0.295, 0.463, 0.710, 0.755};
+static const float lut_temp_degc[] = {80, 50, 25, 0, -40};
 
 static void set_num_cells(int num)
 {
@@ -72,12 +77,6 @@ void bms_init()
     isl94202_write_word(ISL94202_FC, reg);
 }
 
-int bms_quickcheck(BmsConfig *conf, BmsStatus *status)
-{
-    /* ToDo */
-    return 0;
-}
-
 void bms_update(BmsConfig *conf, BmsStatus *status)
 {
     bms_read_voltages(status);
@@ -86,11 +85,6 @@ void bms_update(BmsConfig *conf, BmsStatus *status)
     bms_update_error_flags(conf, status);
     bms_apply_balancing(conf, status);
     bms_update_soc(conf, status);
-}
-
-void bms_update_error_flag(BmsConfig *conf, BmsStatus *status, uint32_t flag, bool value)
-{
-    /* ToDo */
 }
 
 void bms_shutdown()
@@ -165,9 +159,6 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
 {
     // using default setting TGain = 0 (GAIN = 2) with 22k resistors
 
-    // Lookup-table for temperatures according to datasheet
-    const float lut_adcv[] = {0.153, 0.295, 0.463, 0.710, 0.755};
-    const float lut_temp[] = {80, 50, 25, 0, -40};
     uint16_t adc_raw;
 
     // Internal temperature
@@ -178,20 +169,9 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     adc_raw = isl94202_read_word(ISL94202_XT1) & 0x0FFF;
     float adc_v = (float)adc_raw * 1.8 / 4095 / 2;
 
-    status->bat_temp_avg = lut_temp[sizeof(lut_temp)/sizeof(float) - 1]; // init with -40°C
-    for (unsigned int i = 0; i < sizeof(lut_temp)/sizeof(float); i++) {
-        if (adc_v <= lut_adcv[i]) {
-            if (i == 0) {
-                status->bat_temp_avg = lut_temp[0];
-            }
-            else {
-                // interpolate between lut_temp[i] and lut_temp[i-1]
-                status->bat_temp_avg = lut_temp[i-1] + (lut_temp[i] - lut_temp[i-1]) *
-                    (adc_v - lut_adcv[i-1]) / (lut_adcv[i] - lut_adcv[i-1]);
-            }
-            break;
-        }
-    }
+    status->bat_temp_avg = interpolate(lut_temp_volt, lut_temp_degc,
+        sizeof(lut_temp_degc)/sizeof(float), adc_v);
+
     // only single battery temperature measurement
     status->bat_temp_min = status->bat_temp_avg;
     status->bat_temp_max = status->bat_temp_avg;
@@ -200,19 +180,8 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     adc_raw = isl94202_read_word(ISL94202_XT2) & 0x0FFF;
     adc_v = (float)adc_raw * 1.8 / 4095 / 2;
 
-    status->mosfet_temp = lut_temp[sizeof(lut_temp)/sizeof(float) - 1]; // init with -40°C
-    for (unsigned int i = 0; i < sizeof(lut_temp)/sizeof(float); i++) {
-        if (adc_v <= lut_adcv[i]) {
-            if (i == 0) {
-                status->mosfet_temp = lut_temp[0];
-            }
-            else {
-                status->mosfet_temp = lut_temp[i-1] + (lut_temp[i] - lut_temp[i-1]) *
-                    (adc_v - lut_adcv[i-1]) / (lut_adcv[i] - lut_adcv[i-1]);
-            }
-            break;
-        }
-    }
+    status->mosfet_temp = interpolate(lut_temp_volt, lut_temp_degc,
+        sizeof(lut_temp_degc)/sizeof(float), adc_v);
 }
 
 void bms_read_current(BmsConfig *conf, BmsStatus *status)

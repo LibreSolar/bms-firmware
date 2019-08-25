@@ -75,4 +75,6 @@ int main()
 #elif defined(BMS_ISL94202)
     isl94202_tests();
 #endif
+
+    helper_tests();
 }
