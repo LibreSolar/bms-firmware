@@ -17,11 +17,17 @@
 /**
  * LED control depending on BMS state
  *
- * Red: Discharging LED
- * Green: Charging LED
+ * Red LED
+ * - Discharging finished (empty)           (off)
+ * - Discharging allowed (current < idle)   _______________
+ * - Discharging active (current >= idle)   ____ ____ ____
+ * - Discharging error (UV/OT/UT/OC/SC)     _ _ _ _ _ _ _ _
  *
- * LED on: Chg/Dis enabled
- * LED blinking: Idle
- * LED flashing: Error
+ * Green LED
+ * - Charging finished (full)               (off)
+ * - Charging allowed (current < idle)      _______________
+ * - Charging active (current >= idle)      ____ ____ ____
+ * - Charging error (OV/OT/UT/OC)           _ _ _ _ _ _ _ _
+ *
  */
 void leds_update_thread();

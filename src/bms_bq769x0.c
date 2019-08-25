@@ -119,7 +119,7 @@ void bms_shutdown()
 bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
     if (enable) {
-        if (bms_chg_allowed(conf, status))
+        if (!bms_chg_error(status))
         {
             int sys_ctrl2;
             sys_ctrl2 = bq769x0_read_byte(SYS_CTRL2);
@@ -147,7 +147,7 @@ bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
     if (enable) {
-        if (bms_dis_allowed(conf, status))
+        if (!bms_dis_error(status))
         {
             int sys_ctrl2;
             sys_ctrl2 = bq769x0_read_byte(SYS_CTRL2);

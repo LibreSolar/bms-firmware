@@ -21,11 +21,11 @@
 #include <zephyr.h>
 #include <drivers/gpio.h>
 
-#define LED_RED_PORT DT_ALIAS_LED_RED_GPIOS_CONTROLLER
-#define LED_RED_PIN  DT_ALIAS_LED_RED_GPIOS_PIN
+#define LED_DIS_PORT DT_ALIAS_LED_RED_GPIOS_CONTROLLER
+#define LED_DIS_PIN  DT_ALIAS_LED_RED_GPIOS_PIN
 
-#define LED_GREEN_PORT DT_ALIAS_LED_GREEN_GPIOS_CONTROLLER
-#define LED_GREEN_PIN  DT_ALIAS_LED_GREEN_GPIOS_PIN
+#define LED_CHG_PORT DT_ALIAS_LED_GREEN_GPIOS_CONTROLLER
+#define LED_CHG_PIN  DT_ALIAS_LED_GREEN_GPIOS_PIN
 
 #define SLEEP_TIME 	100		// ms
 
@@ -34,42 +34,60 @@ extern BmsStatus bms_status;
 
 void leds_update_thread()
 {
-	struct device *led_red;
-	led_red = device_get_binding(LED_RED_PORT);
-	gpio_pin_configure(led_red, LED_RED_PIN, GPIO_DIR_OUT);
+	struct device *led_dis_dev;
+	led_dis_dev = device_get_binding(LED_DIS_PORT);
+	gpio_pin_configure(led_dis_dev, LED_DIS_PIN, GPIO_DIR_OUT);
 
-	struct device *led_green;
-	led_green = device_get_binding(LED_GREEN_PORT);
-	gpio_pin_configure(led_red, LED_GREEN_PIN, GPIO_DIR_OUT);
+	struct device *led_chg_dev;
+	led_chg_dev = device_get_binding(LED_CHG_PORT);
+	gpio_pin_configure(led_chg_dev, LED_CHG_PIN, GPIO_DIR_OUT);
 
     uint32_t count = 0;
 
 	while (1) {
-        switch (bms_status.state) {
-            case BMS_STATE_ERROR:
-                // flash
-                gpio_pin_write(led_red, LED_RED_PIN, (count / 2) % 2);
-                gpio_pin_write(led_red, LED_GREEN_PIN, (count / 2) % 2);
-                break;
-            case BMS_STATE_CHG:
-                gpio_pin_write(led_red, LED_RED_PIN, 0);
-                gpio_pin_write(led_red, LED_GREEN_PIN, 1);
-                break;
-            case BMS_STATE_DIS:
-                gpio_pin_write(led_red, LED_RED_PIN, 1);
-                gpio_pin_write(led_red, LED_GREEN_PIN, 0);
-                break;
-            case BMS_STATE_NORMAL:
-            case BMS_STATE_BALANCING:
-                gpio_pin_write(led_red, LED_RED_PIN, 1);
-                gpio_pin_write(led_red, LED_GREEN_PIN, 1);
-                break;
-            case BMS_STATE_IDLE:
-                // blink slowly
-                gpio_pin_write(led_red, LED_RED_PIN, (count / 10) % 2);
-                gpio_pin_write(led_red, LED_GREEN_PIN, (count / 10) % 2);
-                break;
+
+        // Charging LED control
+        if (bms_status.state == BMS_STATE_NORMAL || bms_status.state == BMS_STATE_CHG) {
+            if (bms_status.pack_current > bms_conf.bal_idle_current && ((count / 2) % 10) == 0) {
+                // not in idle: ____ ____ ____
+                gpio_pin_write(led_chg_dev, LED_CHG_PIN, 0);
+            }
+            else {
+                // idle: ______________
+                gpio_pin_write(led_chg_dev, LED_CHG_PIN, 1);
+            }
         }
+        else {
+            if (bms_chg_error(&bms_status)) {
+                // quick flash
+                gpio_pin_write(led_chg_dev, LED_CHG_PIN, count % 2);
+            }
+            else {
+                gpio_pin_write(led_chg_dev, LED_CHG_PIN, 0);
+            }
+        }
+
+        // Discharging LED control
+        if (bms_status.state == BMS_STATE_NORMAL || bms_status.state == BMS_STATE_DIS) {
+            if (bms_status.pack_current < -bms_conf.bal_idle_current && ((count / 2) % 10) == 0) {
+                // not in idle: ____ ____ ____
+                gpio_pin_write(led_dis_dev, LED_DIS_PIN, 0);
+            }
+            else {
+                // idle: ______________
+                gpio_pin_write(led_dis_dev, LED_DIS_PIN, 1);
+            }
+        }
+        else {
+            if (bms_dis_error(&bms_status)) {
+                // quick flash
+                gpio_pin_write(led_dis_dev, LED_DIS_PIN, count % 2);
+            }
+            else {
+                gpio_pin_write(led_dis_dev, LED_DIS_PIN, 0);
+            }
+        }
+
         count++;
 		k_sleep(SLEEP_TIME);
 	}

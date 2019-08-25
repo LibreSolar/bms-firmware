@@ -108,85 +108,78 @@ void bms_state_machine(BmsConfig *conf, BmsStatus *status)
     bms_handle_errors(conf, status);
 
     switch(status->state) {
-        case BMS_STATE_INIT:
-            /* TODO checks */
-            status->state = BMS_STATE_IDLE;
-            printf("Going to state IDLE\n");
-            break;
-        case BMS_STATE_IDLE:
-            if (bms_dis_allowed(conf, status)) {
+        case BMS_STATE_OFF:
+            if (!bms_dis_error(status) && !status->empty) {
                 bms_dis_switch(conf, status, true);
                 status->state = BMS_STATE_DIS;
                 printf("Going to state DIS\n");
             }
-            else if (bms_chg_allowed(conf, status)) {
+            else if (!bms_chg_error(status) && !status->full) {
                 bms_chg_switch(conf, status, true);
                 status->state = BMS_STATE_CHG;
                 printf("Going to state CHG\n");
             }
             break;
         case BMS_STATE_CHG:
-            if (!bms_chg_allowed(conf, status)) {
+            if (bms_chg_error(status) || status->full) {
                 bms_chg_switch(conf, status, false);
-                status->state = BMS_STATE_IDLE;
-                printf("Going back to state IDLE\n");
+                status->state = BMS_STATE_OFF;
+                printf("Going back to state OFF\n");
             }
-            else if (bms_dis_allowed(conf, status)) {
+            else if (!bms_dis_error(status) && !status->empty) {
                 bms_dis_switch(conf, status, true);
                 status->state = BMS_STATE_NORMAL;
                 printf("Going to state NORMAL\n");
             }
             break;
         case BMS_STATE_DIS:
-            if (!bms_dis_allowed(conf, status)) {
+            if (bms_dis_error(status) || status->empty) {
                 bms_dis_switch(conf, status, false);
-                status->state = BMS_STATE_IDLE;
-                printf("Going back to state IDLE\n");
+                status->state = BMS_STATE_OFF;
+                printf("Going back to state OFF\n");
             }
-            else if (bms_chg_allowed(conf, status)) {
+            else if (!bms_chg_error(status) && !status->full) {
                 bms_chg_switch(conf, status, true);
                 status->state = BMS_STATE_NORMAL;
                 printf("Going to state NORMAL\n");
             }
             break;
         case BMS_STATE_NORMAL:
-            if (!bms_dis_allowed(conf, status)) {
+            if (bms_dis_error(status) || status->empty) {
                 bms_dis_switch(conf, status, false);
                 status->state = BMS_STATE_CHG;
                 printf("Going back to state CHG\n");
             }
-            else if (!bms_chg_allowed(conf, status)) {
+            else if (bms_chg_error(status) || status->full) {
                 bms_chg_switch(conf, status, false);
                 status->state = BMS_STATE_DIS;
                 printf("Going back to state DIS\n");
-            }
-#ifndef ZEPHYR  // TODO: Zephyr crashes because of time(NULL) call
-            else if (bms_balancing_allowed(conf, status)) {
-                status->state = BMS_STATE_BALANCING;
-                printf("Going to state BALANCING\n");
-            }
-#endif
-            break;
-        case BMS_STATE_BALANCING:
-            if (!bms_balancing_allowed(conf, status)) {
-                status->state = BMS_STATE_NORMAL;
             }
             break;
     }
 }
 
-bool bms_chg_allowed(BmsConfig *conf, BmsStatus *status)
+bool bms_chg_error(BmsStatus *status)
 {
-    return status->bat_temp_max < conf->chg_ot_limit
-        && status->bat_temp_min > conf->chg_ut_limit
-        && status->cell_voltage_max < conf->cell_ov_limit;
+    return (status->error_flags & (1U << BMS_ERR_CELL_OVERVOLTAGE))
+        || (status->error_flags & (1U << BMS_ERR_CHG_OVERCURRENT))
+        || (status->error_flags & (1U << BMS_ERR_OPEN_WIRE))
+        || (status->error_flags & (1U << BMS_ERR_CHG_UNDERTEMP))
+        || (status->error_flags & (1U << BMS_ERR_CHG_OVERTEMP))
+        || (status->error_flags & (1U << BMS_ERR_INT_OVERTEMP))
+        || (status->error_flags & (1U << BMS_ERR_CELL_FAILURE));
 }
 
-bool bms_dis_allowed(BmsConfig *conf, BmsStatus *status)
+bool bms_dis_error(BmsStatus *status)
 {
-    return status->bat_temp_max < conf->dis_ot_limit
-        && status->bat_temp_min > conf->dis_ut_limit
-        && status->cell_voltage_min > conf->cell_uv_limit;
+    return (status->error_flags & (1U << BMS_ERR_CELL_UNDERVOLTAGE))
+        || (status->error_flags & (1U << BMS_ERR_SHORT_CIRCUIT))
+        || (status->error_flags & (1U << BMS_ERR_DIS_OVERCURRENT))
+        || (status->error_flags & (1U << BMS_ERR_OPEN_WIRE))
+        || (status->error_flags & (1U << BMS_ERR_DIS_UNDERTEMP))
+        || (status->error_flags & (1U << BMS_ERR_DIS_OVERTEMP))
+        || (status->error_flags & (1U << BMS_ERR_INT_OVERTEMP))
+        || (status->error_flags & (1U << BMS_ERR_CELL_FAILURE));
 }
 
 bool bms_balancing_allowed(BmsConfig *conf, BmsStatus *status)

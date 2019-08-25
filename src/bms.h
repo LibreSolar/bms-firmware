@@ -42,12 +42,10 @@ extern "C" {
  * Possible BMS states
  */
 enum BmsState {
-    BMS_STATE_INIT,         ///< Initialization state of the BMS
-    BMS_STATE_IDLE,         ///< Idle state (chg and dis FETs off)
+    BMS_STATE_OFF,          ///< Off state (charging and discharging disabled)
     BMS_STATE_CHG,          ///< Charging state (discharging disabled)
     BMS_STATE_DIS,          ///< Discharging state (charging disabled)
     BMS_STATE_NORMAL,       ///< Normal operating mode (both charging and discharging enabled)
-    BMS_STATE_BALANCING,    ///< Balancing mode (at low current)
 };
 
 
@@ -141,6 +139,9 @@ typedef struct
     float ic_temp;                              ///< Internal BMS IC temperature (°C)
     float mcu_temp;                             ///< MCU temperature (°C)
 
+    bool full;                                  ///< CV charging to cell_chg_voltage finished
+    bool empty;                                 ///< Battery is discharged below cell_dis_voltage
+
     uint16_t soc;                               ///< Calculated state of charge (%)
     uint32_t coulomb_counter_mAs;               ///< Current integration (mAs = milli Coulombs)
 
@@ -207,18 +208,18 @@ bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable);
 bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable);
 
 /**
- * Charging limits check
+ * Charging error flags check
  *
- * @returns if charging is allowed
+ * @returns true if any charging error flag is set
  */
-bool bms_chg_allowed(BmsConfig *conf, BmsStatus *status);
+bool bms_chg_error(BmsStatus *status);
 
 /**
- * Discharging limits check
+ * Discharging error flags check
  *
- * @returns if discharging is allowed
+ * @returns true if any discharging error flag is set
  */
-bool bms_dis_allowed(BmsConfig *conf, BmsStatus *status);
+bool bms_dis_error(BmsStatus *status);
 
 /**
  * Balancing limits check

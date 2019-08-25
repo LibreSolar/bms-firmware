@@ -41,100 +41,67 @@ void init_conf()
     bms_status.bat_temp_max = 25;
     bms_status.bat_temp_avg = 25;
 
-    bms_status.state = BMS_STATE_IDLE;
+    bms_status.state = BMS_STATE_OFF;
     bms_status.error_flags = 0;
+
+    bms_status.full = false;
+    bms_status.empty = false;
 }
 
-void check_chg_low_temp_limits()
+void no_off2dis_if_dis_nok()
 {
     init_conf();
-    TEST_ASSERT(bms_chg_allowed(&bms_conf, &bms_status) == true);
-    bms_status.bat_temp_min = -1;
-    TEST_ASSERT(bms_chg_allowed(&bms_conf, &bms_status) == false);
-}
-
-void check_chg_high_temp_limits()
-{
-    init_conf();
-    TEST_ASSERT(bms_chg_allowed(&bms_conf, &bms_status) == true);
-    bms_status.bat_temp_max = 46;
-    TEST_ASSERT(bms_chg_allowed(&bms_conf, &bms_status) == false);
-}
-
-void check_chg_low_voltage_limits()
-{
-    init_conf();
-    TEST_ASSERT(bms_chg_allowed(&bms_conf, &bms_status) == true);
-    bms_status.cell_voltages[3] = 3.66;
-    bms_status.cell_voltage_max = bms_status.cell_voltages[3];
-    TEST_ASSERT(bms_chg_allowed(&bms_conf, &bms_status) == false);
-}
-
-void check_dis_low_temp_limits()
-{
-    init_conf();
-    TEST_ASSERT(bms_dis_allowed(&bms_conf, &bms_status) == true);
-    bms_status.bat_temp_min = -21;
-    TEST_ASSERT(bms_dis_allowed(&bms_conf, &bms_status) == false);
-}
-
-void check_dis_high_temp_limits()
-{
-    init_conf();
-    TEST_ASSERT(bms_dis_allowed(&bms_conf, &bms_status) == true);
-    bms_status.bat_temp_max = 46;
-    TEST_ASSERT(bms_dis_allowed(&bms_conf, &bms_status) == false);
-}
-
-void check_dis_high_voltage_limits()
-{
-    init_conf();
-    TEST_ASSERT(bms_dis_allowed(&bms_conf, &bms_status) == true);
-    bms_status.cell_voltages[3] = 2.79;
-    bms_status.cell_voltage_min = bms_status.cell_voltages[3];
-    TEST_ASSERT(bms_dis_allowed(&bms_conf, &bms_status) == false);
-}
-
-void no_idle2dis_if_dis_nok()
-{
-    init_conf();
-    bms_status.bat_temp_max = bms_conf.dis_ot_limit + 1;
+    bms_status.empty = true;
     bms_state_machine(&bms_conf, &bms_status);
-    TEST_ASSERT_EQUAL(BMS_STATE_IDLE, bms_status.state);
+    TEST_ASSERT_NOT_EQUAL(BMS_STATE_DIS, bms_status.state);
+
+    init_conf();
+    bms_status.error_flags |= (1U << BMS_ERR_DIS_OVERTEMP);
+    bms_state_machine(&bms_conf, &bms_status);
+    TEST_ASSERT_NOT_EQUAL(BMS_STATE_DIS, bms_status.state);
 }
 
-void idle2dis_if_dis_ok()
+void off2dis_if_dis_ok()
 {
     init_conf();
+    bms_status.full = true;
     bms_state_machine(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL(BMS_STATE_DIS, bms_status.state);
 }
 
-void no_idle2chg_if_chg_ok()
+void no_off2chg_if_chg_ok()
 {
     init_conf();
-    bms_status.bat_temp_max = bms_conf.chg_ot_limit + 1;
     bms_state_machine(&bms_conf, &bms_status);
     TEST_ASSERT_NOT_EQUAL(BMS_STATE_CHG, bms_status.state);
 }
 
-void idle2chg_if_chg_ok_and_dis_nok()
+void off2chg_if_chg_ok_and_dis_nok()
 {
     init_conf();
-    bms_status.cell_voltages[3] = bms_conf.cell_uv_limit - 0.1;
-    bms_status.cell_voltage_min = bms_status.cell_voltages[3];
+    bms_status.empty = true;
+    bms_state_machine(&bms_conf, &bms_status);
+    TEST_ASSERT_EQUAL(BMS_STATE_CHG, bms_status.state);
+
+    init_conf();
+    bms_status.error_flags |= (1U << BMS_ERR_DIS_OVERTEMP);
     bms_state_machine(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL(BMS_STATE_CHG, bms_status.state);
 }
 
-void chg2idle_if_chg_nok()
+void chg2off_if_chg_nok()
 {
     init_conf();
     bms_status.state = BMS_STATE_CHG;
-    bms_status.cell_voltages[3] = bms_conf.cell_ov_limit + 0.1;
-    bms_status.cell_voltage_max = bms_status.cell_voltages[3];
+    bms_status.full = true;
     bms_state_machine(&bms_conf, &bms_status);
-    TEST_ASSERT_EQUAL(BMS_STATE_IDLE, bms_status.state);
+    TEST_ASSERT_EQUAL(BMS_STATE_OFF, bms_status.state);
+
+    init_conf();
+    bms_status.state = BMS_STATE_CHG;
+    bms_status.error_flags |= (1U << BMS_ERR_CHG_OVERTEMP);
+    bms_state_machine(&bms_conf, &bms_status);
+    TEST_ASSERT_EQUAL(BMS_STATE_OFF, bms_status.state);
 }
 
 void chg2normal_if_dis_ok()
@@ -145,14 +112,19 @@ void chg2normal_if_dis_ok()
     TEST_ASSERT_EQUAL(BMS_STATE_NORMAL, bms_status.state);
 }
 
-void dis2idle_if_dis_nok()
+void dis2off_if_dis_nok()
 {
     init_conf();
     bms_status.state = BMS_STATE_DIS;
-    bms_status.cell_voltages[3] = bms_conf.cell_uv_limit - 0.1;
-    bms_status.cell_voltage_min = bms_status.cell_voltages[3];
+    bms_status.empty = true;
     bms_state_machine(&bms_conf, &bms_status);
-    TEST_ASSERT_EQUAL(BMS_STATE_IDLE, bms_status.state);
+    TEST_ASSERT_EQUAL(BMS_STATE_OFF, bms_status.state);
+
+    init_conf();
+    bms_status.state = BMS_STATE_DIS;
+    bms_status.error_flags |= (1U << BMS_ERR_DIS_OVERTEMP);
+    bms_state_machine(&bms_conf, &bms_status);
+    TEST_ASSERT_EQUAL(BMS_STATE_OFF, bms_status.state);
 }
 
 void dis2normal_if_chg_ok()
@@ -167,8 +139,13 @@ void normal2dis_if_chg_nok()
 {
     init_conf();
     bms_status.state = BMS_STATE_NORMAL;
-    bms_status.cell_voltages[3] = bms_conf.cell_ov_limit + 0.1;
-    bms_status.cell_voltage_max = bms_status.cell_voltages[3];
+    bms_status.full = true;
+    bms_state_machine(&bms_conf, &bms_status);
+    TEST_ASSERT_EQUAL(BMS_STATE_DIS, bms_status.state);
+
+    init_conf();
+    bms_status.state = BMS_STATE_NORMAL;
+    bms_status.error_flags |= (1U << BMS_ERR_CHG_OVERTEMP);
     bms_state_machine(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL(BMS_STATE_DIS, bms_status.state);
 }
@@ -177,12 +154,17 @@ void normal2chg_if_dis_nok()
 {
     init_conf();
     bms_status.state = BMS_STATE_NORMAL;
-    bms_status.cell_voltages[3] = bms_conf.cell_uv_limit - 0.1;
-    bms_status.cell_voltage_min = bms_status.cell_voltages[3];
+    bms_status.empty = true;
+    bms_state_machine(&bms_conf, &bms_status);
+    TEST_ASSERT_EQUAL(BMS_STATE_CHG, bms_status.state);
+
+    init_conf();
+    bms_status.state = BMS_STATE_NORMAL;
+    bms_status.error_flags |= (1U << BMS_ERR_DIS_OVERTEMP);
     bms_state_machine(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL(BMS_STATE_CHG, bms_status.state);
 }
-
+/*
 void no_normal2balancing_if_nok()
 {
     init_conf();
@@ -237,32 +219,23 @@ void balancing2normal_if_done()
     bms_state_machine(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL(BMS_STATE_NORMAL, bms_status.state);
 }
+*/
 
 void common_tests()
 {
     UNITY_BEGIN();
 
-    // charging allowed function
-    RUN_TEST(check_chg_low_temp_limits);
-    RUN_TEST(check_chg_high_temp_limits);
-    RUN_TEST(check_chg_low_voltage_limits);
-
-    // discharging allowed function
-    RUN_TEST(check_dis_low_temp_limits);
-    RUN_TEST(check_dis_high_temp_limits);
-    RUN_TEST(check_dis_high_voltage_limits);
-
     // state machine
-    RUN_TEST(no_idle2dis_if_dis_nok);
-    RUN_TEST(idle2dis_if_dis_ok);
+    RUN_TEST(no_off2dis_if_dis_nok);
+    RUN_TEST(off2dis_if_dis_ok);
 
-    RUN_TEST(no_idle2chg_if_chg_ok);
-    RUN_TEST(idle2chg_if_chg_ok_and_dis_nok);
+    RUN_TEST(no_off2chg_if_chg_ok);
+    RUN_TEST(off2chg_if_chg_ok_and_dis_nok);
 
-    RUN_TEST(chg2idle_if_chg_nok);
+    RUN_TEST(chg2off_if_chg_nok);
     RUN_TEST(chg2normal_if_dis_ok);
 
-    RUN_TEST(dis2idle_if_dis_nok);
+    RUN_TEST(dis2off_if_dis_nok);
     RUN_TEST(dis2normal_if_chg_ok);
     //RUN_TEST(dis2balancing_if_ok);
 
@@ -270,10 +243,10 @@ void common_tests()
 
     RUN_TEST(normal2chg_if_dis_nok);
 
-    RUN_TEST(no_normal2balancing_if_nok);
-    RUN_TEST(normal2balancing_if_ok);   // ok = high SOC and current low
-    RUN_TEST(balancing2normal_at_increased_current);
-    RUN_TEST(balancing2normal_if_done);
+    //RUN_TEST(no_normal2balancing_if_nok);
+    //RUN_TEST(normal2balancing_if_ok);   // ok = high SOC and current low
+    //RUN_TEST(balancing2normal_at_increased_current);
+    //RUN_TEST(balancing2normal_if_done);
     //RUN_TEST(balancing2dis_at_increased_current);
     //RUN_TEST(balancing2dis_if_done);
 
