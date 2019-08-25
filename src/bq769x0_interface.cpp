@@ -16,6 +16,7 @@
 
 #include "config.h"
 #include "pcb.h"
+#include "helper.h"
 
 #if defined(BMS_BQ76920) || defined(BMS_BQ76930) || defined(BMS_BQ76940)
 
@@ -70,7 +71,7 @@ uint8_t _crc8_ccitt_update (uint8_t inCrc, uint8_t inData)
 // a new value (either new CC reading or an error)
 void bq769x0_alert_isr()
 {
-    alert_interrupt_timestamp = time(NULL);
+    alert_interrupt_timestamp = uptime();
     alert_interrupt_flag = true;
 }
 

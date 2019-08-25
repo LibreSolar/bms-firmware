@@ -16,11 +16,23 @@
 
 #include "helper.h"
 
-/**
- * Interpolation in a look-up table. Values of a must be monotonically increasing/decreasing
- *
- * @returns interpolated value of array b at position value_a
- */
+#ifdef __MBED__
+#include "mbed.h"
+#elif defined(ZEPHYR)
+#include <zephyr.h>
+#endif
+
+#include <time.h>
+
+uint32_t uptime()
+{
+#ifdef ZEPHYR
+    return k_uptime_get() / 1000;
+#else
+    return time(NULL);
+#endif
+}
+
 float interpolate(const float a[], const float b[], size_t size, float value_a)
 {
     if (a[0] < a[size - 1]) {

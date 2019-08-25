@@ -21,6 +21,7 @@
 #include "bms.h"
 #include "bq769x0_registers.h"
 #include "bq769x0_interface.h"
+#include "helper.h"
 
 #include "config.h"
 
@@ -171,13 +172,13 @@ bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 
 void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
 {
-    long idleSeconds = time(NULL) - status->no_idle_timestamp;
+    long idleSeconds = uptime() - status->no_idle_timestamp;
     int numberOfSections = NUM_CELLS_MAX/5;
 
     // check for _timer.read_ms() overflow
     if (idleSeconds < 0) {
         status->no_idle_timestamp = 0;
-        idleSeconds = time(NULL);
+        idleSeconds = uptime();
     }
 
     // check if balancing allowed
@@ -460,7 +461,7 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
 
         // reset no_idle_timestamp
         if (fabs(status->pack_current) > conf->bal_idle_current) {
-            status->no_idle_timestamp = time(NULL);
+            status->no_idle_timestamp = uptime();
         }
 
         // no error occured which caused alert
@@ -572,7 +573,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
             }
             error_status = sys_stat.regByte;
 
-            unsigned int sec_since_interrupt = time(NULL) - bq769x0_alert_timestamp();
+            unsigned int sec_since_interrupt = uptime() - bq769x0_alert_timestamp();
 
             if (abs((long)(sec_since_interrupt - sec_since_error)) > 2) {
                 sec_since_error = sec_since_interrupt;

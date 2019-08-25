@@ -16,6 +16,7 @@
 
 #include "bms.h"
 #include "pcb.h"
+#include "helper.h"
 
 #include <stdio.h>
 
@@ -184,7 +185,7 @@ bool bms_dis_error(BmsStatus *status)
 
 bool bms_balancing_allowed(BmsConfig *conf, BmsStatus *status)
 {
-    int idle_sec = time(NULL) - status->no_idle_timestamp;
+    int idle_sec = uptime() - status->no_idle_timestamp;
     float voltage_diff = status->cell_voltage_max -
         status->cell_voltage_min;
 

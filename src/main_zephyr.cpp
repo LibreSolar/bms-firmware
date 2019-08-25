@@ -22,6 +22,7 @@
 #include "leds.h"
 #include "thingset.h"
 #include "thingset_serial.h"
+#include "helper.h"
 
 BmsConfig bms_conf;
 BmsStatus bms_status;

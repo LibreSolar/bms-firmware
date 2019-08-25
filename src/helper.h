@@ -24,6 +24,7 @@
  */
 
 #include <string.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,6 +36,13 @@ extern "C" {
  * @returns interpolated value of array b at position value_a
  */
 float interpolate(const float a[], const float b[], size_t size, float value_a);
+
+/**
+ * Framework-independent system uptime
+ *
+ * @returns seconds since the system booted
+ */
+uint32_t uptime();
 
 #ifdef __cplusplus
 }
