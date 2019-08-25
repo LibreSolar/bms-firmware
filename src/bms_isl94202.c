@@ -83,7 +83,7 @@ void bms_update(BmsConfig *conf, BmsStatus *status)
     bms_read_voltages(status);
     bms_read_current(conf, status);
     bms_read_temperatures(conf, status);
-    bms_read_error_flags(status);
+    bms_update_error_flags(conf, status);
     bms_apply_balancing(conf, status);
     bms_update_soc(conf, status);
 }
@@ -271,7 +271,7 @@ void bms_read_voltages(BmsStatus *status)
     status->pack_voltage = (float)adc_raw * 1.8 * 32 / 4095;
 }
 
-void bms_read_error_flags(BmsStatus *status)
+void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
 {
     uint8_t buf[2];
     isl94202_read_bytes(ISL94202_STAT1, buf, 2);
@@ -290,6 +290,11 @@ void bms_read_error_flags(BmsStatus *status)
     if (stat1 & ISL94202_STAT1_COT_Msk)     status->error_flags |= 1U << BMS_ERR_CHG_OVERTEMP;
     if (stat1 & ISL94202_STAT1_IOT_Msk)     status->error_flags |= 1U << BMS_ERR_INT_OVERTEMP;
     if (stat1 & ISL94202_STAT1_CELLF_Msk)   status->error_flags |= 1U << BMS_ERR_CELL_FAILURE;
+}
+
+void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
+{
+    // Nothing to do. ISL94202 handles errors automatically
 }
 
 #if BMS_DEBUG

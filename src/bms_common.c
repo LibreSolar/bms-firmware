@@ -101,10 +101,7 @@ void bms_init_config(BmsConfig *conf, enum CellType type, float nominal_capacity
 
 void bms_state_machine(BmsConfig *conf, BmsStatus *status)
 {
-    if (status->error_flags > 0 && status->state != BMS_STATE_ERROR) {
-        status->state = BMS_STATE_ERROR;
-        printf("Going to state ERROR\n");
-    }
+    bms_handle_errors(conf, status);
 
     switch(status->state) {
         case BMS_STATE_INIT:
@@ -169,11 +166,6 @@ void bms_state_machine(BmsConfig *conf, BmsStatus *status)
         case BMS_STATE_BALANCING:
             if (!bms_balancing_allowed(conf, status)) {
                 status->state = BMS_STATE_NORMAL;
-            }
-            break;
-        case BMS_STATE_ERROR:
-            if (status->error_flags == 0) {
-                status->state = BMS_STATE_IDLE;
             }
             break;
     }

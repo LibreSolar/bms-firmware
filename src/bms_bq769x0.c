@@ -52,114 +52,6 @@ void bms_init()
     bq769x0_init();
 }
 
-int bms_quickcheck(BmsConfig *conf, BmsStatus *status)
-{
-    static uint16_t error_status = 0;
-    static uint32_t sec_since_error = 0;
-
-    if (!bq769x0_alert_flag() && error_status == 0) {
-        return 0;
-    }
-    else {
-
-        regSYS_STAT_t sys_stat;
-        sys_stat.regByte = bq769x0_read_byte(SYS_STAT);
-
-        // first check, if only a new CC reading is available
-        if (sys_stat.bits.CC_READY == 1) {
-            //printf("Interrupt: CC ready");
-            bms_read_current(conf, status);  // automatically clears CC ready flag
-        }
-
-        // Serious error occured
-        if (sys_stat.regByte & 0b00111111)
-        {
-            if (bq769x0_alert_flag() == true) {
-                sec_since_error = 0;
-            }
-            error_status = sys_stat.regByte;
-
-            unsigned int sec_since_interrupt = time(NULL) - bq769x0_alert_timestamp();
-
-            // TODO!!
-            // check for overrun of _timer.read_ms() or very slow running program
-            if (abs((long)(sec_since_interrupt - sec_since_error)) > 2) {
-                sec_since_error = sec_since_interrupt;
-            }
-
-            // called only once per second
-            if (sec_since_interrupt >= sec_since_error)
-            {
-                if (sys_stat.regByte & 0b00100000) { // XR error
-                    // datasheet recommendation: try to clear after waiting a few seconds
-                    if (sec_since_error % 3 == 0) {
-                        #if BMS_DEBUG
-                        printf("Attempting to clear XR error");
-                        #endif
-                        bq769x0_write_byte(SYS_STAT, 0b00100000);
-                        bms_chg_switch(conf, status, true);
-                        bms_dis_switch(conf, status, true);
-                    }
-                }
-                if (sys_stat.regByte & 0b00010000) { // Alert error
-                    if (sec_since_error % 10 == 0) {
-                        #if BMS_DEBUG
-                        printf("Attempting to clear Alert error");
-                        #endif
-                        bq769x0_write_byte(SYS_STAT, 0b00010000);
-                        bms_chg_switch(conf, status, true);
-                        bms_dis_switch(conf, status, true);
-                    }
-                }
-                if (sys_stat.regByte & 0b00001000) { // UV error
-                    bms_read_voltages(status);
-                    if (status->cell_voltage_min > conf->cell_uv_limit) {
-                        #if BMS_DEBUG
-                        printf("Attempting to clear UV error");
-                        #endif
-                        bq769x0_write_byte(SYS_STAT, 0b00001000);
-                        bms_dis_switch(conf, status, true);
-                    }
-                }
-                if (sys_stat.regByte & 0b00000100) { // OV error
-                    bms_read_voltages(status);
-                    if (status->cell_voltage_max < conf->cell_ov_limit) {
-                        #if BMS_DEBUG
-                        printf("Attempting to clear OV error");
-                        #endif
-                        bq769x0_write_byte(SYS_STAT, 0b00000100);
-                        bms_chg_switch(conf, status, true);
-                    }
-                }
-                if (sys_stat.regByte & 0b00000010) { // SCD
-                    if (sec_since_error % 60 == 0) {
-                        #if BMS_DEBUG
-                        printf("Attempting to clear SCD error");
-                        #endif
-                        bq769x0_write_byte(SYS_STAT, 0b00000010);
-                        bms_dis_switch(conf, status, true);
-                    }
-                }
-                if (sys_stat.regByte & 0b00000001) { // OCD
-                    if (sec_since_error % 60 == 0) {
-                        #if BMS_DEBUG
-                        printf("Attempting to clear OCD error");
-                        #endif
-                        bq769x0_write_byte(SYS_STAT, 0b00000001);
-                        bms_dis_switch(conf, status, true);
-                    }
-                }
-                sec_since_error++;
-            }
-        }
-        else {
-            error_status = 0;
-        }
-
-        return error_status;
-    }
-}
-
 void bms_update(BmsConfig *conf, BmsStatus *status)
 {
     bms_read_voltages(status);
@@ -227,8 +119,7 @@ void bms_shutdown()
 bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
     if (enable) {
-        if (bms_quickcheck(conf, status) == 0 &&
-            bms_chg_allowed(conf, status))
+        if (bms_chg_allowed(conf, status))
         {
             int sys_ctrl2;
             sys_ctrl2 = bq769x0_read_byte(SYS_CTRL2);
@@ -256,8 +147,7 @@ bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
     if (enable) {
-        if (bms_quickcheck(conf, status) == 0 &&
-            bms_dis_allowed(conf, status))
+        if (bms_dis_allowed(conf, status))
         {
             int sys_ctrl2;
             sys_ctrl2 = bq769x0_read_byte(SYS_CTRL2);
@@ -291,8 +181,7 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
     }
 
     // check if balancing allowed
-    if (bms_quickcheck(conf, status) == 0 &&
-        idleSeconds >= conf->balancing_min_idle_s &&
+    if (idleSeconds >= conf->balancing_min_idle_s &&
         status->cell_voltage_max > conf->balancing_cell_voltage_min &&
         (status->cell_voltage_max - status->cell_voltage_min) > conf->balancing_voltage_diff_target)
     {
@@ -613,30 +502,152 @@ void bms_read_voltages(BmsStatus *status)
     status->pack_voltage = (4.0 * adc_gain * adc_raw * 1e-3F + status->connected_cells * adc_offset) * 1e-3F;
 }
 
-
-void bms_read_error_flags(BmsStatus *status)
+void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
 {
-/*
-    uint8_t buf[2];
-    isl94202_read_bytes(ISL94202_STAT1, buf, 2);
-    uint16_t stat1 = buf[0] + (buf[1] << 8);
+    regSYS_STAT_t sys_stat;
+    sys_stat.regByte = bq769x0_read_byte(SYS_STAT);
 
-    status->error_flags = 0;
-    if (stat1 & ISL94202_STAT1_UV_Msk)      status->error_flags |= 1U << BMS_ERR_CELL_UNDERVOLTAGE;
-    if (stat1 & ISL94202_STAT1_OV_Msk)      status->error_flags |= 1U << BMS_ERR_CELL_OVERVOLTAGE;
-    if (stat1 & ISL94202_STAT1_DSC_Msk)     status->error_flags |= 1U << BMS_ERR_SHORT_CIRCUIT;
-    if (stat1 & ISL94202_STAT1_DOC_Msk)     status->error_flags |= 1U << BMS_ERR_DIS_OVERCURRENT;
-    if (stat1 & ISL94202_STAT1_COC_Msk)     status->error_flags |= 1U << BMS_ERR_CHG_OVERCURRENT;
-    if (stat1 & ISL94202_STAT1_OPEN_Msk)    status->error_flags |= 1U << BMS_ERR_OPEN_WIRE;
-    if (stat1 & ISL94202_STAT1_DUT_Msk)     status->error_flags |= 1U << BMS_ERR_DIS_UNDERTEMP;
-    if (stat1 & ISL94202_STAT1_DOT_Msk)     status->error_flags |= 1U << BMS_ERR_DIS_OVERTEMP;
-    if (stat1 & ISL94202_STAT1_CUT_Msk)     status->error_flags |= 1U << BMS_ERR_CHG_UNDERTEMP;
-    if (stat1 & ISL94202_STAT1_COT_Msk)     status->error_flags |= 1U << BMS_ERR_CHG_OVERTEMP;
-    if (stat1 & ISL94202_STAT1_IOT_Msk)     status->error_flags |= 1U << BMS_ERR_INT_OVERTEMP;
-    if (stat1 & ISL94202_STAT1_CELLF_Msk)   status->error_flags |= 1U << BMS_ERR_CELL_FAILURE;
-*/
+    uint32_t error_flags_temp = 0;
+    if (sys_stat.bits.UV)      error_flags_temp |= 1U << BMS_ERR_CELL_UNDERVOLTAGE;
+    if (sys_stat.bits.OV)      error_flags_temp |= 1U << BMS_ERR_CELL_OVERVOLTAGE;
+    if (sys_stat.bits.SCD)     error_flags_temp |= 1U << BMS_ERR_SHORT_CIRCUIT;
+    if (sys_stat.bits.OCD)     error_flags_temp |= 1U << BMS_ERR_DIS_OVERCURRENT;
+
+    if (status->pack_current > conf->chg_oc_limit) {
+        // ToDo: consider conf->chg_oc_delay
+        error_flags_temp |= 1U << BMS_ERR_CHG_OVERCURRENT;
+    }
+
+    if (status->bat_temp_max > conf->chg_ot_limit ||
+        (status->error_flags & (1UL << BMS_ERR_CHG_OVERTEMP)))
+    {
+        error_flags_temp |= 1U << BMS_ERR_CHG_OVERTEMP;
+    }
+
+    if (status->bat_temp_min < conf->chg_ut_limit ||
+        (status->error_flags & (1UL << BMS_ERR_CHG_UNDERTEMP)))
+    {
+        error_flags_temp |= 1U << BMS_ERR_CHG_UNDERTEMP;
+    }
+
+    if (status->bat_temp_max > conf->dis_ot_limit ||
+        (status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP)))
+    {
+        error_flags_temp |= 1U << BMS_ERR_DIS_OVERTEMP;
+    }
+
+    if (status->bat_temp_min < conf->dis_ut_limit ||
+        (status->error_flags & (1UL << BMS_ERR_DIS_UNDERTEMP)))
+    {
+        error_flags_temp |= 1U << BMS_ERR_DIS_UNDERTEMP;
+    }
 }
 
+void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
+{
+    static uint16_t error_status = 0;
+    static uint32_t sec_since_error = 0;
+
+    // ToDo: Handle also temperature and chg errors (incl. temp hysteresis)
+
+    if (!bq769x0_alert_flag() && error_status == 0) {
+        return;
+    }
+    else {
+
+        regSYS_STAT_t sys_stat;
+        sys_stat.regByte = bq769x0_read_byte(SYS_STAT);
+
+        // first check, if only a new CC reading is available
+        if (sys_stat.bits.CC_READY == 1) {
+            //printf("Interrupt: CC ready");
+            bms_read_current(conf, status);  // automatically clears CC ready flag
+        }
+
+        // Serious error occured
+        if (sys_stat.regByte & 0b00111111)
+        {
+            if (bq769x0_alert_flag() == true) {
+                sec_since_error = 0;
+            }
+            error_status = sys_stat.regByte;
+
+            unsigned int sec_since_interrupt = time(NULL) - bq769x0_alert_timestamp();
+
+            if (abs((long)(sec_since_interrupt - sec_since_error)) > 2) {
+                sec_since_error = sec_since_interrupt;
+            }
+
+            // called only once per second
+            if (sec_since_interrupt >= sec_since_error)
+            {
+                if (sys_stat.regByte & 0b00100000) { // XR error
+                    // datasheet recommendation: try to clear after waiting a few seconds
+                    if (sec_since_error % 3 == 0) {
+                        #if BMS_DEBUG
+                        printf("Attempting to clear XR error");
+                        #endif
+                        bq769x0_write_byte(SYS_STAT, 0b00100000);
+                        bms_chg_switch(conf, status, true);
+                        bms_dis_switch(conf, status, true);
+                    }
+                }
+                if (sys_stat.regByte & 0b00010000) { // Alert error
+                    if (sec_since_error % 10 == 0) {
+                        #if BMS_DEBUG
+                        printf("Attempting to clear Alert error");
+                        #endif
+                        bq769x0_write_byte(SYS_STAT, 0b00010000);
+                        bms_chg_switch(conf, status, true);
+                        bms_dis_switch(conf, status, true);
+                    }
+                }
+                if (sys_stat.regByte & 0b00001000) { // UV error
+                    bms_read_voltages(status);
+                    if (status->cell_voltage_min > conf->cell_uv_limit) {
+                        #if BMS_DEBUG
+                        printf("Attempting to clear UV error");
+                        #endif
+                        bq769x0_write_byte(SYS_STAT, 0b00001000);
+                        bms_dis_switch(conf, status, true);
+                    }
+                }
+                if (sys_stat.regByte & 0b00000100) { // OV error
+                    bms_read_voltages(status);
+                    if (status->cell_voltage_max < conf->cell_ov_limit) {
+                        #if BMS_DEBUG
+                        printf("Attempting to clear OV error");
+                        #endif
+                        bq769x0_write_byte(SYS_STAT, 0b00000100);
+                        bms_chg_switch(conf, status, true);
+                    }
+                }
+                if (sys_stat.regByte & 0b00000010) { // SCD
+                    if (sec_since_error % 60 == 0) {
+                        #if BMS_DEBUG
+                        printf("Attempting to clear SCD error");
+                        #endif
+                        bq769x0_write_byte(SYS_STAT, 0b00000010);
+                        bms_dis_switch(conf, status, true);
+                    }
+                }
+                if (sys_stat.regByte & 0b00000001) { // OCD
+                    if (sec_since_error % 60 == 0) {
+                        #if BMS_DEBUG
+                        printf("Attempting to clear OCD error");
+                        #endif
+                        bq769x0_write_byte(SYS_STAT, 0b00000001);
+                        bms_dis_switch(conf, status, true);
+                    }
+                }
+                sec_since_error++;
+            }
+        }
+        else {
+            error_status = 0;
+        }
+    }
+}
 
 #if BMS_DEBUG
 

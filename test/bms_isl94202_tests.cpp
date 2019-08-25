@@ -104,47 +104,47 @@ void test_isl94202_read_pack_current()
 void test_isl94202_read_error_flags()
 {
     *((uint16_t*)&mem_isl[0x80]) = 0x01U << 2;
-    bms_read_error_flags(&bms_status);
+    bms_update_error_flags(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_CELL_UNDERVOLTAGE, bms_status.error_flags);
 
     *((uint16_t*)&mem_isl[0x80]) = 0x01U << 0;
-    bms_read_error_flags(&bms_status);
+    bms_update_error_flags(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_CELL_OVERVOLTAGE, bms_status.error_flags);
 
     *((uint16_t*)&mem_isl[0x80]) = 0x01U << 11;
-    bms_read_error_flags(&bms_status);
+    bms_update_error_flags(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_SHORT_CIRCUIT, bms_status.error_flags);
 
     *((uint16_t*)&mem_isl[0x80]) = 0x01U << 10;
-    bms_read_error_flags(&bms_status);
+    bms_update_error_flags(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_DIS_OVERCURRENT, bms_status.error_flags);
 
     *((uint16_t*)&mem_isl[0x80]) = 0x01U << 9;
-    bms_read_error_flags(&bms_status);
+    bms_update_error_flags(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_CHG_OVERCURRENT, bms_status.error_flags);
 
     *((uint16_t*)&mem_isl[0x80]) = 0x01U << 13;
-    bms_read_error_flags(&bms_status);
+    bms_update_error_flags(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_OPEN_WIRE, bms_status.error_flags);
 
     *((uint16_t*)&mem_isl[0x80]) = 0x01U << 5;
-    bms_read_error_flags(&bms_status);
+    bms_update_error_flags(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_DIS_UNDERTEMP, bms_status.error_flags);
 
     *((uint16_t*)&mem_isl[0x80]) = 0x01U << 4;
-    bms_read_error_flags(&bms_status);
+    bms_update_error_flags(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_DIS_OVERTEMP, bms_status.error_flags);
 
     *((uint16_t*)&mem_isl[0x80]) = 0x01U << 7;
-    bms_read_error_flags(&bms_status);
+    bms_update_error_flags(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_CHG_UNDERTEMP, bms_status.error_flags);
 
     *((uint16_t*)&mem_isl[0x80]) = 0x01U << 6;
-    bms_read_error_flags(&bms_status);
+    bms_update_error_flags(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_CHG_OVERTEMP, bms_status.error_flags);
 
     *((uint16_t*)&mem_isl[0x80]) = 0x01U << 12;
-    bms_read_error_flags(&bms_status);
+    bms_update_error_flags(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_CELL_FAILURE, bms_status.error_flags);
 }
 

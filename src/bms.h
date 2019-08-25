@@ -48,7 +48,6 @@ enum BmsState {
     BMS_STATE_DIS,          ///< Discharging state (charging disabled)
     BMS_STATE_NORMAL,       ///< Normal operating mode (both charging and discharging enabled)
     BMS_STATE_BALANCING,    ///< Balancing mode (at low current)
-    BMS_STATE_ERROR         ///< Error state
 };
 
 
@@ -114,7 +113,9 @@ typedef struct
     float idle_current_threshold;           ///< Current threshold to be considered idle (A)
 } BmsConfig;
 
-
+/**
+ * Current BMS status including measurements and error flags
+ */
 typedef struct
 {
     uint16_t state;                             ///< Current state of the battery
@@ -128,7 +129,8 @@ typedef struct
     float cell_voltage_avg;                     ///< Average cell voltage (V)
     float pack_voltage;                         ///< Battery pack voltage (V)
 
-    float pack_current;                         ///< Battery pack current (A)
+    float pack_current;                         ///< \brief Battery pack current, charging direction
+                                                ///< has positive sign (A)
 
     float bat_temps[NUM_THERMISTORS_MAX];       ///< Battery temperatures (°C)
     float bat_temp_max;                         ///< Maximum battery temperature (°C)
@@ -182,14 +184,7 @@ void bms_init_config(BmsConfig *conf, enum CellType type, float nominal_capacity
 void bms_state_machine(BmsConfig *conf, BmsStatus *status);
 
 /**
- * Fast function to check if BMS has an error
- *
- * @returns 0 if everything is OK
- */
-int bms_quickcheck(BmsConfig *conf, BmsStatus *status);
-
-/**
- * Update and check important measurements
+ * Update measurements and check for errors before calling the state machine
  *
  * Should be called at least once every 250 ms to get correct coulomb counting
  */
@@ -308,14 +303,19 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status);
 void bms_read_temperatures(BmsConfig *conf, BmsStatus *status);
 
 /**
- * Reads error flags
+ * Reads error flags from IC or updates them based on measurements
  */
-void bms_read_error_flags(BmsStatus *status);
+void bms_update_error_flags(BmsConfig *conf, BmsStatus *status);
 
 /**
  * Calculates new SOC value based on coloumb counter
  */
 void bms_update_soc(BmsConfig *conf, BmsStatus *status);
+
+/**
+ * Tries to handle / resolve errors
+ */
+void bms_handle_errors(BmsConfig *conf, BmsStatus *status);
 
 #if BMS_DEBUG
 /**

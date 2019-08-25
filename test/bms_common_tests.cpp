@@ -238,24 +238,6 @@ void balancing2normal_if_done()
     TEST_ASSERT_EQUAL(BMS_STATE_NORMAL, bms_status.state);
 }
 
-void jump_error_state()
-{
-    init_conf();
-    bms_status.state = BMS_STATE_NORMAL;
-    bms_status.error_flags = 1;
-    bms_state_machine(&bms_conf, &bms_status);
-    TEST_ASSERT_EQUAL(BMS_STATE_ERROR, bms_status.state);
-}
-
-void error2idle_after_err_resolved()
-{
-    init_conf();
-    bms_status.state = BMS_STATE_ERROR;
-    bms_status.error_flags = 0;
-    bms_state_machine(&bms_conf, &bms_status);
-    TEST_ASSERT_EQUAL(BMS_STATE_IDLE, bms_status.state);
-}
-
 void common_tests()
 {
     UNITY_BEGIN();
@@ -294,9 +276,6 @@ void common_tests()
     RUN_TEST(balancing2normal_if_done);
     //RUN_TEST(balancing2dis_at_increased_current);
     //RUN_TEST(balancing2dis_if_done);
-
-    RUN_TEST(jump_error_state);
-    RUN_TEST(error2idle_after_err_resolved);
 
     UNITY_END();
 }

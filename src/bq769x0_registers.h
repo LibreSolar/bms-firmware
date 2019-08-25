@@ -114,7 +114,7 @@ typedef union regSYS_STAT {
         uint8_t UV             :1;
         uint8_t OVRD_ALERT     :1;
         uint8_t DEVICE_XREADY  :1;
-        uint8_t WAKE           :1;
+        uint8_t RSVD           :1;
         uint8_t CC_READY       :1;
     } bits;
     uint8_t regByte;
