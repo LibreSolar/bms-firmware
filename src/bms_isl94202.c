@@ -149,16 +149,53 @@ int bms_apply_cell_uvp(BmsConfig *conf)
         && isl94202_write_delay(ISL94202_UVDT, ISL94202_DELAY_MS, conf->cell_uv_delay_ms, 0);
 }
 
-int bms_apply_temp_limits(BmsConfig *bms)
+// using default setting TGain = 0 (GAIN = 2) with 22k resistors
+int bms_apply_temp_limits(BmsConfig *conf)
 {
-    /* ToDo */
-    return 0;
+    float adc_voltage;
+
+    // Charge over-temperature
+    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt,
+        sizeof(lut_temp_degc)/sizeof(float), conf->chg_ot_limit);
+    isl94202_write_word(ISL94202_COTS, (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_COTS_Msk);
+
+    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt,
+        sizeof(lut_temp_degc)/sizeof(float), conf->chg_ot_limit - conf->t_limit_hyst);
+    isl94202_write_word(ISL94202_COTR, (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_COTR_Msk);
+
+    // Charge under-temperature
+    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt,
+        sizeof(lut_temp_degc)/sizeof(float), conf->chg_ut_limit);
+    isl94202_write_word(ISL94202_CUTS, (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_CUTS_Msk);
+
+    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt,
+        sizeof(lut_temp_degc)/sizeof(float), conf->chg_ut_limit + conf->t_limit_hyst);
+    isl94202_write_word(ISL94202_CUTR, (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_CUTR_Msk);
+
+    // Discharge over-temperature
+    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt,
+        sizeof(lut_temp_degc)/sizeof(float), conf->dis_ot_limit);
+    isl94202_write_word(ISL94202_DOTS, (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DOTS_Msk);
+
+    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt,
+        sizeof(lut_temp_degc)/sizeof(float), conf->dis_ot_limit - conf->t_limit_hyst);
+    isl94202_write_word(ISL94202_DOTR, (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DOTR_Msk);
+
+    // Discharge under-temperature
+    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt,
+        sizeof(lut_temp_degc)/sizeof(float), conf->dis_ut_limit);
+    isl94202_write_word(ISL94202_DUTS, (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DUTS_Msk);
+
+    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt,
+        sizeof(lut_temp_degc)/sizeof(float), conf->dis_ut_limit + conf->t_limit_hyst);
+    isl94202_write_word(ISL94202_DUTR, (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DUTR_Msk);
+
+    return 1;
 }
 
+// using default setting TGain = 0 (GAIN = 2) with 22k resistors
 void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
 {
-    // using default setting TGain = 0 (GAIN = 2) with 22k resistors
-
     uint16_t adc_raw;
 
     // Internal temperature

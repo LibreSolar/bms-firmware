@@ -288,6 +288,42 @@ void test_isl94202_apply_cell_uv_limits()
     TEST_ASSERT_EQUAL_HEX16(delay, *((uint16_t*)&mem_isl[0x12]));
 }
 
+void test_isl94202_apply_chg_ot_limit()
+{
+    bms_conf.chg_ot_limit = 55;
+    bms_conf.t_limit_hyst = 5;
+    bms_apply_temp_limits(&bms_conf);
+    TEST_ASSERT_EQUAL_HEX16(0x04D2, *((uint16_t*)&mem_isl[0x30]));      // datasheet: 0x04B6
+    TEST_ASSERT_EQUAL_HEX16(0x053E, *((uint16_t*)&mem_isl[0x32]));
+}
+
+void test_isl94202_apply_chg_ut_limit()
+{
+    bms_conf.chg_ut_limit = -10;
+    bms_conf.t_limit_hyst = 15;
+    bms_apply_temp_limits(&bms_conf);
+    TEST_ASSERT_EQUAL_HEX16(0x0CD1, *((uint16_t*)&mem_isl[0x34]));      // datasheet: 0x0BF2
+    TEST_ASSERT_EQUAL_HEX16(0x0BBD, *((uint16_t*)&mem_isl[0x36]));      // datasheet: 0x0A93
+}
+
+void test_isl94202_apply_dis_ot_limit()
+{
+    bms_conf.dis_ot_limit = 55;
+    bms_conf.t_limit_hyst = 5;
+    bms_apply_temp_limits(&bms_conf);
+    TEST_ASSERT_EQUAL_HEX16(0x04D2, *((uint16_t*)&mem_isl[0x38]));      // datasheet: 0x04B6
+    TEST_ASSERT_EQUAL_HEX16(0x053E, *((uint16_t*)&mem_isl[0x3A]));
+}
+
+void test_isl94202_apply_dis_ut_limit()
+{
+    bms_conf.dis_ut_limit = -10;
+    bms_conf.t_limit_hyst = 15;
+    bms_apply_temp_limits(&bms_conf);
+    TEST_ASSERT_EQUAL_HEX16(0x0CD1, *((uint16_t*)&mem_isl[0x3C]));      // datasheet: 0x0BF2
+    TEST_ASSERT_EQUAL_HEX16(0x0BBD, *((uint16_t*)&mem_isl[0x3E]));      // datasheet: 0x0A93
+}
+
 void isl94202_tests()
 {
     UNITY_BEGIN();
@@ -307,6 +343,11 @@ void isl94202_tests()
 
     RUN_TEST(test_isl94202_apply_cell_ov_limits);
     RUN_TEST(test_isl94202_apply_cell_uv_limits);
+
+    RUN_TEST(test_isl94202_apply_chg_ot_limit);
+    RUN_TEST(test_isl94202_apply_chg_ut_limit);
+    RUN_TEST(test_isl94202_apply_dis_ot_limit);
+    RUN_TEST(test_isl94202_apply_dis_ut_limit);
 
     UNITY_END();
 }
