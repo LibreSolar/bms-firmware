@@ -295,7 +295,7 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status);
 void bms_read_voltages(BmsStatus *status);
 
 /**
- * Reads pack current and updates coloumb counter
+ * Reads pack current and updates coloumb counter and SOC
  */
 void bms_read_current(BmsConfig *conf, BmsStatus *status);
 
@@ -308,11 +308,6 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status);
  * Reads error flags from IC or updates them based on measurements
  */
 void bms_update_error_flags(BmsConfig *conf, BmsStatus *status);
-
-/**
- * Calculates new SOC value based on coloumb counter
- */
-void bms_update_soc(BmsConfig *conf, BmsStatus *status);
 
 /**
  * Tries to handle / resolve errors

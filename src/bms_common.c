@@ -20,6 +20,11 @@
 
 #include <stdio.h>
 
+float ocv_lfp[] = { // 100, 95, ..., 0 %
+  3.392, 3.314, 3.309, 3.308, 3.304, 3.296, 3.283, 3.275, 3.271, 3.268, 3.265,
+  3.264, 3.262, 3.252, 3.240, 3.226, 3.213, 3.190, 3.177, 3.132, 2.833
+};
+
 void bms_init_config(BmsConfig *conf, enum CellType type, float nominal_capacity)
 {
     conf->auto_balancing_enabled = true;
@@ -54,10 +59,6 @@ void bms_init_config(BmsConfig *conf, enum CellType type, float nominal_capacity
 
     conf->shunt_res_mOhm = SHUNT_RESISTOR;
 
-    // TODO
-    //conf->ocv = OCV;
-    //conf->num_ocv_points = sizeof(OCV)/sizeof(int);
-
     conf->cell_ov_delay_ms = 2000;
     conf->cell_uv_delay_ms = 2000;
 
@@ -71,6 +72,8 @@ void bms_init_config(BmsConfig *conf, enum CellType type, float nominal_capacity
             conf->cell_uv_reset         = 3.10F;
             conf->cell_dis_voltage      = 3.00F;
             conf->cell_uv_limit         = 2.80F;
+            conf->ocv = ocv_lfp;
+            conf->num_ocv_points = sizeof(ocv_lfp)/sizeof(float);
             break;
         case CELL_TYPE_NMC:
             conf->cell_ov_limit         = 4.25F;
@@ -194,34 +197,26 @@ bool bms_balancing_allowed(BmsConfig *conf, BmsStatus *status)
         voltage_diff > conf->bal_cell_voltage_diff;
 }
 
-void bms_update_soc(BmsConfig *conf, BmsStatus *status)
-{
-    status->soc = status->coulomb_counter_mAs / (conf->nominal_capacity_Ah * 360); // %
-}
-
 void bms_reset_soc(BmsConfig *conf, BmsStatus *status, int percent)
 {
     if (percent <= 100 && percent >= 0)
     {
-        status->coulomb_counter_mAs = conf->nominal_capacity_Ah * 3.6e6F * (percent / 100.0);
+        status->coulomb_counter_mAs = conf->nominal_capacity_Ah * 3.6e4F * percent;
     }
     else  // reset based on OCV
     {
-        printf("NumCells: %d, voltage: %.2f V\n", status->connected_cells, status->pack_voltage);
-        int voltage = status->pack_voltage / status->connected_cells;
-
         status->coulomb_counter_mAs = 0;  // initialize with totally depleted battery (0% SOC)
 
         for (unsigned int i = 0; i < conf->num_ocv_points; i++)
         {
-            if (conf->ocv[i] <= voltage) {
+            if (conf->ocv[i] <= status->cell_voltage_avg) {
                 if (i == 0) {
                     status->coulomb_counter_mAs = conf->nominal_capacity_Ah * 3.6e6F;  // 100% full
                 }
                 else {
                     // interpolate between OCV[i] and OCV[i-1]
                     status->coulomb_counter_mAs = conf->nominal_capacity_Ah * 3.6e6F / (conf->num_ocv_points - 1.0) *
-                    (conf->num_ocv_points - 1.0 - i + ((float)voltage - conf->ocv[i])/(conf->ocv[i-1] - conf->ocv[i]));
+                    (conf->num_ocv_points - 1.0 - i + (status->cell_voltage_avg - conf->ocv[i])/(conf->ocv[i-1] - conf->ocv[i]));
                 }
                 return;
             }

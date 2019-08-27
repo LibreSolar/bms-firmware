@@ -34,6 +34,8 @@ void main(void)
 
     bms_init();
     bms_init_config(&bms_conf, CELL_TYPE_LFP, 45);
+    bms_update(&bms_conf, &bms_status);
+    bms_reset_soc(&bms_conf, &bms_status, -1);
 
     uext_init();
 

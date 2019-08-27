@@ -84,7 +84,6 @@ void bms_update(BmsConfig *conf, BmsStatus *status)
     bms_read_temperatures(conf, status);
     bms_update_error_flags(conf, status);
     bms_apply_balancing(conf, status);
-    bms_update_soc(conf, status);
 }
 
 void bms_shutdown()
@@ -224,6 +223,10 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
 void bms_read_current(BmsConfig *conf, BmsStatus *status)
 {
     uint8_t buf[2];
+    static uint32_t last_update = 0;
+    static uint32_t num_measurements = 0;
+    static int32_t integrated_current_mA = 0;
+    uint32_t now = uptime();
 
     // gain
     isl94202_read_bytes(ISL94202_CG, buf, 1);
@@ -241,6 +244,16 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
     uint16_t adc_raw = isl94202_read_word(ISL94202_ISNS) & 0x0FFF;
 
     status->pack_current = (float)(sign * adc_raw * 1800) / 4095 / gain / conf->shunt_res_mOhm;
+    integrated_current_mA += status->pack_current * 1000;
+    num_measurements++;
+
+    if (now > last_update) {
+        status->coulomb_counter_mAs += integrated_current_mA / num_measurements * (now - last_update);
+        status->soc = status->coulomb_counter_mAs / (conf->nominal_capacity_Ah * 3.6e4F); // %
+        last_update = now;
+        num_measurements = 0;
+        integrated_current_mA = 0;
+    }
 }
 
 void bms_read_voltages(BmsStatus *status)

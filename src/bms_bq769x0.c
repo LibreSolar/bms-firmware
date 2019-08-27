@@ -60,7 +60,6 @@ void bms_update(BmsConfig *conf, BmsStatus *status)
     bms_read_temperatures(conf, status);
     bms_check_cell_temp(conf, status);      // bq769x0 doesn't support temperature settings
     bms_apply_balancing(conf, status);
-    bms_update_soc(conf, status);
 }
 
 void bms_update_error_flag(BmsConfig *conf, BmsStatus *status, uint32_t flag, bool value)
@@ -451,6 +450,7 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
         int32_t pack_current_mA = (int16_t) adc_raw * 8.44 / conf->shunt_res_mOhm;
 
         status->coulomb_counter_mAs += pack_current_mA / 4;  // is read every 250 ms
+        status->soc = status->coulomb_counter_mAs / (conf->nominal_capacity_Ah * 3.6e4F); // %
 
         // reduce resolution for actual current value
         if (pack_current_mA > -10 && pack_current_mA < 10) {
