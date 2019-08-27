@@ -286,8 +286,11 @@ void bms_read_voltages(BmsStatus *status)
     status->connected_cells = conn_cells;
     status->cell_voltage_avg = sum_voltages / conn_cells;
 
-    adc_raw = isl94202_read_word(ISL94202_VBATT) & 0x0FFF;
-    status->pack_voltage = (float)adc_raw * 1.8 * 32 / 4095;
+    //adc_raw = isl94202_read_word(ISL94202_VBATT) & 0x0FFF;
+    //status->pack_voltage = (float)adc_raw * 1.8 * 32 / 4095;
+
+    // VBATT based pack voltage seems very inaccurate, so take sum of cell voltages instead
+    status->pack_voltage = sum_voltages;
 }
 
 void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
