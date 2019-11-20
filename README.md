@@ -33,25 +33,14 @@ It is suggested to use Visual Studio Code and PlatformIO for firmware developmen
 
 ### Zephyr
 
-You can use Visual Studio Code as described above. However, Zephyr is [not yet](https://github.com/platformio/platformio-core/issues/1613) supported by PlatformIO, so you need to install and use the original Zephyr build system (called west) on the command-line.
+Support for Zephyr was recently [included in PlatformIO](https://github.com/platformio/platformio-core/issues/1613) and is currently in beta status. In order to try it out, install the developer version of PlatformIO and run update to get also the development version of the `ststm32` package:
 
-1. Install Zephyr according to instructions on their website.
+```
+platformio upgrade --dev
+platformio update
+```
 
-2. Setup environment variables:
-
-    `source path/to/your/zeyphyr/installation/zephyr-env.sh`
-
-2. Build the firmware by calling
-
-    `west build`
-
-4. Connect the board via a programmer.
-
-5. Upload code to board with
-
-    `west flash`
-
-**Remark:** You need to run the mbed build for `bms-8s50-ic` once before you can use Zephyr in order to download the [ThingSet protocol library](https://github.com/ThingSet/thingset-cpp) to `.pio` directory.
+Now you should be able to compile and flash Zephyr for BMS-8S50-IC board in the same way as explained above for mbed.
 
 ## API documentation
 

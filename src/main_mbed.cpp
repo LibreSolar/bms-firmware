@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef UNIT_TEST
+#if defined(__MBED__) && !defined(UNIT_TEST)
 
 #include "mbed.h"
 #include "config.h"     // select hardware version
