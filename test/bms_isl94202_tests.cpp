@@ -60,7 +60,12 @@ void test_isl94202_read_pack_voltage()
 {
     init_isl94202_ram();
     bms_read_voltages(&bms_status);
-    TEST_ASSERT_EQUAL_FLOAT(3.3*8, roundf(bms_status.pack_voltage * 10) / 10);
+
+    // previous test (if battery voltage measurement is used)
+    //TEST_ASSERT_EQUAL_FLOAT(3.3*8, roundf(bms_status.pack_voltage * 10) / 10);
+
+    // now using sum of cell voltages instead of battery voltage
+    TEST_ASSERT_EQUAL_FLOAT((3.0+3.7)/2.0*8, roundf(bms_status.pack_voltage * 10) / 10);
 }
 
 void test_isl94202_read_min_max_avg_voltage()
