@@ -44,15 +44,11 @@
 
 &usart1 {
 	current-speed = <115200>;
-	pinctrl-0 = <&usart1_pins_b>;
-	pinctrl-names = "default";
 	status = "okay";
 };
 
 &usart2 {
 	current-speed = <115200>;
-	pinctrl-0 = <&usart2_pins_a>;
-	pinctrl-names = "default";
 	status = "okay";
 };
 
@@ -93,8 +89,6 @@
 };
 
 &can1 {
-	pinctrl-0 = <&can_pins_a>;
-	pinctrl-names = "default";
 	bus-speed = <125000>;
 	status = "okay";
 };
