@@ -333,6 +333,17 @@
 #define ISL94202_CG_Pos     (0x4U)
 #define ISL94202_CG_Msk     (0x3U << ISL94202_CG_Pos)
 
+// Force operating mode register
+#define ISL94202_FOPS               (0x88U)
+#define ISL94202_FOPS_IDLE_Pos      (0x0U)
+#define ISL94202_FOPS_IDLE_Msk      (0x1U << ISL94202_FOPS_IDLE_Pos)
+#define ISL94202_FOPS_DOZE_Pos      (0x1U)
+#define ISL94202_FOPS_DOZE_Msk      (0x1U << ISL94202_FOPS_DOZE_Pos)
+#define ISL94202_FOPS_SLEEP_Pos     (0x2U)
+#define ISL94202_FOPS_SLEEP_Msk     (0x1U << ISL94202_FOPS_SLEEP_Pos)
+#define ISL94202_FOPS_PDWN_Pos      (0x3U)
+#define ISL94202_FOPS_PDWN_Msk      (0x1U << ISL94202_FOPS_PDWN_Pos)
+
 #define ISL94202_CELLMIN    (0x8AU)
 #define ISL94202_CELLMAX    (0x8CU)
 #define ISL94202_ISNS       (0x8EU)

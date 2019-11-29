@@ -39,7 +39,7 @@ void uext_init()
 {
 	dev = device_get_binding(DISPLAY_DRIVER);
 	if (dev == NULL) {
-		printf("Device not found\n");
+		printf("OLED display not found\n");
 		return;
 	}
 

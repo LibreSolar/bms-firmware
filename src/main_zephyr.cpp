@@ -15,6 +15,8 @@
  */
 
 #include <zephyr.h>
+#include <device.h>
+#include <drivers/gpio.h>
 #include <stdio.h>
 
 #include "bms.h"
@@ -39,12 +41,32 @@ void main(void)
 
     uext_init();
 
+    struct device *sw_pwr;
+	sw_pwr = device_get_binding(DT_ALIAS_SW_PWR_GPIOS_CONTROLLER);
+    gpio_pin_configure(sw_pwr, DT_ALIAS_SW_PWR_GPIOS_PIN, DT_ALIAS_SW_PWR_GPIOS_FLAGS);
+
+    uint32_t btn_pressed_count = 0;
     while (1) {
 
         bms_update(&bms_conf, &bms_status);
         bms_state_machine(&bms_conf, &bms_status);
 
         uext_process_1s();
+
+        // shutdown button
+        uint32_t val = 0U;
+        gpio_pin_read(sw_pwr, DT_ALIAS_SW_PWR_GPIOS_PIN, &val);
+        if (val == 0) {     // active low
+            btn_pressed_count++;
+            if (btn_pressed_count > 3) {
+                printf("Button pressed for 3s: shutdown...\n");
+                bms_shutdown();
+                k_sleep(10000);
+            }
+        }
+        else {
+            btn_pressed_count = 0;
+        }
 
         //bms_print_registers();
 

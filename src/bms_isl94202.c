@@ -88,7 +88,8 @@ void bms_update(BmsConfig *conf, BmsStatus *status)
 
 void bms_shutdown()
 {
-    /* ToDo */
+    uint8_t reg = ISL94202_FOPS_PDWN_Msk;
+    isl94202_write_bytes(ISL94202_FOPS, &reg, 1);
 }
 
 bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)

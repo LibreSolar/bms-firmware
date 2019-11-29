@@ -35,10 +35,19 @@
 		};
 	};
 
+	gpio_keys {
+		compatible = "gpio-keys";
+		power_button: button {
+			label = "Power Button";
+			gpios = <&gpioa 8 GPIO_INT_ACTIVE_LOW>;
+		};
+	};
+
 	aliases {
 		led-red = &led1;
 		led-green = &led2;
 		i2c-pullup = &i2c_pu;
+		sw-pwr = &power_button;
 	};
 };
 
