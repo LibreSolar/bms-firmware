@@ -91,6 +91,8 @@ int main()
 
         bms_update(&bms_conf, &bms_status);
 
+        thingset_serial_process_asap();
+
         // called once per second
         if (time(NULL) - last_second >= 1) {
             last_second = time(NULL);
@@ -141,6 +143,7 @@ void setup()
 
     // ToDo: Ensure that below settings are set even in case of communication error
 
+    bms_init();
     bms_init_config(&bms_conf, CELL_TYPE_LFP, 45);
 
     // apply config to AFE

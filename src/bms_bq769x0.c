@@ -62,19 +62,22 @@ void bms_update(BmsConfig *conf, BmsStatus *status)
     bms_apply_balancing(conf, status);
 }
 
-void bms_update_error_flag(BmsConfig *conf, BmsStatus *status, uint32_t flag, bool value)
+inline void bms_set_error_flag(BmsStatus *status, uint32_t flag, bool value)
 {
-    if (value) {
-        status->error_flags |= (1UL << flag);
-        bms_chg_switch(conf, status, false);
+    // check if error flag changed
+    if ((status->error_flags & (1UL << flag)) != ((uint32_t)value << flag)) {
+        if (value) {
+            status->error_flags |= (1UL << flag);
+            //bms_chg_switch(conf, status, false);
+        }
+        else {
+            status->error_flags &= ~(1UL << flag);
+            //bms_chg_switch(conf, status, true);
+        }
+        #if BMS_DEBUG
+        printf("Error flag %lu changed to: %d\n", flag, value);
+        #endif
     }
-    else {
-        status->error_flags &= ~(1UL << flag);
-        bms_chg_switch(conf, status, true);
-    }
-    #if BMS_DEBUG
-    printf("Error flag %lu changed to: %d\n", flag, value);
-    #endif
 }
 
 void bms_check_cell_temp(BmsConfig *conf, BmsStatus *status)
@@ -91,20 +94,24 @@ void bms_check_cell_temp(BmsConfig *conf, BmsStatus *status)
     bool dis_undertemp = status->bat_temp_min < conf->dis_ut_limit +
         ((status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP)) ? conf->t_limit_hyst : 0);
 
-    if (chg_overtemp != (status->error_flags & (1UL << BMS_ERR_CHG_OVERTEMP))) {
-        bms_update_error_flag(conf, status, BMS_ERR_CHG_OVERTEMP, chg_overtemp);
+    if (chg_overtemp != (bool)(status->error_flags & (1UL << BMS_ERR_CHG_OVERTEMP))) {
+        bms_set_error_flag(status, BMS_ERR_CHG_OVERTEMP, chg_overtemp);
+        bms_chg_switch(conf, status, !chg_overtemp);
     }
 
-    if (chg_undertemp != (status->error_flags & (1UL << BMS_ERR_CHG_UNDERTEMP))) {
-        bms_update_error_flag(conf, status, BMS_ERR_CHG_UNDERTEMP, chg_undertemp);
+    if (chg_undertemp != (bool)(status->error_flags & (1UL << BMS_ERR_CHG_UNDERTEMP))) {
+        bms_set_error_flag(status, BMS_ERR_CHG_UNDERTEMP, chg_undertemp);
+        bms_chg_switch(conf, status, !chg_undertemp);
     }
 
-    if (dis_overtemp != (status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP))) {
-        bms_update_error_flag(conf, status, BMS_ERR_DIS_OVERTEMP, dis_overtemp);
+    if (dis_overtemp != (bool)(status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP))) {
+        bms_set_error_flag(status, BMS_ERR_DIS_OVERTEMP, dis_overtemp);
+        bms_dis_switch(conf, status, !dis_overtemp);
     }
 
-    if (dis_undertemp != (status->error_flags & (1UL << BMS_ERR_DIS_UNDERTEMP))) {
-        bms_update_error_flag(conf, status, BMS_ERR_DIS_UNDERTEMP, dis_undertemp);
+    if (dis_undertemp != (bool)(status->error_flags & (1UL << BMS_ERR_DIS_UNDERTEMP))) {
+        bms_set_error_flag(status, BMS_ERR_DIS_UNDERTEMP, dis_undertemp);
+        bms_dis_switch(conf, status, !dis_undertemp);
     }
 }
 
@@ -152,6 +159,9 @@ bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
             int sys_ctrl2;
             sys_ctrl2 = bq769x0_read_byte(SYS_CTRL2);
             bq769x0_write_byte(SYS_CTRL2, sys_ctrl2 | 0b00000010);  // switch DSG on
+            #if BMS_DEBUG
+            printf("Enabling DIS FET\n");
+            #endif
             return true;
         }
         else {
@@ -163,7 +173,7 @@ bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
         sys_ctrl2 = bq769x0_read_byte(SYS_CTRL2);
         bq769x0_write_byte(SYS_CTRL2, sys_ctrl2 & ~0b00000010);  // switch DSG off
         #if BMS_DEBUG
-        printf("Disabling DISCHG FET\n");
+        printf("Disabling DIS FET\n");
         #endif
         return true;
     }
@@ -394,7 +404,7 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     // - According to bq769x0 datasheet, only 10k thermistors should be used
     // - 25°C reference temperature for Beta equation assumed
     tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
-    status->bat_temps[0] = (tmp - 273.15) * 10.0;
+    status->bat_temps[0] = tmp - 273.15;
     status->bat_temp_min = status->bat_temps[0];
     status->bat_temp_max = status->bat_temps[0];
     int num_temps = 1;
@@ -405,7 +415,7 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
         vtsx = adc_raw * 0.382; // mV
         rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
         tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
-        status->bat_temps[1] = (tmp - 273.15) * 10.0;
+        status->bat_temps[1] = tmp - 273.15;
 
         if (status->bat_temps[1] < status->bat_temp_min) {
             status->bat_temp_min = status->bat_temps[1];
@@ -422,7 +432,7 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
         vtsx = adc_raw * 0.382; // mV
         rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
         tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
-        status->bat_temps[2] = (tmp - 273.15) * 10.0;
+        status->bat_temps[2] = tmp - 273.15;
 
         if (status->bat_temps[2] < status->bat_temp_min) {
             status->bat_temp_min = status->bat_temps[2];
