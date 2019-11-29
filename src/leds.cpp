@@ -40,14 +40,14 @@ struct device *led_chg_dev = NULL;
 void leds_chg_set(bool on)
 {
     if (led_chg_dev) {
-        leds_chg_set(0);
+        gpio_pin_write(led_chg_dev, LED_CHG_PIN, on);
     }
 }
 
 void leds_dis_set(bool on)
 {
-    if (led_chg_dev) {
-        leds_dis_set(0);
+    if (led_dis_dev) {
+        gpio_pin_write(led_dis_dev, LED_DIS_PIN, on);
     }
 }
 
