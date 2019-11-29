@@ -1,6 +1,4 @@
 language: python
-python:
-    - "2.7"
 
 # Cache PlatformIO packages using Travis CI container-based infrastructure
 sudo: false
@@ -13,6 +11,7 @@ env:
 
 install:
     - pip install -U platformio
+    - platformio upgrade --dev  # for early Zephyr integration
     - platformio update
 
 addons:

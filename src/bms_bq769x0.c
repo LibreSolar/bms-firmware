@@ -62,7 +62,7 @@ void bms_update(BmsConfig *conf, BmsStatus *status)
     bms_apply_balancing(conf, status);
 }
 
-inline void bms_set_error_flag(BmsStatus *status, uint32_t flag, bool value)
+void bms_set_error_flag(BmsStatus *status, uint32_t flag, bool value)
 {
     // check if error flag changed
     if ((status->error_flags & (1UL << flag)) != ((uint32_t)value << flag)) {
