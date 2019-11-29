@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
+#include "leds.h"
+
 #include "bms.h"
+
+#define SLEEP_TIME 	100		// ms
+
+extern BmsConfig bms_conf;
+extern BmsStatus bms_status;
 
 #ifdef ZEPHYR
 
@@ -27,70 +34,107 @@
 #define LED_CHG_PORT DT_ALIAS_LED_GREEN_GPIOS_CONTROLLER
 #define LED_CHG_PIN  DT_ALIAS_LED_GREEN_GPIOS_PIN
 
-#define SLEEP_TIME 	100		// ms
+struct device *led_dis_dev = NULL;
+struct device *led_chg_dev = NULL;
 
-extern BmsConfig bms_conf;
-extern BmsStatus bms_status;
+void leds_chg_set(bool on)
+{
+    if (led_chg_dev) {
+        leds_chg_set(0);
+    }
+}
+
+void leds_dis_set(bool on)
+{
+    if (led_chg_dev) {
+        leds_dis_set(0);
+    }
+}
 
 void leds_update_thread()
 {
-	struct device *led_dis_dev;
 	led_dis_dev = device_get_binding(LED_DIS_PORT);
 	gpio_pin_configure(led_dis_dev, LED_DIS_PIN, GPIO_DIR_OUT);
 
-	struct device *led_chg_dev;
 	led_chg_dev = device_get_binding(LED_CHG_PORT);
 	gpio_pin_configure(led_chg_dev, LED_CHG_PIN, GPIO_DIR_OUT);
 
-    uint32_t count = 0;
-
 	while (1) {
-
-        // Charging LED control
-        if (bms_status.state == BMS_STATE_NORMAL || bms_status.state == BMS_STATE_CHG) {
-            if (bms_status.pack_current > bms_conf.bal_idle_current && ((count / 2) % 10) == 0) {
-                // not in idle: ____ ____ ____
-                gpio_pin_write(led_chg_dev, LED_CHG_PIN, 0);
-            }
-            else {
-                // idle: ______________
-                gpio_pin_write(led_chg_dev, LED_CHG_PIN, 1);
-            }
-        }
-        else {
-            if (bms_chg_error(&bms_status)) {
-                // quick flash
-                gpio_pin_write(led_chg_dev, LED_CHG_PIN, count % 2);
-            }
-            else {
-                gpio_pin_write(led_chg_dev, LED_CHG_PIN, 0);
-            }
-        }
-
-        // Discharging LED control
-        if (bms_status.state == BMS_STATE_NORMAL || bms_status.state == BMS_STATE_DIS) {
-            if (bms_status.pack_current < -bms_conf.bal_idle_current && ((count / 2) % 10) == 0) {
-                // not in idle: ____ ____ ____
-                gpio_pin_write(led_dis_dev, LED_DIS_PIN, 0);
-            }
-            else {
-                // idle: ______________
-                gpio_pin_write(led_dis_dev, LED_DIS_PIN, 1);
-            }
-        }
-        else {
-            if (bms_dis_error(&bms_status)) {
-                // quick flash
-                gpio_pin_write(led_dis_dev, LED_DIS_PIN, count % 2);
-            }
-            else {
-                gpio_pin_write(led_dis_dev, LED_DIS_PIN, 0);
-            }
-        }
-
-        count++;
+        leds_update();
 		k_sleep(SLEEP_TIME);
 	}
 }
 
-#endif /* ZEPHYR */
+#elif defined(__MBED__)
+
+#include "mbed.h"
+
+DigitalOut led_chg(PIN_LED_GREEN);
+DigitalOut led_dis(PIN_LED_RED);
+
+void leds_chg_set(bool on)
+{
+    led_chg = on;
+}
+
+void leds_dis_set(bool on)
+{
+    led_dis = on;
+}
+
+#else
+
+void leds_chg_set(bool on) {;}
+
+void leds_dis_set(bool on) {;}
+
+#endif // ZEPHYR / MBED
+
+void leds_update()
+{
+    static uint32_t count = 0;
+
+    // Charging LED control
+    if (bms_status.state == BMS_STATE_NORMAL || bms_status.state == BMS_STATE_CHG) {
+        if (bms_status.pack_current > bms_conf.bal_idle_current && ((count / 2) % 10) == 0) {
+            // not in idle: ____ ____ ____
+            leds_chg_set(0);
+        }
+        else {
+            // idle: ______________
+            leds_chg_set(1);
+        }
+    }
+    else {
+        if (bms_chg_error(&bms_status)) {
+            // quick flash
+            leds_chg_set(count % 2);
+        }
+        else {
+            leds_chg_set(0);
+        }
+    }
+
+    // Discharging LED control
+    if (bms_status.state == BMS_STATE_NORMAL || bms_status.state == BMS_STATE_DIS) {
+        if (bms_status.pack_current < -bms_conf.bal_idle_current && ((count / 2) % 10) == 0) {
+            // not in idle: ____ ____ ____
+            leds_dis_set(0);
+        }
+        else {
+            // idle: ______________
+            leds_dis_set(1);
+        }
+    }
+    else {
+        if (bms_dis_error(&bms_status)) {
+            // quick flash
+            leds_dis_set(count % 2);
+        }
+        else {
+            leds_dis_set(0);
+        }
+    }
+
+    count++;
+}

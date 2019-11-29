@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
+#ifndef LEDS_H_
+#define LEDS_H_
+
 /**
- * LED control depending on BMS state
+ * LED control depending on BMS state, should be called every 100 ms
  *
  * Red LED
  * - Discharging finished (empty)           (off)
@@ -30,4 +33,21 @@
  * - Charging error (OV/OT/UT/OC)           _ _ _ _ _ _ _ _
  *
  */
+void leds_update();
+
+/**
+ * Thread that calls leds_update() in regular interval
+ */
 void leds_update_thread();
+
+/**
+ * Set green charging LED on or off
+ */
+void leds_chg_set(bool on);
+
+/**
+ * Set red discharging LED on or off
+ */
+void leds_dis_set(bool on);
+
+#endif // LEDS_H_

@@ -25,6 +25,7 @@
 #include "output_can.h"
 
 #include "bms.h"
+#include "leds.h"
 
 //----------------------------------------------------------------------------
 // global variables
@@ -36,8 +37,6 @@ BmsConfig bms_conf;
 BmsStatus bms_status;
 extern ThingSet ts;
 
-DigitalOut led_green(PIN_LED_GREEN);
-DigitalOut led_red(PIN_LED_RED);
 DigitalOut can_disable(PIN_CAN_STB);
 #ifdef PIN_PCHG_EN
 DigitalOut pchg_enable(PIN_PCHG_EN);    // precharge capacitors on the bus
@@ -51,7 +50,7 @@ AnalogIn v_bat(PIN_V_BAT);
 #endif
 AnalogIn v_ext(PIN_V_EXT);
 
-Ticker tick1, tick2;
+Ticker tick1, tick2, tick3;
 
 float load_voltage;
 
@@ -69,8 +68,6 @@ void toggleBlink();     // to blink cell voltages on display during balancing
 //----------------------------------------------------------------------------
 int main()
 {
-    led_green = 1;
-    led_red = 1;
     can_disable = 0;
     time_t last_second = time(NULL);
 
@@ -78,6 +75,7 @@ int main()
 
     tick1.attach(&toggleBlink, 0.2);
     tick2.attach(&can_send_data, 1);
+    tick3.attach(&leds_update, 0.1);
 
     while(1) {
 
@@ -106,12 +104,11 @@ int main()
             fflush(stdout);
 
             update_measurements();
+            bms_state_machine(&bms_conf, &bms_status);
 
             uext_process_1s();
 
             //bms_print_registers();
-
-            led_green = !led_green;
         }
 
         sleep();    // wake-up by ticker interrupts
