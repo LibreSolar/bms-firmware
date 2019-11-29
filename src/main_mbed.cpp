@@ -58,11 +58,6 @@ float load_voltage;
 int balancingStatus = 0;
 bool blinkOn = false;
 
-float OCV[] = { // 100, 95, ..., 0 %
-  3.392, 3.314, 3.309, 3.308, 3.304, 3.296, 3.283, 3.275, 3.271, 3.268, 3.265,
-  3.264, 3.262, 3.252, 3.240, 3.226, 3.213, 3.190, 3.177, 3.132, 2.833
-};
-
 //----------------------------------------------------------------------------
 // function prototypes
 
@@ -155,9 +150,6 @@ void setup()
     bms_apply_temp_limits(&bms_conf);
 
     bms_conf.shunt_res_mOhm = SHUNT_RESISTOR;
-    bms_conf.ocv = OCV;
-    bms_conf.num_ocv_points = sizeof(OCV)/sizeof(int);
-    bms_status.connected_cells = 4;  // ToDo: Function to determine number of cells automatically
 
     bms_update(&bms_conf, &bms_status);   // get voltage and temperature measurements before switching on
     bms_apply_balancing(&bms_conf, &bms_status);
@@ -186,23 +178,12 @@ void toggleBlink()
 //----------------------------------------------------------------------------
 void update_measurements(void)
 {
-    const int vcc = 3300;     // mV
-    unsigned long sum_adc_readings;
-
-/*
-    // battery voltage divider o-- 100k --o-- 5.6k --o
-    sum_adc_readings = 0;
-    for (int i = 0; i < ADC_AVG_SAMPLES; i++) {
-        sum_adc_readings += v_bat.read_u16();
-    }
-    pack_voltage = (sum_adc_readings / ADC_AVG_SAMPLES) * 110 / 10 * vcc / 0xFFFF;
-*/
-    // load voltage divider o-- 100k --o-- 5.6k --o
-    sum_adc_readings = 0;
+    const float vcc = 3.3;
+    unsigned long sum_adc_readings = 0;
     for (int i = 0; i < ADC_AVG_SAMPLES; i++) {
         sum_adc_readings += v_ext.read_u16();
     }
-    load_voltage = (sum_adc_readings / ADC_AVG_SAMPLES) * 110 / 10 * vcc / 0xFFFF;
+    load_voltage = (sum_adc_readings / ADC_AVG_SAMPLES) * GAIN_PACK_VOLTAGE * vcc / 0xFFFF;
 
     bms_update(&bms_conf, &bms_status);
 }

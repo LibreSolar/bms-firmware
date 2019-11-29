@@ -22,6 +22,7 @@
 
 #define SHUNT_RESISTOR 1.5  // mOhm
 #define PCB_MAX_CURRENT 80  // A
+#define GAIN_PACK_VOLTAGE (105.6/5.6)  // voltage resistor divider (see schematic)
 
 #ifdef BMS_BQ76930
 #define NUM_CELLS_MAX 10

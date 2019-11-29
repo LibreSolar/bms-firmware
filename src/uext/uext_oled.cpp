@@ -43,17 +43,17 @@ void uext_process_1s()    // OLED SSD1306
     oled.clearDisplay();
 
     oled.setTextCursor(0, 0);
-    oled.printf("%.2f V", bms_status.pack_voltage/1000.0);
+    oled.printf("%.2f V", bms_status.pack_voltage);
     oled.setTextCursor(64, 0);
-    oled.printf("%.2f A", bms_status.pack_current/1000.0);
+    oled.printf("%.2f A", bms_status.pack_current);
 
     oled.setTextCursor(0, 8);
     oled.printf("T:%.1f C", bms_status.bat_temp_avg);
     oled.setTextCursor(64, 8);
-    oled.printf("SOC:%.2f", (float)bms_status.soc / 100);
+    oled.printf("SOC:%d", bms_status.soc);
 
     oled.setTextCursor(0, 16);
-    oled.printf("Load: %.2fV", load_voltage/1000.0);
+    oled.printf("Load: %.2fV", load_voltage);
 
     for (int i = 0; i < NUM_CELLS_MAX; i++) {
         if (blinkOn || !(bms_status.balancing_status & (1 << i))) {

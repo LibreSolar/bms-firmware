@@ -209,9 +209,12 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
             int cellCounter = 0;
             for (int i = 0; i < 5; i++)
             {
-                if ((status->cell_voltages[section*5 + i] - status->cell_voltage_min) > conf->bal_cell_voltage_diff) {
+                if ((status->cell_voltages[section*5 + i] - status->cell_voltage_min) >
+                    conf->bal_cell_voltage_diff)
+                {
                     int j = cellCounter;
-                    while (j > 0 && status->cell_voltages[section*5 + cellList[j - 1]] < status->cell_voltages[section*5 + i])
+                    while (j > 0 && status->cell_voltages[section*5 + cellList[j - 1]] <
+                        status->cell_voltages[section*5 + i])
                     {
                         cellList[j] = cellList[j - 1];
                         j--;
@@ -467,7 +470,7 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
             pack_current_mA = 0;
         }
 
-        status->pack_current = pack_current_mA / 1000;
+        status->pack_current = pack_current_mA / 1000.0;
 
         // reset no_idle_timestamp
         if (fabs(status->pack_current) > conf->bal_idle_current) {
@@ -488,6 +491,7 @@ void bms_read_voltages(BmsStatus *status)
     int adc_raw = 0;
     int conn_cells = 0;
     float sum_voltages = 0;
+    float v_max = 0, v_min = 10;
 
     for (int i = 0; i < NUM_CELLS_MAX; i++) {
         adc_raw = bq769x0_read_word(VC1_HI_BYTE + i*2) & 0x3FFF;
@@ -497,16 +501,17 @@ void bms_read_voltages(BmsStatus *status)
             conn_cells++;
             sum_voltages += status->cell_voltages[i];
         }
-
-        if (status->cell_voltages[i] > status->cell_voltage_max) {
-            status->cell_voltage_max = status->cell_voltages[i];
+        if (status->cell_voltages[i] > v_max) {
+            v_max = status->cell_voltages[i];
         }
-        if (status->cell_voltages[i] < status->cell_voltage_min && status->cell_voltages[i] > 0.5) {
-            status->cell_voltage_min = status->cell_voltages[i];
+        if (status->cell_voltages[i] < v_min && status->cell_voltages[i] > 0.5F) {
+            v_min = status->cell_voltages[i];
         }
     }
     status->connected_cells = conn_cells;
     status->cell_voltage_avg = sum_voltages / conn_cells;
+    status->cell_voltage_min = v_min;
+    status->cell_voltage_max = v_max;
 
     // read battery pack voltage
     adc_raw = bq769x0_read_word(BAT_HI_BYTE);

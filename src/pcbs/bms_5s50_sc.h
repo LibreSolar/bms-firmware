@@ -22,6 +22,7 @@
 
 #define SHUNT_RESISTOR 1.0  // mOhm
 #define PCB_MAX_CURRENT 50  // A
+#define GAIN_PACK_VOLTAGE (110/10)  // voltage resistor divider (see schematic)
 
 #define NUM_CELLS_MAX 5
 #define NUM_THERMISTORS_MAX 1
