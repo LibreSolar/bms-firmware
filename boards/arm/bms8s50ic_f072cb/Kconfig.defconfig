@@ -1,0 +1,54 @@
+# Kconfig - Libre Solar BMS 8S50 IC board configuration
+#
+# Copyright (c) 2020 Libre Solar Technologies GmbH
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+if BOARD_BMS8S50IC_F072
+
+config BOARD
+	default "bms8s50ic_f072"
+
+if UART_CONSOLE
+
+config UART_1
+	default y
+
+endif # UART_CONSOLE
+
+if PWM
+
+config PWM_STM32_2
+	default y
+
+endif # PWM
+
+if SPI
+
+config SPI_1
+	default y
+
+config SPI_STM32_INTERRUPT
+	default y
+
+endif # SPI
+
+if I2C
+
+config I2C_1
+	default y
+
+config I2C_2
+	default y
+
+endif # I2C
+
+if CAN
+
+config CAN_1
+	default y
+
+endif # CAN
+
+endif # BOARD_BMS8S50IC_F072

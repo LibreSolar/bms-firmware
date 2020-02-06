@@ -1,0 +1,17 @@
+identifier: bms8s50ic_f072
+name: BMS-8S50-IC-F072
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+ram: 16
+flash: 128
+supported:
+  - arduino_i2c
+  - gpio
+  - i2c
+  - spi
+  - watchdog
+  - adc

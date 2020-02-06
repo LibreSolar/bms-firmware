@@ -1,0 +1,103 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright (c) 2020 Martin Jäger / Libre Solar
+ */
+
+/dts-v1/;
+#include <st/f0/stm32f072Xb.dtsi>
+
+/ {
+	model = "Libre Solar BMS 8S50 IC";
+	compatible = "st,stm32f072";
+
+	chosen {
+		zephyr,console = &usart1;
+		zephyr,shell-uart = &usart1;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led1: led_0 {
+			gpios = <&gpiob 14 GPIO_INT_ACTIVE_HIGH>;
+			label = "LED 1";
+		};
+		led2: led_1 {
+			gpios = <&gpiob 15 GPIO_INT_ACTIVE_HIGH>;
+			label = "LED 2";
+		};
+		/* TODO: put to GPIOs or similar */
+		i2c_pu: pb_2 {
+			gpios = <&gpiob 2 GPIO_INT_ACTIVE_HIGH>;
+			label = "I2C Pull-Up";
+		};
+	};
+
+	gpio_keys {
+		compatible = "gpio-keys";
+		power_button: button {
+			label = "Power Button";
+			gpios = <&gpioa 8 GPIO_INT_ACTIVE_LOW>;
+		};
+	};
+
+	aliases {
+		led-red = &led1;
+		led-green = &led2;
+		i2c-pullup = &i2c_pu;
+		sw-pwr = &power_button;
+	};
+};
+
+&usart1 {
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&usart2 {
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&i2c1 {
+	status = "okay";
+
+	ssd1306@3c {
+		compatible = "solomon,ssd1306fb";
+		reg = <0x3c>;
+		label = "SSD1306";
+		width = <128>;
+		height = <64>;
+		segment-offset = <0>;
+		page-offset = <0>;
+		display-offset = <0>;
+		multiplex-ratio = <63>;
+		segment-remap;
+		com-invdir;
+		prechargep = <0x22>;
+	};
+};
+
+&i2c2 {
+	status = "okay";
+	clock-frequency = <I2C_BITRATE_STANDARD>;
+};
+
+&spi1 {
+	status = "okay";
+};
+
+&iwdg {
+	status = "okay";
+};
+
+&adc1 {
+	status = "okay";
+};
+
+&can1 {
+	bus-speed = <250000>;
+	status = "okay";
+};
