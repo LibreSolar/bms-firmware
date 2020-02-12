@@ -125,7 +125,7 @@ int isl94202_write_delay(uint8_t reg_addr, uint8_t delay_unit, uint16_t delay_va
  */
 float isl94202_write_current_limit(uint8_t reg_addr,
     const uint16_t *voltage_thresholds_mV, int num_thresholds,
-	float current_limit, float shunt_res_mOhm,
+    float current_limit, float shunt_res_mOhm,
     uint8_t delay_unit, uint16_t delay_value);
 
 /**
