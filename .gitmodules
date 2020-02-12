@@ -1,0 +1,3 @@
+[submodule "lib/thingset"]
+	path = lib/thingset
+	url = https://github.com/ThingSet/thingset-cpp

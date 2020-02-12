@@ -10,10 +10,6 @@ project(libre_solar_bms)
 
 add_definitions(-DBMS_8S50_IC -DZEPHYR)
 
-# We only specify include_directories and target_sources for files in src directory here. All files
-# from external libraries will be added by PlatformIO. If you use west (native zephyr build tool)
-# directly, you need to add files for ThingSet library here.
-
 include_directories(../src)
 
 target_sources(app PRIVATE ../src/main_zephyr.cpp)
@@ -25,3 +21,5 @@ target_sources(app PRIVATE ../src/thingset_serial.cpp)
 target_sources(app PRIVATE ../src/leds.cpp)
 target_sources(app PRIVATE ../src/data_objects.cpp)
 target_sources(app PRIVATE ../src/helper.cpp)
+
+add_subdirectory(../lib/thingset build/thingset)
