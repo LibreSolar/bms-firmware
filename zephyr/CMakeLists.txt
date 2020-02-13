@@ -13,7 +13,7 @@ add_definitions(-DBMS_8S50_IC -DZEPHYR)
 include_directories(../src)
 
 target_sources(app PRIVATE ../src/main_zephyr.cpp)
-target_sources(app PRIVATE ../src/uext/oled_zephyr.cpp)
+target_sources(app PRIVATE ../src/uext/uext_oled.cpp)
 target_sources(app PRIVATE ../src/bms_common.c)
 target_sources(app PRIVATE ../src/bms_isl94202.c)
 target_sources(app PRIVATE ../src/isl94202_interface.c)
@@ -23,3 +23,4 @@ target_sources(app PRIVATE ../src/data_objects.cpp)
 target_sources(app PRIVATE ../src/helper.cpp)
 
 add_subdirectory(../lib/thingset build/thingset)
+add_subdirectory(../lib/oled-display build/oled-display)

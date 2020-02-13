@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#if defined(__MBED__) && !defined(UNIT_TEST)
+#ifndef UNIT_TEST
 
 #include "config.h"
 
@@ -25,8 +25,12 @@
 #include "pcb.h"
 #include "bms.h"
 
+#if defined(__MBED__)
 I2C i2c(PIN_UEXT_SDA, PIN_UEXT_SCL);
 OledSSD1306 oled(i2c);
+#elif defined(__ZEPHYR__)
+OledSSD1306 oled(DT_ALIAS_I2C_UEXT_LABEL);
+#endif
 
 extern bool blinkOn;
 
@@ -48,7 +52,6 @@ void uext_process_1s()    // OLED SSD1306
     char buf[30];
     unsigned int len;
 
-    i2c.frequency(400000);
     oled.clear();
 
     oled.setTextCursor(0, 0);

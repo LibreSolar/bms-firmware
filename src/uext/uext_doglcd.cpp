@@ -55,7 +55,7 @@ void uext_process_1s()
     sprintf(str, "%.2fA", bms_status.pack_current);
     lcd.string(7*8,0,font_8x16, str);
 
-    sprintf(str, "T:%.1f", bms_status.temperatures[1]);
+    sprintf(str, "T:%.1f", bms_status.bat_temp_avg);
     lcd.string(0,2,font_6x8, str);
 
     sprintf(str, "SOC:%d", bms_status.soc);
