@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2019 Libre Solar Technologies GmbH
+
+config BOARD_BMS_8S50_IC_L452
+	bool "Libre Solar BMS 8S50 IC"
+	depends on SOC_STM32L452XX

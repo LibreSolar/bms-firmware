@@ -24,7 +24,7 @@
     "stm32cube",
     "zephyr"
   ],
-  "name": "Libre Solar BMS8S50IC F072",
+  "name": "Libre Solar BMS 8S50 IC F072",
   "upload": {
     "maximum_ram_size": 16384,
     "maximum_size": 131072,

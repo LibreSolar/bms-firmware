@@ -60,4 +60,4 @@ Writing the tests is still work in progress. New functions should be implemented
 
 Run the tests with the following command:
 
-    platformio test -e unit-test-isl94202 -e unit-test-bq769x0
+    platformio test -e unit_test_isl94202 -e unit_test_bq769x0

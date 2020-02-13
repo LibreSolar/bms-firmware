@@ -5,10 +5,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-if BOARD_BMS8S50IC_F072
+if BOARD_BMS_8S50_IC_F072
 
 config BOARD
-	default "bms8s50ic_f072"
+	default "bms_8s50_ic_f072"
 
 if UART_CONSOLE
 
@@ -51,4 +51,4 @@ config CAN_1
 
 endif # CAN
 
-endif # BOARD_BMS8S50IC_F072
+endif # BOARD_BMS_8S50_IC_F072

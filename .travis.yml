@@ -21,8 +21,8 @@ addons:
 
 script:
     #- cp src/config.h_template src/config.h
-    - platformio run -e bms-5s50-sc -e bms-8s50-ic_l452
-    - platformio test -e unit-test-isl94202 -e unit-test-bq769x0
+    - platformio run -e bms_5s50_sc -e bms_8s50_ic_l452
+    - platformio test -e unit_test_isl94202 -e unit_test_bq769x0
     - doxygen Doxyfile
 
 deploy:

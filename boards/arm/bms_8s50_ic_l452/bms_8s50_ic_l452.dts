@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2017 Linaro Limited
- *
  * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright (c) 2020 Martin Jäger / Libre Solar
  */
 
 /dts-v1/;
@@ -9,7 +9,7 @@
 
 / {
 	model = "Libre Solar BMS 8S50 IC";
-	compatible = "st,stm32l452re-nucleo", "st,stm32l452";
+	compatible = "st,stm32l452";
 
 	chosen {
 		zephyr,console = &usart1;

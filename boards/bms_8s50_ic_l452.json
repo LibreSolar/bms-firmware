@@ -27,7 +27,7 @@
     "mbed",
     "zephyr"
   ],
-  "name": "Libre Solar BMS8S50IC L452Cx",
+  "name": "Libre Solar BMS 8S50 IC L452",
   "upload": {
     "maximum_ram_size": 65536,
     "maximum_size": 262144,
@@ -39,6 +39,6 @@
       "mbed"
     ]
   },
-  "url": "https://www.st.com/en/evaluation-tools/nucleo-l452re.html",
-  "vendor": "ST"
+  "url": "https://libre.solar/",
+  "vendor": "Libre Solar Technologies GmbH"
 }
