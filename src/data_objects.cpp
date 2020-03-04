@@ -79,8 +79,8 @@ const data_object_t data_objects[] = {
     {0x55, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_UINT32,  0, (void*) &(bms_conf.cell_uv_delay_ms),        "CellLowLimDelay_ms"},
 
     // balancing
-    {0x48, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_BOOL,    0, (void*) &(bms_conf.auto_balancing_enabled),  "AutoBalEn"},
-    {0x49, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_FLOAT32, 3, (void*) &(bms_conf.bal_cell_voltage_diff),   "BalCellDiff_V"},
+    {0x58, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_BOOL,    0, (void*) &(bms_conf.auto_balancing_enabled),  "AutoBalEn"},
+    {0x59, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_FLOAT32, 3, (void*) &(bms_conf.bal_cell_voltage_diff),   "BalCellDiff_V"},
     {0x5A, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_FLOAT32, 1, (void*) &(bms_conf.bal_cell_voltage_min),    "BalCellLowLim_V"},
     {0x5B, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_UINT16,  0, (void*) &(bms_conf.bal_idle_delay),          "BalIdleDelay_s"},
     {0x5C, TS_CONF, TS_READ_ALL | TS_WRITE_ALL,   TS_T_FLOAT32, 1, (void*) &(bms_conf.bal_idle_current),        "BalIdleTh_A"},
