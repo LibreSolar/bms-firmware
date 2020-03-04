@@ -48,6 +48,7 @@
 		led-green = &led2;
 		i2c-pullup = &i2c_pu;
 		sw-pwr = &power_button;
+		i2c-uext = &i2c1;
 	};
 };
 
