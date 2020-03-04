@@ -46,7 +46,7 @@ void main(void)
 
     struct device *sw_pwr;
 	sw_pwr = device_get_binding(DT_ALIAS_SW_PWR_GPIOS_CONTROLLER);
-    gpio_pin_configure(sw_pwr, DT_ALIAS_SW_PWR_GPIOS_PIN, DT_ALIAS_SW_PWR_GPIOS_FLAGS);
+    gpio_pin_configure(sw_pwr, DT_ALIAS_SW_PWR_GPIOS_PIN, DT_ALIAS_SW_PWR_GPIOS_FLAGS | GPIO_INPUT);
 
     uint32_t btn_pressed_count = 0;
     while (1) {
@@ -54,10 +54,7 @@ void main(void)
         bms_update(&bms_conf, &bms_status);
         bms_state_machine(&bms_conf, &bms_status);
 
-        // shutdown button
-        uint32_t val = 0U;
-        gpio_pin_read(sw_pwr, DT_ALIAS_SW_PWR_GPIOS_PIN, &val);
-        if (val == 0) {     // active low
+        if (gpio_pin_get(sw_pwr, DT_ALIAS_SW_PWR_GPIOS_PIN) == 1) {
             btn_pressed_count++;
             if (btn_pressed_count > 3) {
                 printf("Button pressed for 3s: shutdown...\n");

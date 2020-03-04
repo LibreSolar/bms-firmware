@@ -21,21 +21,24 @@
 	leds {
 		compatible = "gpio-leds";
 		led1: led_0 {
-			gpios = <&gpiob 14 GPIO_INT_ACTIVE_HIGH>;
+			gpios = <&gpiob 14 GPIO_ACTIVE_HIGH>;
 			label = "LED 1";
 		};
 		led2: led_1 {
-			gpios = <&gpiob 15 GPIO_INT_ACTIVE_HIGH>;
+			gpios = <&gpiob 15 GPIO_ACTIVE_HIGH>;
 			label = "LED 2";
 		};
-		/* TODO: put to GPIOs or similar */
-		i2c_pu: pb_2 {
-			gpios = <&gpiob 2 GPIO_INT_ACTIVE_HIGH>;
+	};
+
+	switches {
+		compatible = "switch";
+		i2c_pullup {
+			gpios = <&gpiob 2 GPIO_ACTIVE_HIGH>;
 			label = "I2C Pull-Up";
 		};
-		can_stb: can_stb {
-			gpios = <&gpioc 13 GPIO_INT_ACTIVE_LOW>;
-			label = "CAN disable / standby";
+		can_en {
+			gpios = <&gpioc 13 GPIO_ACTIVE_LOW>;
+			label = "CAN transceiver enable";
 		};
 	};
 
@@ -43,15 +46,13 @@
 		compatible = "gpio-keys";
 		power_button: button {
 			label = "Power Button";
-			gpios = <&gpioa 8 GPIO_INT_ACTIVE_LOW>;
+			gpios = <&gpioa 8 GPIO_ACTIVE_LOW>;
 		};
 	};
 
 	aliases {
 		led-red = &led1;
 		led-green = &led2;
-		i2c-pullup = &i2c_pu;
-		can-stb = &can_stb;
 		sw-pwr = &power_button;
 		i2c-uext = &i2c1;
 		uart-dbg = &usart1;

@@ -40,24 +40,24 @@ struct device *led_chg_dev = NULL;
 void leds_chg_set(bool on)
 {
     if (led_chg_dev) {
-        gpio_pin_write(led_chg_dev, LED_CHG_PIN, on);
+        gpio_pin_set(led_chg_dev, LED_CHG_PIN, on);
     }
 }
 
 void leds_dis_set(bool on)
 {
     if (led_dis_dev) {
-        gpio_pin_write(led_dis_dev, LED_DIS_PIN, on);
+        gpio_pin_set(led_dis_dev, LED_DIS_PIN, on);
     }
 }
 
 void leds_update_thread()
 {
 	led_dis_dev = device_get_binding(LED_DIS_PORT);
-	gpio_pin_configure(led_dis_dev, LED_DIS_PIN, GPIO_DIR_OUT);
+	gpio_pin_configure(led_dis_dev, LED_DIS_PIN, GPIO_OUTPUT_INACTIVE);
 
 	led_chg_dev = device_get_binding(LED_CHG_PORT);
-	gpio_pin_configure(led_chg_dev, LED_CHG_PIN, GPIO_DIR_OUT);
+	gpio_pin_configure(led_chg_dev, LED_CHG_PIN, GPIO_OUTPUT_INACTIVE);
 
 	while (1) {
         leds_update();

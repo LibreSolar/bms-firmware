@@ -124,19 +124,17 @@ ThingSetCAN::ThingSetCAN(uint8_t can_node_id, const unsigned int c):
     node_id(can_node_id),
     channel(c)
 {
-    can_en_dev = device_get_binding(DT_ALIAS_CAN_STB_GPIOS_CONTROLLER);
-    gpio_pin_configure(can_en_dev, DT_ALIAS_CAN_STB_GPIOS_PIN,
-        DT_ALIAS_CAN_STB_GPIOS_FLAGS | GPIO_DIR_OUT);
+    can_en_dev = device_get_binding(DT_SWITCH_CAN_EN_GPIOS_CONTROLLER);
+    gpio_pin_configure(can_en_dev, DT_SWITCH_CAN_EN_GPIOS_PIN,
+        DT_SWITCH_CAN_EN_GPIOS_FLAGS | GPIO_OUTPUT_INACTIVE);
 
     can_dev = device_get_binding("CAN_1");
 }
 
 void ThingSetCAN::enable()
 {
-    // active low
-    gpio_pin_write(can_en_dev, DT_ALIAS_CAN_STB_GPIOS_PIN, 0);
+    gpio_pin_set(can_en_dev, DT_SWITCH_CAN_EN_GPIOS_PIN, 1);
 }
-
 #endif
 
 void ThingSetCAN::process_1s()

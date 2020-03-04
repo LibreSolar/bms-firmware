@@ -33,8 +33,8 @@
 
 #define I2C_DEV "I2C_2"
 
-#define I2C_PULLUP_PORT DT_ALIAS_I2C_PULLUP_GPIOS_CONTROLLER
-#define I2C_PULLUP_PIN  DT_ALIAS_I2C_PULLUP_GPIOS_PIN
+#define I2C_PULLUP_PORT DT_SWITCH_I2C_PULLUP_GPIOS_CONTROLLER
+#define I2C_PULLUP_PIN  DT_SWITCH_I2C_PULLUP_GPIOS_PIN
 
 // static (private) variables
 //----------------------------------------------------------------------------
@@ -65,8 +65,8 @@ void isl94202_init()
     // activate pull-up at I2C SDA and SCL
     struct device *i2c_pullup;
     i2c_pullup = device_get_binding(I2C_PULLUP_PORT);
-    gpio_pin_configure(i2c_pullup, I2C_PULLUP_PIN, GPIO_DIR_OUT);
-    gpio_pin_write(i2c_pullup, I2C_PULLUP_PIN, 1);
+    gpio_pin_configure(i2c_pullup, I2C_PULLUP_PIN, GPIO_OUTPUT_INACTIVE);
+    gpio_pin_set(i2c_pullup, I2C_PULLUP_PIN, 1);
 
     i2c_dev = device_get_binding(I2C_DEV);
     if (!i2c_dev) {
