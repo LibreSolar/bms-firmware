@@ -33,6 +33,10 @@
 			gpios = <&gpiob 2 GPIO_INT_ACTIVE_HIGH>;
 			label = "I2C Pull-Up";
 		};
+		can_stb: can_stb {
+			gpios = <&gpioc 13 GPIO_INT_ACTIVE_LOW>;
+			label = "CAN disable / standby";
+		};
 	};
 
 	gpio_keys {
@@ -47,8 +51,10 @@
 		led-red = &led1;
 		led-green = &led2;
 		i2c-pullup = &i2c_pu;
+		can-stb = &can_stb;
 		sw-pwr = &power_button;
 		i2c-uext = &i2c1;
+		uart-dbg = &usart1;
 	};
 };
 

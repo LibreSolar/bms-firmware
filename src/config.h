@@ -25,16 +25,16 @@
 //----------------------------------------------------------------------------
 
 /// OLED display at UEXT port
-#define OLED_ENABLED
-
-/// DOG LCD display at UEXT port
-//#define DOGLCD_ENABLED
-
-// Empty UEXT port
-//#define UEXT_DUMMY_ENABLED
+#define CONFIG_EXT_OLED_DISPLAY 1
 
 // general configuration
 //----------------------------------------------------------------------------
+
+#define CONFIG_EXT_THINGSET_SERIAL 1
+#define CONFIG_EXT_THINGSET_SERIAL_TX_BUF_SIZE 500
+#define CONFIG_EXT_THINGSET_SERIAL_RX_BUF_SIZE 500
+
+#define CONFIG_EXT_THINGSET_CAN 1
 
 #define CAN_SPEED 250
 #define CAN_NODE_ID 0

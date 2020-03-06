@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
+#if defined(__ZEPHYR__) && !defined(UNIT_TEST)
+
 #include <zephyr.h>
 #include <device.h>
 #include <drivers/gpio.h>
 #include <stdio.h>
 
 #include "bms.h"
-#include "uext.h"
+#include "ext/ext.h"
 #include "leds.h"
 #include "thingset.h"
-#include "thingset_serial.h"
 #include "helper.h"
 
 BmsConfig bms_conf;
@@ -43,8 +44,6 @@ void main(void)
     bms_update(&bms_conf, &bms_status);
     bms_reset_soc(&bms_conf, &bms_status, -1);
 
-    uext_init();
-
     struct device *sw_pwr;
 	sw_pwr = device_get_binding(DT_ALIAS_SW_PWR_GPIOS_CONTROLLER);
     gpio_pin_configure(sw_pwr, DT_ALIAS_SW_PWR_GPIOS_PIN, DT_ALIAS_SW_PWR_GPIOS_FLAGS);
@@ -54,8 +53,6 @@ void main(void)
 
         bms_update(&bms_conf, &bms_status);
         bms_state_machine(&bms_conf, &bms_status);
-
-        uext_process_1s();
 
         // shutdown button
         uint32_t val = 0U;
@@ -78,6 +75,25 @@ void main(void)
     }
 }
 
-K_THREAD_DEFINE(ts_serial_id, 4096, thingset_serial_thread, NULL, NULL, NULL, 5, 0, K_NO_WAIT);
+void ext_mgr_thread()
+{
+    // initialize all extensions and external communication interfaces
+    ext_mgr.enable_all();
+
+    uint32_t last_call = 0;
+    while (1) {
+        uint32_t now = k_uptime_get() / 1000;
+        ext_mgr.process_asap();     // approx. every millisecond
+        if (now >= last_call + 1) {
+            last_call = now;
+            ext_mgr.process_1s();
+        }
+        k_sleep(1);
+    }
+}
+
+K_THREAD_DEFINE(ext_thread, 1024, ext_mgr_thread, NULL, NULL, NULL, 6, 0, 1000);
 
 K_THREAD_DEFINE(leds_id, 256, leds_update_thread, NULL, NULL, NULL,	4, 0, K_NO_WAIT);
+
+#endif /* __ZEPHYR__ */

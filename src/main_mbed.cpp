@@ -19,10 +19,8 @@
 #include "mbed.h"
 #include "config.h"     // select hardware version
 #include "pcb.h"
-#include "uext.h"
+#include "ext/ext.h"
 #include "thingset.h"
-#include "thingset_serial.h"
-#include "output_can.h"
 
 #include "bms.h"
 #include "leds.h"
@@ -31,13 +29,11 @@
 // global variables
 
 Serial serial(PIN_SWD_TX, PIN_SWD_RX, "serial");
-CAN can(PIN_CAN_RX, PIN_CAN_TX, 250000);  // 250 kHz
 
 BmsConfig bms_conf;
 BmsStatus bms_status;
 extern ThingSet ts;
 
-DigitalOut can_disable(PIN_CAN_STB);
 #ifdef PIN_PCHG_EN
 DigitalOut pchg_enable(PIN_PCHG_EN);    // precharge capacitors on the bus
 #endif
@@ -68,23 +64,18 @@ void toggleBlink();     // to blink cell voltages on display during balancing
 //----------------------------------------------------------------------------
 int main()
 {
-    can_disable = 0;
     time_t last_second = time(NULL);
 
     setup();
 
     tick1.attach(&toggleBlink, 0.2);
-    tick2.attach(&can_send_data, 1);
     tick3.attach(&leds_update, 0.1);
 
     while(1) {
 
-        can_process_outbox();
-        can_process_inbox();
-
         bms_update(&bms_conf, &bms_status);
 
-        thingset_serial_process_asap();
+        ext_mgr.process_asap();
 
         // called once per second
         if (time(NULL) - last_second >= 1) {
@@ -106,7 +97,7 @@ int main()
             update_measurements();
             bms_state_machine(&bms_conf, &bms_status);
 
-            uext_process_1s();
+            ext_mgr.process_1s();
 
             //bms_print_registers();
         }
@@ -122,16 +113,6 @@ void setup()
     serial.baud(115200);
     serial.printf("\nSerial interface started. Time: %d\n", (unsigned int)time(NULL));
     freopen("/serial", "w", stdout);    // retarget stdout to serial
-
-    can.attach(&can_receive);
-    can.mode(CAN::Normal);
-
-    uext_init();
-    thingset_serial_init();
-
-    // TXFP: Transmit FIFO priority driven by request order (chronologically)
-    // NART: No automatic retransmission
-    CAN1->MCR |= CAN_MCR_TXFP | CAN_MCR_NART;
 
     // ToDo: Ensure that below settings are set even in case of communication error
 
@@ -164,6 +145,9 @@ void setup()
     bms_chg_switch(&bms_conf, &bms_status, true);
 
     update_measurements();
+
+    // initialize all extensions and external communication interfaces
+    ext_mgr.enable_all();
 }
 
 //----------------------------------------------------------------------------

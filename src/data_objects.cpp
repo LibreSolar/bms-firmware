@@ -168,6 +168,7 @@ ts_pub_channel_t pub_channels[] = {
 
 // TODO: find better solution than manual configuration of channel number
 volatile const int pub_channel_serial = 0;
+volatile const int PUB_CHANNEL_CAN = 0;
 
 ThingSet ts(
     data_objects, sizeof(data_objects)/sizeof(data_object_t),

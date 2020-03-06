@@ -5,3 +5,7 @@
 .vscode/c_cpp_properties.json
 html
 zephyr/build
+memory.map
+tools
+*.bak
+*_bak
