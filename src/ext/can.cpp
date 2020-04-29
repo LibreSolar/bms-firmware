@@ -13,6 +13,7 @@
 #include <device.h>
 #include <drivers/gpio.h>
 #include <drivers/can.h>
+#include <canbus/isotp.h>
 
 #include "pcb.h"
 #include "thingset.h"
@@ -21,6 +22,101 @@
 #ifndef CAN_SPEED
 #define CAN_SPEED 250000    // 250 kHz
 #endif
+
+#ifndef CAN_NODE_ID
+#define CAN_NODE_ID 10
+#endif
+
+extern ThingSet ts;
+
+extern const unsigned int PUB_CHANNEL_CAN;
+
+#define RX_THREAD_STACK_SIZE 512
+#define RX_THREAD_PRIORITY 2
+
+const struct isotp_fc_opts fc_opts = {.bs = 8, .stmin = 0};
+
+const struct isotp_msg_id rx_addr = {
+    .std_id = 0x80,
+    .id_type = CAN_STANDARD_IDENTIFIER,
+    .use_ext_addr = 0
+};
+const struct isotp_msg_id tx_addr = {
+    .std_id = 0x180,
+    .id_type = CAN_STANDARD_IDENTIFIER,
+    .use_ext_addr = 0
+};
+
+struct isotp_recv_ctx recv_ctx;
+
+K_THREAD_STACK_DEFINE(rx_thread_stack, RX_THREAD_STACK_SIZE);
+struct k_thread rx_thread_data;
+
+struct device *can_dev;
+
+void send_complette_cb(int error_nr, void *arg)
+{
+    ARG_UNUSED(arg);
+    printk("TX complete cb [%d]\n", error_nr);
+}
+
+void rx_thread(void *arg1, void *arg2, void *arg3)
+{
+    ARG_UNUSED(arg1);
+    ARG_UNUSED(arg2);
+    ARG_UNUSED(arg3);
+    int ret, rem_len;
+    unsigned int received_len;
+    struct net_buf *buf;
+    static u8_t rx_buffer[100];
+    static u8_t tx_buffer[500];
+
+    ret = isotp_bind(&recv_ctx, can_dev,
+             &tx_addr, &rx_addr,
+             &fc_opts, K_FOREVER);
+    if (ret != ISOTP_N_OK) {
+        printk("Failed to bind to rx ID %d [%d]\n",
+               rx_addr.std_id, ret);
+        return;
+    }
+
+    while (1) {
+        received_len = 0;
+        do {
+            rem_len = isotp_recv_net(&recv_ctx, &buf, K_FOREVER);
+            if (rem_len < 0) {
+                printk("Receiving error [%d]\n", rem_len);
+                break;
+            }
+            if (received_len + buf->len <= sizeof(rx_buffer)) {
+                memcpy(&rx_buffer[received_len], buf->data, buf->len);
+                received_len += buf->len;
+            }
+            else {
+                printk("RX buffer too small\n");
+                break;
+            }
+            net_buf_unref(buf);
+        } while (rem_len);
+
+        if (received_len > 0) {
+            printk("Got %d bytes in total. Processing ThingSet message.\n", received_len);
+            int resp_len = ts.process(rx_buffer, received_len, tx_buffer, sizeof(tx_buffer));
+
+            if (resp_len > 0) {
+                static struct isotp_send_ctx send_ctx;
+                int ret = isotp_send(&send_ctx, can_dev,
+                            tx_buffer, resp_len,
+                            &tx_addr, &rx_addr,
+                            send_complette_cb, NULL);
+                if (ret != ISOTP_N_OK) {
+                    printk("Error while sending data to ID %d [%d]\n",
+                            tx_addr.std_id, ret);
+                }
+            }
+        }
+    }
+}
 
 class ThingSetCAN: public ExtInterface
 {
@@ -54,15 +150,9 @@ private:
     uint8_t node_id;
     const unsigned int channel;
 
-    struct device *can_dev;
+    //struct device *can_dev;
     struct device *can_en_dev;
 };
-
-extern const unsigned int PUB_CHANNEL_CAN;
-
-#ifndef CAN_NODE_ID
-#define CAN_NODE_ID 10
-#endif
 
 ThingSetCAN ts_can(CAN_NODE_ID, PUB_CHANNEL_CAN);
 
@@ -73,8 +163,6 @@ ThingSetCAN ts_can(CAN_NODE_ID, PUB_CHANNEL_CAN);
 //
 // Protocol details:
 // https://github.com/LibreSolar/ThingSet/blob/master/can.md
-
-extern ThingSet ts;
 
 ThingSetCAN::ThingSetCAN(uint8_t can_node_id, const unsigned int c):
     node_id(can_node_id),
@@ -90,6 +178,14 @@ ThingSetCAN::ThingSetCAN(uint8_t can_node_id, const unsigned int c):
 void ThingSetCAN::enable()
 {
     gpio_pin_set(can_en_dev, DT_SWITCH_CAN_EN_GPIOS_PIN, 1);
+
+    k_tid_t tid = k_thread_create(&rx_thread_data, rx_thread_stack,
+                  K_THREAD_STACK_SIZEOF(rx_thread_stack),
+                  rx_thread, NULL, NULL, NULL,
+                  RX_THREAD_PRIORITY, 0, K_NO_WAIT);
+    if (!tid) {
+        printk("ERROR spawning rx thread\n");
+    }
 }
 
 void ThingSetCAN::process_1s()
@@ -147,18 +243,22 @@ void ThingSetCAN::process_asap()
     process_outbox();
 }
 
+void can_pub_isr(u32_t err_flags, void *arg)
+{
+	// Do nothing. Publication messages are fire and forget.
+}
+
 void ThingSetCAN::process_outbox()
 {
     int max_attempts = 15;
     while (!tx_queue.empty() && max_attempts > 0) {
         CanFrame msg;
         tx_queue.first(msg);
-        if (can_send(can_dev, &msg, K_MSEC(100), NULL, NULL) == CAN_TX_OK) {
+        if (can_send(can_dev, &msg, K_MSEC(10), can_pub_isr, NULL) == CAN_TX_OK) {
             tx_queue.dequeue();
         }
         else {
-            //printk("Sending CAN message failed, MCR: %x, MSR: %x, TSR: %x\n", (uint32_t)CAN->MCR, (uint32_t)CAN->MSR, (uint32_t)CAN->TSR);
-            //printf("Sending CAN message failed, MCR: %x, MSR: %x, TSR: %x\n", (uint32_t)CAN1->MCR, (uint32_t)CAN1->MSR, (uint32_t)CAN1->TSR);
+            //printk("Sending CAN message failed");
         }
         max_attempts--;
     }
