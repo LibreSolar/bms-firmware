@@ -275,7 +275,7 @@ float bms_apply_dis_scp(BmsConfig *conf)
     protect1.bits.RSNS = 1;
 
     protect1.bits.SCD_THRESH = 0;
-    for (int i = sizeof(SCD_threshold_setting)-1; i > 0; i--) {
+    for (int i = ARRAY_SIZE(SCD_threshold_setting) - 1; i > 0; i--) {
         if (conf->dis_sc_limit * conf->shunt_res_mOhm >= SCD_threshold_setting[i]) {
             protect1.bits.SCD_THRESH = i;
             break;
@@ -283,7 +283,7 @@ float bms_apply_dis_scp(BmsConfig *conf)
     }
 
     protect1.bits.SCD_DELAY = 0;
-    for (int i = sizeof(SCD_delay_setting)-1; i > 0; i--) {
+    for (int i = ARRAY_SIZE(SCD_delay_setting) - 1; i > 0; i--) {
         if (conf->dis_sc_delay_us >= SCD_delay_setting[i]) {
             protect1.bits.SCD_DELAY = i;
             break;
@@ -310,7 +310,7 @@ float bms_apply_dis_ocp(BmsConfig *conf)
     // Remark: RSNS must be set to 1 in PROTECT1 register
 
     protect2.bits.OCD_THRESH = 0;
-    for (int i = sizeof(OCD_threshold_setting)-1; i > 0; i--) {
+    for (int i = ARRAY_SIZE(OCD_threshold_setting) - 1; i > 0; i--) {
         if (conf->dis_oc_limit * conf->shunt_res_mOhm >= OCD_threshold_setting[i]) {
             protect2.bits.OCD_THRESH = i;
             break;
@@ -318,7 +318,7 @@ float bms_apply_dis_ocp(BmsConfig *conf)
     }
 
     protect2.bits.OCD_DELAY = 0;
-    for (int i = sizeof(OCD_delay_setting)-1; i > 0; i--) {
+    for (int i = ARRAY_SIZE(OCD_delay_setting) - 1; i > 0; i--) {
         if (conf->dis_oc_delay_ms >= OCD_delay_setting[i]) {
             protect2.bits.OCD_DELAY = i;
             break;
@@ -344,7 +344,7 @@ int bms_apply_cell_uvp(BmsConfig *conf)
     bq769x0_write_byte(UV_TRIP, uv_trip);
 
     protect3.bits.UV_DELAY = 0;
-    for (int i = sizeof(UV_delay_setting)-1; i > 0; i--) {
+    for (int i = ARRAY_SIZE(UV_delay_setting) - 1; i > 0; i--) {
         if (conf->cell_uv_delay_ms >= UV_delay_setting[i]) {
             protect3.bits.UV_DELAY = i;
             break;
@@ -370,7 +370,7 @@ int bms_apply_cell_ovp(BmsConfig *conf)
     bq769x0_write_byte(OV_TRIP, ov_trip);
 
     protect3.bits.OV_DELAY = 0;
-    for (int i = sizeof(OV_delay_setting)-1; i > 0; i--) {
+    for (int i = ARRAY_SIZE(OV_delay_setting) - 1; i > 0; i--) {
         if (conf->cell_ov_delay_ms >= OV_delay_setting[i]) {
             protect3.bits.OV_DELAY = i;
             break;
