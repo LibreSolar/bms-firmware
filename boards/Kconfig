@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2019 Martin Jäger (Libre Solar)
+
+#
+# Invisible (board-specific) Kconfig symbols
+#
+
+config BMS_BQ76920
+    bool
+    default n
+    help
+      Texas Instruments bq76920 used as BMS IC
+
+config BMS_BQ76930
+    bool
+    default n
+    help
+      Texas Instruments bq76930 used as BMS IC
+
+config BMS_BQ76940
+    bool
+    default n
+    help
+      Texas Instruments bq76940 used as BMS IC
+
+config BMS_ISL94202
+    bool
+    default n
+    help
+      Intersil ISL94202 used as BMS IC

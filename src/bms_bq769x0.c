@@ -16,7 +16,7 @@
 
 #include "pcb.h"
 
-#if defined(BMS_BQ76920) || defined(BMS_BQ76930) || defined(BMS_BQ76940)
+#if CONFIG_BMS_BQ76920 || CONFIG_BMS_BQ76930 || CONFIG_BMS_BQ76940
 
 #include "bms.h"
 #include "bq769x0_registers.h"
@@ -75,7 +75,7 @@ void bms_set_error_flag(BmsStatus *status, uint32_t flag, bool value)
             //bms_chg_switch(conf, status, true);
         }
         #if BMS_DEBUG
-        printf("Error flag %lu changed to: %d\n", flag, value);
+        printf("Error flag %u changed to: %d\n", flag, value);
         #endif
     }
 }

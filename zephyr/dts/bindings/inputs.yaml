@@ -1,0 +1,23 @@
+# Copyright (c) 2020 Martin Jäger / Libre Solar
+# SPDX-License-Identifier: Apache-2.0
+
+description: GPIOs used for digital input
+
+compatible: "inputs"
+
+child-binding:
+  description: GPIO digital inputs child node
+  properties:
+    gpios:
+      type: phandle-array
+      description: GPIO handle for input pin
+    label:
+      type: string
+      required: true
+      description: Human readable string describing the device (used by Zephyr for API name)
+    present:
+      type: int
+      default: 1
+    kconfig-flag:
+      type: boolean
+      description: This value can be checked by Kconfig parser using dt_node_has_bool_prop function

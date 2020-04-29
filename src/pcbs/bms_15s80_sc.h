@@ -24,12 +24,14 @@
 #define PCB_MAX_CURRENT 80  // A
 #define GAIN_PACK_VOLTAGE (105.6/5.6)  // voltage resistor divider (see schematic)
 
-#ifdef BMS_BQ76930
+#if CONFIG_BMS_BQ76930
 #define NUM_CELLS_MAX 10
 #define NUM_THERMISTORS_MAX 2
-#else
+#elif CONFIG_BMS_BQ76940
 #define NUM_CELLS_MAX 15
 #define NUM_THERMISTORS_MAX 3
+#else
+#error "The type of bq769x0 IC must be defined."
 #endif
 
 #define PIN_UEXT_TX   PA_2

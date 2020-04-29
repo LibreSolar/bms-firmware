@@ -30,6 +30,7 @@ extern "C" {
 #endif
 
 #include <time.h>
+#include <stdbool.h>
 
 /**
  * Initialization of bq769x0 IC
@@ -42,19 +43,19 @@ void bq769x0_init();
 /**
  * Writes one byte to bq769x0 IC
  */
-void bq769x0_write_byte(int address, int data);
+void bq769x0_write_byte(uint8_t reg_addr, uint8_t data);
 
 /**
  * Read 1 byte from bq769x0 IC
  */
-int bq769x0_read_byte(int address);
+uint8_t bq769x0_read_byte(uint8_t reg_addr);
 
 /**
  * Read 16-bit word (two bytes) from bq769x0 IC
  *
  * @returns the (unsigned) word or -1 in case of CRC error
  */
-int bq769x0_read_word(char reg);
+int32_t bq769x0_read_word(uint8_t reg_addr);
 
 /**
  * \returns status of the alert pin

@@ -1,0 +1,16 @@
+identifier: bms_5s50_sc
+name: BMS-5S50-SC
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+ram: 16
+flash: 128
+supported:
+  - gpio
+  - i2c
+  - spi
+  - watchdog
+  - adc

@@ -1,0 +1,139 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright (c) 2020 Martin Jäger / Libre Solar
+ */
+
+/dts-v1/;
+#include <st/f0/stm32f072Xb.dtsi>
+
+/ {
+	model = "Libre Solar BMS 5S50 SC";
+	compatible = "st,stm32f072";
+
+	chosen {
+		zephyr,console = &usart3;
+		zephyr,shell-uart = &usart3;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led1: led_0 {
+			gpios = <&gpioa 9 GPIO_INT_ACTIVE_HIGH>;
+			label = "LED 1";
+		};
+		led2: led_1 {
+			gpios = <&gpioa 10 GPIO_INT_ACTIVE_HIGH>;
+			label = "LED 2";
+		};
+	};
+
+	gpio_keys {
+		compatible = "gpio-keys";
+		power_button: button {
+			label = "Power Button";
+			gpios = <&gpioa 8 GPIO_INT_ACTIVE_LOW>;
+		};
+	};
+
+	switches {
+		compatible = "switch";
+		can_en {
+			gpios = <&gpioa 15 GPIO_ACTIVE_LOW>;
+			label = "CAN transceiver enable";
+		};
+		pchg_en {
+			gpios = <&gpiob 2 GPIO_ACTIVE_HIGH>;
+			label = "PCHG enable pin";
+		};
+	};
+
+	inputs {
+		compatible = "inputs";
+		bq_alert {
+			gpios = <&gpiob 12 GPIO_ACTIVE_HIGH>;
+			label = "Alert interrupt of bq769x0 IC";
+		};
+	};
+
+	aliases {
+		led-red = &led1;
+		led-green = &led2;
+		i2c-uext = &i2c1;
+		i2c-bms = &i2c2;
+		uart-dbg = &usart3;
+		sw-pwr = &power_button;
+	};
+
+	soc {
+		usart3: serial@40004800 {
+			compatible = "st,stm32-usart", "st,stm32-uart";
+			reg = <0x40004800 0x400>;
+			clocks = <&rcc STM32_CLOCK_BUS_APB1 0x00040000>;
+			interrupts = <29 0>;
+			status = "disabled";
+			label = "UART_3";
+		};
+		usart4: serial@40004c00 {
+			compatible = "st,stm32-usart", "st,stm32-uart";
+			reg = <0x40004c00 0x400>;
+			clocks = <&rcc STM32_CLOCK_BUS_APB1 0x00080000>;
+			interrupts = <29 0>;
+			status = "disabled";
+			label = "UART_4";
+		};
+	};
+};
+
+&usart2 {
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&usart3 {
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&i2c1 {
+	status = "okay";
+
+	ssd1306@3c {
+		compatible = "solomon,ssd1306fb";
+		reg = <0x3c>;
+		label = "SSD1306";
+		width = <128>;
+		height = <64>;
+		segment-offset = <0>;
+		page-offset = <0>;
+		display-offset = <0>;
+		multiplex-ratio = <63>;
+		segment-remap;
+		com-invdir;
+		prechargep = <0x22>;
+	};
+};
+
+&i2c2 {
+	status = "okay";
+	clock-frequency = <I2C_BITRATE_STANDARD>;
+};
+
+&spi1 {
+	status = "okay";
+};
+
+&iwdg {
+	status = "okay";
+};
+
+&adc1 {
+	status = "okay";
+};
+
+&can1 {
+	bus-speed = <250000>;
+	status = "okay";
+};
