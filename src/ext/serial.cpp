@@ -10,7 +10,7 @@
 
 #if CONFIG_EXT_THINGSET_SERIAL   // otherwise don't compile code to reduce firmware size
 
-#include "ext.h"
+#include "ext/ext.h"
 
 #ifdef __MBED__
 #include "mbed.h"
@@ -23,6 +23,7 @@
 #endif /* MBED or ZEPHYR */
 
 #include "thingset.h"
+#include "data_nodes.h"
 
 #ifdef __ZEPHYR__
 #define TX_BUF_SIZE CONFIG_EXT_THINGSET_SERIAL_TX_BUF_SIZE
@@ -54,7 +55,7 @@ protected:
     static void process_input(void*);
 #endif
 
-    const unsigned int channel;
+    const uint8_t channel;
 
 #ifdef __MBED__
     virtual bool readable()
@@ -148,13 +149,11 @@ public:
 
 #ifdef CONFIG_EXT_THINGSET_SERIAL
 
-extern const int pub_channel_serial;
-
 #ifdef __MBED__
 extern Serial serial;
-ThingSetSerial ts_uart(serial, pub_channel_serial);
+ThingSetSerial ts_uart(serial, PUB_SER);
 #elif defined(__ZEPHYR__)
-ThingSetSerial ts_uart(pub_channel_serial);
+ThingSetSerial ts_uart(PUB_SER);
 #endif /* MBED or ZEPHYR */
 
 #endif /* CONFIG_EXT_THINGSET_SERIAL */
@@ -163,13 +162,13 @@ extern ThingSet ts;
 
 void ThingSetStream::process_1s()
 {
-    if (ts.get_pub_channel(channel)->enabled) {
+    if (pub_serial_enable) {
 #ifdef __MBED__
-        ts.pub_msg_json(buf_resp, sizeof(buf_resp), channel);
+        ts.txt_pub(buf_resp, sizeof(buf_resp), channel);
         stream->puts(buf_resp);
         stream->putc('\n');
 #elif defined(__ZEPHYR__)
-        int len = ts.pub_msg_json(buf_resp, sizeof(buf_resp), channel);
+        int len = ts.txt_pub(buf_resp, sizeof(buf_resp), channel);
         for (int i = 0; i < len; i++) {
             uart_poll_out(uart_dev, buf_resp[i]);
         }

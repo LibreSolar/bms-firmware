@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#if !defined(UNIT_TEST) && !defined(__MBED__)
+#if CONFIG_EXT_THINGSET_CAN
 
 #include "config.h"
 
-#include "ext.h"
+#include "ext/ext.h"
 #include <zephyr.h>
 #include <device.h>
 #include <drivers/gpio.h>
@@ -17,6 +17,7 @@
 
 #include "pcb.h"
 #include "thingset.h"
+#include "data_nodes.h"
 #include "can_msg_queue.h"
 
 #ifndef CAN_SPEED
@@ -28,8 +29,6 @@
 #endif
 
 extern ThingSet ts;
-
-extern const unsigned int PUB_CHANNEL_CAN;
 
 #define RX_THREAD_STACK_SIZE 512
 #define RX_THREAD_PRIORITY 2
@@ -132,7 +131,7 @@ private:
     /**
      * Generate CAN frame for data object and put it into TX queue
      */
-    bool pub_object(const data_object_t& data_obj);
+    bool pub_object(const DataNode& data_obj);
 
     /**
      * Retrieves all data objects of configured channel and calls pub_object to enqueue them
@@ -148,13 +147,13 @@ private:
 
     CanMsgQueue tx_queue;
     uint8_t node_id;
-    const unsigned int channel;
+    const uint16_t channel;
 
     //struct device *can_dev;
     struct device *can_en_dev;
 };
 
-ThingSetCAN ts_can(CAN_NODE_ID, PUB_CHANNEL_CAN);
+ThingSetCAN ts_can(CAN_NODE_ID, PUB_CAN);
 
 //----------------------------------------------------------------------------
 // preliminary simple CAN functions to send data to the bus for logging
@@ -194,45 +193,30 @@ void ThingSetCAN::process_1s()
     process_asap();
 }
 
-bool ThingSetCAN::pub_object(const data_object_t& data_obj)
-{
-    unsigned int can_id;
-    uint8_t data[8];
-
-    struct zcan_frame frame = {
-        .id_type = CAN_EXTENDED_IDENTIFIER,
-        .rtr = CAN_DATAFRAME
-    };
-
-    int encode_len = ts.encode_msg_can(data_obj, node_id, can_id, data);
-    frame.ext_id = can_id;
-    memcpy(frame.data, data, 8);
-
-    if (encode_len >= 0)
-    {
-        frame.dlc = encode_len;
-        tx_queue.enqueue(frame);
-    }
-    return (encode_len >= 0);
-}
-
 int ThingSetCAN::pub()
 {
     int retval = 0;
-    ts_pub_channel_t* can_chan = ts.get_pub_channel(channel);
+    unsigned int can_id;
+    uint8_t can_data[8];
 
-    if (can_chan != NULL)
-    {
-        for (unsigned int element = 0; element < can_chan->num; element++)
-        {
-            const data_object_t *data_obj = ts.get_data_object(can_chan->object_ids[element]);
-            if (data_obj != NULL && data_obj->access & TS_ACCESS_READ)
-            {
-                if (pub_object(*data_obj))
-                {
-                    retval++;
-                }
+    if (pub_can_enable) {
+        int data_len = 0;
+        int start_pos = 0;
+        while ((data_len = ts.bin_pub_can(start_pos, channel, node_id, can_id, can_data)) != -1) {
+
+            struct zcan_frame frame = {
+                .id_type = CAN_EXTENDED_IDENTIFIER,
+                .rtr = CAN_DATAFRAME
+            };
+
+            frame.ext_id = can_id;
+            memcpy(frame.data, can_data, 8);
+
+            if (data_len >= 0) {
+                frame.dlc = data_len;
+                tx_queue.enqueue(frame);
             }
+            retval++;
         }
     }
     return retval;
@@ -264,4 +248,4 @@ void ThingSetCAN::process_outbox()
     }
 }
 
-#endif /* UNIT_TEST */
+#endif /* CONFIG_EXT_THINGSET_CAN */

@@ -26,6 +26,7 @@
 #include "leds.h"
 #include "thingset.h"
 #include "helper.h"
+#include "data_nodes.h"
 
 BmsConfig bms_conf;
 BmsStatus bms_status;
@@ -38,6 +39,8 @@ bool blinkOn = false;
 void main(void)
 {
     printf("Booting Libre Solar BMS: %s\n", CONFIG_BOARD);
+
+    data_nodes_init();
 
     bms_init();
     bms_init_config(&bms_conf, CELL_TYPE_LFP, 45);

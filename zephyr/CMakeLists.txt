@@ -16,7 +16,7 @@ target_sources(app PRIVATE ../src/bms_isl94202.c)
 target_sources(app PRIVATE ../src/isl94202_interface.c)
 target_sources(app PRIVATE ../src/bq769x0_interface.cpp)
 target_sources(app PRIVATE ../src/leds.cpp)
-target_sources(app PRIVATE ../src/data_objects.cpp)
+target_sources(app PRIVATE ../src/data_nodes.cpp)
 target_sources(app PRIVATE ../src/helper.cpp)
 
 target_sources(app PRIVATE ../src/ext/ext.cpp)

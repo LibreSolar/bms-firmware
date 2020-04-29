@@ -17,8 +17,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define DEVICE_ID 12345678
-
 #define ADC_AVG_SAMPLES 8       // number of ADC values to read for averaging
 
 // UEXT interfaces
@@ -30,11 +28,18 @@
 // general configuration
 //----------------------------------------------------------------------------
 
+#ifndef __ZEPHYR__
+
+#define CONFIG_THINGSET_EXPERT_PASSWORD "expert123"
+#define CONFIG_THINGSET_MAKER_PASSWORD "maker456"
+
 #define CONFIG_EXT_THINGSET_SERIAL 1
 #define CONFIG_EXT_THINGSET_SERIAL_TX_BUF_SIZE 500
 #define CONFIG_EXT_THINGSET_SERIAL_RX_BUF_SIZE 500
 
 #define CONFIG_EXT_THINGSET_CAN 1
+
+#endif
 
 #define CAN_SPEED 250
 #define CAN_NODE_ID 0

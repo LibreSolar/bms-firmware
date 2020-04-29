@@ -6,6 +6,9 @@ if BOARD_BMS_8S50_IC_L452
 config BOARD
 	default "bms_8s50_ic_l452"
 
+config LIBRE_SOLAR_TYPE_ID
+	default 6
+
 if UART_CONSOLE
 
 config UART_1
