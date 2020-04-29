@@ -39,16 +39,11 @@ It is suggested to use Visual Studio Code and PlatformIO for firmware developmen
 
 4. Press the upload button at the bottom left corner in VS Code.
 
-### Zephyr
+### Zephyr RTOS
 
-Support for Zephyr was recently [included in PlatformIO](https://github.com/platformio/platformio-core/issues/1613) and is currently in beta status. In order to try it out, install the developer version of PlatformIO and run update to get also the development version of the `ststm32` package:
+The BMS-8S50-IC is currently only supported in Zephyr. PlatformIO has built-in support for Zephyr, so you can use it the same way as explained above for Mbed. (see platformio.ini for configured Zephyr environments)
 
-```
-platformio upgrade --dev
-platformio update
-```
-
-Now you should be able to compile and flash Zephyr for BMS-8S50-IC board in the same way as explained above for mbed.
+If you want to use the native Zephyr build environment, you need to call `west` from within the `zephyr` subfolder, where `prj.conf` and `CMakeLists.txt` are located.
 
 ## API documentation
 
