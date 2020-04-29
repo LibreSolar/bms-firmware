@@ -18,7 +18,7 @@
 
 #ifdef __MBED__
 #include "mbed.h"
-#elif defined(ZEPHYR)
+#elif defined(__ZEPHYR__)
 #include <zephyr.h>
 #endif
 
@@ -26,7 +26,7 @@
 
 uint32_t uptime()
 {
-#ifdef ZEPHYR
+#ifdef __ZEPHYR__
     return k_uptime_get() / 1000;
 #else
     return time(NULL);

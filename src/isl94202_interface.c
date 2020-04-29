@@ -24,7 +24,7 @@
 
 #include <stdio.h>
 
-#ifdef ZEPHYR
+#ifdef __ZEPHYR__
 
 #include <zephyr.h>
 #include <drivers/gpio.h>

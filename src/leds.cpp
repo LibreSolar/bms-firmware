@@ -23,7 +23,7 @@
 extern BmsConfig bms_conf;
 extern BmsStatus bms_status;
 
-#ifdef ZEPHYR
+#ifdef __ZEPHYR__
 
 #include <zephyr.h>
 #include <drivers/gpio.h>
