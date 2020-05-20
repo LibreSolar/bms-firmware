@@ -339,7 +339,7 @@ int bms_apply_cell_uvp(BmsConfig *conf)
 
     protect3.regByte = bq769x0_read_byte(PROTECT3);
 
-    uv_trip = ((((long)conf->cell_uv_limit * 1000 - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
+    uv_trip = ((((long)(conf->cell_uv_limit * 1000) - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
     uv_trip += 1;   // always round up for lower cell voltage
     bq769x0_write_byte(UV_TRIP, uv_trip);
 
@@ -366,7 +366,7 @@ int bms_apply_cell_ovp(BmsConfig *conf)
 
     protect3.regByte = bq769x0_read_byte(PROTECT3);
 
-    ov_trip = ((((long)conf->cell_ov_limit * 1000 - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
+    ov_trip = ((((long)(conf->cell_ov_limit * 1000) - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
     bq769x0_write_byte(OV_TRIP, ov_trip);
 
     protect3.bits.OV_DELAY = 0;
