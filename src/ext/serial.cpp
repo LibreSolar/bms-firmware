@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#if CONFIG_EXT_THINGSET_SERIAL   // otherwise don't compile code to reduce firmware size
+#if CONFIG_THINGSET_SERIAL   // otherwise don't compile code to reduce firmware size
 
 #include "ext/ext.h"
 
@@ -21,8 +21,8 @@
 #include "thingset.h"
 #include "data_nodes.h"
 
-#define TX_BUF_SIZE CONFIG_EXT_THINGSET_SERIAL_TX_BUF_SIZE
-#define RX_BUF_SIZE CONFIG_EXT_THINGSET_SERIAL_RX_BUF_SIZE
+#define TX_BUF_SIZE CONFIG_THINGSET_SERIAL_TX_BUF_SIZE
+#define RX_BUF_SIZE CONFIG_THINGSET_SERIAL_RX_BUF_SIZE
 
 #define UART_DEVICE_NAME DT_LABEL(DT_ALIAS(uart_dbg))
 struct device *uart_dev = device_get_binding(UART_DEVICE_NAME);
@@ -93,11 +93,11 @@ public:
  * for later processing in the normal operation
  */
 
-#ifdef CONFIG_EXT_THINGSET_SERIAL
+#ifdef CONFIG_THINGSET_SERIAL
 
 ThingSetSerial ts_uart(PUB_SER);
 
-#endif /* CONFIG_EXT_THINGSET_SERIAL */
+#endif /* CONFIG_THINGSET_SERIAL */
 
 extern ThingSet ts;
 
@@ -178,6 +178,6 @@ void ThingSetStream::process_input(void* user_data)
     }
 }
 
-#endif /* CONFIG_EXT_THINGSET_SERIAL */
+#endif /* CONFIG_THINGSET_SERIAL */
 
 #endif /* UNIT_TEST */

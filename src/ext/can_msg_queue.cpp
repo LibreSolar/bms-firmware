@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#if CONFIG_EXT_THINGSET_CAN
+#if CONFIG_THINGSET_CAN
 
 #include "ext/can_msg_queue.h"
 
@@ -66,6 +66,6 @@ int CanMsgQueue::first(CanFrame &frame)
     }
 }
 
-#endif /* CONFIG_EXT_THINGSET_CAN */
+#endif /* CONFIG_THINGSET_CAN */
 
 #endif /* UNIT_TEST */

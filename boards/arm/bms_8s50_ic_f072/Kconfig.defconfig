@@ -13,4 +13,7 @@ config BOARD
 config LIBRE_SOLAR_TYPE_ID
 	default 6
 
+config BMS_ISL94202
+	default y
+
 endif # BOARD_BMS_8S50_IC_F072

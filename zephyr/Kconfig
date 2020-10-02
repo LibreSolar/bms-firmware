@@ -1,31 +1,29 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2019 Martin Jäger (Libre Solar)
 
+mainmenu "Libre Solar Battery Management System Firmware"
+
 #
 # Invisible (board-specific) Kconfig symbols
 #
 
 config BMS_BQ76920
     bool
-    default n
     help
       Texas Instruments bq76920 used as BMS IC
 
 config BMS_BQ76930
     bool
-    default n
     help
       Texas Instruments bq76930 used as BMS IC
 
 config BMS_BQ76940
     bool
-    default n
     help
       Texas Instruments bq76940 used as BMS IC
 
 config BMS_ISL94202
     bool
-    default n
     help
       Intersil ISL94202 used as BMS IC
 
@@ -38,10 +36,10 @@ config LIBRE_SOLAR_TYPE_ID
 # Visible (user-configurable) Kconfig symbols
 #
 
-menu "Extensions and interfaces"
+menu "UEXT port"
 
 config EXT_OLED_DISPLAY
-    bool "OLED display at UEXT"
+    bool "OLED display"
 
 config EXT_OLED_BRIGHTNESS
     depends on EXT_OLED_DISPLAY
@@ -49,33 +47,40 @@ config EXT_OLED_BRIGHTNESS
     range 1 255
     default 1
 
-config EXT_THINGSET_SERIAL
+endmenu # UEXT port
+
+menu "ThingSet interfaces"
+
+config THINGSET_SERIAL
     bool "ThingSet serial interface"
 
-config EXT_THINGSET_SERIAL_RX_BUF_SIZE
-    depends on EXT_THINGSET_SERIAL
+config THINGSET_SERIAL_RX_BUF_SIZE
+    depends on THINGSET_SERIAL
     int "ThingSet serial RX buffer size"
     range 64 2048
     default 512
 
-config EXT_THINGSET_SERIAL_TX_BUF_SIZE
-    depends on EXT_THINGSET_SERIAL
+config THINGSET_SERIAL_TX_BUF_SIZE
+    depends on THINGSET_SERIAL
     int "ThingSet serial TX buffer size"
     range 256 2048
     default 1024
 
-config EXT_THINGSET_CAN
+config THINGSET_CAN
     depends on CAN
     bool "ThingSet CAN interface"
 
 config THINGSET_EXPERT_PASSWORD
-    depends on EXT_THINGSET_SERIAL || EXT_THINGSET_CAN
+    depends on THINGSET_SERIAL || THINGSET_CAN
     string "ThingSet expert user password"
     default "expert123"
 
 config THINGSET_MAKER_PASSWORD
-    depends on EXT_THINGSET_SERIAL || EXT_THINGSET_CAN
+    depends on THINGSET_SERIAL || THINGSET_CAN
     string "ThingSet maker password"
     default "maker456"
 
-endmenu
+endmenu # ThingSet interface
+
+# include main Zephyr menu entries from Zephyr root directory
+source "Kconfig.zephyr"

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#if CONFIG_EXT_THINGSET_CAN
+#if CONFIG_THINGSET_CAN
 
 #include "config.h"
 
@@ -248,4 +248,4 @@ void ThingSetCAN::process_outbox()
     }
 }
 
-#endif /* CONFIG_EXT_THINGSET_CAN */
+#endif /* CONFIG_THINGSET_CAN */

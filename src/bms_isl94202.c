@@ -16,7 +16,7 @@
 
 #include "pcb.h"
 
-#ifdef BMS_ISL94202
+#ifdef CONFIG_BMS_ISL94202
 
 #include "bms.h"
 #include "isl94202_registers.h"
