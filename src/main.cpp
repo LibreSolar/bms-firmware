@@ -36,6 +36,8 @@ extern ThingSet ts;
 float load_voltage;
 bool blinkOn = false;
 
+#define SW_PWR_GPIO DT_ALIAS(sw_pwr)
+
 void main(void)
 {
     printf("Booting Libre Solar BMS: %s\n", CONFIG_BOARD);
@@ -48,8 +50,9 @@ void main(void)
     bms_reset_soc(&bms_conf, &bms_status, -1);
 
     struct device *sw_pwr;
-	sw_pwr = device_get_binding(DT_ALIAS_SW_PWR_GPIOS_CONTROLLER);
-    gpio_pin_configure(sw_pwr, DT_ALIAS_SW_PWR_GPIOS_PIN, DT_ALIAS_SW_PWR_GPIOS_FLAGS | GPIO_INPUT);
+	sw_pwr = device_get_binding(DT_GPIO_LABEL(SW_PWR_GPIO, gpios));
+    gpio_pin_configure(sw_pwr, DT_GPIO_PIN(SW_PWR_GPIO, gpios),
+        DT_GPIO_FLAGS(SW_PWR_GPIO, gpios) | GPIO_INPUT);
 
     uint32_t btn_pressed_count = 0;
     while (1) {
@@ -57,12 +60,12 @@ void main(void)
         bms_update(&bms_conf, &bms_status);
         bms_state_machine(&bms_conf, &bms_status);
 
-        if (gpio_pin_get(sw_pwr, DT_ALIAS_SW_PWR_GPIOS_PIN) == 1) {
+        if (gpio_pin_get(sw_pwr, DT_GPIO_PIN(SW_PWR_GPIO, gpios)) == 1) {
             btn_pressed_count++;
             if (btn_pressed_count > 3) {
                 printf("Button pressed for 3s: shutdown...\n");
                 bms_shutdown();
-                k_sleep(10000);
+                k_sleep(K_MSEC(10000));
             }
         }
         else {
@@ -71,7 +74,7 @@ void main(void)
 
         //bms_print_registers();
 
-        k_sleep(1000);
+        k_sleep(K_MSEC(1000));
     }
 }
 
@@ -88,12 +91,12 @@ void ext_mgr_thread()
             last_call = now;
             ext_mgr.process_1s();
         }
-        k_sleep(1);
+        k_sleep(K_MSEC(1));
     }
 }
 
 K_THREAD_DEFINE(ext_thread, 1024, ext_mgr_thread, NULL, NULL, NULL, 6, 0, 1000);
 
-K_THREAD_DEFINE(leds_id, 256, leds_update_thread, NULL, NULL, NULL,	4, 0, K_NO_WAIT);
+K_THREAD_DEFINE(leds_id, 256, leds_update_thread, NULL, NULL, NULL,	4, 0, 0);
 
 #endif /* UNIT_TEST */

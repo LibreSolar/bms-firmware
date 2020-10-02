@@ -38,6 +38,10 @@ static time_t alert_interrupt_timestamp;
 
 #define I2C_DEV "I2C_2"
 
+#define BQ_ALERT_GPIO DT_CHILD(DT_PATH(inputs), bq_alert)
+#define BQ_ALERT_PORT DT_GPIO_LABEL(BQ_ALERT_GPIO, gpios)
+#define BQ_ALERT_PIN  DT_GPIO_PIN(BQ_ALERT_GPIO, gpios)
+
 static struct device *i2c_dev;
 static struct device *alert_pin_dev;
 
@@ -186,14 +190,12 @@ static bool determine_address_and_crc(void)
 
 void bq769x0_init()
 {
-    alert_pin_dev = device_get_binding(DT_INPUTS_BQ_ALERT_GPIOS_CONTROLLER);
-    gpio_pin_configure(alert_pin_dev, DT_INPUTS_BQ_ALERT_GPIOS_PIN, GPIO_INPUT);
+    alert_pin_dev = device_get_binding(BQ_ALERT_PORT);
+    gpio_pin_configure(alert_pin_dev, BQ_ALERT_PIN, GPIO_INPUT);
 
     struct gpio_callback gpio_cb;
-    gpio_init_callback(&gpio_cb, bq769x0_alert_isr, DT_INPUTS_BQ_ALERT_GPIOS_PIN);
+    gpio_init_callback(&gpio_cb, bq769x0_alert_isr, BQ_ALERT_PIN);
     gpio_add_callback(alert_pin_dev, &gpio_cb);
-
-    //gpio_pin_interrupt_configure(alert_pin_dev, DT_INPUTS_BQ_ALERT_GPIOS_PIN, GPIO_INT_EDGE_RISING);
 
     i2c_dev = device_get_binding(I2C_DEV);
     if (!i2c_dev) {

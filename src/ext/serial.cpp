@@ -24,7 +24,7 @@
 #define TX_BUF_SIZE CONFIG_EXT_THINGSET_SERIAL_TX_BUF_SIZE
 #define RX_BUF_SIZE CONFIG_EXT_THINGSET_SERIAL_RX_BUF_SIZE
 
-#define UART_DEVICE_NAME DT_ALIAS_UART_DBG_LABEL
+#define UART_DEVICE_NAME DT_LABEL(DT_ALIAS(uart_dbg))
 struct device *uart_dev = device_get_binding(UART_DEVICE_NAME);
 
 class ThingSetStream: public ExtInterface

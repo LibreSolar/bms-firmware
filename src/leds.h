@@ -17,6 +17,8 @@
 #ifndef LEDS_H_
 #define LEDS_H_
 
+#include <stdbool.h>
+
 /**
  * LED control depending on BMS state, should be called every 100 ms
  *

@@ -18,7 +18,7 @@
 
 #include "bms.h"
 
-#define SLEEP_TIME 	100		// ms
+#define SLEEP_TIME 	K_MSEC(100)
 
 extern BmsConfig bms_conf;
 extern BmsStatus bms_status;
@@ -28,11 +28,11 @@ extern BmsStatus bms_status;
 #include <zephyr.h>
 #include <drivers/gpio.h>
 
-#define LED_DIS_PORT DT_ALIAS_LED_RED_GPIOS_CONTROLLER
-#define LED_DIS_PIN  DT_ALIAS_LED_RED_GPIOS_PIN
+#define LED_DIS_PORT DT_GPIO_LABEL(DT_ALIAS(led_red), gpios)
+#define LED_DIS_PIN  DT_GPIO_PIN(DT_ALIAS(led_red), gpios)
 
-#define LED_CHG_PORT DT_ALIAS_LED_GREEN_GPIOS_CONTROLLER
-#define LED_CHG_PIN  DT_ALIAS_LED_GREEN_GPIOS_PIN
+#define LED_CHG_PORT DT_GPIO_LABEL(DT_ALIAS(led_green), gpios)
+#define LED_CHG_PIN  DT_GPIO_PIN(DT_ALIAS(led_green), gpios)
 
 struct device *led_dis_dev = NULL;
 struct device *led_chg_dev = NULL;
@@ -54,10 +54,10 @@ void leds_dis_set(bool on)
 void leds_update_thread()
 {
 	led_dis_dev = device_get_binding(LED_DIS_PORT);
-	gpio_pin_configure(led_dis_dev, LED_DIS_PIN, GPIO_OUTPUT_INACTIVE);
+	gpio_pin_configure(led_dis_dev, LED_DIS_PIN, GPIO_OUTPUT);
 
 	led_chg_dev = device_get_binding(LED_CHG_PORT);
-	gpio_pin_configure(led_chg_dev, LED_CHG_PIN, GPIO_OUTPUT_INACTIVE);
+	gpio_pin_configure(led_chg_dev, LED_CHG_PIN, GPIO_OUTPUT);
 
 	while (1) {
         leds_update();
