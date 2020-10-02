@@ -16,7 +16,7 @@
 
 #include "data_nodes.h"
 
-#ifdef __ZEPHYR__
+#ifndef UNIT_TEST
 #include <zephyr.h>
 #include <drivers/hwinfo.h>
 #include <sys/crc.h>
@@ -267,7 +267,7 @@ void data_nodes_update_conf()
 
 void data_nodes_init()
 {
-#ifdef __ZEPHYR__
+#ifndef UNIT_TEST
     uint8_t buf[12];
     hwinfo_get_device_id(buf, sizeof(buf));
 

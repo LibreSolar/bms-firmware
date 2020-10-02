@@ -31,15 +31,6 @@ static time_t alert_interrupt_timestamp;
 
 #ifndef UNIT_TEST
 
-#ifdef __MBED__
-
-#include "mbed.h"
-
-static I2C bq_i2c(PIN_BMS_SDA, PIN_BMS_SCL);
-static InterruptIn alert_interrupt(PIN_BQ_ALERT);
-
-#elif defined(__ZEPHYR__)
-
 #include <zephyr.h>
 #include <drivers/gpio.h>
 #include <drivers/i2c.h>
@@ -49,8 +40,6 @@ static InterruptIn alert_interrupt(PIN_BQ_ALERT);
 
 static struct device *i2c_dev;
 static struct device *alert_pin_dev;
-
-#endif // MBED or ZEPHYR
 
 static int i2c_address;
 static bool crc_enabled;
@@ -74,11 +63,7 @@ static uint8_t _crc8_ccitt_update (uint8_t in_crc, uint8_t in_data)
 
 // The bq769x0 drives the ALERT pin high if the SYS_STAT register contains
 // a new value (either new CC reading or an error)
-#ifdef __MBED__
-void bq769x0_alert_isr()
-#else
 static void bq769x0_alert_isr(struct device *port, struct gpio_callback *cb, gpio_port_pins_t pins)
-#endif
 {
     alert_interrupt_timestamp = uptime();
     alert_interrupt_flag = true;
@@ -98,18 +83,10 @@ void bq769x0_write_byte(uint8_t reg_addr, uint8_t data)
         crc = _crc8_ccitt_update(crc, buf[0]);
         crc = _crc8_ccitt_update(crc, buf[1]);
         buf[2] = crc;
-#ifdef __MBED__
-        bq_i2c.write(i2c_address << 1, (char *)buf, 3);
-#elif defined(__ZEPHYR__)
         i2c_write(i2c_dev, buf, 3, i2c_address);
-#endif
     }
     else {
-#ifdef __MBED__
-        bq_i2c.write(i2c_address << 1, (char *)buf, 2);
-#elif defined(__ZEPHYR__)
         i2c_write(i2c_dev, buf, 2, i2c_address);
-#endif
     }
 }
 
@@ -122,19 +99,11 @@ uint8_t bq769x0_read_byte(uint8_t reg_addr)
     //printf("Read register: 0x%x \n", address);
     #endif
 
-#ifdef __MBED__
-    bq_i2c.write(i2c_address << 1, (char *)&reg_addr, 1);
-#elif defined(__ZEPHYR__)
     i2c_write(i2c_dev, &reg_addr, 1, i2c_address);
-#endif
 
     if (crc_enabled == true) {
         do {
-#ifdef __MBED__
-            bq_i2c.read(i2c_address << 1, (char *)buf, 2);
-#elif defined(__ZEPHYR__)
             i2c_read(i2c_dev, buf, 2, i2c_address);
-#endif
             // CRC is calculated over the slave address (including R/W bit) and data.
             crc = _crc8_ccitt_update(crc, (i2c_address << 1) | 1);
             crc = _crc8_ccitt_update(crc, buf[0]);
@@ -142,11 +111,7 @@ uint8_t bq769x0_read_byte(uint8_t reg_addr)
         return buf[0];
     }
     else {
-#ifdef __MBED__
-        bq_i2c.read(i2c_address << 1, (char *)buf, 1);
-#elif defined(__ZEPHYR__)
         i2c_read(i2c_dev, buf, 1, i2c_address);
-#endif
         return buf[0];
     }
 }
@@ -158,18 +123,10 @@ int32_t bq769x0_read_word(uint8_t reg_addr)
     uint8_t crc;
 
     // write starting register
-#ifdef __MBED__
-    bq_i2c.write(i2c_address << 1, (char *)&reg_addr, 1);
-#elif defined(__ZEPHYR__)
     i2c_write(i2c_dev, &reg_addr, 1, i2c_address);
-#endif
 
     if (crc_enabled == true) {
-#ifdef __MBED__
-        bq_i2c.read(i2c_address << 1, (char *)buf, 4);
-#elif defined(__ZEPHYR__)
         i2c_read(i2c_dev, buf, 4, i2c_address);
-#endif
 
         // CRC of first bytes includes slave address (including R/W bit) and data
         crc = _crc8_ccitt_update(0, (i2c_address << 1) | 1);
@@ -187,11 +144,7 @@ int32_t bq769x0_read_word(uint8_t reg_addr)
         val = buf[0] << 8 | buf[2];
     }
     else {
-#ifdef __MBED__
-        bq_i2c.read(i2c_address << 1, (char *)buf, 2);
-#elif defined(__ZEPHYR__)
         i2c_read(i2c_dev, buf, 2, i2c_address);
-#endif
         val = buf[0] << 8 | buf[1];
     }
     return val;
@@ -233,9 +186,6 @@ static bool determine_address_and_crc(void)
 
 void bq769x0_init()
 {
-#ifdef __MBED__
-    alert_interrupt.rise(bq769x0_alert_isr);
-#elif defined(__ZEPHYR__)
     alert_pin_dev = device_get_binding(DT_INPUTS_BQ_ALERT_GPIOS_CONTROLLER);
     gpio_pin_configure(alert_pin_dev, DT_INPUTS_BQ_ALERT_GPIOS_PIN, GPIO_INPUT);
 
@@ -249,7 +199,6 @@ void bq769x0_init()
     if (!i2c_dev) {
         printk("I2C: Device driver not found.\n");
     }
-#endif
 
     alert_interrupt_flag = true;   // init with true to check and clear errors at start-up
 

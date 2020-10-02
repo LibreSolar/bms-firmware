@@ -9,7 +9,7 @@ project(libre_solar_bms)
 
 include_directories(../src)
 
-target_sources(app PRIVATE ../src/main_zephyr.cpp)
+target_sources(app PRIVATE ../src/main.cpp)
 target_sources(app PRIVATE ../src/bms_common.c)
 target_sources(app PRIVATE ../src/bms_bq769x0.c)
 target_sources(app PRIVATE ../src/bms_isl94202.c)

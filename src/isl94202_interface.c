@@ -75,23 +75,7 @@ void isl94202_init()
     }
 }
 
-#elif defined(__MBED__)
-
-int isl94202_write_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes)
-{
-    /* TODO */
-    return 1;
-}
-
-int isl94202_read_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes)
-{
-    /* TODO */
-    return 1;
-}
-
-void isl94202_init() {;}
-
-#endif // ZEPHYR / MBED
+#endif
 
 int isl94202_write_word(uint8_t reg_addr, uint16_t word)
 {

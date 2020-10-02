@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#if defined(__ZEPHYR__) && !defined(UNIT_TEST)
+#ifndef UNIT_TEST
 
 #include <zephyr.h>
 #include <device.h>
@@ -96,4 +96,4 @@ K_THREAD_DEFINE(ext_thread, 1024, ext_mgr_thread, NULL, NULL, NULL, 6, 0, 1000);
 
 K_THREAD_DEFINE(leds_id, 256, leds_update_thread, NULL, NULL, NULL,	4, 0, K_NO_WAIT);
 
-#endif /* __ZEPHYR__ */
+#endif /* UNIT_TEST */

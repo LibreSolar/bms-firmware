@@ -23,7 +23,7 @@
 extern BmsConfig bms_conf;
 extern BmsStatus bms_status;
 
-#ifdef __ZEPHYR__
+#ifndef UNIT_TEST
 
 #include <zephyr.h>
 #include <drivers/gpio.h>
@@ -65,30 +65,13 @@ void leds_update_thread()
 	}
 }
 
-#elif defined(__MBED__)
-
-#include "mbed.h"
-
-DigitalOut led_chg(PIN_LED_GREEN);
-DigitalOut led_dis(PIN_LED_RED);
-
-void leds_chg_set(bool on)
-{
-    led_chg = on;
-}
-
-void leds_dis_set(bool on)
-{
-    led_dis = on;
-}
-
 #else
 
 void leds_chg_set(bool on) {;}
 
 void leds_dis_set(bool on) {;}
 
-#endif // ZEPHYR / MBED
+#endif // UNIT_TEST
 
 void leds_update()
 {

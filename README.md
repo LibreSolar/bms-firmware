@@ -2,19 +2,14 @@
 
 ![build badge](https://travis-ci.com/LibreSolar/bms-firmware.svg?branch=master)
 
-This repository contains the firmware for the different Libre Solar Battery Management Systems. Originally, the firmware was based on [ARM Mbed OS](https://www.mbed.com). The current version also supports using [Zephyr RTOS](https://www.zephyrproject.org/) for some boards.
+This repository contains the firmware based on [Zephyr RTOS](https://www.zephyrproject.org/) for the different Libre Solar Battery Management Systems.
 
 **Warning:** This firmware is under active development. Even though we try our best not to break any features that worked before, not every commit is fully tested on every board before including it to the master branch. As soon as the status of the firmware is considered stable enough, we will test the core features on all boards and generate a release.
 
 ## Supported devices
 
-ARM Mbed OS:
-
 - Libre Solar 3-5s (12V) BMS with TI bq76920: [BMS-5S50-SC](https://github.com/LibreSolar/bms-5s50-sc)
 - Libre Solar 6-15s (24-48V) BMS with TI bq76930/40: [BMS-15S80-SC](https://github.com/LibreSolar/bms-15s80-sc)
-
-Zephyr (preliminary):
-
 - Libre Solar 3-8s (12V/24V) BMS with Intersil ISL94202: [BMS-8S50-IC](https://github.com/LibreSolar/bms-8s50-ic)
 
 ## Building and flashing the firmware
@@ -27,23 +22,42 @@ git clone --recursive https://github.com/LibreSolar/bms-firmware
 
 Unfortunately, the green GitHub "Clone or download" button does not include submodules. If you cloned the repository already and want to pull the submodules, run `git submodule update --init --recursive`.
 
-### ARM Mbed OS
+### PlatformIO
 
 It is suggested to use Visual Studio Code and PlatformIO for firmware development, as it simplifies compiling and uploading the code a lot:
 
 1. Install Visual Studio Code and [PlatformIO](https://platformio.org/platformio-ide) to build the firmware.
 
-2. Select the correct board in `platformio.ini` by removing the comment before the board name under `[platformio]`
+2. Adjust configuration in `zephyr/prj.conf` if necessary.
 
-3. Connect the board via a programmer. See the Libre Solar website for [further project-agnostic instructions](http://libre.solar/docs/flashing).
+3. Select the correct board in `platformio.ini` by removing the comment before the board name under `[platformio]` or create a file `custom.ini` with your personal settings.
 
-4. Press the upload button at the bottom left corner in VS Code.
+4. Connect the board via a programmer. See the Libre Solar website for [further project-agnostic instructions](http://libre.solar/docs/flashing).
 
-### Zephyr RTOS
+5. Press the upload button at the bottom left corner in VS Code.
 
-The BMS-8S50-IC is currently only supported in Zephyr. PlatformIO has built-in support for Zephyr, so you can use it the same way as explained above for Mbed. (see platformio.ini for configured Zephyr environments)
+### Native Zephyr environment
 
-If you want to use the native Zephyr build environment, you need to call `west` from within the `zephyr` subfolder, where `prj.conf` and `CMakeLists.txt` are located.
+You can also use the Zephyr build system directly for advanced configuration using `menuconfig` or if you need more recently added features.
+
+The CMake entry point is in the `zephyr` subfolder, so you need to run `west` command in that directory.
+
+Initial board selection (see `boards subfolder for correct names):
+
+        west build -b <board-name>
+
+Flash with specific debug probe (runner), e.g. J-Link:
+
+        west flash -r jlink
+
+User configuration using menuconfig:
+
+        west build -t menuconfig
+
+Report of used memory (RAM and flash):
+
+        west build -t rom_report
+        west build -t ram_report
 
 ## API documentation
 

@@ -16,9 +16,7 @@
 
 #include "helper.h"
 
-#ifdef __MBED__
-#include "mbed.h"
-#elif defined(__ZEPHYR__)
+#ifndef UNIT_TEST
 #include <zephyr.h>
 #endif
 

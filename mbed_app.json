@@ -1,7 +1,0 @@
-{
-    "target_overrides": {
-        "NUCLEO_F072RB": {
-            "target.lse_available" : 0
-        }
-    }
-}

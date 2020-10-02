@@ -7,14 +7,9 @@
 #ifndef CAN_MSG_QUEUE_H
 #define CAN_MSG_QUEUE_H
 
-#ifdef __MBED__
-#include "mbed.h"
-#define CanFrame CANMessage
-#elif defined(__ZEPHYR__)
 #include <zephyr.h>
 #include <drivers/can.h>
 #define CanFrame struct zcan_frame
-#endif
 
 #define CAN_QUEUE_SIZE 30
 

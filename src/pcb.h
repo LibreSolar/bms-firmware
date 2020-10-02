@@ -17,7 +17,7 @@
 #ifndef PCB_H
 #define PCB_H
 
-#ifdef __ZEPHYR__
+#ifndef UNIT_TEST
 #include <zephyr.h>
 #endif
 

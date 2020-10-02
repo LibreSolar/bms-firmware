@@ -28,7 +28,7 @@
 // general configuration
 //----------------------------------------------------------------------------
 
-#ifndef __ZEPHYR__
+#ifdef UNIT_TEST
 
 #define CONFIG_THINGSET_EXPERT_PASSWORD "expert123"
 #define CONFIG_THINGSET_MAKER_PASSWORD "maker456"
