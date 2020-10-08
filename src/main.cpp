@@ -49,7 +49,7 @@ void main(void)
     bms_update(&bms_conf, &bms_status);
     bms_reset_soc(&bms_conf, &bms_status, -1);
 
-    struct device *sw_pwr;
+    const struct device *sw_pwr;
 	sw_pwr = device_get_binding(DT_GPIO_LABEL(SW_PWR_GPIO, gpios));
     gpio_pin_configure(sw_pwr, DT_GPIO_PIN(SW_PWR_GPIO, gpios),
         DT_GPIO_FLAGS(SW_PWR_GPIO, gpios) | GPIO_INPUT);

@@ -25,7 +25,7 @@
 #define RX_BUF_SIZE CONFIG_THINGSET_SERIAL_RX_BUF_SIZE
 
 #define UART_DEVICE_NAME DT_LABEL(DT_ALIAS(uart_dbg))
-struct device *uart_dev = device_get_binding(UART_DEVICE_NAME);
+const struct device *uart_dev = device_get_binding(UART_DEVICE_NAME);
 
 class ThingSetStream: public ExtInterface
 {
@@ -36,7 +36,7 @@ public:
     virtual void process_1s();
 
 protected:
-    static void process_input(void*);
+    static void process_input(const struct device *dev, void *user_data);
 
     const uint8_t channel;
 
@@ -135,9 +135,9 @@ void ThingSetStream::process_asap()
  * Read characters from stream until line end \n detected, signal command available then
  * and wait for processing
  */
-void ThingSetStream::process_input(void* user_data)
+void ThingSetStream::process_input(const struct device *dev, void *user_data)
 {
-    u8_t c;
+    uint8_t c;
     DataStreamStruct *data_stream_ptr = (DataStreamStruct *)user_data;
     bool command_flag = *(data_stream_ptr->command_flag_ptr);
     char *buf_req = data_stream_ptr->buf_req_ptr;

@@ -41,7 +41,7 @@ static const struct pin_config pinconf[] = {
 	{STM32_PIN_PA12, STM32L4X_PINMUX_FUNC_PA12_CAN_TX},
 };
 
-static int pinmux_stm32_init(struct device *port)
+static int pinmux_stm32_init(const struct device *port)
 {
 	ARG_UNUSED(port);
 

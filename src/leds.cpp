@@ -34,8 +34,8 @@ extern BmsStatus bms_status;
 #define LED_CHG_PORT DT_GPIO_LABEL(DT_ALIAS(led_green), gpios)
 #define LED_CHG_PIN  DT_GPIO_PIN(DT_ALIAS(led_green), gpios)
 
-struct device *led_dis_dev = NULL;
-struct device *led_chg_dev = NULL;
+const struct device *led_dis_dev = NULL;
+const struct device *led_chg_dev = NULL;
 
 void leds_chg_set(bool on)
 {

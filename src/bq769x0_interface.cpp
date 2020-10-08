@@ -26,7 +26,8 @@
 int adc_gain;    // factory-calibrated, read out from chip (uV/LSB)
 int adc_offset;  // factory-calibrated, read out from chip (mV)
 
-static bool alert_interrupt_flag;   // indicates if a new current reading or an error is available from BMS IC
+// indicates if a new current reading or an error is available from BMS IC
+static bool alert_interrupt_flag;
 static time_t alert_interrupt_timestamp;
 
 #ifndef UNIT_TEST
@@ -42,8 +43,8 @@ static time_t alert_interrupt_timestamp;
 #define BQ_ALERT_PORT DT_GPIO_LABEL(BQ_ALERT_GPIO, gpios)
 #define BQ_ALERT_PIN  DT_GPIO_PIN(BQ_ALERT_GPIO, gpios)
 
-static struct device *i2c_dev;
-static struct device *alert_pin_dev;
+static const struct device *i2c_dev;
+static const struct device *alert_pin_dev;
 
 static int i2c_address;
 static bool crc_enabled;
@@ -67,7 +68,8 @@ static uint8_t _crc8_ccitt_update (uint8_t in_crc, uint8_t in_data)
 
 // The bq769x0 drives the ALERT pin high if the SYS_STAT register contains
 // a new value (either new CC reading or an error)
-static void bq769x0_alert_isr(struct device *port, struct gpio_callback *cb, gpio_port_pins_t pins)
+static void bq769x0_alert_isr(const struct device*port, struct gpio_callback *cb,
+    gpio_port_pins_t pins)
 {
     alert_interrupt_timestamp = uptime();
     alert_interrupt_flag = true;

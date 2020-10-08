@@ -51,7 +51,7 @@ struct isotp_recv_ctx recv_ctx;
 K_THREAD_STACK_DEFINE(rx_thread_stack, RX_THREAD_STACK_SIZE);
 struct k_thread rx_thread_data;
 
-struct device *can_dev;
+const struct device *can_dev;
 
 void send_complette_cb(int error_nr, void *arg)
 {
@@ -67,8 +67,8 @@ void rx_thread(void *arg1, void *arg2, void *arg3)
     int ret, rem_len;
     unsigned int received_len;
     struct net_buf *buf;
-    static u8_t rx_buffer[100];
-    static u8_t tx_buffer[500];
+    static uint8_t rx_buffer[100];
+    static uint8_t tx_buffer[500];
 
     ret = isotp_bind(&recv_ctx, can_dev,
              &tx_addr, &rx_addr,
@@ -149,8 +149,7 @@ private:
     uint8_t node_id;
     const uint16_t channel;
 
-    //struct device *can_dev;
-    struct device *can_en_dev;
+    const struct device *can_en_dev;
 };
 
 ThingSetCAN ts_can(CAN_NODE_ID, PUB_CAN);

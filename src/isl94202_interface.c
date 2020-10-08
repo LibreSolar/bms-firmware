@@ -40,7 +40,7 @@
 // static (private) variables
 //----------------------------------------------------------------------------
 
-static struct device *i2c_dev;
+static const struct device *i2c_dev;
 
 //----------------------------------------------------------------------------
 
@@ -64,7 +64,7 @@ int isl94202_read_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes)
 void isl94202_init()
 {
     // activate pull-up at I2C SDA and SCL
-    struct device *i2c_pullup;
+    const struct device *i2c_pullup;
     i2c_pullup = device_get_binding(I2C_PULLUP_PORT);
     gpio_pin_configure(i2c_pullup, I2C_PULLUP_PIN, GPIO_OUTPUT);
     gpio_pin_set(i2c_pullup, I2C_PULLUP_PIN, 1);
