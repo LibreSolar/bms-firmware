@@ -70,6 +70,12 @@ config THINGSET_CAN
     depends on CAN
     bool "ThingSet CAN interface"
 
+config THINGSET_CAN_DEFAULT_NODE_ID
+    depends on THINGSET_CAN
+    int "ThingSet CAN default node ID"
+    range 0 255
+    default 20
+
 config THINGSET_EXPERT_PASSWORD
     depends on THINGSET_SERIAL || THINGSET_CAN
     string "ThingSet expert user password"

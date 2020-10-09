@@ -48,7 +48,11 @@ ArrayInfo cell_voltages_arr = {
 };
 
 bool pub_serial_enable = false;
+
+#if CONFIG_THINGSET_CAN
 bool pub_can_enable = false;
+uint16_t ts_can_node_id = CONFIG_THINGSET_CAN_DEFAULT_NODE_ID;
+#endif
 
 /**
  * Data Objects
@@ -181,13 +185,13 @@ static DataNode data_nodes[] = {
     TS_NODE_PATH(ID_OUTPUT, "output", 0, NULL),
 
     TS_NODE_FLOAT(0x71, "Bat_V", &bms_status.pack_voltage, 2,
-        ID_OUTPUT, TS_ANY_R, 0),
+        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
 
     TS_NODE_FLOAT(0x72, "Bat_A", &bms_status.pack_current, 2,
-        ID_OUTPUT, TS_ANY_R, 0),
+        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
 
     TS_NODE_FLOAT(0x73, "Bat_degC", &bms_status.bat_temp_avg, 1,
-        ID_OUTPUT, TS_ANY_R, 0),
+        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
 
     TS_NODE_FLOAT(0x74, "IC_degC", &bms_status.ic_temp, 1,
         ID_OUTPUT, TS_ANY_R, 0),
@@ -201,7 +205,7 @@ static DataNode data_nodes[] = {
 #endif
 
     TS_NODE_UINT16(0x7C, "SOC_pct", &bms_status.soc,
-        ID_OUTPUT, TS_ANY_R, 0),
+        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
 
     TS_NODE_UINT32(0x7E, "ErrorFlags", &bms_status.error_flags,
         ID_OUTPUT, TS_ANY_R, 0),
@@ -213,13 +217,13 @@ static DataNode data_nodes[] = {
         ID_OUTPUT, TS_ANY_R, 0),
 
     TS_NODE_FLOAT(0x9A, "CellAvg_V", &bms_status.cell_voltage_avg, 3,
-        ID_OUTPUT, TS_ANY_R | TS_ANY_W, PUB_NVM),
+        ID_OUTPUT, TS_ANY_R | TS_ANY_W, PUB_NVM | PUB_SER | PUB_CAN),
 
     TS_NODE_FLOAT(0x9B, "CellMin_V", &bms_status.cell_voltage_min, 3,
-        ID_OUTPUT, TS_ANY_R | TS_ANY_W, PUB_NVM),
+        ID_OUTPUT, TS_ANY_R | TS_ANY_W, PUB_NVM | PUB_SER | PUB_CAN),
 
     TS_NODE_FLOAT(0x9C, "CellMax_V", &bms_status.cell_voltage_max, 3,
-        ID_OUTPUT, TS_ANY_R | TS_ANY_W, PUB_NVM),
+        ID_OUTPUT, TS_ANY_R | TS_ANY_W, PUB_NVM | PUB_SER | PUB_CAN),
 
     // RECORDED DATA ///////////////////////////////////////////////////////
     // using IDs >= 0xA0
@@ -253,9 +257,11 @@ static DataNode data_nodes[] = {
     TS_NODE_BOOL(0xF2, "Enable", &pub_serial_enable, 0xF1, TS_ANY_RW, 0),
     TS_NODE_PUBSUB(0xF3, "IDs", PUB_SER, 0xF1, TS_ANY_RW, 0),
 
+#if CONFIG_THINGSET_CAN
     TS_NODE_PATH(0xF5, "can", ID_PUB, NULL),
     TS_NODE_BOOL(0xF6, "Enable", &pub_can_enable, 0xF5, TS_ANY_RW, 0),
     TS_NODE_PUBSUB(0xF7, "IDs", PUB_CAN, 0xF5, TS_ANY_RW, 0),
+#endif
 };
 
 ThingSet ts(data_nodes, sizeof(data_nodes)/sizeof(DataNode));

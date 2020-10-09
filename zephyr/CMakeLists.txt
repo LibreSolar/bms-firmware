@@ -22,7 +22,6 @@ target_sources(app PRIVATE ../src/helper.cpp)
 target_sources(app PRIVATE ../src/ext/ext.cpp)
 target_sources(app PRIVATE ../src/ext/serial.cpp)
 target_sources(app PRIVATE ../src/ext/oled.cpp)
-target_sources(app PRIVATE ../src/ext/can_msg_queue.cpp)
 target_sources(app PRIVATE ../src/ext/can.cpp)
 
 add_subdirectory(../lib/thingset build/thingset)
