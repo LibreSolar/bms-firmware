@@ -21,11 +21,11 @@
 	leds {
 		compatible = "gpio-leds";
 		led1: led_0 {
-			gpios = <&gpiob 14 GPIO_INT_ACTIVE_HIGH>;
+			gpios = <&gpiob 14 GPIO_ACTIVE_HIGH>;
 			label = "LED 1";
 		};
 		led2: led_1 {
-			gpios = <&gpiob 15 GPIO_INT_ACTIVE_HIGH>;
+			gpios = <&gpiob 15 GPIO_ACTIVE_HIGH>;
 			label = "LED 2";
 		};
 	};
@@ -34,7 +34,7 @@
 		compatible = "gpio-keys";
 		power_button: button {
 			label = "Power Button";
-			gpios = <&gpioa 8 GPIO_INT_ACTIVE_LOW>;
+			gpios = <&gpioa 8 GPIO_ACTIVE_HIGH>;
 		};
 	};
 
