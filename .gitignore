@@ -1,11 +1,12 @@
 .pio
+.clang_complete
 .gcc-flags.json
 .vscode/browse.vc.db*
 .vscode
-.vscode/c_cpp_properties.json
+.west
 html
-zephyr/build
 memory.map
+custom.ini
 tools
 *.bak
 *_bak

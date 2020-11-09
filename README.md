@@ -38,9 +38,21 @@ It is suggested to use Visual Studio Code and PlatformIO for firmware developmen
 
 ### Native Zephyr environment
 
-You can also use the Zephyr build system directly for advanced configuration using `menuconfig` or if you need more recently added features.
+You can also use the Zephyr build system directly for advanced configuration with `menuconfig` or if you need more recently added features.
 
-The CMake entry point is in the `zephyr` subfolder, so you need to run `west` command in that directory.
+This guide assumes you have already installed the Zephyr SDK and the west tool according to the [Zephyr documentation](https://docs.zephyrproject.org/latest/getting_started/). Also make sure that `west` is at least at version `0.8.0`.
+
+Now after you cloned the repository (see above), go into the root firmware directory and initialize a west workspace:
+
+        west init -l zephyr
+
+This command will create a `.west/config` file and set up the repository as specified in `zephyr/west.yml` file. Afterwards the following command pulls the Zephyr source and all necessary modules, which might take a while:
+
+        west update
+
+The CMake entry point is in the `zephyr` subfolder, so you need to run `west build` and `west flash` command in that directory.
+
+        cd zephyr
 
 Initial board selection (see `boards subfolder for correct names):
 
