@@ -117,7 +117,10 @@ void setup()
     // ToDo: Ensure that below settings are set even in case of communication error
 
     bms_init();
-    bms_init_config(&bms_conf, CELL_TYPE_LFP, 45);
+//    bms_init_config(&bms_conf, CELL_TYPE_LFP, 45);
+    bms_init_config(&bms_conf, CELL_TYPE_CUSTOM, 200); //(xsider)
+//    bms_init_config(&bms_conf, CELL_TYPE_LiFeYPo, 160); //(xsider)
+
 
     // apply config to AFE
     bms_apply_dis_scp(&bms_conf);

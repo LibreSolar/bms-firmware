@@ -77,5 +77,11 @@ config THINGSET_MAKER_PASSWORD
     depends on EXT_THINGSET_SERIAL || EXT_THINGSET_CAN
     string "ThingSet maker password"
     default "maker456"
+# (xsider)
 
+config UART_ASYNC_API
+    bool "Enable new asynchronous UART API [EXPERIMENTAL]"
+    depends on SERIAL_SUPPORT_ASYNC && SERIAL
+    help
+      This option enables new asynchronous UART API.
 endmenu

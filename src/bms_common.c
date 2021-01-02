@@ -25,6 +25,12 @@ float ocv_lfp[] = { // 100, 95, ..., 0 %
   3.264, 3.262, 3.252, 3.240, 3.226, 3.213, 3.190, 3.177, 3.132, 2.833
 };
 
+static float ocv_custom[] = { // 100, 95, ..., 0 %
+  4.200, 4.140, 4.080, 4.020, 3.960, 3.900, 3.840, 3.780, 3.720, 3.660, 3.600,
+  3.540, 3.480, 3.420, 3.360, 3.300, 3.240, 3.180, 3.120, 3.060, 3.000
+}; //(xsider)
+
+
 void bms_init_config(BmsConfig *conf, enum CellType type, float nominal_capacity)
 {
     conf->auto_balancing_enabled = true;
@@ -53,7 +59,7 @@ void bms_init_config(BmsConfig *conf, enum CellType type, float nominal_capacity
 
     conf->dis_ut_limit = -20;
     conf->dis_ot_limit =  45;
-    conf->chg_ut_limit =   0;
+    conf->chg_ut_limit = -10;
     conf->chg_ot_limit =  45;
     conf->t_limit_hyst =   2;
 
@@ -103,7 +109,26 @@ void bms_init_config(BmsConfig *conf, enum CellType type, float nominal_capacity
             conf->cell_uv_limit         = 1.90F;
             break;
         case CELL_TYPE_CUSTOM:
+            conf->cell_ov_limit         = 4.00F;
+            conf->cell_chg_voltage      = 3.90F;
+            conf->cell_ov_reset         = 3.80F;
+            conf->bal_cell_voltage_min  = 3.60F;
+            conf->cell_uv_reset         = 3.30F;
+            conf->cell_dis_voltage      = 3.10F;
+            conf->cell_uv_limit         = 2.90F;
+            conf->ocv = ocv_custom;
+            conf->num_ocv_points = sizeof(ocv_custom)/sizeof(float);
             break;
+        case CELL_TYPE_LiFeYPo:
+            conf->cell_ov_limit         = 3.90F;
+            conf->cell_chg_voltage      = 3.80F;
+            conf->cell_ov_reset         = 3.70F;
+            conf->bal_cell_voltage_min  = 3.20F;
+            conf->cell_uv_reset         = 3.10F;
+            conf->cell_dis_voltage      = 3.00F;
+            conf->cell_uv_limit         = 2.90F;
+             break;
+
     }
 }
 

@@ -63,6 +63,7 @@
 		led-green = &led2;
 		i2c-uext = &i2c1;
 		i2c-bms = &i2c2;
+        uart-uext =&usart2;
 		uart-dbg = &usart3;
 		sw-pwr = &power_button;
 	};
@@ -88,7 +89,7 @@
 };
 
 &usart2 {
-	current-speed = <115200>;
+	current-speed = <19200>;
 	status = "okay";
 };
 

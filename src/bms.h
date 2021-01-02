@@ -57,7 +57,8 @@ enum CellType {
     CELL_TYPE_LFP,          ///< LiFePO4 Li-ion cells (3.3 V nominal)
     CELL_TYPE_NMC,          ///< NMC/Graphite Li-ion cells (3.7 V nominal)
     CELL_TYPE_NMC_HV,       ///< NMC/Graphite High Voltage Li-ion cells (3.7 V nominal, 4.35 V max)
-    CELL_TYPE_LTO           ///< NMC/Titanate (2.4 V nominal)
+    CELL_TYPE_LTO,          ///< NMC/Titanate (2.4 V nominal)
+    CELL_TYPE_LiFeYPo       //(xsider)
 };
 
 /**

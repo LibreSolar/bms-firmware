@@ -25,6 +25,10 @@
 /// OLED display at UEXT port
 #define CONFIG_EXT_OLED_DISPLAY 1
 
+//#define WIFI_ENABLED 1
+//#define CONFIG_UART_ASYNC_API 1
+#define CONFIG_EXT_VZLOGGER_ENABLED 1
+
 // general configuration
 //----------------------------------------------------------------------------
 
@@ -33,11 +37,11 @@
 #define CONFIG_THINGSET_EXPERT_PASSWORD "expert123"
 #define CONFIG_THINGSET_MAKER_PASSWORD "maker456"
 
-#define CONFIG_EXT_THINGSET_SERIAL 1
-#define CONFIG_EXT_THINGSET_SERIAL_TX_BUF_SIZE 500
-#define CONFIG_EXT_THINGSET_SERIAL_RX_BUF_SIZE 500
+//#define CONFIG_EXT_THINGSET_SERIAL 1
+//#define CONFIG_EXT_THINGSET_SERIAL_TX_BUF_SIZE 500
+//#define CONFIG_EXT_THINGSET_SERIAL_RX_BUF_SIZE 500
 
-#define CONFIG_EXT_THINGSET_CAN 1
+//#define CONFIG_EXT_THINGSET_CAN 1
 
 #endif
 
