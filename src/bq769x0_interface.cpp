@@ -123,7 +123,7 @@ uint8_t bq769x0_read_byte(uint8_t reg_addr)
     #endif
 
 #ifdef __MBED__
-    bq_i2c.write(i2c_address << 1, (char *)buf, 1);;
+    bq_i2c.write(i2c_address << 1, (char *)&reg_addr, 1);
 #elif defined(__ZEPHYR__)
     i2c_write(i2c_dev, &reg_addr, 1, i2c_address);
 #endif
