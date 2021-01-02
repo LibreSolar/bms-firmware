@@ -1,0 +1,11 @@
+2020-12-17:
+
+Compilieren:
+1 in src/main_mbed.cpp die passende Zellchemie und die richtige Kapazität einstellen
+2 in platformio.ini das passende BMS-Board auswählen
+3 $ platformio run
+
+Compilat liegt in ./.pio/build...
+
+
+
