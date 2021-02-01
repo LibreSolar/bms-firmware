@@ -17,7 +17,7 @@
 #include "config.h"
 #include "pcb.h"
 
-#ifdef BMS_ISL94202
+#ifdef CONFIG_BMS_ISL94202
 
 #include "isl94202_interface.h"
 #include "isl94202_registers.h"
@@ -31,7 +31,8 @@
 #include <drivers/i2c.h>
 #include <string.h>
 
-#define I2C_DEV "I2C_2"
+#define I2C_DEV DT_LABEL(DT_PARENT(DT_INST(0, renesas_isl94202)))
+#define I2C_ADDRESS DT_REG_ADDR(DT_INST(0, renesas_isl94202))
 
 #define I2C_PULLUP_GPIO DT_CHILD(DT_PATH(switches), i2c_pullup)
 #define I2C_PULLUP_PORT DT_GPIO_LABEL(I2C_PULLUP_GPIO, gpios)
@@ -53,12 +54,12 @@ int isl94202_write_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes)
     buf[0] = reg_addr;		// first byte contains register address
     memcpy(buf + 1, data, num_bytes);
 
-    return i2c_write(i2c_dev, buf, num_bytes + 1, ISL94202_I2C_ADDRESS);
+    return i2c_write(i2c_dev, buf, num_bytes + 1, I2C_ADDRESS);
 }
 
 int isl94202_read_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes)
 {
-    return i2c_write_read(i2c_dev, ISL94202_I2C_ADDRESS, &reg_addr, 1, data, num_bytes);
+    return i2c_write_read(i2c_dev, I2C_ADDRESS, &reg_addr, 1, data, num_bytes);
 }
 
 void isl94202_init()
@@ -160,4 +161,4 @@ int isl94202_read_word(uint8_t reg_addr)
     }
 }
 
-#endif // BMS_ISL94202
+#endif // CONFIG_BMS_ISL94202

@@ -356,4 +356,4 @@ void bms_print_registers()
 
 #endif
 
-#endif // BMS_ISL94202
+#endif // CONFIG_BMS_ISL94202

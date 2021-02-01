@@ -20,10 +20,6 @@
 #define DEVICE_TYPE "BMS-8S50-IC"
 #define HARDWARE_VERSION "v0.1"
 
-#define BMS_ISL94202
-
-#define ISL94202_I2C_ADDRESS (0x50 >> 1)
-
 #define SHUNT_RESISTOR 1.0  // mOhm
 #define PCB_MAX_CURRENT 50  // A
 
