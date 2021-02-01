@@ -16,14 +16,14 @@
 
 #include "data_nodes.h"
 
-#ifndef UNIT_TEST
 #include <zephyr.h>
+
+#ifndef UNIT_TEST
 #include <drivers/hwinfo.h>
 #include <sys/crc.h>
 #endif
 
 #include "pcb.h"
-#include "config.h"
 
 #include "thingset.h"
 #include "bms.h"

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include "config.h"
 #include "pcb.h"
 
 #ifdef CONFIG_BMS_ISL94202

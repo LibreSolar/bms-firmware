@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include "config.h"
 #include "pcb.h"
 #include "helper.h"
 

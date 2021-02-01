@@ -6,10 +6,6 @@
 
 #ifndef UNIT_TEST
 
-#include "config.h"
-
-#if CONFIG_THINGSET_SERIAL   // otherwise don't compile code to reduce firmware size
-
 #include "ext/ext.h"
 
 #include <zephyr.h>
@@ -20,6 +16,8 @@
 
 #include "thingset.h"
 #include "data_nodes.h"
+
+#if CONFIG_THINGSET_SERIAL   // otherwise don't compile code to reduce firmware size
 
 #define TX_BUF_SIZE CONFIG_THINGSET_SERIAL_TX_BUF_SIZE
 #define RX_BUF_SIZE CONFIG_THINGSET_SERIAL_RX_BUF_SIZE

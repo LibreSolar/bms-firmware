@@ -23,8 +23,6 @@
 #include "bq769x0_interface.h"
 #include "helper.h"
 
-#include "config.h"
-
 #include <math.h>       // log for thermistor calculation
 #include <stdlib.h>     // for abs() function
 #include <stdio.h>

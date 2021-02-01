@@ -6,8 +6,6 @@
 
 #ifndef UNIT_TEST
 
-#include "config.h"
-
 #if CONFIG_EXT_OLED_DISPLAY     // otherwise don't compile code to reduce firmware size
 
 #include "ext/ext.h"

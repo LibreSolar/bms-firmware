@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "config.h"
-
 /** EXT interface description template
  *
  * The UEXT port can be used to connect several different extension modules to the charge controller.

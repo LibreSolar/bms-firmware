@@ -13,7 +13,7 @@
 
 #include "devicetree.h"
 #include "devicetree_unfixed.h"
-//#include "autoconf.h"
+#include "autoconf.h"
 #include "stdint.h"
 
 #ifndef __deprecated

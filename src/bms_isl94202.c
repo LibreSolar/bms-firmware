@@ -23,8 +23,6 @@
 #include "isl94202_interface.h"
 #include "helper.h"
 
-#include "config.h"
-
 #include <stdlib.h>     // for abs() function
 #include <stdio.h>
 #include <time.h>

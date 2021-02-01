@@ -1,5 +1,4 @@
 
-#include "config.h"
 #include "pcb.h"
 
 #include "bms.h"
