@@ -139,7 +139,7 @@ void can_pub_thread()
                 struct zcan_frame frame = {0};
                 frame.id_type = CAN_EXTENDED_IDENTIFIER;
                 frame.rtr     = CAN_DATAFRAME;
-                frame.ext_id  = can_id;
+                frame.id      = can_id;
                 memcpy(frame.data, can_data, 8);
 
                 if (data_len >= 0) {

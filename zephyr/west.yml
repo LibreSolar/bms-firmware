@@ -7,7 +7,7 @@ manifest:
   projects:
     - name: zephyr
       remote: libresolar
-      revision: v2.4-branch
+      revision: v2.5-branch
       # path must be something else than zephyr as we get a Kconfig include recursion otherwise
       path: rtos
       import:
