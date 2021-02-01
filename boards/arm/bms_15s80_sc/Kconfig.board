@@ -1,5 +1,5 @@
+# Copyright (c) The Libre Solar Project Contributors
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2020 Libre Solar Technologies GmbH
 
 config BOARD_BMS_15S80_SC
 	bool "Libre Solar BMS 15S80 SC"

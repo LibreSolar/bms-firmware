@@ -1,7 +1,7 @@
 /*
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (c) The Libre Solar Project Contributors
  *
- * Copyright (c) 2021 Martin Jäger / Libre Solar
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #define CONFIG_THINGSET_EXPERT_PASSWORD "expert123"

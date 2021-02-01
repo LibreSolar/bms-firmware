@@ -1,9 +1,5 @@
-# Kconfig - Libre Solar BMS 8S50 IC board configuration
-#
-# Copyright (c) 2020 Libre Solar Technologies GmbH
-#
+# Copyright (c) The Libre Solar Project Contributors
 # SPDX-License-Identifier: Apache-2.0
-#
 
 if BOARD_BMS_8S50_IC_F072
 

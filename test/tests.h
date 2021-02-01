@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) The Libre Solar Project Contributors
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <unity.h>
 #include <time.h>
 

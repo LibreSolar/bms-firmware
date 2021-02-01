@@ -1,5 +1,5 @@
+# Copyright (c) The Libre Solar Project Contributors
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2019 Libre Solar Technologies GmbH
 
 if BOARD_BMS_8S50_IC_L452
 

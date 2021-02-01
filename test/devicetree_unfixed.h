@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) The Libre Solar Project Contributors
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #define DT_N_S_pcb_P_type "TEST PCB"
 #define DT_N_S_pcb_P_version_str "v0.1"
