@@ -37,11 +37,12 @@ static time_t alert_interrupt_timestamp;
 #include <drivers/i2c.h>
 #include <string.h>
 
-#define I2C_DEV "I2C_2"
+#define BQ769X0_INST DT_INST(0, ti_bq769x0)
 
-#define BQ_ALERT_GPIO DT_CHILD(DT_PATH(inputs), bq_alert)
-#define BQ_ALERT_PORT DT_GPIO_LABEL(BQ_ALERT_GPIO, gpios)
-#define BQ_ALERT_PIN  DT_GPIO_PIN(BQ_ALERT_GPIO, gpios)
+#define I2C_DEV DT_LABEL(DT_PARENT(BQ769X0_INST))
+
+#define BQ_ALERT_PORT DT_GPIO_LABEL(BQ769X0_INST, alert_gpios)
+#define BQ_ALERT_PIN  DT_GPIO_PIN(BQ769X0_INST, alert_gpios)
 
 static const struct device *i2c_dev;
 static const struct device *alert_pin_dev;

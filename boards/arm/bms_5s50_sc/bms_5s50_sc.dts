@@ -51,19 +51,10 @@
 		};
 	};
 
-	inputs {
-		compatible = "inputs";
-		bq_alert {
-			gpios = <&gpiob 12 GPIO_ACTIVE_HIGH>;
-			label = "Alert interrupt of bq769x0 IC";
-		};
-	};
-
 	aliases {
 		led-red = &led1;
 		led-green = &led2;
 		i2c-uext = &i2c1;
-		i2c-bms = &i2c2;
 		uart-dbg = &usart1;
 		sw-pwr = &power_button;
 	};
@@ -90,6 +81,13 @@
 	pinctrl-0 = <&i2c2_scl_pb10 &i2c2_sda_pb11>;
 	clock-frequency = <I2C_BITRATE_STANDARD>;
 	status = "okay";
+
+	bq769x0@8 {
+		compatible = "ti,bq769x0";
+		label = "BQ76920";
+		reg = <0x08>;	// ignored (firmware will auto-detect I2C address)
+		alert-gpios = <&gpiob 12 GPIO_ACTIVE_HIGH>;
+	};
 };
 
 &spi1 {
