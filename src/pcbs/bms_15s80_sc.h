@@ -34,31 +34,6 @@
 #error "The type of bq769x0 IC must be defined."
 #endif
 
-#define PIN_UEXT_TX   PA_2
-#define PIN_UEXT_RX   PA_3
-#define PIN_UEXT_SCL  PB_6
-#define PIN_UEXT_SDA  PB_7
-#define PIN_UEXT_MISO PB_4
-#define PIN_UEXT_MOSI PB_5
-#define PIN_UEXT_SCK  PB_3
-#define PIN_UEXT_SSEL PA_1
-
-#define PIN_SWD_TX    PB_10     // changed in BMS-5s
-#define PIN_SWD_RX    PB_11     // changed in BMS-5s
-
-#define PIN_CAN_RX    PB_8
-#define PIN_CAN_TX    PB_9
-#define PIN_CAN_STB   PA_15
-
-#define PIN_LED_RED   PA_9     // changed in BMS-5s
-#define PIN_LED_GREEN PA_10    // changed in BMS-5s
-
-#define PIN_BMS_SCL    PB_13    // changed in BMS-5s
-#define PIN_BMS_SDA    PB_14    // changed in BMS-5s
-#define PIN_BQ_ALERT  PB_12
-#define PIN_PCHG_EN   PB_2
-#define PIN_SW_POWER  PA_8
-
 #define PIN_V_REF    PA_0      // not existing in 48V board
 #define PIN_V_BAT    PA_4
 #define PIN_V_EXT    PA_5

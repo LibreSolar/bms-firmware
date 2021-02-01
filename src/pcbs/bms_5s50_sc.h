@@ -27,31 +27,6 @@
 #define NUM_CELLS_MAX 5
 #define NUM_THERMISTORS_MAX 1
 
-#define PIN_UEXT_TX   PA_2
-#define PIN_UEXT_RX   PA_3
-#define PIN_UEXT_SCL  PB_6
-#define PIN_UEXT_SDA  PB_7
-#define PIN_UEXT_MISO PB_4
-#define PIN_UEXT_MOSI PB_5
-#define PIN_UEXT_SCK  PB_3
-#define PIN_UEXT_SSEL PA_1
-
-#define PIN_SWD_TX    PA_9
-#define PIN_SWD_RX    PA_10
-
-#define PIN_CAN_RX    PB_8
-#define PIN_CAN_TX    PB_9
-#define PIN_CAN_STB   PA_15
-
-#define PIN_LED_RED   PB_14
-#define PIN_LED_GREEN PB_15
-
-#define PIN_BMS_SCL    PB_10
-#define PIN_BMS_SDA    PB_11
-#define PIN_BQ_ALERT  PB_12
-#define PIN_PCHG_EN   PB_2
-#define PIN_SW_POWER  PA_8
-
 #define PIN_V_REF    PA_0
 #define PIN_V_BAT    PA_4
 #define PIN_V_EXT    PA_5

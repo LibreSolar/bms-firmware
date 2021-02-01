@@ -6,6 +6,7 @@
 
 /dts-v1/;
 #include <st/f0/stm32f072Xb.dtsi>
+#include <st/f0/stm32f072c(8-b)tx-pinctrl.dtsi>
 
 / {
 	model = "Libre Solar BMS 8S50 IC";
@@ -60,25 +61,31 @@
 };
 
 &usart1 {
+	pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
 	current-speed = <115200>;
 	status = "okay";
 };
 
 &usart2 {
+	pinctrl-0 = <&usart2_tx_pa2 &usart2_rx_pa3>;
 	current-speed = <115200>;
 	status = "okay";
 };
 
 &i2c1 {
+	pinctrl-0 = <&i2c1_scl_pb6 &i2c1_sda_pb7>;
 	status = "okay";
 };
 
 &i2c2 {
-	status = "okay";
+	pinctrl-0 = <&i2c2_scl_pb10 &i2c2_sda_pb11>;
 	clock-frequency = <I2C_BITRATE_STANDARD>;
+	status = "okay";
 };
 
 &spi1 {
+	pinctrl-0 = <&spi1_sck_pb3 &spi1_miso_pb4 &spi1_mosi_pb5>;
+	cs-gpios = <&gpioa 15 GPIO_ACTIVE_LOW>;
 	status = "okay";
 };
 
@@ -91,6 +98,7 @@
 };
 
 &can1 {
+	pinctrl-0 = <&can_rx_pb8 &can_tx_pb9>;
 	bus-speed = <250000>;
 	status = "okay";
 };
