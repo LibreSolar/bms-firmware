@@ -12,6 +12,28 @@
 	model = "Libre Solar BMS 5S50 SC";
 	compatible = "st,stm32f072";
 
+	pcb {
+		compatible = "bms";
+
+		type = "BMS 15S80 SC";
+		version-str = "v0.1";
+		version-num = <1>;
+
+		/* adjust via overlay if bq76940 is used */
+		num-cells-max = <10>;
+		num-thermistors-max = <2>;
+
+		current-max = <80>;
+		shunt-res = <1500>;
+
+		/*
+		 * Additional information:
+		 * - GAIN_PACK_VOLTAGE (105.6/5.6)
+		 * - PIN_V_BAT    PA_4
+		 * - PIN_V_EXT    PA_5
+		 */
+	};
+
 	chosen {
 		zephyr,console = &usart3;
 		zephyr,shell-uart = &usart3;

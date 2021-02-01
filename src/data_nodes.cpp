@@ -34,8 +34,8 @@ extern BmsConfig bms_conf;
 extern BmsStatus bms_status;
 
 const char manufacturer[] = "Libre Solar";
-const char device_type[] = DEVICE_TYPE;
-const char hardware_version[] = HARDWARE_VERSION;
+const char device_type[] = DT_PROP(DT_PATH(pcb), type);
+const char hardware_version[] = DT_PROP(DT_PATH(pcb), version_str);
 const char firmware_version[] = "0.1";
 
 static char device_id[9];
@@ -199,6 +199,7 @@ static DataNode data_nodes[] = {
     //TS_NODE_FLOAT(0x75, "MCU_degC", &mcu_temp, 1,
     //    ID_OUTPUT, TS_ANY_R, 0),
 
+    // TODO: Not working in Zephyr yet
 #if defined(PIN_ADC_TEMP_FETS) || defined(MOSFET_TEMP_SENSOR)
     TS_NODE_FLOAT(0x76, "MOSFETs_degC", &bms_status.mosfet_temp, 1,
         ID_OUTPUT, TS_ANY_R, 0),

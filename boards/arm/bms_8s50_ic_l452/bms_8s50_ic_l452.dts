@@ -12,6 +12,28 @@
 	model = "Libre Solar BMS 8S50 IC";
 	compatible = "st,stm32l452";
 
+	pcb {
+		compatible = "bms";
+
+		type = "BMS 8S50 IC";
+		version-str = "v0.1";
+		version-num = <1>;
+
+		num-cells-max = <8>;
+		num-thermistors-max = <2>;
+
+		current-max = <50>;
+		shunt-res = <1000>;
+
+		/*
+		 * Additional information:
+		 * - Has MOSFET temperature sensor
+		 * - PIN_V_EXT     PA_5
+		 * - PIN_TEMP_1    PA_6
+		 * - PIN_TEMP_2    PA_7
+		 */
+	};
+
 	chosen {
 		zephyr,console = &usart1;
 		zephyr,shell-uart = &usart1;

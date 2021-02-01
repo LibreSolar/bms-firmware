@@ -17,30 +17,12 @@
 #ifndef PCB_H
 #define PCB_H
 
-#ifndef UNIT_TEST
 #include <zephyr.h>
-#endif
 
-/*
- * Board-specific configuration
- */
+#define NUM_CELLS_MAX           DT_PROP(DT_PATH(pcb), num_cells_max)
+#define NUM_THERMISTORS_MAX     DT_PROP(DT_PATH(pcb), num_thermistors_max)
 
-// 12V BMS with bq76920
-// https://github.com/LibreSolar/bms-5s50-sc
-#ifdef CONFIG_BOARD_BMS_5S50_SC
-#include "pcbs/bms_5s50_sc.h"
-#endif
-
-// 24 to 48V BMS with bq76930/40
-// https://github.com/LibreSolar/bms-15s80-sc
-#ifdef CONFIG_BOARD_BMS_15S80_SC
-#include "pcbs/bms_15s80_sc.h"
-#endif
-
-// 24V BMS with ISL94202
-// https://github.com/LibreSolar/bms-8s50-ic
-#if defined(CONFIG_BOARD_BMS_8S50_IC_F072) || defined(CONFIG_BOARD_BMS_8S50_IC_L452)
-#include "pcbs/bms_8s50_ic.h"
-#endif
+#define PCB_MAX_CURRENT         DT_PROP(DT_PATH(pcb), current_max)
+#define SHUNT_RESISTOR          (DT_PROP(DT_PATH(pcb), shunt_res) / 1000.0)
 
 #endif // PCB_H

@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2020 Martin Jäger / Libre Solar
+
+description: Generic BMS device setup
+
+compatible: "bms"
+
+properties:
+    type:
+      type: string
+      required: true
+      description: Device type
+    version-str:
+      type: string
+      required: true
+      description: Hardware version number (human-readable)
+    version-num:
+      type: int
+      required: true
+      description: Hardware version number (usable in preprocessor defines)
+
+    num-cells-max:
+      type: int
+      required: true
+      description: "Maximum number of cells supported by this board"
+    num-thermistors-max:
+      type: int
+      required: true
+      description: "Maximum number of thermistors supported by this board"
+
+    current-max:
+      type: int
+      description: Maximum charge/discharge current in amps
+    shunt-res:
+      type: int
+      description: Resistance of shunt in micro-Ohms
