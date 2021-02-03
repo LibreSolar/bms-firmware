@@ -37,6 +37,14 @@ void main(void)
     bms_init_hardware();
     bms_init_status(&bms_status);
     bms_init_config(&bms_conf, CELL_TYPE_LFP, 45);
+
+    bms_apply_cell_ovp(&bms_conf);
+    bms_apply_cell_uvp(&bms_conf);
+
+    bms_apply_dis_scp(&bms_conf);
+    bms_apply_dis_ocp(&bms_conf);
+    bms_apply_chg_ocp(&bms_conf);
+
     bms_update(&bms_conf, &bms_status);
     bms_reset_soc(&bms_conf, &bms_status, -1);
 
