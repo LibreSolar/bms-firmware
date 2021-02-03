@@ -56,13 +56,18 @@ static void set_num_cells(int num)
 
 void bms_init_hardware()
 {
+    uint8_t reg;
+
     isl94202_init();
     set_num_cells(4);
 
-    uint16_t reg = 0;
-    reg |= ISL94202_FC_XT2M_Msk;        // xTemp2 monitoring MOSFETs and not cells
-    reg |= ISL94202_FC_CBDC_Msk;        // cell balancing during charging enabled
-    isl94202_write_word(ISL94202_FC, reg);
+    // xTemp2 monitoring MOSFETs and not cells
+    reg = ISL94202_SETUP0_XT2M_Msk;
+    isl94202_write_bytes(ISL94202_SETUP0, &reg, 1);
+
+    // Enable balancing during charging
+    reg = ISL94202_SETUP1_CBDC_Msk;
+    isl94202_write_bytes(ISL94202_SETUP1, &reg, 1);
 }
 
 void bms_update(BmsConfig *conf, BmsStatus *status)
@@ -76,8 +81,8 @@ void bms_update(BmsConfig *conf, BmsStatus *status)
 
 void bms_shutdown()
 {
-    uint8_t reg = ISL94202_FOPS_PDWN_Msk;
-    isl94202_write_bytes(ISL94202_FOPS, &reg, 1);
+    uint8_t reg = ISL94202_CTRL3_PDWN_Msk;
+    isl94202_write_bytes(ISL94202_CTRL3, &reg, 1);
 }
 
 bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
@@ -218,8 +223,8 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
     uint32_t now = uptime();
 
     // gain
-    isl94202_read_bytes(ISL94202_CG, buf, 1);
-    uint8_t gain_reg = (buf[0] & ISL94202_CG_Msk) >> ISL94202_CG_Pos;
+    isl94202_read_bytes(ISL94202_CTRL0, buf, 1);
+    uint8_t gain_reg = (buf[0] & ISL94202_CTRL0_CG_Msk) >> ISL94202_CTRL0_CG_Pos;
     int gain = gain_reg < 3 ? ISL94202_Current_Gain[gain_reg] : 500;
 
     // direction / sign
@@ -284,23 +289,22 @@ void bms_read_voltages(BmsStatus *status)
 
 void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
 {
-    uint8_t buf[2];
-    isl94202_read_bytes(ISL94202_STAT1, buf, 2);
-    uint16_t stat1 = buf[0] + (buf[1] << 8);
+    uint8_t stat[2];
+    isl94202_read_bytes(ISL94202_STAT0, stat, 2);
 
     status->error_flags = 0;
-    if (stat1 & ISL94202_STAT1_UV_Msk)      status->error_flags |= 1U << BMS_ERR_CELL_UNDERVOLTAGE;
-    if (stat1 & ISL94202_STAT1_OV_Msk)      status->error_flags |= 1U << BMS_ERR_CELL_OVERVOLTAGE;
-    if (stat1 & ISL94202_STAT1_DSC_Msk)     status->error_flags |= 1U << BMS_ERR_SHORT_CIRCUIT;
-    if (stat1 & ISL94202_STAT1_DOC_Msk)     status->error_flags |= 1U << BMS_ERR_DIS_OVERCURRENT;
-    if (stat1 & ISL94202_STAT1_COC_Msk)     status->error_flags |= 1U << BMS_ERR_CHG_OVERCURRENT;
-    if (stat1 & ISL94202_STAT1_OPEN_Msk)    status->error_flags |= 1U << BMS_ERR_OPEN_WIRE;
-    if (stat1 & ISL94202_STAT1_DUT_Msk)     status->error_flags |= 1U << BMS_ERR_DIS_UNDERTEMP;
-    if (stat1 & ISL94202_STAT1_DOT_Msk)     status->error_flags |= 1U << BMS_ERR_DIS_OVERTEMP;
-    if (stat1 & ISL94202_STAT1_CUT_Msk)     status->error_flags |= 1U << BMS_ERR_CHG_UNDERTEMP;
-    if (stat1 & ISL94202_STAT1_COT_Msk)     status->error_flags |= 1U << BMS_ERR_CHG_OVERTEMP;
-    if (stat1 & ISL94202_STAT1_IOT_Msk)     status->error_flags |= 1U << BMS_ERR_INT_OVERTEMP;
-    if (stat1 & ISL94202_STAT1_CELLF_Msk)   status->error_flags |= 1U << BMS_ERR_CELL_FAILURE;
+    if (stat[0] & ISL94202_STAT0_UVF_Msk)   status->error_flags |= 1U << BMS_ERR_CELL_UNDERVOLTAGE;
+    if (stat[0] & ISL94202_STAT0_OVF_Msk)   status->error_flags |= 1U << BMS_ERR_CELL_OVERVOLTAGE;
+    if (stat[1] & ISL94202_STAT1_DSCF_Msk)  status->error_flags |= 1U << BMS_ERR_SHORT_CIRCUIT;
+    if (stat[1] & ISL94202_STAT1_DOCF_Msk)  status->error_flags |= 1U << BMS_ERR_DIS_OVERCURRENT;
+    if (stat[1] & ISL94202_STAT1_COCF_Msk)  status->error_flags |= 1U << BMS_ERR_CHG_OVERCURRENT;
+    if (stat[1] & ISL94202_STAT1_OPENF_Msk) status->error_flags |= 1U << BMS_ERR_OPEN_WIRE;
+    if (stat[0] & ISL94202_STAT0_DUTF_Msk)  status->error_flags |= 1U << BMS_ERR_DIS_UNDERTEMP;
+    if (stat[0] & ISL94202_STAT0_DOTF_Msk)  status->error_flags |= 1U << BMS_ERR_DIS_OVERTEMP;
+    if (stat[0] & ISL94202_STAT0_CUTF_Msk)  status->error_flags |= 1U << BMS_ERR_CHG_UNDERTEMP;
+    if (stat[0] & ISL94202_STAT0_COTF_Msk)  status->error_flags |= 1U << BMS_ERR_CHG_OVERTEMP;
+    if (stat[1] & ISL94202_STAT1_IOTF_Msk)  status->error_flags |= 1U << BMS_ERR_INT_OVERTEMP;
+    if (stat[1] & ISL94202_STAT1_CELLF_Msk) status->error_flags |= 1U << BMS_ERR_CELL_FAILURE;
 }
 
 void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
