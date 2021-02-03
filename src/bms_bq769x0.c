@@ -665,6 +665,12 @@ static const char *byte2bitstr(uint8_t b)
     return str;
 }
 
+void bms_print_register(uint8_t addr)
+{
+    uint8_t reg = bq769x0_read_byte(addr);
+    printf("0x%.2X: 0x%.2X = %s\n", addr, reg, byte2bitstr(reg));
+}
+
 void bms_print_registers()
 {
     printf("0x00 SYS_STAT:  %s\n", byte2bitstr(bq769x0_read_byte(SYS_STAT)));

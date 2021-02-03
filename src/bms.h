@@ -326,10 +326,17 @@ void bms_update_error_flags(BmsConfig *conf, BmsStatus *status);
 void bms_handle_errors(BmsConfig *conf, BmsStatus *status);
 
 #if BMS_DEBUG
+
+/**
+ * Print passed BMS IC register
+ */
+void bms_print_register(uint8_t addr);
+
 /**
  * Print all BMS IC registers
  */
 void bms_print_registers();
+
 #endif
 
 #ifdef __cplusplus

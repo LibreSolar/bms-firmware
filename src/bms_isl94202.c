@@ -324,25 +324,22 @@ static const char *byte2bitstr(uint8_t b)
     return str;
 }
 
+void bms_print_register(uint8_t addr)
+{
+    uint8_t reg;
+    isl94202_read_bytes(addr, &reg, 1);
+    printf("0x%.2X: 0x%.2X = %s\n", addr, reg, byte2bitstr(reg));
+}
+
 void bms_print_registers()
 {
     printf("EEPROM content: ------------------\n");
-    for (int i = 0; i < 0x4C; i += 2) {
-        uint8_t buf[2];
-        isl94202_read_bytes(i, buf, sizeof(buf));
-        printf("0x%.2X: 0x%.2X%.2X = ", i, buf[1], buf[0]);
-        printf("%s ", byte2bitstr(buf[1]));
-        printf("%s\n", byte2bitstr(buf[0]));
-
+    for (int i = 0; i < 0x4C; i++) {
+        bms_print_register(i);
     }
     printf("RAM content: ------------------\n");
-    for (int i = 0x80; i <= 0xAA; i += 2) {
-        uint8_t buf[2];
-        isl94202_read_bytes(i, buf, sizeof(buf));
-        printf("0x%.2X: 0x%.2X%.2X = ", i, buf[1], buf[0]);
-        printf("%s ", byte2bitstr(buf[1]));
-        printf("%s\n", byte2bitstr(buf[0]));
-
+    for (int i = 0x80; i <= 0xAB; i++) {
+        bms_print_register(i);
     }
 }
 
