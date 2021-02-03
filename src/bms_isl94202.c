@@ -54,7 +54,7 @@ static void set_num_cells(int num)
     //k_sleep(30);
 }
 
-void bms_init()
+void bms_init_hardware()
 {
     isl94202_init();
     set_num_cells(4);

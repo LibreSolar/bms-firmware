@@ -15,6 +15,12 @@ float ocv_lfp[] = { // 100, 95, ..., 0 %
   3.264, 3.262, 3.252, 3.240, 3.226, 3.213, 3.190, 3.177, 3.132, 2.833
 };
 
+void bms_init_status(BmsStatus *status)
+{
+    status->chg_enable = true;
+    status->dis_enable = true;
+}
+
 void bms_init_config(BmsConfig *conf, enum CellType type, float nominal_capacity)
 {
     conf->auto_balancing_enabled = true;
@@ -103,48 +109,48 @@ void bms_state_machine(BmsConfig *conf, BmsStatus *status)
 
     switch(status->state) {
         case BMS_STATE_OFF:
-            if (!bms_dis_error(status) && !status->empty) {
+            if (bms_dis_allowed(status)) {
                 bms_dis_switch(conf, status, true);
                 status->state = BMS_STATE_DIS;
                 printf("Going to state DIS\n");
             }
-            else if (!bms_chg_error(status) && !status->full) {
+            else if (bms_chg_allowed(status)) {
                 bms_chg_switch(conf, status, true);
                 status->state = BMS_STATE_CHG;
                 printf("Going to state CHG\n");
             }
             break;
         case BMS_STATE_CHG:
-            if (bms_chg_error(status) || status->full) {
+            if (!bms_chg_allowed(status)) {
                 bms_chg_switch(conf, status, false);
                 status->state = BMS_STATE_OFF;
                 printf("Going back to state OFF\n");
             }
-            else if (!bms_dis_error(status) && !status->empty) {
+            else if (bms_dis_allowed(status)) {
                 bms_dis_switch(conf, status, true);
                 status->state = BMS_STATE_NORMAL;
                 printf("Going to state NORMAL\n");
             }
             break;
         case BMS_STATE_DIS:
-            if (bms_dis_error(status) || status->empty) {
+            if (!bms_dis_allowed(status)) {
                 bms_dis_switch(conf, status, false);
                 status->state = BMS_STATE_OFF;
                 printf("Going back to state OFF\n");
             }
-            else if (!bms_chg_error(status) && !status->full) {
+            else if (bms_chg_allowed(status)) {
                 bms_chg_switch(conf, status, true);
                 status->state = BMS_STATE_NORMAL;
                 printf("Going to state NORMAL\n");
             }
             break;
         case BMS_STATE_NORMAL:
-            if (bms_dis_error(status) || status->empty) {
+            if (!bms_dis_allowed(status)) {
                 bms_dis_switch(conf, status, false);
                 status->state = BMS_STATE_CHG;
                 printf("Going back to state CHG\n");
             }
-            else if (bms_chg_error(status) || status->full) {
+            else if (!bms_chg_allowed(status)) {
                 bms_chg_switch(conf, status, false);
                 status->state = BMS_STATE_DIS;
                 printf("Going back to state DIS\n");
@@ -174,6 +180,16 @@ bool bms_dis_error(BmsStatus *status)
         || (status->error_flags & (1U << BMS_ERR_DIS_OVERTEMP))
         || (status->error_flags & (1U << BMS_ERR_INT_OVERTEMP))
         || (status->error_flags & (1U << BMS_ERR_CELL_FAILURE));
+}
+
+bool bms_chg_allowed(BmsStatus *status)
+{
+    return !bms_chg_error(status) && !status->full && status->chg_enable;
+}
+
+bool bms_dis_allowed(BmsStatus *status)
+{
+    return !bms_dis_error(status) && !status->empty && status->dis_enable;
 }
 
 bool bms_balancing_allowed(BmsConfig *conf, BmsStatus *status)

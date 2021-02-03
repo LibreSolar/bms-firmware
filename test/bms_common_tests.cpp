@@ -51,6 +51,9 @@ void init_conf()
 
     bms_status.full = false;
     bms_status.empty = false;
+
+    bms_status.chg_enable = true;
+    bms_status.dis_enable = true;
 }
 
 void no_off2dis_if_dis_nok()

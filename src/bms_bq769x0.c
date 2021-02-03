@@ -36,7 +36,7 @@ void bms_check_cell_temp(BmsConfig *conf, BmsStatus *status);
 
 //----------------------------------------------------------------------------
 
-void bms_init()
+void bms_init_hardware()
 {
     bq769x0_init();
 }

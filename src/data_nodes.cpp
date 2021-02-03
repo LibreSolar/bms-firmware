@@ -163,11 +163,11 @@ static DataNode data_nodes[] = {
 
     TS_NODE_PATH(ID_INPUT, "input", 0, NULL),
 
-    //TS_NODE_BOOL(0x61, "ChgEn", &bms.chg_enabled_target,
-    //    ID_INPUT, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_NODE_BOOL(0x61, "ChgEn", &bms_status.chg_enable,
+        ID_INPUT, TS_ANY_R | TS_ANY_W, PUB_NVM),
 
-    //TS_NODE_BOOL(0x62, "DisEn", &bms.dis_enabled_target,
-    //    ID_INPUT, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_NODE_BOOL(0x62, "DisEn", &bms_status.dis_enable,
+        ID_INPUT, TS_ANY_R | TS_ANY_W, PUB_NVM),
 
     // OUTPUT DATA ////////////////////////////////////////////////////////////
     // using IDs >= 0x70 except for high priority data objects

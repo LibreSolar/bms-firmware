@@ -108,6 +108,8 @@ typedef struct
 typedef struct
 {
     uint16_t state;                             ///< Current state of the battery
+    bool chg_enable;                            ///< Manual enable/disable setting for charging
+    bool dis_enable;                            ///< Manual enable/disable setting for discharging
 
     uint16_t connected_cells;                   ///< \brief Actual number of cells connected (might
                                                 ///< be less than NUM_CELLS_MAX)
@@ -163,7 +165,12 @@ enum BmsErrorFlag {
 /**
  * Initialization of BMS incl. setup of communication. This function does not yet set any config.
  */
-void bms_init();
+void bms_init_hardware();
+
+/**
+ * Initialization of BmsStatus with suitable default values.
+ */
+void bms_init_status(BmsStatus *status);
 
 /**
  * Initialization of BmsConfig with typical default values for the given cell type.
@@ -210,6 +217,20 @@ bool bms_chg_error(BmsStatus *status);
  * @returns true if any discharging error flag is set
  */
 bool bms_dis_error(BmsStatus *status);
+
+/**
+ * Check if charging is allowed
+ *
+ * @returns true if no charging error flags are set
+ */
+bool bms_chg_allowed(BmsStatus *status);
+
+/**
+ * Check if discharging is allowed
+ *
+ * @returns true if no discharging error flags are set
+ */
+bool bms_dis_allowed(BmsStatus *status);
 
 /**
  * Balancing limits check
