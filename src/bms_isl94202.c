@@ -48,7 +48,7 @@ static void set_num_cells(int num)
             break;
     }
     isl94202_write_bytes(ISL94202_MOD_CELL + 1, &cell_reg, 1);
-    // ToDo: Double write for certain bytes... move this to _hw.c file
+    // ToDo: Double write for certain bytes (see datasheet 7.1.10) --> move this to _hw.c file
     //k_sleep(30);
     //isl94202_write_bytes(ISL94202_MOD_CELL + 1, &cell_reg, 1);
     //k_sleep(30);
@@ -68,6 +68,10 @@ void bms_init_hardware()
     // Enable balancing during charging
     reg = ISL94202_SETUP1_CBDC_Msk;
     isl94202_write_bytes(ISL94202_SETUP1, &reg, 1);
+
+    // Enable FET control via microcontroller
+    reg = ISL94202_CTRL2_UCFET_Msk;
+    isl94202_write_bytes(ISL94202_CTRL2, &reg, 1);
 }
 
 void bms_update(BmsConfig *conf, BmsStatus *status)
@@ -87,14 +91,28 @@ void bms_shutdown()
 
 bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
-    /* ToDo */
-    return 0;
+    uint8_t reg;
+    isl94202_read_bytes(ISL94202_CTRL1, &reg, 1);
+    if (enable) {
+        reg |= ISL94202_CTRL1_CFET_Msk;
+    }
+    else {
+        reg &= ~ISL94202_CTRL1_CFET_Msk;
+    }
+    return isl94202_write_bytes(ISL94202_CTRL1, &reg, 1);
 }
 
 bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
-    /* ToDo */
-    return 0;
+    uint8_t reg;
+    isl94202_read_bytes(ISL94202_CTRL1, &reg, 1);
+    if (enable) {
+        reg |= ISL94202_CTRL1_DFET_Msk;
+    }
+    else {
+        reg &= ~ISL94202_CTRL1_DFET_Msk;
+    }
+    return isl94202_write_bytes(ISL94202_CTRL1, &reg, 1);
 }
 
 void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
