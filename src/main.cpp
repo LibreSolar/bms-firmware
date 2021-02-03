@@ -46,14 +46,16 @@ void main(void)
         DT_GPIO_FLAGS(SW_PWR_GPIO, gpios) | GPIO_INPUT);
 
     uint32_t btn_pressed_count = 0;
-    while (1) {
+    int64_t t_start = k_uptime_get();
+
+    while (true) {
 
         bms_update(&bms_conf, &bms_status);
         bms_state_machine(&bms_conf, &bms_status);
 
         if (gpio_pin_get(sw_pwr, DT_GPIO_PIN(SW_PWR_GPIO, gpios)) == 1) {
             btn_pressed_count++;
-            if (btn_pressed_count > 3) {
+            if (btn_pressed_count > 30) {
                 printf("Button pressed for 3s: shutdown...\n");
                 bms_shutdown();
                 k_sleep(K_MSEC(10000));
@@ -65,7 +67,8 @@ void main(void)
 
         //bms_print_registers();
 
-        k_sleep(K_MSEC(1000));
+        t_start += 100;
+        k_sleep(K_TIMEOUT_ABS_MS(t_start));
     }
 }
 
