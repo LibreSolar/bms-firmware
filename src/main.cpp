@@ -21,10 +21,6 @@ BmsConfig bms_conf;
 BmsStatus bms_status;
 extern ThingSet ts;
 
-// preliminary (necessary in uext_oled for compatibility with mbed)
-float load_voltage;
-bool blinkOn = false;
-
 void main(void)
 {
     printf("Booting Libre Solar BMS: %s\n", CONFIG_BOARD);

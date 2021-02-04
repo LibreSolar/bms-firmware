@@ -21,9 +21,9 @@
 #include "pcb.h"
 #include "oled_ssd1306.h"
 
-extern bool blinkOn;
 extern BmsStatus bms_status;
-extern float load_voltage;
+
+float load_voltage;     // dummy (currently not measured)
 
 // implement specific extension inherited from ExtInterface
 class ExtOled: public ExtInterface
@@ -52,6 +52,8 @@ void ExtOled::process_1s()
     char buf[30];
     unsigned int len;
 
+    blink_on = !blink_on;
+
     oled.clear();
 
     oled.setTextCursor(0, 0);
@@ -75,7 +77,7 @@ void ExtOled::process_1s()
     oled.writeString(buf, len);
 
     for (int i = 0; i < NUM_CELLS_MAX; i++) {
-        if (blinkOn || !(bms_status.balancing_status & (1 << i))) {
+        if (blink_on || !(bms_status.balancing_status & (1 << i))) {
             oled.setTextCursor((i % 2 == 0) ? 0 : 64, 24 + (i / 2) * 8);
             len = snprintf(buf, sizeof(buf), "%d:%.3f V", i+1, bms_status.cell_voltages[i]);
             oled.writeString(buf, len);
