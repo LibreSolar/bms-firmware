@@ -7,11 +7,10 @@
 #ifndef UNIT_TEST
 
 #include <zephyr.h>
-#include <device.h>
-#include <drivers/gpio.h>
 #include <stdio.h>
 
 #include "bms.h"
+#include "button.h"
 #include "ext/ext.h"
 #include "leds.h"
 #include "thingset.h"
@@ -25,8 +24,6 @@ extern ThingSet ts;
 // preliminary (necessary in uext_oled for compatibility with mbed)
 float load_voltage;
 bool blinkOn = false;
-
-#define SW_PWR_GPIO DT_ALIAS(sw_pwr)
 
 void main(void)
 {
@@ -48,29 +45,18 @@ void main(void)
     bms_update(&bms_conf, &bms_status);
     bms_reset_soc(&bms_conf, &bms_status, -1);
 
-    const struct device *sw_pwr;
-	sw_pwr = device_get_binding(DT_GPIO_LABEL(SW_PWR_GPIO, gpios));
-    gpio_pin_configure(sw_pwr, DT_GPIO_PIN(SW_PWR_GPIO, gpios),
-        DT_GPIO_FLAGS(SW_PWR_GPIO, gpios) | GPIO_INPUT);
+    button_init();
 
-    uint32_t btn_pressed_count = 0;
     int64_t t_start = k_uptime_get();
-
     while (true) {
 
         bms_update(&bms_conf, &bms_status);
         bms_state_machine(&bms_conf, &bms_status);
 
-        if (gpio_pin_get(sw_pwr, DT_GPIO_PIN(SW_PWR_GPIO, gpios)) == 1) {
-            btn_pressed_count++;
-            if (btn_pressed_count > 30) {
-                printf("Button pressed for 3s: shutdown...\n");
-                bms_shutdown();
-                k_sleep(K_MSEC(10000));
-            }
-        }
-        else {
-            btn_pressed_count = 0;
+        if (button_pressed_for_3s()) {
+            printf("Button pressed for 3s: shutdown...\n");
+            bms_shutdown();
+            k_sleep(K_MSEC(10000));
         }
 
         //bms_print_registers();
