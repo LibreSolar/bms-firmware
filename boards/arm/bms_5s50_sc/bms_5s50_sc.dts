@@ -112,6 +112,21 @@
 		reg = <0x08>;	// ignored (firmware will auto-detect I2C address)
 		alert-gpios = <&gpiob 12 GPIO_ACTIVE_HIGH>;
 	};
+
+	eeprom@50 {
+		// Microchip 24AA01
+		compatible = "atmel,at24";
+		reg = <0x50>;
+		label = "EEPROM_0";
+		size = <1024>;
+		pagesize = <8>;
+		address-width = <8>;
+		/*
+		 * timeout of 5 ms as suggested in datasheet seems too optimistic
+		 * (several write errors occured during testing)
+		 */
+		timeout = <7>;
+	};
 };
 
 &spi1 {

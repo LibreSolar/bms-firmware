@@ -109,6 +109,21 @@
 		label = "ISL94202";
 		reg = <0x28>;	/* 0x50 >> 1 */
 	};
+
+	eeprom@50 {
+		// Microchip 24AA32A
+		compatible = "atmel,at24";
+		reg = <0x50>;
+		label = "EEPROM_0";
+		size = <32768>;
+		pagesize = <32>;
+		address-width = <16>;
+		/*
+		 * timeout of 5 ms as suggested in datasheet seems too optimistic
+		 * (several write errors occured during testing)
+		 */
+		timeout = <7>;
+	};
 };
 
 &spi1 {

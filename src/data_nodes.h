@@ -46,7 +46,7 @@
  * Increment the version number each time any data node IDs stored in NVM are changed. Otherwise
  * data might get corrupted.
  */
-#define DATA_NODES_VERSION 4
+#define DATA_NODES_VERSION 1
 
 extern bool pub_serial_enable;
 extern bool pub_can_enable;

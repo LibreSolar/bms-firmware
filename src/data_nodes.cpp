@@ -17,6 +17,7 @@
 
 #include "thingset.h"
 #include "bms.h"
+#include "eeprom.h"
 
 #include <stdio.h>
 
@@ -259,7 +260,16 @@ ThingSet ts(data_nodes, sizeof(data_nodes)/sizeof(DataNode));
 
 void data_nodes_update_conf()
 {
-    // ToDo: Store changes in EEPROM
+    // ToDo: Validate new settings before applying them
+
+    bms_apply_cell_ovp(&bms_conf);
+    bms_apply_cell_uvp(&bms_conf);
+
+    bms_apply_dis_scp(&bms_conf);
+    bms_apply_dis_ocp(&bms_conf);
+    bms_apply_chg_ocp(&bms_conf);
+
+    eeprom_store_data();
 }
 
 void data_nodes_init()
@@ -274,7 +284,7 @@ void data_nodes_init()
     uint64_to_base32(id64, device_id, sizeof(device_id), alphabet_crockford);
 #endif
 
-    // ToDo: Read data from EEPROM
+    eeprom_restore_data();
 }
 
 void thingset_auth()

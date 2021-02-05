@@ -11,6 +11,7 @@
 
 #include "bms.h"
 #include "button.h"
+#include "eeprom.h"
 #include "ext/ext.h"
 #include "leds.h"
 #include "thingset.h"
@@ -25,11 +26,12 @@ void main(void)
 {
     printf("Booting Libre Solar BMS: %s\n", CONFIG_BOARD);
 
-    data_nodes_init();
-
     bms_init_hardware();
     bms_init_status(&bms_status);
     bms_init_config(&bms_conf, CELL_TYPE_LFP, 45);
+
+    // read custom configuration from EEPROM
+    data_nodes_init();
 
     bms_apply_cell_ovp(&bms_conf);
     bms_apply_cell_uvp(&bms_conf);
@@ -56,6 +58,8 @@ void main(void)
         }
 
         //bms_print_registers();
+
+        eeprom_update();
 
         t_start += 100;
         k_sleep(K_TIMEOUT_ABS_MS(t_start));
