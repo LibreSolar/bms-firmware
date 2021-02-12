@@ -62,6 +62,11 @@ void data_nodes_update_conf();
 void data_nodes_init();
 
 /**
+ * Callback to read and print BMS register via ThingSet
+ */
+void print_register();
+
+/**
  * Callback to provide authentication mechanism via ThingSet
  */
 void thingset_auth();

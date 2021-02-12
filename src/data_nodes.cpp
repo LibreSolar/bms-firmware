@@ -45,6 +45,9 @@ bool pub_can_enable = false;
 uint16_t ts_can_node_id = CONFIG_THINGSET_CAN_DEFAULT_NODE_ID;
 #endif
 
+// used for print_register callback
+static uint16_t reg_addr = 0;
+
 /**
  * Data Objects
  *
@@ -236,6 +239,9 @@ static DataNode data_nodes[] = {
     //TS_NODE_EXEC(0xE2, "reset", &reset_device, ID_EXEC, TS_ANY_RW),
     //TS_NODE_EXEC(0xE3, "bootloader-stm", &start_stm32_bootloader, ID_EXEC, TS_ANY_RW),
     //TS_NODE_EXEC(0xE4, "save-settings", &eeprom_store_data, ID_EXEC, TS_ANY_RW),
+    TS_NODE_EXEC(0xEA, "print-register", &print_register, ID_EXEC, TS_ANY_RW),
+    TS_NODE_UINT16(0xEB, "RegAddr", &reg_addr, 0xEA, TS_ANY_RW, 0),
+    TS_NODE_EXEC(0xEC, "print-registers", &bms_print_registers, ID_EXEC, TS_ANY_RW),
 
     TS_NODE_EXEC(0xEE, "auth", &thingset_auth, 0, TS_ANY_RW),
     TS_NODE_STRING(0xEF, "Password", auth_password, sizeof(auth_password), 0xEE, TS_ANY_RW, 0),
@@ -285,6 +291,11 @@ void data_nodes_init()
 #endif
 
     eeprom_restore_data();
+}
+
+void print_register()
+{
+    bms_print_register(reg_addr);
 }
 
 void thingset_auth()
