@@ -327,6 +327,9 @@
 #define ISL94202_STAT3_INSLEEP_Pos  (0x6U)
 #define ISL94202_STAT3_INSLEEP_Msk  (0x1U << ISL94202_STAT3_INSLEEP_Pos)
 
+// Cell Balance FET Control
+#define ISL94202_CBFC               (0x84U)
+
 // Control 0
 #define ISL94202_CTRL0              (0x85U)
 #define ISL94202_CTRL0_AO_Pos       (0x0U)

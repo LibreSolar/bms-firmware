@@ -65,8 +65,8 @@ void bms_init_hardware()
     reg = ISL94202_SETUP0_XT2M_Msk;
     isl94202_write_bytes(ISL94202_SETUP0, &reg, 1);
 
-    // Enable balancing during charging
-    reg = ISL94202_SETUP1_CBDC_Msk;
+    // Enable balancing during charging and EOC conditions
+    reg = ISL94202_SETUP1_CBDC_Msk | ISL94202_SETUP1_CB_EOC_Msk;
     isl94202_write_bytes(ISL94202_SETUP1, &reg, 1);
 
     // Enable FET control via microcontroller
@@ -117,7 +117,16 @@ bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 
 void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
 {
-    /* ToDo */
+    /*
+     * Balancing is done automatically, just reading status here (even though the datasheet
+     * tells that the CBFC register value cannot be used for indication if a cell is
+     * balanced at the moment)
+     */
+
+    uint8_t reg = 0;
+    isl94202_read_bytes(ISL94202_CBFC, &reg, 1);
+
+    status->balancing_status = reg;
 }
 
 float bms_apply_dis_scp(BmsConfig *conf)
@@ -146,6 +155,14 @@ float bms_apply_dis_ocp(BmsConfig *conf)
 
 int bms_apply_cell_ovp(BmsConfig *conf)
 {
+    // also apply balancing thresholds here
+    isl94202_write_voltage(ISL94202_CBVL, conf->bal_cell_voltage_min, 0);
+    isl94202_write_voltage(ISL94202_CBVU, 4.5F, 0); // no upper limit for balancing
+    isl94202_write_voltage(ISL94202_CBDL, conf->bal_cell_voltage_diff, 0);
+    isl94202_write_voltage(ISL94202_CBDU, 1.0F, 0); // no tight limit for voltage delta
+
+    isl94202_write_voltage(ISL94202_EOC, conf->cell_chg_voltage, 0);
+
     // keeping CPW at the default value of 1 ms
     return isl94202_write_voltage(ISL94202_OVL_CPW, conf->cell_ov_limit, 1)
         && isl94202_write_voltage(ISL94202_OVR, conf->cell_ov_reset, 0)
