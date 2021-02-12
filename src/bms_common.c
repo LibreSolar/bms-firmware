@@ -61,13 +61,14 @@ void bms_init_config(BmsConfig *conf, enum CellType type, float nominal_capacity
     switch (type)
     {
         case CELL_TYPE_LFP:
-            conf->cell_ov_limit         = 3.65F;
+            conf->cell_ov_limit         = 3.80F;
             conf->cell_chg_voltage      = 3.60F;
             conf->cell_ov_reset         = 3.45F;
-            conf->bal_cell_voltage_min  = 3.20F;
+            conf->bal_cell_voltage_min  = 3.30F;
             conf->cell_uv_reset         = 3.10F;
-            conf->cell_dis_voltage      = 3.00F;
-            conf->cell_uv_limit         = 2.80F;
+            conf->cell_dis_voltage      = 2.80F;
+            conf->cell_uv_limit         = 2.50F;  // most cells survive even 2.0V, but we should
+                                                  // keep some margin for further self-discharge
             conf->ocv = ocv_lfp;
             conf->num_ocv_points = sizeof(ocv_lfp)/sizeof(float);
             break;
