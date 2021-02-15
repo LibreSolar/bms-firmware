@@ -27,12 +27,7 @@
 #define I2C_PULLUP_PORT DT_GPIO_LABEL(I2C_PULLUP_GPIO, gpios)
 #define I2C_PULLUP_PIN  DT_GPIO_PIN(I2C_PULLUP_GPIO, gpios)
 
-// static (private) variables
-//----------------------------------------------------------------------------
-
 static const struct device *i2c_dev;
-
-//----------------------------------------------------------------------------
 
 int isl94202_write_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes)
 {

@@ -19,13 +19,8 @@
 #include <time.h>
 #include <string.h>
 
-// static (private) variables
-//----------------------------------------------------------------------------
-
 extern int adc_gain;    // factory-calibrated, read out from chip (uV/LSB)
 extern int adc_offset;  // factory-calibrated, read out from chip (mV)
-
-//----------------------------------------------------------------------------
 
 /**
  * Checks if temperatures are within the limits, otherwise disables CHG/DSG FET
@@ -33,8 +28,6 @@ extern int adc_offset;  // factory-calibrated, read out from chip (mV)
  * This function is necessary as bq769x0 doesn't support temperature protection
  */
 void bms_check_cell_temp(BmsConfig *conf, BmsStatus *status);
-
-//----------------------------------------------------------------------------
 
 void bms_init_hardware()
 {
@@ -345,8 +338,6 @@ int bms_apply_cell_uvp(BmsConfig *conf)
     return ((long)1 << 12 | uv_trip << 4) * adc_gain / 1000 + adc_offset;
 }
 
-//----------------------------------------------------------------------------
-
 int bms_apply_cell_ovp(BmsConfig *conf)
 {
     regPROTECT3_t protect3;
@@ -376,8 +367,6 @@ int bms_apply_temp_limits(BmsConfig *bms)
     // bq769x0 don't support temperature limits --> has to be solved in software
     return 0;
 }
-
-//----------------------------------------------------------------------------
 
 void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
 {

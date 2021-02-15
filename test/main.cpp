@@ -18,7 +18,6 @@ float OCV[] = { // 100, 95, ..., 0 %
     3.264, 3.262, 3.252, 3.240, 3.226, 3.213, 3.190, 3.177, 3.132, 2.833
 };
 
-//----------------------------------------------------------------------------
 void setup()
 {
     bms_conf.dis_sc_limit  = 35.0;
@@ -55,7 +54,8 @@ void setup()
     bms_conf.nominal_capacity_Ah = 45.0;
     bms_status.connected_cells = 4;  // ToDo: Function to determine number of cells automatically
 
-    bms_update(&bms_conf, &bms_status);   // get voltage and temperature measurements before switching on
+    // get voltage and temperature measurements before switching on
+    bms_update(&bms_conf, &bms_status);
 
     bms_conf.bal_cell_voltage_min = 3.2;
     bms_conf.bal_idle_delay = 10 * 60;
