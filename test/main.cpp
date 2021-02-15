@@ -50,7 +50,7 @@ void setup()
 
     bms_conf.shunt_res_mOhm = SHUNT_RESISTOR;
     bms_conf.ocv = OCV;
-    bms_conf.num_ocv_points = sizeof(OCV)/sizeof(int);
+    bms_conf.num_ocv_points = sizeof(OCV)/sizeof(float);
 
     bms_conf.nominal_capacity_Ah = 45.0;
     bms_status.connected_cells = 4;  // ToDo: Function to determine number of cells automatically

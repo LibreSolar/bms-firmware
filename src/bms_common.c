@@ -10,9 +10,14 @@
 
 #include <stdio.h>
 
-float ocv_lfp[] = { // 100, 95, ..., 0 %
-  3.392, 3.314, 3.309, 3.308, 3.304, 3.296, 3.283, 3.275, 3.271, 3.268, 3.265,
-  3.264, 3.262, 3.252, 3.240, 3.226, 3.213, 3.190, 3.177, 3.132, 2.833
+static const float soc_pct[] = {
+    100.0F,  95.0F,  90.0F,  85.0F,  80.0F,  85.0F,  70.0F,  65.0F,  60.0F,  55.0F,  50.0F,
+     45.0F,  40.0F,  35.0F,  30.0F,  25.0F,  20.0F,  15.0F,  10.0F,  5.0F,    0.0F
+};
+
+static float ocv_lfp[] = {
+    3.392F, 3.314F, 3.309F, 3.308F, 3.304F, 3.296F, 3.283F, 3.275F, 3.271F, 3.268F, 3.265F,
+    3.264F, 3.262F, 3.252F, 3.240F, 3.226F, 3.213F, 3.190F, 3.177F, 3.132F, 2.833F
 };
 
 void bms_init_status(BmsStatus *status)
@@ -206,27 +211,11 @@ bool bms_balancing_allowed(BmsConfig *conf, BmsStatus *status)
 
 void bms_reset_soc(BmsConfig *conf, BmsStatus *status, int percent)
 {
-    if (percent <= 100 && percent >= 0)
-    {
-        status->coulomb_counter_mAs = conf->nominal_capacity_Ah * 3.6e4F * percent;
+    if (percent <= 100 && percent >= 0) {
+        status->soc = percent;
     }
-    else  // reset based on OCV
-    {
-        status->coulomb_counter_mAs = 0;  // initialize with totally depleted battery (0% SOC)
-
-        for (unsigned int i = 0; i < conf->num_ocv_points; i++)
-        {
-            if (conf->ocv[i] <= status->cell_voltage_avg) {
-                if (i == 0) {
-                    status->coulomb_counter_mAs = conf->nominal_capacity_Ah * 3.6e6F;  // 100% full
-                }
-                else {
-                    // interpolate between OCV[i] and OCV[i-1]
-                    status->coulomb_counter_mAs = conf->nominal_capacity_Ah * 3.6e6F / (conf->num_ocv_points - 1.0) *
-                    (conf->num_ocv_points - 1.0 - i + (status->cell_voltage_avg - conf->ocv[i])/(conf->ocv[i-1] - conf->ocv[i]));
-                }
-                return;
-            }
-        }
+    else { // reset based on OCV if percent is invalid
+        status->soc = interpolate(conf->ocv, soc_pct, conf->num_ocv_points,
+            status->cell_voltage_avg);
     }
 }

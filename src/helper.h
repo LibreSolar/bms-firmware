@@ -41,7 +41,37 @@ extern "C" {
 	((unsigned long) (IS_ARRAY(array) + \
 		(sizeof(array) / sizeof((array)[0]))))
 
+/**
+ * @def MAX
+ * @brief The larger value between @p a and @p b.
+ * @note Arguments are evaluated twice.
+ */
+#ifndef MAX
+/* Use Z_MAX for a GCC-only, single evaluation version */
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #endif
+
+/**
+ * @def MIN
+ * @brief The smaller value between @p a and @p b.
+ * @note Arguments are evaluated twice.
+ */
+#ifndef MIN
+/* Use Z_MIN for a GCC-only, single evaluation version */
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#endif
+
+/**
+ * @def CLAMP
+ * @brief Clamp a value to a given range.
+ * @note Arguments are evaluated multiple times.
+ */
+#ifndef CLAMP
+/* Use Z_CLAMP for a GCC-only, single evaluation version */
+#define CLAMP(val, low, high) (((val) <= (low)) ? (low) : MIN(val, high))
+#endif
+
+#endif /* __ZEPHYR__ */
 
 /**
  * Interpolation in a look-up table. Values of a must be monotonically increasing/decreasing

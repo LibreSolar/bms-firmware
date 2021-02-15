@@ -199,7 +199,7 @@ static DataNode data_nodes[] = {
         ID_OUTPUT, TS_ANY_R, 0),
 #endif
 
-    TS_NODE_UINT16(0x7C, "SOC_pct", &bms_status.soc,
+    TS_NODE_FLOAT(0x7C, "SOC_pct", &bms_status.soc, 1,
         ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
 
     TS_NODE_UINT32(0x7E, "ErrorFlags", &bms_status.error_flags,

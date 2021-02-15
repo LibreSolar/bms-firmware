@@ -440,6 +440,7 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
 void bms_read_current(BmsConfig *conf, BmsStatus *status)
 {
     int adc_raw = 0;
+    static float coulomb_counter_mAs = 0;
     regSYS_STAT_t sys_stat;
     sys_stat.regByte = bq769x0_read_byte(SYS_STAT);
 
@@ -450,8 +451,15 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
         adc_raw = (bq769x0_read_byte(CC_HI_BYTE) << 8) | bq769x0_read_byte(CC_LO_BYTE);
         int32_t pack_current_mA = (int16_t) adc_raw * 8.44 / conf->shunt_res_mOhm;
 
-        status->coulomb_counter_mAs += pack_current_mA / 4;  // is read every 250 ms
-        status->soc = status->coulomb_counter_mAs / (conf->nominal_capacity_Ah * 3.6e4F); // %
+        coulomb_counter_mAs += pack_current_mA / 4;  // is read every 250 ms
+        float soc_delta = coulomb_counter_mAs / (conf->nominal_capacity_Ah * 3.6e4F);
+
+        if (fabs(soc_delta) > 0.1) {
+            // only update SoC after significant changes to maintain higher resolution
+            float soc_tmp = status->soc + soc_delta;
+            status->soc = CLAMP(soc_tmp, 0.0F, 100.0F);
+            coulomb_counter_mAs = 0;
+        }
 
         // reduce resolution for actual current value
         if (pack_current_mA > -10 && pack_current_mA < 10) {

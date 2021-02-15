@@ -11,6 +11,9 @@
  *        for unit tests
  */
 
+#ifndef ZEPHYR_H_
+#define ZEPHYR_H_
+
 #include "devicetree.h"
 #include "devicetree_unfixed.h"
 #include "autoconf.h"
@@ -24,6 +27,9 @@
 #endif
 
 #define printk printf
+
+// dummy
+static inline int64_t k_uptime_get() { return 0; }
 
 #define CONFIG_LOG_DEFAULT_LEVEL 2      // errors and warnings only
 
@@ -108,3 +114,5 @@ typedef uint32_t gpio_flags_t;
  * where the value is defined to 1, and 0 if not:
  */
 #define Z_IS_ENABLED3(ignore_this, val, ...) val
+
+#endif /* ZEPHYR_H_ */

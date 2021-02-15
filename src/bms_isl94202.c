@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
+#include <math.h>
 
 // Lookup-table for temperatures according to datasheet
 static const float lut_temp_volt[] = {0.153, 0.295, 0.463, 0.710, 0.755};
@@ -252,10 +253,9 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
 void bms_read_current(BmsConfig *conf, BmsStatus *status)
 {
     uint8_t buf[2];
-    static int num_measurements = 0;
-    static int32_t integrated_current_mA = 0;
-    static uint32_t last_update = 0;
-    uint32_t now = uptime();
+    static float coulomb_counter_mAs = 0;
+    static int64_t last_update = 0;
+    int64_t now = k_uptime_get();
 
     // gain
     isl94202_read_bytes(ISL94202_CTRL0, buf, 1);
@@ -272,17 +272,18 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
     uint16_t adc_raw = isl94202_read_word(ISL94202_ISNS) & 0x0FFF;
 
     status->pack_current = (float)(sign * adc_raw * 1800) / 4095 / gain / conf->shunt_res_mOhm;
-    integrated_current_mA += status->pack_current * 1000;
-    num_measurements++;
 
-    if (now > last_update) {
-        status->coulomb_counter_mAs += integrated_current_mA / num_measurements *
-            (int32_t)(now - last_update);
-        status->soc = status->coulomb_counter_mAs / (conf->nominal_capacity_Ah * 3.6e4F); // %
-        last_update = now;
-        num_measurements = 0;
-        integrated_current_mA = 0;
+    coulomb_counter_mAs += status->pack_current * (now - last_update);
+    float soc_delta = coulomb_counter_mAs / (conf->nominal_capacity_Ah * 3.6e4F);
+
+    if (fabs(soc_delta) > 0.1) {
+        // only update SoC after significant changes to maintain higher resolution
+        float soc_tmp = status->soc + soc_delta;
+        status->soc = CLAMP(soc_tmp, 0.0F, 100.0F);
+        coulomb_counter_mAs = 0;
     }
+
+    last_update = now;
 }
 
 void bms_read_voltages(BmsStatus *status)
