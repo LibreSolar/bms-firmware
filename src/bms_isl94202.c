@@ -252,9 +252,9 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
 void bms_read_current(BmsConfig *conf, BmsStatus *status)
 {
     uint8_t buf[2];
-    static uint32_t last_update = 0;
-    static uint32_t num_measurements = 0;
+    static int num_measurements = 0;
     static int32_t integrated_current_mA = 0;
+    static uint32_t last_update = 0;
     uint32_t now = uptime();
 
     // gain
@@ -266,7 +266,6 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
     int sign = 0;
     isl94202_read_bytes(ISL94202_STAT2, buf, 1);
     sign += (buf[0] & ISL94202_STAT2_CHING_Msk) >> ISL94202_STAT2_CHING_Pos;
-    isl94202_read_bytes(ISL94202_STAT2, buf, 1);
     sign -= (buf[0] & ISL94202_STAT2_DCHING_Msk) >> ISL94202_STAT2_DCHING_Pos;
 
     // ADC value
@@ -277,7 +276,8 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
     num_measurements++;
 
     if (now > last_update) {
-        status->coulomb_counter_mAs += integrated_current_mA / num_measurements * (now - last_update);
+        status->coulomb_counter_mAs += integrated_current_mA / num_measurements *
+            (int32_t)(now - last_update);
         status->soc = status->coulomb_counter_mAs / (conf->nominal_capacity_Ah * 3.6e4F); // %
         last_update = now;
         num_measurements = 0;

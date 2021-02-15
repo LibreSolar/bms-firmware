@@ -136,6 +136,7 @@ typedef struct
 
     uint16_t soc;                               ///< Calculated state of charge (%)
     uint32_t coulomb_counter_mAs;               ///< Current integration (mAs = milli Coulombs)
+                                                ///< covers max. 1193 Ah battery capacity
 
     uint32_t balancing_status;                  ///< holds on/off status of balancing switches
     time_t no_idle_timestamp;                   ///< Stores last time of current > idle threshold
