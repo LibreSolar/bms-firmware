@@ -9,8 +9,8 @@
 
 #if CONFIG_BMS_BQ76920 || CONFIG_BMS_BQ76930 || CONFIG_BMS_BQ76940
 
-#include "bq769x0_interface.h"
-#include "bq769x0_registers.h"
+#include "interface.h"
+#include "registers.h"
 
 int adc_gain;    // factory-calibrated, read out from chip (uV/LSB)
 int adc_offset;  // factory-calibrated, read out from chip (mV)

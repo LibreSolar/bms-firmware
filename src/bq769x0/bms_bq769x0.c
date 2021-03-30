@@ -9,8 +9,8 @@
 #if CONFIG_BMS_BQ76920 || CONFIG_BMS_BQ76930 || CONFIG_BMS_BQ76940
 
 #include "bms.h"
-#include "bq769x0_registers.h"
-#include "bq769x0_interface.h"
+#include "registers.h"
+#include "interface.h"
 #include "helper.h"
 
 #include <math.h>       // log for thermistor calculation

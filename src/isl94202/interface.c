@@ -8,8 +8,8 @@
 
 #ifdef CONFIG_BMS_ISL94202
 
-#include "isl94202_interface.h"
-#include "isl94202_registers.h"
+#include "interface.h"
+#include "registers.h"
 
 #include <stdio.h>
 

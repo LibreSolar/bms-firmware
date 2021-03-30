@@ -9,8 +9,8 @@
 #ifdef CONFIG_BMS_ISL94202
 
 #include "bms.h"
-#include "isl94202_registers.h"
-#include "isl94202_interface.h"
+#include "registers.h"
+#include "interface.h"
 #include "helper.h"
 
 #include <stdlib.h>     // for abs() function
