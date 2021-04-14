@@ -1,0 +1,14 @@
+/*
+ * Copyright (c) The Libre Solar Project Contributors
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	pcb {
+		version-str = "v0.1";
+		version-num = <1>;
+
+		shunt-res = <1000>;
+	};
+};

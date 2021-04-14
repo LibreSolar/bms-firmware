@@ -11,7 +11,7 @@ if [ $? != 0 ]; then
 fi
 
 echo "---------- Running compile check -------------"
-platformio run -e bms_5s50_sc -e bms_15s80_sc_bq76930 -e bms_8s50_ic_l452
+platformio run -e bms_5s50_sc -e bms_15s80_sc_bq76930 -e bms_8s50_ic
 if [ $? != 0 ]; then
         exit 1;
 fi
@@ -23,7 +23,7 @@ if [ $? != 0 ]; then
 fi
 
 echo "---------- Running static code checks -------------"
-platformio check -e bms_5s50_sc -e bms_8s50_ic_l452 --skip-packages --fail-on-defect high
+platformio check -e bms_5s50_sc -e bms_8s50_ic --skip-packages --fail-on-defect high
 if [ $? != 0 ]; then
         exit 1;
 fi

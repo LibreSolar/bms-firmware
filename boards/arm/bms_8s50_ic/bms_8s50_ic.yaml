@@ -1,5 +1,5 @@
-identifier: bms_8s50_ic_l452
-name: BMS-8S50-IC-L452
+identifier: bms_8s50_ic
+name: BMS-8S50-IC
 type: mcu
 arch: arm
 toolchain:

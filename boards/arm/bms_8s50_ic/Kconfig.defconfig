@@ -1,10 +1,10 @@
 # Copyright (c) The Libre Solar Project Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-if BOARD_BMS_8S50_IC_L452
+if BOARD_BMS_8S50_IC
 
 config BOARD
-	default "bms_8s50_ic_l452"
+	default "bms_8s50_ic"
 
 config LIBRE_SOLAR_TYPE_ID
 	default 6
@@ -12,4 +12,4 @@ config LIBRE_SOLAR_TYPE_ID
 config BMS_ISL94202
 	default y
 
-endif # BOARD_BMS_8S50_IC_L452
+endif # BOARD_BMS_8S50_IC
