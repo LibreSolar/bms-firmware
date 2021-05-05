@@ -5,7 +5,7 @@
 #
 
 echo "---------- Trailing whitespace check -------------"
-git diff --check `git rev-list HEAD | tail -n 1`..$TRAVIS_BRANCH
+git diff --check `git rev-list HEAD | tail -n 1`..
 if [ $? != 0 ]; then
         exit 1;
 fi

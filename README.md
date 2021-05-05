@@ -1,10 +1,10 @@
 # Libre Solar BMS Firmware
 
-![build badge](https://travis-ci.com/LibreSolar/bms-firmware.svg?branch=master)
+![build badge](https://github.com/LibreSolar/bms-firmware/actions/workflows/platformio.yml/badge.svg)
 
 This repository contains the firmware based on [Zephyr RTOS](https://www.zephyrproject.org/) for the different Libre Solar Battery Management Systems.
 
-**Warning:** This firmware is under active development. Even though we try our best not to break any features that worked before, not every commit is fully tested on every board before including it to the master branch. As soon as the status of the firmware is considered stable enough, we will test the core features on all boards and generate a release.
+**Warning:** This firmware is under active development. Even though we try our best not to break any features that worked before, not every commit is fully tested on every board before including it to the main branch. As soon as the status of the firmware is considered stable enough, we will test the core features on all boards and generate a release.
 
 ## Supported devices
 
