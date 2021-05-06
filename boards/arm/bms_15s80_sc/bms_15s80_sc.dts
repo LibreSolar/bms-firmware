@@ -146,7 +146,7 @@
 	};
 
 	eeprom@51 {
-		// M24256-BW (not yet tested)
+		// M24256-BW
 		compatible = "atmel,at24";
 		reg = <0x51>;	// 1 0 1 0 A2 A1 A0 = 1010001
 		label = "EEPROM_0";
