@@ -39,10 +39,10 @@ ArrayInfo cell_voltages_arr = {
     bms_status.cell_voltages, NUM_CELLS_MAX, NUM_CELLS_MAX, TS_T_FLOAT32
 };
 
-bool pub_serial_enable = false;
+bool pub_serial_enable = IS_ENABLED(CONFIG_THINGSET_SERIAL_PUB_DEFAULT);
 
 #if CONFIG_THINGSET_CAN
-bool pub_can_enable = false;
+bool pub_can_enable = IS_ENABLED(CONFIG_THINGSET_CAN_PUB_DEFAULT);
 uint16_t ts_can_node_id = CONFIG_THINGSET_CAN_DEFAULT_NODE_ID;
 #endif
 

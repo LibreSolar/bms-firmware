@@ -74,9 +74,19 @@ config THINGSET_SERIAL_TX_BUF_SIZE
     range 256 2048
     default 1024
 
+config THINGSET_SERIAL_PUB_DEFAULT
+    bool "Enable serial publication messages at startup"
+    depends on THINGSET_SERIAL
+    default y
+
 config THINGSET_CAN
     depends on CAN
     bool "ThingSet CAN interface"
+
+config THINGSET_CAN_PUB_DEFAULT
+    bool "Enable CAN publication messages at startup"
+    depends on THINGSET_CAN
+    default y
 
 config THINGSET_CAN_DEFAULT_NODE_ID
     depends on THINGSET_CAN
