@@ -24,7 +24,9 @@ extern ThingSet ts;
 
 void main(void)
 {
-    printf("Booting Libre Solar BMS: %s\n", CONFIG_BOARD);
+    printf("Hardware: Libre Solar %s (%s)\n",
+        DT_PROP(DT_PATH(pcb), type), DT_PROP(DT_PATH(pcb), version_str));
+    printf("Firmware: %s\n", FIRMWARE_VERSION_ID);
 
     bms_init_hardware();
     bms_init_status(&bms_status);
