@@ -10,6 +10,7 @@
 
 #ifndef UNIT_TEST
 #include <drivers/hwinfo.h>
+#include <power/reboot.h>
 #include <sys/crc.h>
 #endif
 
@@ -239,9 +240,9 @@ static DataNode data_nodes[] = {
     TS_NODE_PATH(ID_EXEC, "exec", 0, NULL),
 
     TS_NODE_EXEC(0xE1, "shutdown", &bms_shutdown, ID_EXEC, TS_ANY_RW),
-    //TS_NODE_EXEC(0xE2, "reset", &reset_device, ID_EXEC, TS_ANY_RW),
+    TS_NODE_EXEC(0xE2, "reset", &reset_device, ID_EXEC, TS_ANY_RW),
     //TS_NODE_EXEC(0xE3, "bootloader-stm", &start_stm32_bootloader, ID_EXEC, TS_ANY_RW),
-    //TS_NODE_EXEC(0xE4, "save-settings", &eeprom_store_data, ID_EXEC, TS_ANY_RW),
+    TS_NODE_EXEC(0xE4, "save-settings", &eeprom_store_data, ID_EXEC, TS_ANY_RW),
     TS_NODE_EXEC(0xEA, "print-register", &print_register, ID_EXEC, TS_ANY_RW),
     TS_NODE_UINT16(0xEB, "RegAddr", &reg_addr, 0xEA, TS_ANY_RW, 0),
     TS_NODE_EXEC(0xEC, "print-registers", &bms_print_registers, ID_EXEC, TS_ANY_RW),
@@ -299,6 +300,13 @@ void data_nodes_init()
 void print_register()
 {
     bms_print_register(reg_addr);
+}
+
+void reset_device()
+{
+#ifndef UNIT_TEST
+    sys_reboot(SYS_REBOOT_COLD);
+#endif
 }
 
 void thingset_auth()

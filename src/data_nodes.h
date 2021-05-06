@@ -67,6 +67,11 @@ void data_nodes_init();
 void print_register();
 
 /**
+ * Callback to reset device (obviously...)
+ */
+void reset_device();
+
+/**
  * Callback to provide authentication mechanism via ThingSet
  */
 void thingset_auth();
