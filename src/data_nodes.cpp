@@ -28,7 +28,7 @@ extern BmsStatus bms_status;
 const char manufacturer[] = "Libre Solar";
 const char device_type[] = DT_PROP(DT_PATH(pcb), type);
 const char hardware_version[] = DT_PROP(DT_PATH(pcb), version_str);
-const char firmware_version[] = "0.1";
+const char firmware_version[] = FIRMWARE_VERSION_ID;
 
 static char device_id[9];
 

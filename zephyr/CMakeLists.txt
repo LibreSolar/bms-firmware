@@ -13,14 +13,14 @@ add_subdirectory(../src build/src)
 add_subdirectory(../lib/thingset build/thingset)
 add_subdirectory(../lib/oled-display build/oled-display)
 
-# determine git commit hash and provide it as a compiler define
+# determine git tag and commit hash for automatic firmware versioning
 find_package(Git)
 if(GIT_FOUND)
     execute_process(
-        COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
-        OUTPUT_VARIABLE COMMIT_HASH
+        COMMAND ${GIT_EXECUTABLE} describe --long --dirty --tags
+        OUTPUT_VARIABLE FIRMWARE_VERSION_ID
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 else()
-    set(COMMIT_HASH "")
+    set(FIRMWARE_VERSION_ID "unknown")
 endif()
-add_definitions(-DCOMMIT_HASH="${COMMIT_HASH}")
+add_definitions(-DFIRMWARE_VERSION_ID="${FIRMWARE_VERSION_ID}")
