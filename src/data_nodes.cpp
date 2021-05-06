@@ -213,13 +213,13 @@ static DataNode data_nodes[] = {
         ID_OUTPUT, TS_ANY_R, 0),
 
     TS_NODE_FLOAT(0x9A, "CellAvg_V", &bms_status.cell_voltage_avg, 3,
-        ID_OUTPUT, TS_ANY_R | TS_ANY_W, PUB_NVM | PUB_SER | PUB_CAN),
+        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
 
     TS_NODE_FLOAT(0x9B, "CellMin_V", &bms_status.cell_voltage_min, 3,
-        ID_OUTPUT, TS_ANY_R | TS_ANY_W, PUB_NVM | PUB_SER | PUB_CAN),
+        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
 
     TS_NODE_FLOAT(0x9C, "CellMax_V", &bms_status.cell_voltage_max, 3,
-        ID_OUTPUT, TS_ANY_R | TS_ANY_W, PUB_NVM | PUB_SER | PUB_CAN),
+        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
 
     TS_NODE_UINT32(0x9D, "BalancingStatus", &bms_status.balancing_status,
         ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
