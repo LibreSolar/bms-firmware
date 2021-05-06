@@ -204,10 +204,10 @@ static DataNode data_nodes[] = {
         ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
 
     TS_NODE_UINT32(0x7E, "ErrorFlags", &bms_status.error_flags,
-        ID_OUTPUT, TS_ANY_R, 0),
+        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
 
     TS_NODE_UINT16(0x7F, "BmsState", &bms_status.state,
-        ID_OUTPUT, TS_ANY_R, 0),
+        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
 
     TS_NODE_ARRAY(0x80, "Cells_V", &cell_voltages_arr, 3,
         ID_OUTPUT, TS_ANY_R, 0),
@@ -222,7 +222,7 @@ static DataNode data_nodes[] = {
         ID_OUTPUT, TS_ANY_R | TS_ANY_W, PUB_NVM | PUB_SER | PUB_CAN),
 
     TS_NODE_UINT32(0x9D, "BalancingStatus", &bms_status.balancing_status,
-        ID_OUTPUT, TS_ANY_R, 0),
+        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
 
     // RECORDED DATA ///////////////////////////////////////////////////////
     // using IDs >= 0xA0
