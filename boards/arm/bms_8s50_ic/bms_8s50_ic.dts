@@ -75,8 +75,9 @@
 		led-red = &led1;
 		led-green = &led2;
 		sw-pwr = &power_button;
-		i2c-uext = &i2c1;
 		uart-dbg = &usart1;
+		uart-uext = &usart2;
+		i2c-uext = &i2c1;
 	};
 };
 

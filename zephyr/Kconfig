@@ -47,6 +47,14 @@ config EXT_OLED_BRIGHTNESS
     range 1 255
     default 1
 
+config UEXT_SERIAL_THINGSET
+    depends on THINGSET_SERIAL
+    bool "Use UEXT serial for ThingSet interface"
+    default y
+    help
+      If the ThingSet interface is not attached to the serial port in the UEXT connector, the
+      serial in the LS.one port or the debug connector is used (if existing).
+
 endmenu # UEXT port
 
 menu "ThingSet interfaces"
