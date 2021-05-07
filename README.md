@@ -4,20 +4,47 @@
 
 This repository contains the firmware based on [Zephyr RTOS](https://www.zephyrproject.org/) for the different Libre Solar Battery Management Systems.
 
-**Warning:** This firmware is under active development. Even though we try our best not to break any features that worked before, not every commit is fully tested on every board before including it to the main branch. As soon as the status of the firmware is considered stable enough, we will test the core features on all boards and generate a release.
+## Development and release model
 
-## Supported devices
+The `main` branch contains the latest release of the firmware plus some cherry-picked bug-fixes. So you can always pull this branch to get a stable and working firmware for your BMS.
 
-- Libre Solar 3-5s (12V) BMS with TI bq76920: [BMS-5S50-SC](https://github.com/LibreSolar/bms-5s50-sc)
-- Libre Solar 6-15s (24-48V) BMS with TI bq76930/40: [BMS-15S80-SC](https://github.com/LibreSolar/bms-15s80-sc)
-- Libre Solar 3-8s (12V/24V) BMS with Intersil ISL94202: [BMS-8S50-IC](https://github.com/LibreSolar/bms-8s50-ic)
+New features are developed in the `develop` branch and merged into `main` after passing tests with multiple boards. The `develop` branch is changed frequently and may even be rebased to fix previous commits. Use this branch only if you want to try out most recent features and be aware that something might be broken.
+
+Releases are generated from `main` after significant changes have been made. The year is used as the major version number. The minor version number starts at zero and is increased for each release in that year.
+
+## Supported boards
+
+The software is easily configurable to support different BMS boards with STM32F072 and STM32L452 MCUs:
+
+| Board                                      | MCU | IC | Default revision | Older revisions |
+|--------------------------------------------|-----|----|------------------|-----------------|
+| Libre Solar [BMS-5S50-SC](https://github.com/LibreSolar/bms-5s50-sc)   | STM32F072 | bq76920 | 0.1  |  |
+| Libre Solar [BMS-15S80-SC](https://github.com/LibreSolar/bms-15s80-sc) | STM32F072 | bq76930/40 | 0.1 |     |
+| Libre Solar [BMS-8S50-IC](https://github.com/LibreSolar/bms-8s50-ic) * | STM32L452 | ISL94202 | 0.2  | 0.1 |
+
+(*) Revision 0.1 of this board is also available with STM32F072 MCU.
+
+## Supported ICs
+
+The firmware allows to use different BMS monitoring ICs, which usually provide single-cell voltage monitoring, balancing, current monitoring and protection features.
+
+The chips currently supported by the firmware are listed below.
+
+| Manufacturer       | Chip     | # Cells | Status       | Datasheet |
+|--------------------|----------|---------|--------------|-----------|
+| Texas Instruments  | bq76920  |   3s-5s | full support | [link](https://www.ti.com/lit/ds/symlink/bq76920.pdf)
+| Texas Instruments  | bq76930  |  6s-10s | full support | [link](https://www.ti.com/lit/ds/symlink/bq76930.pdf)
+| Texas Instruments  | bq76940  |  9s-15s | full support | [link](https://www.ti.com/lit/ds/symlink/bq76940.pdf)
+| Texas Instruments  | BQ76952  |  3s-16s | support planned | [link](https://www.ti.com/lit/ds/symlink/bq76952.pdf)
+| Renesas / Intersil | ISL94202 |   3s-8s | full support | [link](https://www.renesas.com/us/en/document/dst/isl94202-datasheet)
+
 
 ## Building and flashing the firmware
 
-This repository contains git submodules, so you need to clone (download) the repository by calling:
+This repository contains git submodules, so you need to clone (download) it by calling:
 
 ```
-git clone --recursive https://github.com/LibreSolar/bms-firmware
+git clone --recursive https://github.com/LibreSolar/charge-controller-firmware
 ```
 
 Unfortunately, the green GitHub "Clone or download" button does not include submodules. If you cloned the repository already and want to pull the submodules, run `git submodule update --init --recursive`.
@@ -30,9 +57,9 @@ It is suggested to use Visual Studio Code and PlatformIO for firmware developmen
 
 2. Adjust configuration in `zephyr/prj.conf` if necessary.
 
-3. Select the correct board in `platformio.ini` by removing the comment before the board name under `[platformio]` or create a file `custom.ini` with your personal settings.
+3. Select the correct board in `platformio.ini` by setting the variable `default_envs` under `[platformio]` to your board or create a file `custom.ini` with your personal settings. PlatformIO is configured for latest revision of the boards (see table above). For older revisions adjust `platformio.ini` and the `.json` files in `boards` folder manually or use native Zephyr environment.
 
-4. Connect the board via a programmer. See the Libre Solar website for [further project-agnostic instructions](http://libre.solar/docs/flashing).
+4. Connect the board via a programmer. See the Libre Solar website for [further project-agnostic instructions](https://learn.libre.solar/development/flashing_debugging.html ).
 
 5. Press the upload button at the bottom left corner in VS Code.
 
@@ -54,9 +81,11 @@ The CMake entry point is in the `zephyr` subfolder, so you need to run `west bui
 
         cd zephyr
 
-Initial board selection (see `boards subfolder for correct names):
+Initial board selection (see `boards` subfolder for correct names):
 
-        west build -b <board-name>
+        west build -b <board-name>@<revision>
+
+The appended `@<revision>` specifies the board version according to the above table. It can be omitted if only a single board revision is available or if the default (most recent) version should be used. See also [here](https://docs.zephyrproject.org/latest/application/index.html#application-board-version) for more details regarding board revision handling in Zephyr.
 
 Flash with specific debug probe (runner), e.g. J-Link:
 
@@ -70,6 +99,46 @@ Report of used memory (RAM and flash):
 
         west build -t rom_report
         west build -t ram_report
+
+## Firmware customization
+
+This firmware is developed to allow easy addition of new boards and customization of the firmware.
+
+### Hardware-specific changes
+
+In Zephyr, all hardware-specific configuration is described in the [devicetree](https://docs.zephyrproject.org/latest/guides/dts/index.html).
+
+The file `boards/arm/board_name/board_name.dts` contains the default devicetree specification (DTS) for a board. It is based on the DTS of the used MCU, which is included from the main Zephyr repository.
+
+In order to overwrite the default devicetree specification, so-called overlays can be used. An overlay file can be specified via the west command line. If it is stored as `board_name.overlay` in the `zephyr` subfolder, it will be recognized automatically when building the firmware for that board (also with PlatformIO).
+
+### Application firmware configuration
+
+For configuration of the application-specific features, Zephyr uses the [Kconfig system](https://docs.zephyrproject.org/latest/guides/kconfig/index.html).
+
+The configuration can be changed using `west build -t menuconfig` command or manually by changing the prj.conf file (see `Kconfig` file for possible options).
+
+Similar to DTS overlays, Kconfig can also be customized per board. Create a folder `zephyr/boards` and a file `board_name.conf` in that folder. The configuration from this file will be merged with the `prj.conf` automatically.
+
+#### Change the battery type
+
+ToDo: The battery type is currently still hard-coded in the main function and should be made configurable via Kconfig.
+
+#### Configure serial for ThingSet protocol
+
+By default, the BMS uses the serial interface in the UEXT connector for the [ThingSet protocol](https://libre.solar/thingset/). This allows to use WiFi modules with ESP32 without any firmware change.
+
+Add the following configuration if you prefer to use the serial of the additional debug RX/TX pins present on many boards:
+
+```
+CONFIG_UEXT_SERIAL_THINGSET=n
+```
+
+To disable regular data publication in one-second interval on ThingSet serial at startup add the following configuration:
+
+```
+CONFIG_THINGSET_SERIAL_PUB_DEFAULT=n
+```
 
 ## API documentation
 
