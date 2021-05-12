@@ -87,6 +87,4 @@ void ext_mgr_thread()
 
 K_THREAD_DEFINE(ext_thread, 1024, ext_mgr_thread, NULL, NULL, NULL, 6, 0, 1000);
 
-K_THREAD_DEFINE(leds_id, 256, leds_update_thread, NULL, NULL, NULL,	4, 0, 0);
-
 #endif /* UNIT_TEST */

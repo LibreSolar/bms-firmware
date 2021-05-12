@@ -55,14 +55,6 @@ void leds_update_thread()
 	}
 }
 
-#else
-
-void leds_chg_set(bool on) {;}
-
-void leds_dis_set(bool on) {;}
-
-#endif // UNIT_TEST
-
 void leds_update()
 {
     static uint32_t count = 0;
@@ -111,3 +103,13 @@ void leds_update()
 
     count++;
 }
+
+K_THREAD_DEFINE(leds, 256, leds_update_thread, NULL, NULL, NULL, 4, 0, 0);
+
+#else
+
+void leds_chg_set(bool on) {;}
+
+void leds_dis_set(bool on) {;}
+
+#endif // UNIT_TEST
