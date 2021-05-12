@@ -12,7 +12,6 @@
 #include "bms.h"
 #include "button.h"
 #include "eeprom.h"
-#include "ext/ext.h"
 #include "leds.h"
 #include "thingset.h"
 #include "helper.h"
@@ -67,24 +66,5 @@ void main(void)
         k_sleep(K_TIMEOUT_ABS_MS(t_start));
     }
 }
-
-void ext_mgr_thread()
-{
-    // initialize all extensions and external communication interfaces
-    ext_mgr.enable_all();
-
-    uint32_t last_call = 0;
-    while (1) {
-        uint32_t now = k_uptime_get() / 1000;
-        ext_mgr.process_asap();     // approx. every millisecond
-        if (now >= last_call + 1) {
-            last_call = now;
-            ext_mgr.process_1s();
-        }
-        k_sleep(K_MSEC(1));
-    }
-}
-
-K_THREAD_DEFINE(ext_thread, 1024, ext_mgr_thread, NULL, NULL, NULL, 6, 0, 1000);
 
 #endif /* UNIT_TEST */
