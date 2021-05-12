@@ -36,6 +36,60 @@ config LIBRE_SOLAR_TYPE_ID
 # Visible (user-configurable) Kconfig symbols
 #
 
+menu "Battery default settings"
+
+config BAT_CAPACITY_AH
+    int "Battery nominal capacity in Ah"
+    range 10 1000
+    default 50
+    help
+      Nominal battery capacity or sum of parallel cells capacity
+
+choice
+    prompt "Cell type"
+    default CELL_TYPE_LFP
+    help
+      Select the type of the single cells inside the battery
+      to determine voltage set points. Total voltage set points
+      are multiplied with the selected number of cells.
+
+    config CELL_TYPE_LFP
+        bool "LiFePO4, 3.3V nominal"
+
+    config CELL_TYPE_NMC
+        bool "NMC/Graphite, 3.7V nominal, 4.2V max"
+
+    config CELL_TYPE_NMC_HV
+        bool "NMC/Graphite High Voltage, 3.7V nominal, 4.35 max"
+
+    config CELL_TYPE_LTO
+        bool "NMC/Titanate, 2.4 V nominal"
+endchoice
+
+# values must match enum CellType in bms.h
+config CELL_TYPE
+    int
+    default 0 if CELL_TYPE_CUSTOM
+    default 1 if CELL_TYPE_LFP
+    default 2 if CELL_TYPE_NMC
+    default 3 if CELL_TYPE_NMC_HV
+    default 4 if CELL_TYPE_LTO
+
+config NUM_CELLS_IN_SERIES
+    int "Number of cells for single battery"
+    default 3 if CELL_TYPE_NMC || CELL_TYPE_NMC_HV
+    default 4 if CELL_TYPE_LFP
+    default 5 if CELL_TYPE_LTO
+    range 3 16
+    help
+      Typical choices:
+      - 3 for 12V NMC Li-Ion battery
+      - 4 for 12V LiFePO4 battery
+      - 5 for 12V Titanate battery
+
+endmenu
+
+
 menu "UEXT port"
 
 config UEXT_OLED_DISPLAY

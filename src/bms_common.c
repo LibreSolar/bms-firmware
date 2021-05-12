@@ -26,7 +26,7 @@ void bms_init_status(BmsStatus *status)
     status->dis_enable = true;
 }
 
-void bms_init_config(BmsConfig *conf, enum CellType type, float nominal_capacity)
+void bms_init_config(BmsConfig *conf, int type, float nominal_capacity)
 {
     conf->auto_balancing_enabled = true;
     conf->bal_idle_delay = 1800;            // default: 30 minutes

@@ -60,7 +60,7 @@ void bms_init_hardware()
     uint8_t reg;
 
     isl94202_init();
-    set_num_cells(4);
+    set_num_cells(CONFIG_NUM_CELLS_IN_SERIES);
 
     // xTemp2 monitoring MOSFETs and not cells
     reg = ISL94202_SETUP0_XT2M_Msk;

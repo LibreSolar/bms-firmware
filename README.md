@@ -120,9 +120,19 @@ The configuration can be changed using `west build -t menuconfig` command or man
 
 Similar to DTS overlays, Kconfig can also be customized per board. Create a folder `zephyr/boards` and a file `board_name.conf` in that folder. The configuration from this file will be merged with the `prj.conf` automatically.
 
-#### Change the battery type
+#### Change battery capacity, cell type and number of cells in series
 
-ToDo: The battery type is currently still hard-coded in the main function and should be made configurable via Kconfig.
+By default, the charge controller is configured for LiFePO4 cells (`CONFIG_CELL_TYPE_LFP`). Possible other pre-defined options are `CONFIG_BAT_TYPE_NMC`, `CONFIG_BAT_TYPE_NMC_HV` and `CONFIG_BAT_TYPE_LTO`.
+
+The number of cells is automatically selected by Kconfig to get 12V nominal voltage. It can also be manually specified via `CONFIG_NUM_CELLS_IN_SERIES`.
+
+To compile the firmware with default settings e.g. for a 24V LiFePO4 battery with a nominal capacity of 100Ah, add the following to `prj.conf` or the board-specific `.conf` file:
+
+```
+CONFIG_BAT_CAPACITY_AH=100
+CONFIG_CELL_TYPE_LFP=y
+CONFIG_NUM_CELLS_IN_SERIES=8
+```
 
 #### Configure serial for ThingSet protocol
 

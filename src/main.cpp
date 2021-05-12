@@ -29,7 +29,7 @@ void main(void)
 
     bms_init_hardware();
     bms_init_status(&bms_status);
-    bms_init_config(&bms_conf, CELL_TYPE_LFP, 45);
+    bms_init_config(&bms_conf, CONFIG_CELL_TYPE, CONFIG_BAT_CAPACITY_AH);
 
     // read custom configuration from EEPROM
     data_nodes_init();

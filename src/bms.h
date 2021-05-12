@@ -173,8 +173,10 @@ void bms_init_status(BmsStatus *status);
 
 /**
  * Initialization of BmsConfig with typical default values for the given cell type.
+ *
+ * Type must be defined as int, as enum CellType cannot be set via Kconfig.
  */
-void bms_init_config(BmsConfig *conf, enum CellType type, float nominal_capacity);
+void bms_init_config(BmsConfig *conf, int type, float nominal_capacity);
 
 /**
  * Main BMS state machine
