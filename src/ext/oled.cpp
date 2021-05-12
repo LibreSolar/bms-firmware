@@ -4,11 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef UNIT_TEST
-
-#if CONFIG_EXT_OLED_DISPLAY     // otherwise don't compile code to reduce firmware size
-
-#include "ext/ext.h"
+#if CONFIG_UEXT_OLED_DISPLAY
 
 #include <math.h>
 #include <stdio.h>
@@ -23,31 +19,11 @@
 
 extern BmsStatus bms_status;
 
-float load_voltage;     // dummy (currently not measured)
-
-// implement specific extension inherited from ExtInterface
-class ExtOled: public ExtInterface
-{
-public:
-    ExtOled() {};
-    void enable();
-    void process_1s();
-};
-
-static ExtOled ext_oled;    // local instance, will self register itself
-
 OledSSD1306 oled(DT_LABEL(DT_ALIAS(i2c_uext)));
 
-void ExtOled::enable()
-{
-#ifdef OLED_BRIGHTNESS
-    oled.init(OLED_BRIGHTNESS);
-#else
-    oled.init();        // use default (lowest brightness)
-#endif
-}
+static bool blink_on = false;
 
-void ExtOled::process_1s()
+void oled_update()
 {
     char buf[30];
     unsigned int len;
@@ -69,12 +45,12 @@ void ExtOled::process_1s()
     oled.writeString(buf, len);
 
     oled.setTextCursor(64, 8);
-    len = snprintf(buf, sizeof(buf), "SOC:%d", bms_status.soc);
+    len = snprintf(buf, sizeof(buf), "SOC:%.0f", bms_status.soc);
     oled.writeString(buf, len);
 
-    oled.setTextCursor(0, 16);
-    len = snprintf(buf, sizeof(buf), "Load: %.2fV", load_voltage);
-    oled.writeString(buf, len);
+    //oled.setTextCursor(0, 16);
+    //len = snprintf(buf, sizeof(buf), "Load: %.2fV", load_voltage);
+    //oled.writeString(buf, len);
 
     for (int i = 0; i < NUM_CELLS_MAX; i++) {
         if (blink_on || !(bms_status.balancing_status & (1 << i))) {
@@ -87,6 +63,16 @@ void ExtOled::process_1s()
     oled.display();
 }
 
-#endif /* CONFIG_EXT_OLED_DISPLAY */
+void oled_thread()
+{
+    oled.init(CONFIG_UEXT_OLED_BRIGHTNESS);
 
-#endif /* UNIT_TEST */
+    while (true) {
+        oled_update();
+        k_sleep(K_MSEC(1000));
+    }
+}
+
+K_THREAD_DEFINE(oled_thread_id, 1024, oled_thread, NULL, NULL, NULL, 6, 0, 1000);
+
+#endif /* CONFIG_UEXT_OLED_DISPLAY */

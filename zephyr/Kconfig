@@ -38,11 +38,12 @@ config LIBRE_SOLAR_TYPE_ID
 
 menu "UEXT port"
 
-config EXT_OLED_DISPLAY
+config UEXT_OLED_DISPLAY
+    select I2C
     bool "OLED display"
 
-config EXT_OLED_BRIGHTNESS
-    depends on EXT_OLED_DISPLAY
+config UEXT_OLED_BRIGHTNESS
+    depends on UEXT_OLED_DISPLAY
     int "OLED display brightness"
     range 1 255
     default 1
