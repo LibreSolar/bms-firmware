@@ -194,8 +194,7 @@ static DataNode data_nodes[] = {
     //TS_NODE_FLOAT(0x75, "MCU_degC", &mcu_temp, 1,
     //    ID_OUTPUT, TS_ANY_R, 0),
 
-    // TODO: Not working in Zephyr yet
-#if defined(PIN_ADC_TEMP_FETS) || defined(MOSFET_TEMP_SENSOR)
+#ifdef CONFIG_BMS_ISL94202   // currently only implemented in ISL94202-based boards (using TS2)
     TS_NODE_FLOAT(0x76, "MOSFETs_degC", &bms_status.mosfet_temp, 1,
         ID_OUTPUT, TS_ANY_R, 0),
 #endif
