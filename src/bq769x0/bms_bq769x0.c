@@ -99,9 +99,9 @@ void bms_check_cell_temp(BmsConfig *conf, BmsStatus *status)
 void bms_shutdown()
 {
     // puts BMS IC into SHIP mode (i.e. switched off)
-    bq769x0_write_byte(SYS_CTRL1, 0x0);
-    bq769x0_write_byte(SYS_CTRL1, 0x1);
-    bq769x0_write_byte(SYS_CTRL1, 0x2);
+    bq769x0_write_byte(BQ769X0_SYS_CTRL1, 0x0);
+    bq769x0_write_byte(BQ769X0_SYS_CTRL1, 0x1);
+    bq769x0_write_byte(BQ769X0_SYS_CTRL1, 0x2);
 }
 
 bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
@@ -110,8 +110,8 @@ bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
         if (!bms_chg_error(status))
         {
             int sys_ctrl2;
-            sys_ctrl2 = bq769x0_read_byte(SYS_CTRL2);
-            bq769x0_write_byte(SYS_CTRL2, sys_ctrl2 | 0b00000001);  // switch CHG on
+            sys_ctrl2 = bq769x0_read_byte(BQ769X0_SYS_CTRL2);
+            bq769x0_write_byte(BQ769X0_SYS_CTRL2, sys_ctrl2 | 0b00000001);  // switch CHG on
             #if BMS_DEBUG
             printf("Enabling CHG FET\n");
             #endif
@@ -123,8 +123,8 @@ bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
     }
     else {
         int sys_ctrl2;
-        sys_ctrl2 = bq769x0_read_byte(SYS_CTRL2);
-        bq769x0_write_byte(SYS_CTRL2, sys_ctrl2 & ~0b00000001);  // switch CHG off
+        sys_ctrl2 = bq769x0_read_byte(BQ769X0_SYS_CTRL2);
+        bq769x0_write_byte(BQ769X0_SYS_CTRL2, sys_ctrl2 & ~0b00000001);  // switch CHG off
         #if BMS_DEBUG
         printf("Disabling CHG FET\n");
         #endif
@@ -138,8 +138,8 @@ bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
         if (!bms_dis_error(status))
         {
             int sys_ctrl2;
-            sys_ctrl2 = bq769x0_read_byte(SYS_CTRL2);
-            bq769x0_write_byte(SYS_CTRL2, sys_ctrl2 | 0b00000010);  // switch DSG on
+            sys_ctrl2 = bq769x0_read_byte(BQ769X0_SYS_CTRL2);
+            bq769x0_write_byte(BQ769X0_SYS_CTRL2, sys_ctrl2 | 0b00000010);  // switch DSG on
             #if BMS_DEBUG
             printf("Enabling DIS FET\n");
             #endif
@@ -151,8 +151,8 @@ bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
     }
     else {
         int sys_ctrl2;
-        sys_ctrl2 = bq769x0_read_byte(SYS_CTRL2);
-        bq769x0_write_byte(SYS_CTRL2, sys_ctrl2 & ~0b00000010);  // switch DSG off
+        sys_ctrl2 = bq769x0_read_byte(BQ769X0_SYS_CTRL2);
+        bq769x0_write_byte(BQ769X0_SYS_CTRL2, sys_ctrl2 & ~0b00000010);  // switch DSG off
         #if BMS_DEBUG
         printf("Disabling DIS FET\n");
         #endif
@@ -224,7 +224,7 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
             status->balancing_status |= balancing_flags << section * 5;
 
             // set balancing register for this section
-            bq769x0_write_byte(CELLBAL1 + section, balancing_flags);
+            bq769x0_write_byte(BQ769X0_CELLBAL1 + section, balancing_flags);
 
         } // section loop
     }
@@ -235,7 +235,7 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
             printf("Clearing Register CELLBAL%d\n", section + 1);
             #endif
 
-            bq769x0_write_byte(CELLBAL1 + section, 0x0);
+            bq769x0_write_byte(BQ769X0_CELLBAL1 + section, 0x0);
         }
 
         status->balancing_status = 0;
@@ -265,7 +265,7 @@ float bms_apply_dis_scp(BmsConfig *conf)
         }
     }
 
-    bq769x0_write_byte(PROTECT1, protect1.byte);
+    bq769x0_write_byte(BQ769X0_PROTECT1, protect1.byte);
 
     // returns the actual current threshold value
     return (long)SCD_threshold_setting[protect1.SCD_THRESH] * 1000 / conf->shunt_res_mOhm;
@@ -299,7 +299,7 @@ float bms_apply_dis_ocp(BmsConfig *conf)
         }
     }
 
-    bq769x0_write_byte(PROTECT2, protect2.byte);
+    bq769x0_write_byte(BQ769X0_PROTECT2, protect2.byte);
 
     // returns the actual current threshold value
     return (long)OCD_threshold_setting[protect2.OCD_THRESH] * 1000 /
@@ -311,11 +311,11 @@ int bms_apply_cell_uvp(BmsConfig *conf)
     PROTECT3_Type protect3;
     int uv_trip = 0;
 
-    protect3.byte = bq769x0_read_byte(PROTECT3);
+    protect3.byte = bq769x0_read_byte(BQ769X0_PROTECT3);
 
     uv_trip = ((((long)(conf->cell_uv_limit * 1000) - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
     uv_trip += 1;   // always round up for lower cell voltage
-    bq769x0_write_byte(UV_TRIP, uv_trip);
+    bq769x0_write_byte(BQ769X0_UV_TRIP, uv_trip);
 
     protect3.UV_DELAY = 0;
     for (int i = ARRAY_SIZE(UV_delay_setting) - 1; i > 0; i--) {
@@ -325,7 +325,7 @@ int bms_apply_cell_uvp(BmsConfig *conf)
         }
     }
 
-    bq769x0_write_byte(PROTECT3, protect3.byte);
+    bq769x0_write_byte(BQ769X0_PROTECT3, protect3.byte);
 
     // returns the actual current threshold value
     return ((long)1 << 12 | uv_trip << 4) * adc_gain / 1000 + adc_offset;
@@ -336,10 +336,10 @@ int bms_apply_cell_ovp(BmsConfig *conf)
     PROTECT3_Type protect3;
     int ov_trip = 0;
 
-    protect3.byte = bq769x0_read_byte(PROTECT3);
+    protect3.byte = bq769x0_read_byte(BQ769X0_PROTECT3);
 
     ov_trip = ((((long)(conf->cell_ov_limit * 1000) - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
-    bq769x0_write_byte(OV_TRIP, ov_trip);
+    bq769x0_write_byte(BQ769X0_OV_TRIP, ov_trip);
 
     protect3.OV_DELAY = 0;
     for (int i = ARRAY_SIZE(OV_delay_setting) - 1; i > 0; i--) {
@@ -349,7 +349,7 @@ int bms_apply_cell_ovp(BmsConfig *conf)
         }
     }
 
-    bq769x0_write_byte(PROTECT3, protect3.byte);
+    bq769x0_write_byte(BQ769X0_PROTECT3, protect3.byte);
 
     // returns the actual current threshold value
     return ((long)1 << 13 | ov_trip << 4) * adc_gain / 1000 + adc_offset;
@@ -369,7 +369,8 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     unsigned long rts = 0;
 
     // calculate R_thermistor according to bq769x0 datasheet
-    adc_raw = (bq769x0_read_byte(TS1_HI_BYTE) & 0b00111111) << 8 | bq769x0_read_byte(TS1_LO_BYTE);
+    adc_raw = (bq769x0_read_byte(BQ769X0_TS1_HI_BYTE) & 0b00111111) << 8 |
+        bq769x0_read_byte(BQ769X0_TS1_LO_BYTE);
     vtsx = adc_raw * 0.382; // mV
     rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
 
@@ -384,8 +385,8 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     float sum_temps = status->bat_temps[0];
 
     if (NUM_THERMISTORS_MAX >= 2) {     // bq76930 or bq76940
-        adc_raw = (bq769x0_read_byte(TS2_HI_BYTE) & 0b00111111) << 8 |
-            bq769x0_read_byte(TS2_LO_BYTE);
+        adc_raw = (bq769x0_read_byte(BQ769X0_TS2_HI_BYTE) & 0b00111111) << 8 |
+            bq769x0_read_byte(BQ769X0_TS2_LO_BYTE);
         vtsx = adc_raw * 0.382; // mV
         rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
         tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
@@ -402,8 +403,8 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     }
 
     if (NUM_THERMISTORS_MAX == 3) {     // bq76940
-        adc_raw = (bq769x0_read_byte(TS3_HI_BYTE) & 0b00111111) << 8 |
-            bq769x0_read_byte(TS3_LO_BYTE);
+        adc_raw = (bq769x0_read_byte(BQ769X0_TS3_HI_BYTE) & 0b00111111) << 8 |
+            bq769x0_read_byte(BQ769X0_TS3_LO_BYTE);
         vtsx = adc_raw * 0.382; // mV
         rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
         tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
@@ -426,13 +427,14 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
     int adc_raw = 0;
     static float coulomb_counter_mAs = 0;
     SYS_STAT_Type sys_stat;
-    sys_stat.byte = bq769x0_read_byte(SYS_STAT);
+    sys_stat.byte = bq769x0_read_byte(BQ769X0_SYS_STAT);
 
     // check if new current reading available
     if (sys_stat.CC_READY == 1)
     {
         //printf("reading CC register...\n");
-        adc_raw = (bq769x0_read_byte(CC_HI_BYTE) << 8) | bq769x0_read_byte(CC_LO_BYTE);
+        adc_raw = (bq769x0_read_byte(BQ769X0_CC_HI_BYTE) << 8) |
+            bq769x0_read_byte(BQ769X0_CC_LO_BYTE);
         int32_t pack_current_mA = (int16_t) adc_raw * 8.44 / conf->shunt_res_mOhm;
 
         coulomb_counter_mAs += pack_current_mA / 4;  // is read every 250 ms
@@ -462,7 +464,7 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
             bq769x0_alert_flag_reset();
         }
 
-        bq769x0_write_byte(SYS_STAT, 0b10000000);  // Clear CC ready flag
+        bq769x0_write_byte(BQ769X0_SYS_STAT, 0b10000000);  // Clear CC ready flag
     }
 }
 
@@ -474,7 +476,7 @@ void bms_read_voltages(BmsStatus *status)
     float v_max = 0, v_min = 10;
 
     for (int i = 0; i < NUM_CELLS_MAX; i++) {
-        adc_raw = bq769x0_read_word(VC1_HI_BYTE + i*2) & 0x3FFF;
+        adc_raw = bq769x0_read_word(BQ769X0_VC1_HI_BYTE + i*2) & 0x3FFF;
         status->cell_voltages[i] = (adc_raw * adc_gain * 1e-3F + adc_offset) * 1e-3F;
 
         if (status->cell_voltages[i] > 0.5F) {
@@ -494,7 +496,7 @@ void bms_read_voltages(BmsStatus *status)
     status->cell_voltage_max = v_max;
 
     // read battery pack voltage
-    adc_raw = bq769x0_read_word(BAT_HI_BYTE);
+    adc_raw = bq769x0_read_word(BQ769X0_BAT_HI_BYTE);
     status->pack_voltage = (4.0F * adc_gain * adc_raw * 1e-3F +
         status->connected_cells * adc_offset) * 1e-3F;
 }
@@ -502,7 +504,7 @@ void bms_read_voltages(BmsStatus *status)
 void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
 {
     SYS_STAT_Type sys_stat;
-    sys_stat.byte = bq769x0_read_byte(SYS_STAT);
+    sys_stat.byte = bq769x0_read_byte(BQ769X0_SYS_STAT);
 
     uint32_t error_flags_temp = 0;
     if (sys_stat.UV)      error_flags_temp |= 1U << BMS_ERR_CELL_UNDERVOLTAGE;
@@ -553,7 +555,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
     else {
 
         SYS_STAT_Type sys_stat;
-        sys_stat.byte = bq769x0_read_byte(SYS_STAT);
+        sys_stat.byte = bq769x0_read_byte(BQ769X0_SYS_STAT);
 
         // first check, if only a new CC reading is available
         if (sys_stat.CC_READY == 1) {
@@ -584,7 +586,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
                         #if BMS_DEBUG
                         printf("Attempting to clear XR error");
                         #endif
-                        bq769x0_write_byte(SYS_STAT, 0b00100000);
+                        bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00100000);
                         bms_chg_switch(conf, status, true);
                         bms_dis_switch(conf, status, true);
                     }
@@ -594,7 +596,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
                         #if BMS_DEBUG
                         printf("Attempting to clear Alert error");
                         #endif
-                        bq769x0_write_byte(SYS_STAT, 0b00010000);
+                        bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00010000);
                         bms_chg_switch(conf, status, true);
                         bms_dis_switch(conf, status, true);
                     }
@@ -605,7 +607,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
                         #if BMS_DEBUG
                         printf("Attempting to clear UV error");
                         #endif
-                        bq769x0_write_byte(SYS_STAT, 0b00001000);
+                        bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00001000);
                         bms_dis_switch(conf, status, true);
                     }
                 }
@@ -615,7 +617,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
                         #if BMS_DEBUG
                         printf("Attempting to clear OV error");
                         #endif
-                        bq769x0_write_byte(SYS_STAT, 0b00000100);
+                        bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00000100);
                         bms_chg_switch(conf, status, true);
                     }
                 }
@@ -624,7 +626,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
                         #if BMS_DEBUG
                         printf("Attempting to clear SCD error");
                         #endif
-                        bq769x0_write_byte(SYS_STAT, 0b00000010);
+                        bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00000010);
                         bms_dis_switch(conf, status, true);
                     }
                 }
@@ -633,7 +635,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
                         #if BMS_DEBUG
                         printf("Attempting to clear OCD error");
                         #endif
-                        bq769x0_write_byte(SYS_STAT, 0b00000001);
+                        bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00000001);
                         bms_dis_switch(conf, status, true);
                     }
                 }
@@ -666,22 +668,22 @@ void bms_print_register(uint8_t addr)
 
 void bms_print_registers()
 {
-    printf("0x00 SYS_STAT:  %s\n", byte2bitstr(bq769x0_read_byte(SYS_STAT)));
-    printf("0x01 CELLBAL1:  %s\n", byte2bitstr(bq769x0_read_byte(CELLBAL1)));
-    printf("0x04 SYS_CTRL1: %s\n", byte2bitstr(bq769x0_read_byte(SYS_CTRL1)));
-    printf("0x05 SYS_CTRL2: %s\n", byte2bitstr(bq769x0_read_byte(SYS_CTRL2)));
-    printf("0x06 PROTECT1:  %s\n", byte2bitstr(bq769x0_read_byte(PROTECT1)));
-    printf("0x07 PROTECT2:  %s\n", byte2bitstr(bq769x0_read_byte(PROTECT2)));
-    printf("0x08 PROTECT3:  %s\n", byte2bitstr(bq769x0_read_byte(PROTECT3)));
-    printf("0x09 OV_TRIP:   %s\n", byte2bitstr(bq769x0_read_byte(OV_TRIP)));
-    printf("0x0A UV_TRIP:   %s\n", byte2bitstr(bq769x0_read_byte(UV_TRIP)));
-    printf("0x0B CC_CFG:    %s\n", byte2bitstr(bq769x0_read_byte(CC_CFG)));
-    printf("0x32 CC_HI:     %s\n", byte2bitstr(bq769x0_read_byte(CC_HI_BYTE)));
-    printf("0x33 CC_LO:     %s\n", byte2bitstr(bq769x0_read_byte(CC_LO_BYTE)));
+    printf("0x00 SYS_STAT:  %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_SYS_STAT)));
+    printf("0x01 CELLBAL1:  %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_CELLBAL1)));
+    printf("0x04 SYS_CTRL1: %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_SYS_CTRL1)));
+    printf("0x05 SYS_CTRL2: %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_SYS_CTRL2)));
+    printf("0x06 PROTECT1:  %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_PROTECT1)));
+    printf("0x07 PROTECT2:  %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_PROTECT2)));
+    printf("0x08 PROTECT3:  %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_PROTECT3)));
+    printf("0x09 OV_TRIP:   %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_OV_TRIP)));
+    printf("0x0A UV_TRIP:   %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_UV_TRIP)));
+    printf("0x0B CC_CFG:    %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_CC_CFG)));
+    printf("0x32 CC_HI:     %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_CC_HI_BYTE)));
+    printf("0x33 CC_LO:     %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_CC_LO_BYTE)));
     /*
-    printf("0x50 ADCGAIN1:  %s\n", byte2bitstr(bq769x0_read_byte(ADCGAIN1)));
-    printf("0x51 ADCOFFSET: %s\n", byte2bitstr(bq769x0_read_byte(ADCOFFSET)));
-    printf("0x59 ADCGAIN2:  %s\n", byte2bitstr(bq769x0_read_byte(ADCGAIN2)));
+    printf("0x50 BQ769X0_ADCGAIN1:  %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_ADCGAIN1)));
+    printf("0x51 BQ769X0_ADCOFFSET: %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_ADCOFFSET)));
+    printf("0x59 BQ769X0_ADCGAIN2:  %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_ADCGAIN2)));
     */
 }
 

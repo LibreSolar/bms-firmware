@@ -10,80 +10,79 @@
 #include <stdint.h>
 
 // register map
-#define SYS_STAT        0x00
-#define CELLBAL1        0x01
-#define CELLBAL2        0x02
-#define CELLBAL3        0x03
-#define SYS_CTRL1       0x04
-#define SYS_CTRL2       0x05
-#define PROTECT1        0x06
-#define PROTECT2        0x07
-#define PROTECT3        0x08
-#define OV_TRIP         0x09
-#define UV_TRIP         0x0A
-#define CC_CFG          0x0B
+#define BQ769X0_SYS_STAT        0x00
+#define BQ769X0_CELLBAL1        0x01
+#define BQ769X0_CELLBAL2        0x02
+#define BQ769X0_CELLBAL3        0x03
+#define BQ769X0_SYS_CTRL1       0x04
+#define BQ769X0_SYS_CTRL2       0x05
+#define BQ769X0_PROTECT1        0x06
+#define BQ769X0_PROTECT2        0x07
+#define BQ769X0_PROTECT3        0x08
+#define BQ769X0_OV_TRIP         0x09
+#define BQ769X0_UV_TRIP         0x0A
+#define BQ769X0_CC_CFG          0x0B
 
-#define VC1_HI_BYTE     0x0C
-#define VC1_LO_BYTE     0x0D
-#define VC2_HI_BYTE     0x0E
-#define VC2_LO_BYTE     0x0F
-#define VC3_HI_BYTE     0x10
-#define VC3_LO_BYTE     0x11
-#define VC4_HI_BYTE     0x12
-#define VC4_LO_BYTE     0x13
-#define VC5_HI_BYTE     0x14
-#define VC5_LO_BYTE     0x15
-#define VC6_HI_BYTE     0x16
-#define VC6_LO_BYTE     0x17
-#define VC7_HI_BYTE     0x18
-#define VC7_LO_BYTE     0x19
-#define VC8_HI_BYTE     0x1A
-#define VC8_LO_BYTE     0x1B
-#define VC9_HI_BYTE     0x1C
-#define VC9_LO_BYTE     0x1D
-#define VC10_HI_BYTE    0x1E
-#define VC10_LO_BYTE    0x1F
-#define VC11_HI_BYTE    0x20
-#define VC11_LO_BYTE    0x21
-#define VC12_HI_BYTE    0x22
-#define VC12_LO_BYTE    0x23
-#define VC13_HI_BYTE    0x24
-#define VC13_LO_BYTE    0x25
-#define VC14_HI_BYTE    0x26
-#define VC14_LO_BYTE    0x27
-#define VC15_HI_BYTE    0x28
-#define VC15_LO_BYTE    0x29
+#define BQ769X0_VC1_HI_BYTE     0x0C
+#define BQ769X0_VC1_LO_BYTE     0x0D
+#define BQ769X0_VC2_HI_BYTE     0x0E
+#define BQ769X0_VC2_LO_BYTE     0x0F
+#define BQ769X0_VC3_HI_BYTE     0x10
+#define BQ769X0_VC3_LO_BYTE     0x11
+#define BQ769X0_VC4_HI_BYTE     0x12
+#define BQ769X0_VC4_LO_BYTE     0x13
+#define BQ769X0_VC5_HI_BYTE     0x14
+#define BQ769X0_VC5_LO_BYTE     0x15
+#define BQ769X0_VC6_HI_BYTE     0x16
+#define BQ769X0_VC6_LO_BYTE     0x17
+#define BQ769X0_VC7_HI_BYTE     0x18
+#define BQ769X0_VC7_LO_BYTE     0x19
+#define BQ769X0_VC8_HI_BYTE     0x1A
+#define BQ769X0_VC8_LO_BYTE     0x1B
+#define BQ769X0_VC9_HI_BYTE     0x1C
+#define BQ769X0_VC9_LO_BYTE     0x1D
+#define BQ769X0_VC10_HI_BYTE    0x1E
+#define BQ769X0_VC10_LO_BYTE    0x1F
+#define BQ769X0_VC11_HI_BYTE    0x20
+#define BQ769X0_VC11_LO_BYTE    0x21
+#define BQ769X0_VC12_HI_BYTE    0x22
+#define BQ769X0_VC12_LO_BYTE    0x23
+#define BQ769X0_VC13_HI_BYTE    0x24
+#define BQ769X0_VC13_LO_BYTE    0x25
+#define BQ769X0_VC14_HI_BYTE    0x26
+#define BQ769X0_VC14_LO_BYTE    0x27
+#define BQ769X0_VC15_HI_BYTE    0x28
+#define BQ769X0_VC15_LO_BYTE    0x29
 
-#define BAT_HI_BYTE     0x2A
-#define BAT_LO_BYTE     0x2B
+#define BQ769X0_BAT_HI_BYTE     0x2A
+#define BQ769X0_BAT_LO_BYTE     0x2B
 
-#define TS1_HI_BYTE     0x2C
-#define TS1_LO_BYTE     0x2D
-#define TS2_HI_BYTE     0x2E
-#define TS2_LO_BYTE     0x2F
-#define TS3_HI_BYTE     0x30
-#define TS3_LO_BYTE     0x31
+#define BQ769X0_TS1_HI_BYTE     0x2C
+#define BQ769X0_TS1_LO_BYTE     0x2D
+#define BQ769X0_TS2_HI_BYTE     0x2E
+#define BQ769X0_TS2_LO_BYTE     0x2F
+#define BQ769X0_TS3_HI_BYTE     0x30
+#define BQ769X0_TS3_LO_BYTE     0x31
 
-#define CC_HI_BYTE      0x32
-#define CC_LO_BYTE      0x33
+#define BQ769X0_CC_HI_BYTE      0x32
+#define BQ769X0_CC_LO_BYTE      0x33
 
-#define ADCGAIN1        0x50
-#define ADCOFFSET       0x51
-#define ADCGAIN2        0x59
-
-// function from TI reference design
-#define LOW_BYTE(data)			(uint8_t)(0xff & data)
-#define HIGH_BYTE(data)			(uint8_t)(0xff & (data >> 8))
+#define BQ769X0_ADCGAIN1        0x50
+#define BQ769X0_ADCOFFSET       0x51
+#define BQ769X0_ADCGAIN2        0x59
 
 // for bit clear operations of the SYS_STAT register
-#define STAT_CC_READY           (0x80)
-#define STAT_DEVICE_XREADY      (0x20)
-#define STAT_OVRD_ALERT         (0x10)
-#define STAT_UV                 (0x08)
-#define STAT_OV                 (0x04)
-#define STAT_SCD                (0x02)
-#define STAT_OCD                (0x01)
-#define STAT_FLAGS              (0x3F)
+#define BQ769X0_SYS_STAT_CC_READY           (0x80)
+#define BQ769X0_SYS_STAT_DEVICE_XREADY      (0x20)
+#define BQ769X0_SYS_STAT_OVRD_ALERT         (0x10)
+#define BQ769X0_SYS_STAT_UV                 (0x08)
+#define BQ769X0_SYS_STAT_OV                 (0x04)
+#define BQ769X0_SYS_STAT_SCD                (0x02)
+#define BQ769X0_SYS_STAT_OCD                (0x01)
+#define BQ769X0_SYS_STAT_FLAGS              (0x3F)
+
+#define LOW_BYTE(data)			(uint8_t)(0xff & data)
+#define HIGH_BYTE(data)			(uint8_t)(0xff & (data >> 8))
 
 // maps for settings in protection registers
 static const uint16_t SCD_delay_setting [4] =
@@ -181,8 +180,8 @@ typedef union {
 
 typedef union {
     struct {
-        uint8_t VC_HI;
-        uint8_t VC_LO;
+        uint8_t BQ769X0_VC_HI;
+        uint8_t BQ769X0_VC_LO;
     };
     uint16_t word;
 } VCELL_Type;

@@ -151,29 +151,29 @@ static bool determine_address_and_crc(void)
 {
     i2c_address = 0x08;
     crc_enabled = true;
-    bq769x0_write_byte(CC_CFG, 0x19);
-    if (bq769x0_read_byte(CC_CFG) == 0x19) {
+    bq769x0_write_byte(BQ769X0_CC_CFG, 0x19);
+    if (bq769x0_read_byte(BQ769X0_CC_CFG) == 0x19) {
         return true;
     }
 
     i2c_address = 0x18;
     crc_enabled = true;
-    bq769x0_write_byte(CC_CFG, 0x19);
-    if (bq769x0_read_byte(CC_CFG) == 0x19) {
+    bq769x0_write_byte(BQ769X0_CC_CFG, 0x19);
+    if (bq769x0_read_byte(BQ769X0_CC_CFG) == 0x19) {
         return true;
     }
 
     i2c_address = 0x08;
     crc_enabled = false;
-    bq769x0_write_byte(CC_CFG, 0x19);
-    if (bq769x0_read_byte(CC_CFG) == 0x19) {
+    bq769x0_write_byte(BQ769X0_CC_CFG, 0x19);
+    if (bq769x0_read_byte(BQ769X0_CC_CFG) == 0x19) {
         return true;
     }
 
     i2c_address = 0x18;
     crc_enabled = false;
-    bq769x0_write_byte(CC_CFG, 0x19);
-    if (bq769x0_read_byte(CC_CFG) == 0x19) {
+    bq769x0_write_byte(BQ769X0_CC_CFG, 0x19);
+    if (bq769x0_read_byte(BQ769X0_CC_CFG) == 0x19) {
         return true;
     }
 
@@ -199,13 +199,13 @@ void bq769x0_init()
     if (determine_address_and_crc())
     {
         // initial settings for bq769x0
-        bq769x0_write_byte(SYS_CTRL1, 0b00011000);  // switch external thermistor and ADC on
-        bq769x0_write_byte(SYS_CTRL2, 0b01000000);  // switch CC_EN on
+        bq769x0_write_byte(BQ769X0_SYS_CTRL1, 0b00011000);  // switch external thermistor and ADC on
+        bq769x0_write_byte(BQ769X0_SYS_CTRL2, 0b01000000);  // switch CC_EN on
 
         // get ADC offset and gain
-        adc_offset = (signed int) bq769x0_read_byte(ADCOFFSET);  // convert from 2's complement
-        adc_gain = 365 + (((bq769x0_read_byte(ADCGAIN1) & 0b00001100) << 1) |
-            ((bq769x0_read_byte(ADCGAIN2) & 0b11100000) >> 5)); // uV/LSB
+        adc_offset = (signed int) bq769x0_read_byte(BQ769X0_ADCOFFSET);  // 2's complement
+        adc_gain = 365 + (((bq769x0_read_byte(BQ769X0_ADCGAIN1) & 0b00001100) << 1) |
+            ((bq769x0_read_byte(BQ769X0_ADCGAIN2) & 0b11100000) >> 5)); // uV/LSB
     }
     else {
         // TODO: do something else... e.g. set error flag
