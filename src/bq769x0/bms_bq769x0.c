@@ -162,86 +162,80 @@ bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 
 void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
 {
-    long idleSeconds = uptime() - status->no_idle_timestamp;
-    int numberOfSections = NUM_CELLS_MAX/5;
+    long idle_secs = uptime() - status->no_idle_timestamp;
+    int num_sections = NUM_CELLS_MAX / 5;
 
-    // check for _timer.read_ms() overflow
-    if (idleSeconds < 0) {
+    // check for millisecond-timer overflow
+    if (idle_secs < 0) {
         status->no_idle_timestamp = 0;
-        idleSeconds = uptime();
+        idle_secs = uptime();
     }
 
     // check if balancing allowed
-    if (idleSeconds >= conf->bal_idle_delay &&
+    if (idle_secs >= conf->bal_idle_delay &&
         status->cell_voltage_max > conf->bal_cell_voltage_min &&
         (status->cell_voltage_max - status->cell_voltage_min) > conf->bal_cell_voltage_diff)
     {
-        //printf("Balancing enabled!");
         status->balancing_status = 0;  // current status will be set in following loop
 
-        //regCELLBAL_t cellbal;
-        int balancingFlags;
-        int balancingFlagsTarget;
+        int balancing_flags;
+        int balancing_flags_target;
 
-        for (int section = 0; section < numberOfSections; section++)
-        {
+        for (int section = 0; section < num_sections; section++) {
             // find cells which should be balanced and sort them by voltage descending
-            int cellList[5];
-            int cellCounter = 0;
+            int cell_list[5];
+            int cell_counter = 0;
             for (int i = 0; i < 5; i++)
             {
-                if ((status->cell_voltages[section*5 + i] - status->cell_voltage_min) >
+                if ((status->cell_voltages[section * 5 + i] - status->cell_voltage_min) >
                     conf->bal_cell_voltage_diff)
                 {
-                    int j = cellCounter;
-                    while (j > 0 && status->cell_voltages[section*5 + cellList[j - 1]] <
-                        status->cell_voltages[section*5 + i])
+                    int j = cell_counter;
+                    while (j > 0 && status->cell_voltages[section * 5 + cell_list[j - 1]] <
+                        status->cell_voltages[section * 5 + i])
                     {
-                        cellList[j] = cellList[j - 1];
+                        cell_list[j] = cell_list[j - 1];
                         j--;
                     }
-                    cellList[j] = i;
-                    cellCounter++;
+                    cell_list[j] = i;
+                    cell_counter++;
                 }
             }
 
-            balancingFlags = 0;
-            for (int i = 0; i < cellCounter; i++)
-            {
+            balancing_flags = 0;
+            for (int i = 0; i < cell_counter; i++) {
                 // try to enable balancing of current cell
-                balancingFlagsTarget = balancingFlags | (1 << cellList[i]);
+                balancing_flags_target = balancing_flags | (1 << cell_list[i]);
 
                 // check if attempting to balance adjacent cells
-                bool adjacentCellCollision =
-                    ((balancingFlagsTarget << 1) & balancingFlags) ||
-                    ((balancingFlags << 1) & balancingFlagsTarget);
+                bool adjacent_cell_collision =
+                    ((balancing_flags_target << 1) & balancing_flags) ||
+                    ((balancing_flags << 1) & balancing_flags_target);
 
-                if (adjacentCellCollision == false) {
-                    balancingFlags = balancingFlagsTarget;
+                if (adjacent_cell_collision == false) {
+                    balancing_flags = balancing_flags_target;
                 }
             }
 
             #if BMS_DEBUG
-            //printf("Setting CELLBAL%d register to: %s\n", section+1, byte2char(balancingFlags));
+            //printf("Setting CELLBAL%d register to: %s\n", section+1, byte2char(balancing_flags));
             #endif
 
-            status->balancing_status |= balancingFlags << section*5;
+            status->balancing_status |= balancing_flags << section * 5;
 
             // set balancing register for this section
-            bq769x0_write_byte(CELLBAL1+section, balancingFlags);
+            bq769x0_write_byte(CELLBAL1 + section, balancing_flags);
 
         } // section loop
     }
-    else if (status->balancing_status > 0)
-    {
+    else if (status->balancing_status > 0) {
         // clear all CELLBAL registers
-        for (int section = 0; section < numberOfSections; section++)
-        {
+        for (int section = 0; section < num_sections; section++) {
             #if BMS_DEBUG
-            printf("Clearing Register CELLBAL%d\n", section+1);
+            printf("Clearing Register CELLBAL%d\n", section + 1);
             #endif
 
-            bq769x0_write_byte(CELLBAL1+section, 0x0);
+            bq769x0_write_byte(CELLBAL1 + section, 0x0);
         }
 
         status->balancing_status = 0;
@@ -274,8 +268,7 @@ float bms_apply_dis_scp(BmsConfig *conf)
     bq769x0_write_byte(PROTECT1, protect1.regByte);
 
     // returns the actual current threshold value
-    return (long)SCD_threshold_setting[protect1.bits.SCD_THRESH] * 1000 /
-        conf->shunt_res_mOhm;
+    return (long)SCD_threshold_setting[protect1.bits.SCD_THRESH] * 1000 / conf->shunt_res_mOhm;
 }
 
 float bms_apply_chg_ocp(BmsConfig *conf)
@@ -391,7 +384,8 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     float sum_temps = status->bat_temps[0];
 
     if (NUM_THERMISTORS_MAX >= 2) {     // bq76930 or bq76940
-        adc_raw = (bq769x0_read_byte(TS2_HI_BYTE) & 0b00111111) << 8 | bq769x0_read_byte(TS2_LO_BYTE);
+        adc_raw = (bq769x0_read_byte(TS2_HI_BYTE) & 0b00111111) << 8 |
+            bq769x0_read_byte(TS2_LO_BYTE);
         vtsx = adc_raw * 0.382; // mV
         rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
         tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
@@ -408,7 +402,8 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     }
 
     if (NUM_THERMISTORS_MAX == 3) {     // bq76940
-        adc_raw = (bq769x0_read_byte(TS3_HI_BYTE) & 0b00111111) << 8 | bq769x0_read_byte(TS3_LO_BYTE);
+        adc_raw = (bq769x0_read_byte(TS3_HI_BYTE) & 0b00111111) << 8 |
+            bq769x0_read_byte(TS3_LO_BYTE);
         vtsx = adc_raw * 0.382; // mV
         rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
         tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
@@ -500,7 +495,8 @@ void bms_read_voltages(BmsStatus *status)
 
     // read battery pack voltage
     adc_raw = bq769x0_read_word(BAT_HI_BYTE);
-    status->pack_voltage = (4.0 * adc_gain * adc_raw * 1e-3F + status->connected_cells * adc_offset) * 1e-3F;
+    status->pack_voltage = (4.0F * adc_gain * adc_raw * 1e-3F +
+        status->connected_cells * adc_offset) * 1e-3F;
 }
 
 void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
