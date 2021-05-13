@@ -244,31 +244,31 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
 
 float bms_apply_dis_scp(BmsConfig *conf)
 {
-    regPROTECT1_t protect1;
+    PROTECT1_Type protect1;
 
     // only RSNS = 1 considered
-    protect1.bits.RSNS = 1;
+    protect1.RSNS = 1;
 
-    protect1.bits.SCD_THRESH = 0;
+    protect1.SCD_THRESH = 0;
     for (int i = ARRAY_SIZE(SCD_threshold_setting) - 1; i > 0; i--) {
         if (conf->dis_sc_limit * conf->shunt_res_mOhm >= SCD_threshold_setting[i]) {
-            protect1.bits.SCD_THRESH = i;
+            protect1.SCD_THRESH = i;
             break;
         }
     }
 
-    protect1.bits.SCD_DELAY = 0;
+    protect1.SCD_DELAY = 0;
     for (int i = ARRAY_SIZE(SCD_delay_setting) - 1; i > 0; i--) {
         if (conf->dis_sc_delay_us >= SCD_delay_setting[i]) {
-            protect1.bits.SCD_DELAY = i;
+            protect1.SCD_DELAY = i;
             break;
         }
     }
 
-    bq769x0_write_byte(PROTECT1, protect1.regByte);
+    bq769x0_write_byte(PROTECT1, protect1.byte);
 
     // returns the actual current threshold value
-    return (long)SCD_threshold_setting[protect1.bits.SCD_THRESH] * 1000 / conf->shunt_res_mOhm;
+    return (long)SCD_threshold_setting[protect1.SCD_THRESH] * 1000 / conf->shunt_res_mOhm;
 }
 
 float bms_apply_chg_ocp(BmsConfig *conf)
@@ -279,53 +279,53 @@ float bms_apply_chg_ocp(BmsConfig *conf)
 
 float bms_apply_dis_ocp(BmsConfig *conf)
 {
-    regPROTECT2_t protect2;
+    PROTECT2_Type protect2;
 
     // Remark: RSNS must be set to 1 in PROTECT1 register
 
-    protect2.bits.OCD_THRESH = 0;
+    protect2.OCD_THRESH = 0;
     for (int i = ARRAY_SIZE(OCD_threshold_setting) - 1; i > 0; i--) {
         if (conf->dis_oc_limit * conf->shunt_res_mOhm >= OCD_threshold_setting[i]) {
-            protect2.bits.OCD_THRESH = i;
+            protect2.OCD_THRESH = i;
             break;
         }
     }
 
-    protect2.bits.OCD_DELAY = 0;
+    protect2.OCD_DELAY = 0;
     for (int i = ARRAY_SIZE(OCD_delay_setting) - 1; i > 0; i--) {
         if (conf->dis_oc_delay_ms >= OCD_delay_setting[i]) {
-            protect2.bits.OCD_DELAY = i;
+            protect2.OCD_DELAY = i;
             break;
         }
     }
 
-    bq769x0_write_byte(PROTECT2, protect2.regByte);
+    bq769x0_write_byte(PROTECT2, protect2.byte);
 
     // returns the actual current threshold value
-    return (long)OCD_threshold_setting[protect2.bits.OCD_THRESH] * 1000 /
+    return (long)OCD_threshold_setting[protect2.OCD_THRESH] * 1000 /
         conf->shunt_res_mOhm;
 }
 
 int bms_apply_cell_uvp(BmsConfig *conf)
 {
-    regPROTECT3_t protect3;
+    PROTECT3_Type protect3;
     int uv_trip = 0;
 
-    protect3.regByte = bq769x0_read_byte(PROTECT3);
+    protect3.byte = bq769x0_read_byte(PROTECT3);
 
     uv_trip = ((((long)(conf->cell_uv_limit * 1000) - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
     uv_trip += 1;   // always round up for lower cell voltage
     bq769x0_write_byte(UV_TRIP, uv_trip);
 
-    protect3.bits.UV_DELAY = 0;
+    protect3.UV_DELAY = 0;
     for (int i = ARRAY_SIZE(UV_delay_setting) - 1; i > 0; i--) {
         if (conf->cell_uv_delay_ms >= UV_delay_setting[i]) {
-            protect3.bits.UV_DELAY = i;
+            protect3.UV_DELAY = i;
             break;
         }
     }
 
-    bq769x0_write_byte(PROTECT3, protect3.regByte);
+    bq769x0_write_byte(PROTECT3, protect3.byte);
 
     // returns the actual current threshold value
     return ((long)1 << 12 | uv_trip << 4) * adc_gain / 1000 + adc_offset;
@@ -333,23 +333,23 @@ int bms_apply_cell_uvp(BmsConfig *conf)
 
 int bms_apply_cell_ovp(BmsConfig *conf)
 {
-    regPROTECT3_t protect3;
+    PROTECT3_Type protect3;
     int ov_trip = 0;
 
-    protect3.regByte = bq769x0_read_byte(PROTECT3);
+    protect3.byte = bq769x0_read_byte(PROTECT3);
 
     ov_trip = ((((long)(conf->cell_ov_limit * 1000) - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
     bq769x0_write_byte(OV_TRIP, ov_trip);
 
-    protect3.bits.OV_DELAY = 0;
+    protect3.OV_DELAY = 0;
     for (int i = ARRAY_SIZE(OV_delay_setting) - 1; i > 0; i--) {
         if (conf->cell_ov_delay_ms >= OV_delay_setting[i]) {
-            protect3.bits.OV_DELAY = i;
+            protect3.OV_DELAY = i;
             break;
         }
     }
 
-    bq769x0_write_byte(PROTECT3, protect3.regByte);
+    bq769x0_write_byte(PROTECT3, protect3.byte);
 
     // returns the actual current threshold value
     return ((long)1 << 13 | ov_trip << 4) * adc_gain / 1000 + adc_offset;
@@ -425,11 +425,11 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
 {
     int adc_raw = 0;
     static float coulomb_counter_mAs = 0;
-    regSYS_STAT_t sys_stat;
-    sys_stat.regByte = bq769x0_read_byte(SYS_STAT);
+    SYS_STAT_Type sys_stat;
+    sys_stat.byte = bq769x0_read_byte(SYS_STAT);
 
     // check if new current reading available
-    if (sys_stat.bits.CC_READY == 1)
+    if (sys_stat.CC_READY == 1)
     {
         //printf("reading CC register...\n");
         adc_raw = (bq769x0_read_byte(CC_HI_BYTE) << 8) | bq769x0_read_byte(CC_LO_BYTE);
@@ -458,7 +458,7 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
         }
 
         // no error occured which caused alert
-        if (!(sys_stat.regByte & 0b00111111)) {
+        if (!(sys_stat.byte & 0b00111111)) {
             bq769x0_alert_flag_reset();
         }
 
@@ -501,14 +501,14 @@ void bms_read_voltages(BmsStatus *status)
 
 void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
 {
-    regSYS_STAT_t sys_stat;
-    sys_stat.regByte = bq769x0_read_byte(SYS_STAT);
+    SYS_STAT_Type sys_stat;
+    sys_stat.byte = bq769x0_read_byte(SYS_STAT);
 
     uint32_t error_flags_temp = 0;
-    if (sys_stat.bits.UV)      error_flags_temp |= 1U << BMS_ERR_CELL_UNDERVOLTAGE;
-    if (sys_stat.bits.OV)      error_flags_temp |= 1U << BMS_ERR_CELL_OVERVOLTAGE;
-    if (sys_stat.bits.SCD)     error_flags_temp |= 1U << BMS_ERR_SHORT_CIRCUIT;
-    if (sys_stat.bits.OCD)     error_flags_temp |= 1U << BMS_ERR_DIS_OVERCURRENT;
+    if (sys_stat.UV)      error_flags_temp |= 1U << BMS_ERR_CELL_UNDERVOLTAGE;
+    if (sys_stat.OV)      error_flags_temp |= 1U << BMS_ERR_CELL_OVERVOLTAGE;
+    if (sys_stat.SCD)     error_flags_temp |= 1U << BMS_ERR_SHORT_CIRCUIT;
+    if (sys_stat.OCD)     error_flags_temp |= 1U << BMS_ERR_DIS_OVERCURRENT;
 
     if (status->pack_current > conf->chg_oc_limit) {
         // ToDo: consider conf->chg_oc_delay
@@ -552,22 +552,22 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
     }
     else {
 
-        regSYS_STAT_t sys_stat;
-        sys_stat.regByte = bq769x0_read_byte(SYS_STAT);
+        SYS_STAT_Type sys_stat;
+        sys_stat.byte = bq769x0_read_byte(SYS_STAT);
 
         // first check, if only a new CC reading is available
-        if (sys_stat.bits.CC_READY == 1) {
+        if (sys_stat.CC_READY == 1) {
             //printf("Interrupt: CC ready");
             bms_read_current(conf, status);  // automatically clears CC ready flag
         }
 
         // Serious error occured
-        if (sys_stat.regByte & 0b00111111)
+        if (sys_stat.byte & 0b00111111)
         {
             if (bq769x0_alert_flag() == true) {
                 sec_since_error = 0;
             }
-            error_status = sys_stat.regByte;
+            error_status = sys_stat.byte;
 
             unsigned int sec_since_interrupt = uptime() - bq769x0_alert_timestamp();
 
@@ -578,7 +578,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
             // called only once per second
             if (sec_since_interrupt >= sec_since_error)
             {
-                if (sys_stat.regByte & 0b00100000) { // XR error
+                if (sys_stat.byte & 0b00100000) { // XR error
                     // datasheet recommendation: try to clear after waiting a few seconds
                     if (sec_since_error % 3 == 0) {
                         #if BMS_DEBUG
@@ -589,7 +589,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
                         bms_dis_switch(conf, status, true);
                     }
                 }
-                if (sys_stat.regByte & 0b00010000) { // Alert error
+                if (sys_stat.byte & 0b00010000) { // Alert error
                     if (sec_since_error % 10 == 0) {
                         #if BMS_DEBUG
                         printf("Attempting to clear Alert error");
@@ -599,7 +599,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
                         bms_dis_switch(conf, status, true);
                     }
                 }
-                if (sys_stat.regByte & 0b00001000) { // UV error
+                if (sys_stat.byte & 0b00001000) { // UV error
                     bms_read_voltages(status);
                     if (status->cell_voltage_min > conf->cell_uv_limit) {
                         #if BMS_DEBUG
@@ -609,7 +609,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
                         bms_dis_switch(conf, status, true);
                     }
                 }
-                if (sys_stat.regByte & 0b00000100) { // OV error
+                if (sys_stat.byte & 0b00000100) { // OV error
                     bms_read_voltages(status);
                     if (status->cell_voltage_max < conf->cell_ov_limit) {
                         #if BMS_DEBUG
@@ -619,7 +619,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
                         bms_chg_switch(conf, status, true);
                     }
                 }
-                if (sys_stat.regByte & 0b00000010) { // SCD
+                if (sys_stat.byte & 0b00000010) { // SCD
                     if (sec_since_error % 60 == 0) {
                         #if BMS_DEBUG
                         printf("Attempting to clear SCD error");
@@ -628,7 +628,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
                         bms_dis_switch(conf, status, true);
                     }
                 }
-                if (sys_stat.regByte & 0b00000001) { // OCD
+                if (sys_stat.byte & 0b00000001) { // OCD
                     if (sec_since_error % 60 == 0) {
                         #if BMS_DEBUG
                         printf("Attempting to clear OCD error");

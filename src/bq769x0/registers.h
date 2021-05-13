@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef BQ769X0_REGISTERS_H
-#define BQ769X0_REGISTERS_H
+#ifndef BQ769X0_REGISTERS_H_
+#define BQ769X0_REGISTERS_H_
 
 #include <stdint.h>
 
@@ -99,7 +99,7 @@ static const uint16_t OCD_threshold_setting [16] =
 static const uint16_t UV_delay_setting [4] = { 1, 4, 8, 16 };  // s
 static const uint16_t OV_delay_setting [4] = { 1, 2, 4, 8 };   // s
 
-typedef union regSYS_STAT {
+typedef union {
     struct {
         uint8_t OCD            :1;
         uint8_t SCD            :1;
@@ -109,11 +109,11 @@ typedef union regSYS_STAT {
         uint8_t DEVICE_XREADY  :1;
         uint8_t RSVD           :1;
         uint8_t CC_READY       :1;
-    } bits;
-    uint8_t regByte;
-} regSYS_STAT_t;
+    };
+    uint8_t byte;
+} SYS_STAT_Type;
 
-typedef union regSYS_CTRL1 {
+typedef union {
     struct {
         uint8_t SHUT_B        :1;
         uint8_t SHUT_A        :1;
@@ -122,11 +122,11 @@ typedef union regSYS_CTRL1 {
         uint8_t ADC_EN        :1;
         uint8_t RSVD2         :2;
         uint8_t LOAD_PRESENT  :1;
-    } bits;
-    uint8_t regByte;
-} regSYS_CTRL1_t;
+    };
+    uint8_t byte;
+} SYS_CTRL1_Type;
 
-typedef union regSYS_CTRL2 {
+typedef union {
     struct {
         uint8_t CHG_ON      :1;
         uint8_t DSG_ON      :1;
@@ -135,39 +135,39 @@ typedef union regSYS_CTRL2 {
         uint8_t CC_ONESHOT  :1;
         uint8_t CC_EN       :1;
         uint8_t DELAY_DIS   :1;
-    } bits;
-    uint8_t regByte;
-} regSYS_CTRL2_t;
+    };
+    uint8_t byte;
+} SYS_CTRL2_Type;
 
-typedef union regPROTECT1 {
+typedef union {
     struct {
         uint8_t SCD_THRESH      :3;
         uint8_t SCD_DELAY       :2;
         uint8_t RSVD            :2;
         uint8_t RSNS            :1;
-    } bits;
-    uint8_t regByte;
-} regPROTECT1_t;
+    };
+    uint8_t byte;
+} PROTECT1_Type;
 
-typedef union regPROTECT2 {
+typedef union {
     struct {
         uint8_t OCD_THRESH      :4;
         uint8_t OCD_DELAY       :3;
         uint8_t RSVD            :1;
-    } bits;
-    uint8_t regByte;
-} regPROTECT2_t;
+    };
+    uint8_t byte;
+} PROTECT2_Type;
 
-typedef union regPROTECT3 {
+typedef union {
     struct {
         uint8_t RSVD            :4;
         uint8_t OV_DELAY        :2;
         uint8_t UV_DELAY        :2;
-    } bits;
-    uint8_t regByte;
-} regPROTECT3_t;
+    };
+    uint8_t byte;
+} PROTECT3_Type;
 
-typedef union regCELLBAL {
+typedef union {
     struct {
         uint8_t RSVD        :3;
         uint8_t CB5         :1;
@@ -175,16 +175,16 @@ typedef union regCELLBAL {
         uint8_t CB3         :1;
         uint8_t CB2         :1;
         uint8_t CB1         :1;
-    } bits;
-    uint8_t regByte;
-} regCELLBAL_t;
+    };
+    uint8_t byte;
+} CELLBAL_Type;
 
-typedef union regVCELL {
+typedef union {
     struct {
         uint8_t VC_HI;
         uint8_t VC_LO;
-    } bytes;
-    uint16_t regWord;
-} regVCELL_t;
+    };
+    uint16_t word;
+} VCELL_Type;
 
-#endif /* BQ769X0_REGISTERS_H */
+#endif /* BQ769X0_REGISTERS_H_ */
