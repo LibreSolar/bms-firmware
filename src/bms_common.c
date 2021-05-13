@@ -85,6 +85,9 @@ void bms_init_config(BmsConfig *conf, int type, float nominal_capacity)
             conf->cell_uv_reset         = 3.50F;
             conf->cell_dis_voltage      = 3.20F;
             conf->cell_uv_limit         = 3.00F;
+            // ToDo: Use typical OCV curve for NMC cells
+            conf->ocv = NULL;
+            conf->num_ocv_points = 0;
             break;
         case CELL_TYPE_NMC_HV:
             conf->cell_ov_limit         = 4.35F;
@@ -94,6 +97,9 @@ void bms_init_config(BmsConfig *conf, int type, float nominal_capacity)
             conf->cell_uv_reset         = 3.50F;
             conf->cell_dis_voltage      = 3.20F;
             conf->cell_uv_limit         = 3.00F;
+            // ToDo: Use typical OCV curve for NMC_HV cells
+            conf->ocv = NULL;
+            conf->num_ocv_points = 0;
             break;
         case CELL_TYPE_LTO:
             conf->cell_ov_limit         = 2.85F;
@@ -103,6 +109,9 @@ void bms_init_config(BmsConfig *conf, int type, float nominal_capacity)
             conf->cell_uv_reset         = 2.10F;
             conf->cell_dis_voltage      = 2.00F;
             conf->cell_uv_limit         = 1.90F;
+            // ToDo: Use typical OCV curve for LTO cells
+            conf->ocv = NULL;
+            conf->num_ocv_points = 0;
             break;
         case CELL_TYPE_CUSTOM:
             break;
@@ -214,8 +223,14 @@ void bms_reset_soc(BmsConfig *conf, BmsStatus *status, int percent)
     if (percent <= 100 && percent >= 0) {
         status->soc = percent;
     }
-    else { // reset based on OCV if percent is invalid
+    else if (conf->ocv != NULL) {
         status->soc = interpolate(conf->ocv, soc_pct, conf->num_ocv_points,
             status->cell_voltage_avg);
+    }
+    else {
+        // no OCV curve specified, use simplified estimation instead
+        float ocv_simple[2] = { conf->cell_chg_voltage, conf->cell_dis_voltage };
+        float soc_simple[2] = { 100.0F, 0.0F };
+        status->soc = interpolate(ocv_simple, soc_simple, 2, status->cell_voltage_avg);
     }
 }
