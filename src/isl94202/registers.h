@@ -116,9 +116,9 @@
 #define ISL94202_CBONT_Msk  (0xFFFU << ISL94202_CBON_Pos)
 
 // Cell Balance Off Time (CBOFF)
-#define ISL94202_CBOFT      (0x26U)
-#define ISL94202_CBOFT_Pos  (0x0U)
-#define ISL94202_CBOFT_Msk  (0xFFFU << ISL94202_CBOF_Pos)
+#define ISL94202_CBOFFT     (0x26U)
+#define ISL94202_CBOFFT_Pos (0x0U)
+#define ISL94202_CBOFFT_Msk (0xFFFU << ISL94202_CBOF_Pos)
 
 // Cell Balance Minimum Temperature Limit (CBUTS)
 #define ISL94202_CBUTS      (0x28U)

@@ -118,6 +118,31 @@ bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 
 void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
 {
+    uint8_t stat3;
+    isl94202_read_bytes(ISL94202_STAT3, &stat3, 1);
+
+    /*
+     * System scans for voltage, current and temperature measurements happen in different
+     * intervals depending on the mode. Cell balancing should be off during voltage scans.
+     *
+     * Each scan takes max. 1.7 ms. Choosing 16 ms off-time for voltages to settle.
+     */
+    if (stat3 & ISL94202_STAT3_INIDLE_Msk) {
+        // IDLE mode: Scan every 256 ms
+        isl94202_write_delay(ISL94202_CBONT, ISL94202_DELAY_MS, 240, 0);
+        isl94202_write_delay(ISL94202_CBOFFT, ISL94202_DELAY_MS, 16, 0);
+    }
+    else if (stat3 & ISL94202_STAT3_INDOZE_Msk) {
+        // DOZE mode: Scan every 512 ms
+        isl94202_write_delay(ISL94202_CBONT, ISL94202_DELAY_MS, 496, 0);
+        isl94202_write_delay(ISL94202_CBOFFT, ISL94202_DELAY_MS, 16, 0);
+    }
+    else if (!(stat3 & ISL94202_STAT3_INSLEEP_Msk)) {
+        // NORMAL mode: Scan every 32 ms
+        isl94202_write_delay(ISL94202_CBONT, ISL94202_DELAY_MS, 16, 0);
+        isl94202_write_delay(ISL94202_CBOFFT, ISL94202_DELAY_MS, 16, 0);
+    }
+
     /*
      * Balancing is done automatically, just reading status here (even though the datasheet
      * tells that the CBFC register value cannot be used for indication if a cell is
