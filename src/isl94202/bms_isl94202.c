@@ -157,12 +157,14 @@ float bms_apply_dis_ocp(BmsConfig *conf)
 int bms_apply_cell_ovp(BmsConfig *conf)
 {
     // also apply balancing thresholds here
-    isl94202_write_voltage(ISL94202_CBVL, conf->bal_cell_voltage_min, 0);
-    isl94202_write_voltage(ISL94202_CBVU, 4.5F, 0); // no upper limit for balancing
-    isl94202_write_voltage(ISL94202_CBDL, conf->bal_cell_voltage_diff, 0);
-    isl94202_write_voltage(ISL94202_CBDU, 1.0F, 0); // no tight limit for voltage delta
+    isl94202_write_voltage(ISL94202_CBMIN, conf->bal_cell_voltage_min, 0);
+    isl94202_write_voltage(ISL94202_CBMAX, 4.5F, 0); // no upper limit for balancing
+    isl94202_write_voltage(ISL94202_CBMINDV, conf->bal_cell_voltage_diff, 0);
+    isl94202_write_voltage(ISL94202_CBMAXDV, 1.0F, 0); // no tight limit for voltage delta
 
-    isl94202_write_voltage(ISL94202_EOC, conf->cell_chg_voltage, 0);
+    // EOC condition needs to be set to bal_cell_voltage_min instead of cell_chg_voltage to enable
+    // balancing during idle
+    isl94202_write_voltage(ISL94202_EOC, conf->bal_cell_voltage_min, 0);
 
     // keeping CPW at the default value of 1 ms
     return isl94202_write_voltage(ISL94202_OVL_CPW, conf->cell_ov_limit, 1)
