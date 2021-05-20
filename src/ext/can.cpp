@@ -16,7 +16,7 @@
 #endif
 
 #include <logging/log.h>
-LOG_MODULE_REGISTER(ext_can, CONFIG_LOG_DEFAULT_LEVEL);
+LOG_MODULE_REGISTER(ext_can, CONFIG_CAN_LOG_LEVEL);
 
 #include "thingset.h"
 #include "data_nodes.h"
@@ -26,7 +26,7 @@ LOG_MODULE_REGISTER(ext_can, CONFIG_LOG_DEFAULT_LEVEL);
 #endif
 
 extern ThingSet ts;
-extern uint16_t ts_can_node_id;
+extern uint16_t can_node_addr;
 
 const struct device *can_dev;
 
@@ -39,20 +39,22 @@ const struct isotp_fc_opts fc_opts = {.bs = 8, .stmin = 0};
 
 struct isotp_msg_id rx_addr = {
     .id_type = CAN_EXTENDED_IDENTIFIER,
-    .use_ext_addr = 0   // Normal ISO-TP addressing (using only CAN ID)
+    .use_ext_addr = 0,      // Normal ISO-TP addressing (using only CAN ID)
+    .use_fixed_addr = 1,    // enable SAE J1939 compatible addressing
 };
 
 struct isotp_msg_id tx_addr = {
     .id_type = CAN_EXTENDED_IDENTIFIER,
-    .use_ext_addr = 0   // Normal ISO-TP addressing (using only CAN ID)
+    .use_ext_addr = 0,      // Normal ISO-TP addressing (using only CAN ID)
+    .use_fixed_addr = 1,    // enable SAE J1939 compatible addressing
 };
 
 struct isotp_recv_ctx recv_ctx;
 
-void send_complette_cb(int error_nr, void *arg)
+void send_complete_cb(int error_nr, void *arg)
 {
     ARG_UNUSED(arg);
-    LOG_DBG("TX complete cb [%d]", error_nr);
+    LOG_DBG("TX complete callback, err: %d", error_nr);
 }
 
 void can_rx_thread()
@@ -64,16 +66,16 @@ void can_rx_thread()
     static uint8_t tx_buffer[500];
 
     // CAN node ID retrieved from EEPROM --> reset necessary after change via ThingSet serial
-    rx_addr.ext_id = ts_can_node_id << 8;
-    tx_addr.ext_id = ts_can_node_id;
-
-    ret = isotp_bind(&recv_ctx, can_dev, &tx_addr, &rx_addr, &fc_opts, K_FOREVER);
-    if (ret != ISOTP_N_OK) {
-        LOG_DBG("Failed to bind to rx ID %d [%d]", rx_addr.ext_id, ret);
-        return;
-    }
+    rx_addr.ext_id = TS_CAN_BASE_REQRESP | TS_CAN_PRIO_REQRESP | TS_CAN_TARGET_SET(can_node_addr);
+    tx_addr.ext_id = TS_CAN_BASE_REQRESP | TS_CAN_PRIO_REQRESP | TS_CAN_SOURCE_SET(can_node_addr);
 
     while (1) {
+        ret = isotp_bind(&recv_ctx, can_dev, &rx_addr, &tx_addr, &fc_opts, K_FOREVER);
+        if (ret != ISOTP_N_OK) {
+            LOG_DBG("Failed to bind to rx ID %d [%d]", rx_addr.ext_id, ret);
+            return;
+        }
+
         received_len = 0;
         do {
             rem_len = isotp_recv_net(&recv_ctx, &buf, K_FOREVER);
@@ -92,14 +94,19 @@ void can_rx_thread()
             net_buf_unref(buf);
         } while (rem_len);
 
+        // we need to unbind the receive ctx so that control frames are received in the send ctx
+        isotp_unbind(&recv_ctx);
+
         if (received_len > 0) {
             LOG_DBG("Got %d bytes via ISO-TP. Processing ThingSet message.", received_len);
+            LOG_DBG("RX buf: %x %x %x %x", rx_buffer[0], rx_buffer[1], rx_buffer[2], rx_buffer[3]);
             int resp_len = ts.process(rx_buffer, received_len, tx_buffer, sizeof(tx_buffer));
+            LOG_DBG("TX buf: %x %x %x %x", tx_buffer[0], tx_buffer[1], tx_buffer[2], tx_buffer[3]);
 
             if (resp_len > 0) {
                 static struct isotp_send_ctx send_ctx;
                 int ret = isotp_send(&send_ctx, can_dev, tx_buffer, resp_len,
-                            &tx_addr, &rx_addr, send_complette_cb, NULL);
+                            &recv_ctx.tx_addr, &recv_ctx.rx_addr, send_complete_cb, NULL);
                 if (ret != ISOTP_N_OK) {
                     LOG_DBG("Error while sending data to ID %d [%d]", tx_addr.ext_id, ret);
                 }
@@ -129,11 +136,13 @@ void can_pub_thread()
 
     can_dev = device_get_binding("CAN_1");
 
+    int64_t t_start = k_uptime_get();
+
     while (true) {
         if (pub_can_enable) {
             int data_len = 0;
             int start_pos = 0;
-            while ((data_len = ts.bin_pub_can(start_pos, PUB_CAN, ts_can_node_id, can_id, can_data))
+            while ((data_len = ts.bin_pub_can(start_pos, PUB_CAN, can_node_addr, can_id, can_data))
                      != -1)
             {
                 struct zcan_frame frame = {0};
@@ -152,7 +161,8 @@ void can_pub_thread()
             }
         }
 
-        k_sleep(K_MSEC(1000));
+        t_start += 1000;
+        k_sleep(K_TIMEOUT_ABS_MS(t_start));
     }
 }
 

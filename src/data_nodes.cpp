@@ -43,7 +43,7 @@ bool pub_serial_enable = IS_ENABLED(CONFIG_THINGSET_SERIAL_PUB_DEFAULT);
 
 #if CONFIG_THINGSET_CAN
 bool pub_can_enable = IS_ENABLED(CONFIG_THINGSET_CAN_PUB_DEFAULT);
-uint16_t ts_can_node_id = CONFIG_THINGSET_CAN_DEFAULT_NODE_ID;
+uint16_t can_node_addr = CONFIG_THINGSET_CAN_DEFAULT_NODE_ID;
 #endif
 
 // used for print_register callback
