@@ -28,14 +28,17 @@ LOG_MODULE_REGISTER(ext_can, CONFIG_CAN_LOG_LEVEL);
 extern ThingSet ts;
 extern uint16_t can_node_addr;
 
-const struct device *can_dev;
+static const struct device *can_dev;
 
 #ifdef CONFIG_ISOTP
 
-#define RX_THREAD_STACK_SIZE 512
+#define RX_THREAD_STACK_SIZE 1024
 #define RX_THREAD_PRIORITY 2
 
-const struct isotp_fc_opts fc_opts = {.bs = 8, .stmin = 0};
+const struct isotp_fc_opts fc_opts = {
+    .bs = 8,                // block size
+    .stmin = 1              // minimum separation time = 100 ms
+};
 
 struct isotp_msg_id rx_addr = {
     .id_type = CAN_EXTENDED_IDENTIFIER,
@@ -49,7 +52,8 @@ struct isotp_msg_id tx_addr = {
     .use_fixed_addr = 1,    // enable SAE J1939 compatible addressing
 };
 
-struct isotp_recv_ctx recv_ctx;
+static struct isotp_recv_ctx recv_ctx;
+static struct isotp_send_ctx send_ctx;
 
 void send_complete_cb(int error_nr, void *arg)
 {
@@ -59,57 +63,62 @@ void send_complete_cb(int error_nr, void *arg)
 
 void can_rx_thread()
 {
-    int ret, rem_len;
-    unsigned int received_len;
+    int ret, rem_len, resp_len;
+    unsigned int req_len;
     struct net_buf *buf;
-    static uint8_t rx_buffer[100];
+    static uint8_t rx_buffer[200];
     static uint8_t tx_buffer[500];
 
-    // CAN node ID retrieved from EEPROM --> reset necessary after change via ThingSet serial
-    rx_addr.ext_id = TS_CAN_BASE_REQRESP | TS_CAN_PRIO_REQRESP | TS_CAN_TARGET_SET(can_node_addr);
-    tx_addr.ext_id = TS_CAN_BASE_REQRESP | TS_CAN_PRIO_REQRESP | TS_CAN_SOURCE_SET(can_node_addr);
-
     while (1) {
+        /* re-assign address in every loop as it may have been changed via ThingSet */
+        rx_addr.ext_id = TS_CAN_BASE_REQRESP | TS_CAN_PRIO_REQRESP |
+            TS_CAN_TARGET_SET(can_node_addr);
+        tx_addr.ext_id = TS_CAN_BASE_REQRESP | TS_CAN_PRIO_REQRESP |
+            TS_CAN_SOURCE_SET(can_node_addr);
+
         ret = isotp_bind(&recv_ctx, can_dev, &rx_addr, &tx_addr, &fc_opts, K_FOREVER);
         if (ret != ISOTP_N_OK) {
             LOG_DBG("Failed to bind to rx ID %d [%d]", rx_addr.ext_id, ret);
             return;
         }
 
-        received_len = 0;
+        req_len = 0;
         do {
             rem_len = isotp_recv_net(&recv_ctx, &buf, K_FOREVER);
             if (rem_len < 0) {
                 LOG_DBG("Receiving error [%d]", rem_len);
                 break;
             }
-            if (received_len + buf->len <= sizeof(rx_buffer)) {
-                memcpy(&rx_buffer[received_len], buf->data, buf->len);
-                received_len += buf->len;
+            if (req_len + buf->len <= sizeof(rx_buffer)) {
+                memcpy(&rx_buffer[req_len], buf->data, buf->len);
             }
-            else {
-                LOG_DBG("RX buffer too small");
-                break;
-            }
+            req_len += buf->len;
             net_buf_unref(buf);
         } while (rem_len);
 
         // we need to unbind the receive ctx so that control frames are received in the send ctx
         isotp_unbind(&recv_ctx);
 
-        if (received_len > 0) {
-            LOG_DBG("Got %d bytes via ISO-TP. Processing ThingSet message.", received_len);
-            LOG_DBG("RX buf: %x %x %x %x", rx_buffer[0], rx_buffer[1], rx_buffer[2], rx_buffer[3]);
-            int resp_len = ts.process(rx_buffer, received_len, tx_buffer, sizeof(tx_buffer));
+        if (req_len > sizeof(rx_buffer)) {
+            LOG_DBG("RX buffer too small");
+            tx_buffer[0] = TS_STATUS_REQUEST_TOO_LARGE;
+            resp_len = 1;
+        }
+        else if (req_len > 0 && rem_len == 0) {
+            LOG_INF("Got %d bytes via ISO-TP. Processing ThingSet message.", req_len);
+            resp_len = ts.process(rx_buffer, req_len, tx_buffer, sizeof(tx_buffer));
             LOG_DBG("TX buf: %x %x %x %x", tx_buffer[0], tx_buffer[1], tx_buffer[2], tx_buffer[3]);
+        }
+        else {
+            tx_buffer[0] = TS_STATUS_INTERNAL_SERVER_ERR;
+            resp_len = 1;
+        }
 
-            if (resp_len > 0) {
-                static struct isotp_send_ctx send_ctx;
-                int ret = isotp_send(&send_ctx, can_dev, tx_buffer, resp_len,
-                            &recv_ctx.tx_addr, &recv_ctx.rx_addr, send_complete_cb, NULL);
-                if (ret != ISOTP_N_OK) {
-                    LOG_DBG("Error while sending data to ID %d [%d]", tx_addr.ext_id, ret);
-                }
+        if (resp_len > 0) {
+            ret = isotp_send(&send_ctx, can_dev, tx_buffer, resp_len,
+                        &recv_ctx.tx_addr, &recv_ctx.rx_addr, send_complete_cb, NULL);
+            if (ret != ISOTP_N_OK) {
+                LOG_DBG("Error while sending data to ID %d [%d]", tx_addr.ext_id, ret);
             }
         }
     }
