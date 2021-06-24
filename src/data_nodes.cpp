@@ -196,7 +196,7 @@ static DataNode data_nodes[] = {
 
 #ifdef CONFIG_BMS_ISL94202   // currently only implemented in ISL94202-based boards (using TS2)
     TS_NODE_FLOAT(0x76, "MOSFETs_degC", &bms_status.mosfet_temp, 1,
-        ID_OUTPUT, TS_ANY_R, 0),
+        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
 #endif
 
     TS_NODE_FLOAT(0x7C, "SOC_pct", &bms_status.soc, 1,
@@ -209,7 +209,7 @@ static DataNode data_nodes[] = {
         ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
 
     TS_NODE_ARRAY(0x80, "Cells_V", &cell_voltages_arr, 3,
-        ID_OUTPUT, TS_ANY_R, 0),
+        ID_OUTPUT, TS_ANY_R, PUB_SER),
 
     TS_NODE_FLOAT(0x9A, "CellAvg_V", &bms_status.cell_voltage_avg, 3,
         ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
