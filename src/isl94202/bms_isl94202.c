@@ -73,6 +73,9 @@ void bms_init_hardware()
     // Enable FET control via microcontroller
     reg = ISL94202_CTRL2_UCFET_Msk;
     isl94202_write_bytes(ISL94202_CTRL2, &reg, 1);
+
+    // Remark: Ideal diode control via DFODOV and DFODUV bits of SETUP1 register doesn't have any
+    // effect because of FET control via microcontroller.
 }
 
 void bms_update(BmsConfig *conf, BmsStatus *status)

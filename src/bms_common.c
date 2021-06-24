@@ -138,6 +138,7 @@ void bms_state_machine(BmsConfig *conf, BmsStatus *status)
         case BMS_STATE_CHG:
             if (!bms_chg_allowed(status)) {
                 bms_chg_switch(conf, status, false);
+                bms_dis_switch(conf, status, false);    // if on because of ideal diode control
                 status->state = BMS_STATE_OFF;
                 printf("Going back to state OFF\n");
             }
@@ -146,10 +147,20 @@ void bms_state_machine(BmsConfig *conf, BmsStatus *status)
                 status->state = BMS_STATE_NORMAL;
                 printf("Going to state NORMAL\n");
             }
+            else {
+                // ideal diode control for discharge MOSFET (with hysteresis)
+                if (status->pack_current > 0.5F) {
+                    bms_dis_switch(conf, status, true);
+                }
+                else if (status->pack_current < 0.1F) {
+                    bms_dis_switch(conf, status, false);
+                }
+            }
             break;
         case BMS_STATE_DIS:
             if (!bms_dis_allowed(status)) {
                 bms_dis_switch(conf, status, false);
+                bms_chg_switch(conf, status, false);    // if on because of ideal diode control
                 status->state = BMS_STATE_OFF;
                 printf("Going back to state OFF\n");
             }
@@ -157,6 +168,15 @@ void bms_state_machine(BmsConfig *conf, BmsStatus *status)
                 bms_chg_switch(conf, status, true);
                 status->state = BMS_STATE_NORMAL;
                 printf("Going to state NORMAL\n");
+            }
+            else {
+                // ideal diode control for charge MOSFET (with hysteresis)
+                if (status->pack_current < -0.5F) {
+                    bms_chg_switch(conf, status, true);
+                }
+                else if (status->pack_current > -0.1F) {
+                    bms_chg_switch(conf, status, false);
+                }
             }
             break;
         case BMS_STATE_NORMAL:
