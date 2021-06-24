@@ -278,6 +278,8 @@ void data_nodes_update_conf()
     bms_apply_dis_ocp(&bms_conf);
     bms_apply_chg_ocp(&bms_conf);
 
+    bms_apply_temp_limits(&bms_conf);
+
     eeprom_store_data();
 }
 

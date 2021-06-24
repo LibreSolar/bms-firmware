@@ -56,7 +56,7 @@ void bms_init_config(BmsConfig *conf, int type, float nominal_capacity)
     conf->dis_ot_limit =  45;
     conf->chg_ut_limit =   0;
     conf->chg_ot_limit =  45;
-    conf->t_limit_hyst =   2;
+    conf->t_limit_hyst =   5;
 
     conf->shunt_res_mOhm = SHUNT_RESISTOR;
 
