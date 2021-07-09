@@ -18,6 +18,7 @@
 #include "devicetree_unfixed.h"
 #include "autoconf.h"
 #include "stdint.h"
+#include "time.h"
 
 #ifndef __deprecated
 #define __deprecated	__attribute__((deprecated))
@@ -29,7 +30,7 @@
 #define printk printf
 
 // dummy
-static inline int64_t k_uptime_get() { return 0; }
+static inline int64_t k_uptime_get() { return time(NULL) * 1000; }
 
 #define CONFIG_LOG_DEFAULT_LEVEL 2      // errors and warnings only
 

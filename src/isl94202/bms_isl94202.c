@@ -87,6 +87,12 @@ void bms_update(BmsConfig *conf, BmsStatus *status)
     bms_apply_balancing(conf, status);
 }
 
+bool bms_startup_inhibit()
+{
+    // Datasheet: 3 seconds wake-up delay from shutdown or initial power-up
+    return uptime() < 4;
+}
+
 void bms_shutdown()
 {
     uint8_t reg = ISL94202_CTRL3_PDWN_Msk;

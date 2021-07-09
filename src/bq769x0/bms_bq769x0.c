@@ -96,6 +96,12 @@ void bms_check_cell_temp(BmsConfig *conf, BmsStatus *status)
     }
 }
 
+bool bms_startup_inhibit()
+{
+    // Datasheet: only 10 ms delay (t_BOOTREADY)
+    return k_uptime_get() <= 10;
+}
+
 void bms_shutdown()
 {
     // puts BMS IC into SHIP mode (i.e. switched off)

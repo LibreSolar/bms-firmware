@@ -124,6 +124,10 @@ void bms_state_machine(BmsConfig *conf, BmsStatus *status)
 
     switch(status->state) {
         case BMS_STATE_OFF:
+            if (bms_startup_inhibit()) {
+                return;
+            }
+
             if (bms_dis_allowed(status)) {
                 bms_dis_switch(conf, status, true);
                 status->state = BMS_STATE_DIS;

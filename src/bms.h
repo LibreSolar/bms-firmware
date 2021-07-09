@@ -38,7 +38,6 @@ enum BmsState {
     BMS_STATE_NORMAL,       ///< Normal operating mode (both charging and discharging enabled)
 };
 
-
 /**
  * Battery cell types
  */
@@ -189,6 +188,13 @@ void bms_state_machine(BmsConfig *conf, BmsStatus *status);
  * Should be called at least once every 250 ms to get correct coulomb counting
  */
 void bms_update(BmsConfig *conf, BmsStatus *status);
+
+/**
+ * BMS IC start-up delay indicator
+ *
+ * @returns true if we should wait for the BMS IC to start up
+ */
+bool bms_startup_inhibit();
 
 /**
  * Shut down BMS IC and entire PCB power supply
