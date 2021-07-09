@@ -112,58 +112,24 @@ void bms_shutdown()
 
 bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
-    if (enable) {
-        if (!bms_chg_error(status))
-        {
-            int sys_ctrl2;
-            sys_ctrl2 = bq769x0_read_byte(BQ769X0_SYS_CTRL2);
-            bq769x0_write_byte(BQ769X0_SYS_CTRL2, sys_ctrl2 | 0b00000001);  // switch CHG on
-            #if BMS_DEBUG
-            printf("Enabling CHG FET\n");
-            #endif
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-    else {
-        int sys_ctrl2;
-        sys_ctrl2 = bq769x0_read_byte(BQ769X0_SYS_CTRL2);
-        bq769x0_write_byte(BQ769X0_SYS_CTRL2, sys_ctrl2 & ~0b00000001);  // switch CHG off
-        #if BMS_DEBUG
-        printf("Disabling CHG FET\n");
-        #endif
-        return true;
-    }
+    SYS_CTRL2_Type sys_ctrl2;
+
+    sys_ctrl2.byte = bq769x0_read_byte(BQ769X0_SYS_CTRL2);
+    sys_ctrl2.CHG_ON = enable;
+    bq769x0_write_byte(BQ769X0_SYS_CTRL2, sys_ctrl2.byte);
+
+    return true;
 }
 
 bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
-    if (enable) {
-        if (!bms_dis_error(status))
-        {
-            int sys_ctrl2;
-            sys_ctrl2 = bq769x0_read_byte(BQ769X0_SYS_CTRL2);
-            bq769x0_write_byte(BQ769X0_SYS_CTRL2, sys_ctrl2 | 0b00000010);  // switch DSG on
-            #if BMS_DEBUG
-            printf("Enabling DIS FET\n");
-            #endif
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-    else {
-        int sys_ctrl2;
-        sys_ctrl2 = bq769x0_read_byte(BQ769X0_SYS_CTRL2);
-        bq769x0_write_byte(BQ769X0_SYS_CTRL2, sys_ctrl2 & ~0b00000010);  // switch DSG off
-        #if BMS_DEBUG
-        printf("Disabling DIS FET\n");
-        #endif
-        return true;
-    }
+    SYS_CTRL2_Type sys_ctrl2;
+
+    sys_ctrl2.byte = bq769x0_read_byte(BQ769X0_SYS_CTRL2);
+    sys_ctrl2.DSG_ON = enable;
+    bq769x0_write_byte(BQ769X0_SYS_CTRL2, sys_ctrl2.byte);
+
+    return true;
 }
 
 void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
