@@ -75,6 +75,10 @@ void leds_update()
             // quick flash
             leds_chg_set(count % 2);
         }
+        else if (((count / 2) % 10) == 0) {
+            // off without error: _    _    _
+            leds_chg_set(1);
+        }
         else {
             leds_chg_set(0);
         }
@@ -95,6 +99,10 @@ void leds_update()
         if (bms_dis_error(&bms_status)) {
             // quick flash
             leds_dis_set(count % 2);
+        }
+        else if (((count / 2) % 10) == 0) {
+            // off without error: _    _    _
+            leds_dis_set(1);
         }
         else {
             leds_dis_set(0);
