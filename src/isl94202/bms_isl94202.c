@@ -361,22 +361,39 @@ void bms_read_voltages(BmsStatus *status)
 
 void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
 {
+    uint32_t error_flags = 0;
     uint8_t stat[2];
-    isl94202_read_bytes(ISL94202_STAT0, stat, 2);
+    uint8_t ctrl1;
 
-    status->error_flags = 0;
-    if (stat[0] & ISL94202_STAT0_UVF_Msk)   status->error_flags |= 1U << BMS_ERR_CELL_UNDERVOLTAGE;
-    if (stat[0] & ISL94202_STAT0_OVF_Msk)   status->error_flags |= 1U << BMS_ERR_CELL_OVERVOLTAGE;
-    if (stat[1] & ISL94202_STAT1_DSCF_Msk)  status->error_flags |= 1U << BMS_ERR_SHORT_CIRCUIT;
-    if (stat[1] & ISL94202_STAT1_DOCF_Msk)  status->error_flags |= 1U << BMS_ERR_DIS_OVERCURRENT;
-    if (stat[1] & ISL94202_STAT1_COCF_Msk)  status->error_flags |= 1U << BMS_ERR_CHG_OVERCURRENT;
-    if (stat[1] & ISL94202_STAT1_OPENF_Msk) status->error_flags |= 1U << BMS_ERR_OPEN_WIRE;
-    if (stat[0] & ISL94202_STAT0_DUTF_Msk)  status->error_flags |= 1U << BMS_ERR_DIS_UNDERTEMP;
-    if (stat[0] & ISL94202_STAT0_DOTF_Msk)  status->error_flags |= 1U << BMS_ERR_DIS_OVERTEMP;
-    if (stat[0] & ISL94202_STAT0_CUTF_Msk)  status->error_flags |= 1U << BMS_ERR_CHG_UNDERTEMP;
-    if (stat[0] & ISL94202_STAT0_COTF_Msk)  status->error_flags |= 1U << BMS_ERR_CHG_OVERTEMP;
-    if (stat[1] & ISL94202_STAT1_IOTF_Msk)  status->error_flags |= 1U << BMS_ERR_INT_OVERTEMP;
-    if (stat[1] & ISL94202_STAT1_CELLF_Msk) status->error_flags |= 1U << BMS_ERR_CELL_FAILURE;
+    isl94202_read_bytes(ISL94202_STAT0, stat, 2);
+    isl94202_read_bytes(ISL94202_CTRL1, &ctrl1, 1);
+
+    if (stat[0] & ISL94202_STAT0_UVF_Msk)   error_flags |= 1U << BMS_ERR_CELL_UNDERVOLTAGE;
+    if (stat[0] & ISL94202_STAT0_OVF_Msk)   error_flags |= 1U << BMS_ERR_CELL_OVERVOLTAGE;
+    if (stat[1] & ISL94202_STAT1_DSCF_Msk)  error_flags |= 1U << BMS_ERR_SHORT_CIRCUIT;
+    if (stat[1] & ISL94202_STAT1_DOCF_Msk)  error_flags |= 1U << BMS_ERR_DIS_OVERCURRENT;
+    if (stat[1] & ISL94202_STAT1_COCF_Msk)  error_flags |= 1U << BMS_ERR_CHG_OVERCURRENT;
+    if (stat[1] & ISL94202_STAT1_OPENF_Msk) error_flags |= 1U << BMS_ERR_OPEN_WIRE;
+    if (stat[0] & ISL94202_STAT0_DUTF_Msk)  error_flags |= 1U << BMS_ERR_DIS_UNDERTEMP;
+    if (stat[0] & ISL94202_STAT0_DOTF_Msk)  error_flags |= 1U << BMS_ERR_DIS_OVERTEMP;
+    if (stat[0] & ISL94202_STAT0_CUTF_Msk)  error_flags |= 1U << BMS_ERR_CHG_UNDERTEMP;
+    if (stat[0] & ISL94202_STAT0_COTF_Msk)  error_flags |= 1U << BMS_ERR_CHG_OVERTEMP;
+    if (stat[1] & ISL94202_STAT1_IOTF_Msk)  error_flags |= 1U << BMS_ERR_INT_OVERTEMP;
+    if (stat[1] & ISL94202_STAT1_CELLF_Msk) error_flags |= 1U << BMS_ERR_CELL_FAILURE;
+
+    if (!(ctrl1 & ISL94202_CTRL1_DFET_Msk) &&
+        (status->state == BMS_STATE_DIS || status->state == BMS_STATE_NORMAL))
+    {
+        error_flags |= 1U << BMS_ERR_DIS_OFF;
+    }
+
+    if (!(ctrl1 & ISL94202_CTRL1_CFET_Msk) &&
+        (status->state == BMS_STATE_CHG || status->state == BMS_STATE_NORMAL))
+    {
+        error_flags |= 1U << BMS_ERR_CHG_OFF;
+    }
+
+    status->error_flags = error_flags;
 }
 
 void bms_handle_errors(BmsConfig *conf, BmsStatus *status)

@@ -71,7 +71,7 @@ void leds_update()
         }
     }
     else {
-        if (bms_chg_error(&bms_status)) {
+        if (bms_chg_error(bms_status.error_flags)) {
             // quick flash
             leds_chg_set(count % 2);
         }
@@ -96,7 +96,7 @@ void leds_update()
         }
     }
     else {
-        if (bms_dis_error(&bms_status)) {
+        if (bms_dis_error(bms_status.error_flags)) {
             // quick flash
             leds_dis_set(count % 2);
         }

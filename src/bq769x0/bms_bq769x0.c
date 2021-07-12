@@ -49,11 +49,9 @@ void bms_set_error_flag(BmsStatus *status, uint32_t flag, bool value)
     if ((status->error_flags & (1UL << flag)) != ((uint32_t)value << flag)) {
         if (value) {
             status->error_flags |= (1UL << flag);
-            //bms_chg_switch(conf, status, false);
         }
         else {
             status->error_flags &= ~(1UL << flag);
-            //bms_chg_switch(conf, status, true);
         }
         #if BMS_DEBUG
         printf("Error flag %u changed to: %d\n", flag, value);
@@ -77,22 +75,18 @@ void bms_check_cell_temp(BmsConfig *conf, BmsStatus *status)
 
     if (chg_overtemp != (bool)(status->error_flags & (1UL << BMS_ERR_CHG_OVERTEMP))) {
         bms_set_error_flag(status, BMS_ERR_CHG_OVERTEMP, chg_overtemp);
-        bms_chg_switch(conf, status, !chg_overtemp);
     }
 
     if (chg_undertemp != (bool)(status->error_flags & (1UL << BMS_ERR_CHG_UNDERTEMP))) {
         bms_set_error_flag(status, BMS_ERR_CHG_UNDERTEMP, chg_undertemp);
-        bms_chg_switch(conf, status, !chg_undertemp);
     }
 
     if (dis_overtemp != (bool)(status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP))) {
         bms_set_error_flag(status, BMS_ERR_DIS_OVERTEMP, dis_overtemp);
-        bms_dis_switch(conf, status, !dis_overtemp);
     }
 
     if (dis_undertemp != (bool)(status->error_flags & (1UL << BMS_ERR_DIS_UNDERTEMP))) {
         bms_set_error_flag(status, BMS_ERR_DIS_UNDERTEMP, dis_undertemp);
-        bms_dis_switch(conf, status, !dis_undertemp);
     }
 }
 
@@ -512,6 +506,8 @@ void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
     {
         error_flags_temp |= 1U << BMS_ERR_DIS_UNDERTEMP;
     }
+
+    status->error_flags = error_flags_temp;
 }
 
 void bms_handle_errors(BmsConfig *conf, BmsStatus *status)

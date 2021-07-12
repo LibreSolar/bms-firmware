@@ -157,7 +157,9 @@ enum BmsErrorFlag {
     BMS_ERR_CHG_UNDERTEMP = 8,          ///< Temperature below charge maximum limit
     BMS_ERR_CHG_OVERTEMP = 9,           ///< Temperature above charge maximum limit
     BMS_ERR_INT_OVERTEMP = 10,          ///< Internal temperature above limit (e.g. MOSFETs or IC)
-    BMS_ERR_CELL_FAILURE = 11           ///< Cell failure (too high voltage difference)
+    BMS_ERR_CELL_FAILURE = 11,          ///< Cell failure (too high voltage difference)
+    BMS_ERR_DIS_OFF = 12,               ///< Discharge FET is off even though it should be on
+    BMS_ERR_CHG_OFF = 13                ///< Charge FET is off even though it should be on
 };
 
 /**
@@ -216,14 +218,14 @@ bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable);
  *
  * @returns true if any charging error flag is set
  */
-bool bms_chg_error(BmsStatus *status);
+bool bms_chg_error(uint32_t error_flags);
 
 /**
  * Discharging error flags check
  *
  * @returns true if any discharging error flag is set
  */
-bool bms_dis_error(BmsStatus *status);
+bool bms_dis_error(uint32_t error_flags);
 
 /**
  * Check if charging is allowed

@@ -198,37 +198,41 @@ void bms_state_machine(BmsConfig *conf, BmsStatus *status)
     }
 }
 
-bool bms_chg_error(BmsStatus *status)
+bool bms_chg_error(uint32_t error_flags)
 {
-    return (status->error_flags & (1U << BMS_ERR_CELL_OVERVOLTAGE))
-        || (status->error_flags & (1U << BMS_ERR_CHG_OVERCURRENT))
-        || (status->error_flags & (1U << BMS_ERR_OPEN_WIRE))
-        || (status->error_flags & (1U << BMS_ERR_CHG_UNDERTEMP))
-        || (status->error_flags & (1U << BMS_ERR_CHG_OVERTEMP))
-        || (status->error_flags & (1U << BMS_ERR_INT_OVERTEMP))
-        || (status->error_flags & (1U << BMS_ERR_CELL_FAILURE));
+    return (error_flags & (1U << BMS_ERR_CELL_OVERVOLTAGE))
+        || (error_flags & (1U << BMS_ERR_CHG_OVERCURRENT))
+        || (error_flags & (1U << BMS_ERR_OPEN_WIRE))
+        || (error_flags & (1U << BMS_ERR_CHG_UNDERTEMP))
+        || (error_flags & (1U << BMS_ERR_CHG_OVERTEMP))
+        || (error_flags & (1U << BMS_ERR_INT_OVERTEMP))
+        || (error_flags & (1U << BMS_ERR_CELL_FAILURE))
+        || (error_flags & (1U << BMS_ERR_CHG_OFF));
 }
 
-bool bms_dis_error(BmsStatus *status)
+bool bms_dis_error(uint32_t error_flags)
 {
-    return (status->error_flags & (1U << BMS_ERR_CELL_UNDERVOLTAGE))
-        || (status->error_flags & (1U << BMS_ERR_SHORT_CIRCUIT))
-        || (status->error_flags & (1U << BMS_ERR_DIS_OVERCURRENT))
-        || (status->error_flags & (1U << BMS_ERR_OPEN_WIRE))
-        || (status->error_flags & (1U << BMS_ERR_DIS_UNDERTEMP))
-        || (status->error_flags & (1U << BMS_ERR_DIS_OVERTEMP))
-        || (status->error_flags & (1U << BMS_ERR_INT_OVERTEMP))
-        || (status->error_flags & (1U << BMS_ERR_CELL_FAILURE));
+    return (error_flags & (1U << BMS_ERR_CELL_UNDERVOLTAGE))
+        || (error_flags & (1U << BMS_ERR_SHORT_CIRCUIT))
+        || (error_flags & (1U << BMS_ERR_DIS_OVERCURRENT))
+        || (error_flags & (1U << BMS_ERR_OPEN_WIRE))
+        || (error_flags & (1U << BMS_ERR_DIS_UNDERTEMP))
+        || (error_flags & (1U << BMS_ERR_DIS_OVERTEMP))
+        || (error_flags & (1U << BMS_ERR_INT_OVERTEMP))
+        || (error_flags & (1U << BMS_ERR_CELL_FAILURE))
+        || (error_flags & (1U << BMS_ERR_DIS_OFF));
 }
 
 bool bms_chg_allowed(BmsStatus *status)
 {
-    return !bms_chg_error(status) && !status->full && status->chg_enable;
+    return !bms_chg_error(status->error_flags & ~BMS_ERR_CHG_OFF)
+        && !status->full && status->chg_enable;
 }
 
 bool bms_dis_allowed(BmsStatus *status)
 {
-    return !bms_dis_error(status) && !status->empty && status->dis_enable;
+    return !bms_dis_error(status->error_flags & ~BMS_ERR_CHG_OFF)
+        && !status->empty && status->dis_enable;
 }
 
 bool bms_balancing_allowed(BmsConfig *conf, BmsStatus *status)
