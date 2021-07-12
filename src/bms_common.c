@@ -67,8 +67,8 @@ void bms_init_config(BmsConfig *conf, int type, float nominal_capacity)
     {
         case CELL_TYPE_LFP:
             conf->cell_ov_limit         = 3.80F;
-            conf->cell_chg_voltage      = 3.60F;
-            conf->cell_ov_reset         = 3.45F;
+            conf->cell_chg_voltage      = 3.55F;
+            conf->cell_ov_reset         = 3.40F;
             conf->bal_cell_voltage_min  = 3.30F;
             conf->cell_uv_reset         = 3.10F;
             conf->cell_dis_voltage      = 2.80F;
