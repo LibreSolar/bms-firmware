@@ -91,10 +91,18 @@
 	status = "okay";
 };
 
+&usart1_rx_pa10 {
+	bias-pull-up;	// avoid junk characters if pin is left floating
+};
+
 &usart2 {
 	pinctrl-0 = <&usart2_tx_pa2 &usart2_rx_pa3>;
 	current-speed = <115200>;
 	status = "okay";
+};
+
+&usart2_rx_pa3 {
+	bias-pull-up;	// avoid junk characters if pin is left floating
 };
 
 &i2c1 {
