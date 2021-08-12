@@ -508,7 +508,7 @@ void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
         error_flags_temp |= 1U << BMS_ERR_DIS_UNDERTEMP;
     }
 
-    status -> error_flags = error_flags_temp;
+    status->error_flags = error_flags_temp;
 }
 
 void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
