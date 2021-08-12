@@ -40,6 +40,7 @@ void bms_update(BmsConfig *conf, BmsStatus *status)
     bms_read_current(conf, status);
     bms_read_temperatures(conf, status);
     bms_check_cell_temp(conf, status);      // bq769x0 doesn't support temperature settings
+    bms_update_error_flags(conf, status);
     bms_apply_balancing(conf, status);
 }
 
@@ -507,7 +508,7 @@ void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
         error_flags_temp |= 1U << BMS_ERR_DIS_UNDERTEMP;
     }
 
-    status->error_flags = error_flags_temp;
+    status -> error_flags = error_flags_temp;
 }
 
 void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
@@ -516,14 +517,14 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
     static uint32_t sec_since_error = 0;
 
     // ToDo: Handle also temperature and chg errors (incl. temp hysteresis)
+    SYS_STAT_Type sys_stat;
+    sys_stat.byte = bq769x0_read_byte(BQ769X0_SYS_STAT);
+    error_status = sys_stat.byte;
 
     if (!bq769x0_alert_flag() && error_status == 0) {
         return;
     }
     else {
-
-        SYS_STAT_Type sys_stat;
-        sys_stat.byte = bq769x0_read_byte(BQ769X0_SYS_STAT);
 
         // first check, if only a new CC reading is available
         if (sys_stat.CC_READY == 1) {
@@ -537,7 +538,6 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
             if (bq769x0_alert_flag() == true) {
                 sec_since_error = 0;
             }
-            error_status = sys_stat.byte;
 
             unsigned int sec_since_interrupt = uptime() - bq769x0_alert_timestamp();
 
@@ -571,7 +571,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
                 }
                 if (sys_stat.byte & 0b00001000) { // UV error
                     bms_read_voltages(status);
-                    if (status->cell_voltage_min > conf->cell_uv_limit) {
+                    if (status->cell_voltage_min > conf->cell_uv_reset) {
                         #if BMS_DEBUG
                         printf("Attempting to clear UV error");
                         #endif
@@ -581,7 +581,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
                 }
                 if (sys_stat.byte & 0b00000100) { // OV error
                     bms_read_voltages(status);
-                    if (status->cell_voltage_max < conf->cell_ov_limit) {
+                    if (status->cell_voltage_max < conf->cell_ov_reset) {
                         #if BMS_DEBUG
                         printf("Attempting to clear OV error");
                         #endif
