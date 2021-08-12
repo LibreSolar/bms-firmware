@@ -507,10 +507,7 @@ void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
     {
         error_flags_temp |= 1U << BMS_ERR_DIS_UNDERTEMP;
     }
-<<<<<<< HEAD
 
-=======
->>>>>>> 2ad31e621244d5f6d5caac1192dfde203b9eaf4e
     status -> error_flags = error_flags_temp;
 }
 
