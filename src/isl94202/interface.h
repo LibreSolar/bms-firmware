@@ -25,9 +25,6 @@ extern "C" {
 
 /**
  * Initialization of ISL94202 IC
- *
- * - Determines I2C address
- * - Sets ALERT pin interrupt
  */
 void isl94202_init();
 
@@ -73,22 +70,6 @@ int isl94202_read_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes);
 int isl94202_read_word(uint8_t reg_addr);
 
 /**
- * @returns status of the alert pin
- */
-bool isl94202_alert_flag();
-
-/**
- * Reset alert pin interrupt flag
- */
-void isl94202_alert_flag_reset();
-
-/**
- * @returns the time when the interrupt was triggered
- */
-time_t isl94202_alert_timestamp();
-
-
-/**
  * Writes a delay + extra bits to specified register
  *
  * @param reg_addr Register address
@@ -98,7 +79,8 @@ time_t isl94202_alert_timestamp();
  *
  * @returns Actual threshold current in A or 0 in case of error
  */
-int isl94202_write_delay(uint8_t reg_addr, uint8_t delay_unit, uint16_t delay_value, uint8_t extra_bits);
+int isl94202_write_delay(uint8_t reg_addr, uint8_t delay_unit, uint16_t delay_value,
+                         uint8_t extra_bits);
 
 /**
  * Writes a current limit (threshold + delay) to specified register
