@@ -523,8 +523,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
     if (!bq769x0_alert_flag() && error_status == 0) {
         return;
     }
-    else if (sys_stat.byte & 0b00111111) {
-        // Serious error occured (alert does not only indicate CC reading)
+    else if (sys_stat.byte & BQ769X0_SYS_STAT_ERROR_MASK) {
 
         if (bq769x0_alert_flag() == true) {
             sec_since_error = 0;
@@ -539,50 +538,50 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
         // called only once per second
         if (sec_since_interrupt >= sec_since_error)
         {
-            if (sys_stat.byte & 0b00100000) { // XR error
+            if (sys_stat.DEVICE_XREADY) {
                 // datasheet recommendation: try to clear after waiting a few seconds
                 if (sec_since_error % 3 == 0) {
                     LOG_DBG("Attempting to clear XR error");
-                    bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00100000);
+                    bq769x0_write_byte(BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_DEVICE_XREADY);
                     bms_chg_switch(conf, status, true);
                     bms_dis_switch(conf, status, true);
                 }
             }
-            if (sys_stat.byte & 0b00010000) { // Alert error
+            if (sys_stat.OVRD_ALERT) {
                 if (sec_since_error % 10 == 0) {
                     LOG_DBG("Attempting to clear Alert error");
-                    bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00010000);
+                    bq769x0_write_byte(BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_OVRD_ALERT);
                     bms_chg_switch(conf, status, true);
                     bms_dis_switch(conf, status, true);
                 }
             }
-            if (sys_stat.byte & 0b00001000) { // UV error
+            if (sys_stat.UV) {
                 bms_read_voltages(status);
                 if (status->cell_voltage_min > conf->cell_uv_reset) {
                     LOG_DBG("Attempting to clear UV error");
-                    bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00001000);
+                    bq769x0_write_byte(BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_UV);
                     bms_dis_switch(conf, status, true);
                 }
             }
-            if (sys_stat.byte & 0b00000100) { // OV error
+            if (sys_stat.OV) {
                 bms_read_voltages(status);
                 if (status->cell_voltage_max < conf->cell_ov_reset) {
                     LOG_DBG("Attempting to clear OV error");
-                    bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00000100);
+                    bq769x0_write_byte(BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_OV);
                     bms_chg_switch(conf, status, true);
                 }
             }
-            if (sys_stat.byte & 0b00000010) { // SCD
+            if (sys_stat.SCD) {
                 if (sec_since_error % 60 == 0) {
                     LOG_DBG("Attempting to clear SCD error");
-                    bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00000010);
+                    bq769x0_write_byte(BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_SCD);
                     bms_dis_switch(conf, status, true);
                 }
             }
-            if (sys_stat.byte & 0b00000001) { // OCD
+            if (sys_stat.OCD) {
                 if (sec_since_error % 60 == 0) {
                     LOG_DBG("Attempting to clear OCD error");
-                    bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00000001);
+                    bq769x0_write_byte(BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_OCD);
                     bms_dis_switch(conf, status, true);
                 }
             }

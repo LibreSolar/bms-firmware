@@ -79,7 +79,7 @@
 #define BQ769X0_SYS_STAT_OV                 (0x04)
 #define BQ769X0_SYS_STAT_SCD                (0x02)
 #define BQ769X0_SYS_STAT_OCD                (0x01)
-#define BQ769X0_SYS_STAT_FLAGS              (0x3F)
+#define BQ769X0_SYS_STAT_ERROR_MASK         (0x3F)
 
 #define LOW_BYTE(data)			(uint8_t)(0xff & data)
 #define HIGH_BYTE(data)			(uint8_t)(0xff & (data >> 8))
