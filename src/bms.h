@@ -25,9 +25,6 @@ extern "C" {
 #include <stdbool.h>
 #include <stddef.h>
 
-// output information to serial console for debugging
-#define BMS_DEBUG 1
-
 /**
  * Possible BMS states
  */

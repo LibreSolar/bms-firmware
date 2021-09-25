@@ -71,6 +71,22 @@ extern "C" {
 #define CLAMP(val, low, high) (((val) <= (low)) ? (low) : MIN(val, high))
 #endif
 
+#ifndef LOG_DBG
+#define LOG_DBG(...) printf(__VA_ARGS__)
+#endif
+
+#ifndef LOG_INF
+#define LOG_INF(...) printf(__VA_ARGS__)
+#endif
+
+#ifndef LOG_WRN
+#define LOG_WRN(...) printf(__VA_ARGS__)
+#endif
+
+#ifndef LOG_ERR
+#define LOG_ERR(...) printf(__VA_ARGS__)
+#endif
+
 #endif /* __ZEPHYR__ */
 
 /**

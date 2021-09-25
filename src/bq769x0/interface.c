@@ -21,11 +21,15 @@ static time_t alert_interrupt_timestamp;
 
 #ifndef UNIT_TEST
 
+#include <string.h>
+
 #include <zephyr.h>
 #include <drivers/gpio.h>
 #include <drivers/i2c.h>
 #include <sys/crc.h>
-#include <string.h>
+
+#include <logging/log.h>
+LOG_MODULE_REGISTER(bms, CONFIG_LOG_DEFAULT_LEVEL);
 
 #define BQ769X0_INST DT_INST(0, ti_bq769x0)
 
@@ -179,9 +183,7 @@ void bq769x0_init()
     }
     else {
         // TODO: do something else... e.g. set error flag
-#if BMS_DEBUG
-        printf("BMS communication error\n");
-#endif
+        LOG_ERR("BMS communication error");
     }
 }
 

@@ -19,6 +19,11 @@
 #include <time.h>
 #include <string.h>
 
+#ifndef UNIT_TEST
+#include <logging/log.h>
+LOG_MODULE_REGISTER(bq769x0, CONFIG_LOG_DEFAULT_LEVEL);
+#endif
+
 extern int adc_gain;    // factory-calibrated, read out from chip (uV/LSB)
 extern int adc_offset;  // factory-calibrated, read out from chip (mV)
 
@@ -54,9 +59,8 @@ void bms_set_error_flag(BmsStatus *status, uint32_t flag, bool value)
         else {
             status->error_flags &= ~(1UL << flag);
         }
-        #if BMS_DEBUG
-        printf("Error flag %u changed to: %d\n", flag, value);
-        #endif
+
+        LOG_DBG("Error flag %u changed to: %d", flag, value);
     }
 }
 
@@ -184,9 +188,7 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
                 }
             }
 
-            #if BMS_DEBUG
-            //printf("Setting CELLBAL%d register to: %s\n", section+1, byte2char(balancing_flags));
-            #endif
+            LOG_DBG("Setting CELLBAL%d register to: %s", section+1, byte2bitstr(balancing_flags));
 
             status->balancing_status |= balancing_flags << section * 5;
 
@@ -198,10 +200,7 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
     else if (status->balancing_status > 0) {
         // clear all CELLBAL registers
         for (int section = 0; section < num_sections; section++) {
-            #if BMS_DEBUG
-            printf("Clearing Register CELLBAL%d\n", section + 1);
-            #endif
-
+            LOG_DBG("Clearing Register CELLBAL%d\n", section + 1);
             bq769x0_write_byte(BQ769X0_CELLBAL1 + section, 0x0);
         }
 
@@ -551,9 +550,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
                 if (sys_stat.byte & 0b00100000) { // XR error
                     // datasheet recommendation: try to clear after waiting a few seconds
                     if (sec_since_error % 3 == 0) {
-                        #if BMS_DEBUG
-                        printf("Attempting to clear XR error");
-                        #endif
+                        LOG_DBG("Attempting to clear XR error");
                         bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00100000);
                         bms_chg_switch(conf, status, true);
                         bms_dis_switch(conf, status, true);
@@ -561,9 +558,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
                 }
                 if (sys_stat.byte & 0b00010000) { // Alert error
                     if (sec_since_error % 10 == 0) {
-                        #if BMS_DEBUG
-                        printf("Attempting to clear Alert error");
-                        #endif
+                        LOG_DBG("Attempting to clear Alert error");
                         bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00010000);
                         bms_chg_switch(conf, status, true);
                         bms_dis_switch(conf, status, true);
@@ -572,9 +567,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
                 if (sys_stat.byte & 0b00001000) { // UV error
                     bms_read_voltages(status);
                     if (status->cell_voltage_min > conf->cell_uv_reset) {
-                        #if BMS_DEBUG
-                        printf("Attempting to clear UV error");
-                        #endif
+                        LOG_DBG("Attempting to clear UV error");
                         bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00001000);
                         bms_dis_switch(conf, status, true);
                     }
@@ -582,27 +575,21 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
                 if (sys_stat.byte & 0b00000100) { // OV error
                     bms_read_voltages(status);
                     if (status->cell_voltage_max < conf->cell_ov_reset) {
-                        #if BMS_DEBUG
-                        printf("Attempting to clear OV error");
-                        #endif
+                        LOG_DBG("Attempting to clear OV error");
                         bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00000100);
                         bms_chg_switch(conf, status, true);
                     }
                 }
                 if (sys_stat.byte & 0b00000010) { // SCD
                     if (sec_since_error % 60 == 0) {
-                        #if BMS_DEBUG
-                        printf("Attempting to clear SCD error");
-                        #endif
+                        LOG_DBG("Attempting to clear SCD error");
                         bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00000010);
                         bms_dis_switch(conf, status, true);
                     }
                 }
                 if (sys_stat.byte & 0b00000001) { // OCD
                     if (sec_since_error % 60 == 0) {
-                        #if BMS_DEBUG
-                        printf("Attempting to clear OCD error");
-                        #endif
+                        LOG_DBG("Attempting to clear OCD error");
                         bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00000001);
                         bms_dis_switch(conf, status, true);
                     }
