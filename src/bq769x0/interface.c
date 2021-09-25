@@ -24,6 +24,7 @@ static time_t alert_interrupt_timestamp;
 #include <zephyr.h>
 #include <drivers/gpio.h>
 #include <drivers/i2c.h>
+#include <sys/crc.h>
 #include <string.h>
 
 #define BQ769X0_INST DT_INST(0, ti_bq769x0)
@@ -39,23 +40,6 @@ static const struct device *alert_pin_dev;
 static int i2c_address;
 static bool crc_enabled;
 
-static uint8_t _crc8_ccitt_update (uint8_t in_crc, uint8_t in_data)
-{
-    uint8_t data;
-    data = in_crc ^ in_data;
-
-    for (uint8_t i = 0; i < 8; i++) {
-        if ((data & 0x80) != 0) {
-            data <<= 1;
-            data ^= 0x07;
-        }
-        else {
-            data <<= 1;
-        }
-    }
-    return data;
-}
-
 // The bq769x0 drives the ALERT pin high if the SYS_STAT register contains
 // a new value (either new CC reading or an error)
 static void bq769x0_alert_isr(const struct device*port, struct gpio_callback *cb,
@@ -67,44 +51,35 @@ static void bq769x0_alert_isr(const struct device*port, struct gpio_callback *cb
 
 void bq769x0_write_byte(uint8_t reg_addr, uint8_t data)
 {
-    uint8_t crc = 0;
-    uint8_t buf[3];
+    uint8_t buf[4] = {
+        i2c_address << 1,       // slave address incl. R/W bit required for CRC calculation
+        reg_addr,
+        data
+    };
 
-    buf[0] = reg_addr;
-    buf[1] = data;
-
-    if (crc_enabled == true) {
-        // CRC is calculated over the slave address (including R/W bit), register address, and data.
-        crc = _crc8_ccitt_update(crc, (i2c_address << 1) | 0);
-        crc = _crc8_ccitt_update(crc, buf[0]);
-        crc = _crc8_ccitt_update(crc, buf[1]);
-        buf[2] = crc;
-        i2c_write(i2c_dev, buf, 3, i2c_address);
+    if (crc_enabled) {
+        buf[3] = crc8_ccitt(0, buf, 3);
+        i2c_write(i2c_dev, buf + 1, 3, i2c_address);
     }
     else {
-        i2c_write(i2c_dev, buf, 2, i2c_address);
+        i2c_write(i2c_dev, buf + 1, 2, i2c_address);
     }
 }
 
 uint8_t bq769x0_read_byte(uint8_t reg_addr)
 {
-    uint8_t crc = 0;
-    uint8_t buf[2];
-
-    #if BMS_DEBUG
-    //printf("Read register: 0x%x \n", address);
-    #endif
+    uint8_t buf[3];
 
     i2c_write(i2c_dev, &reg_addr, 1, i2c_address);
 
-    if (crc_enabled == true) {
+    if (crc_enabled) {
+        // CRC is calculated over the slave address (incl. R/W bit) and data
+        buf[0] = (i2c_address << 1) | 1U;
         do {
-            i2c_read(i2c_dev, buf, 2, i2c_address);
-            // CRC is calculated over the slave address (including R/W bit) and data.
-            crc = _crc8_ccitt_update(crc, (i2c_address << 1) | 1);
-            crc = _crc8_ccitt_update(crc, buf[0]);
-        } while (crc != buf[1]);
-        return buf[0];
+            i2c_read(i2c_dev, buf + 1, 2, i2c_address);
+        } while (crc8_ccitt(0, buf, 2) != buf[2]);
+
+        return buf[1];
     }
     else {
         i2c_read(i2c_dev, buf, 1, i2c_address);
@@ -114,36 +89,31 @@ uint8_t bq769x0_read_byte(uint8_t reg_addr)
 
 int32_t bq769x0_read_word(uint8_t reg_addr)
 {
-    int32_t val = 0;
-    uint8_t buf[4];
-    uint8_t crc;
+    uint8_t buf[5];
 
     // write starting register
     i2c_write(i2c_dev, &reg_addr, 1, i2c_address);
 
-    if (crc_enabled == true) {
-        i2c_read(i2c_dev, buf, 4, i2c_address);
+    if (crc_enabled) {
+        // CRC is calculated over the slave address (incl. R/W bit) and data
+        buf[0] = (i2c_address << 1) | 1U;
+        i2c_read(i2c_dev, buf + 1, 4, i2c_address);
 
-        // CRC of first bytes includes slave address (including R/W bit) and data
-        crc = _crc8_ccitt_update(0, (i2c_address << 1) | 1);
-        crc = _crc8_ccitt_update(crc, buf[0]);
-        if (crc != buf[1]) {
+        if (crc8_ccitt(0, buf, 2) != buf[2]) {
             return -1;
         }
 
-        // CRC of subsequent bytes contain only data
-        crc = _crc8_ccitt_update(0, buf[2]);
-        if (crc != buf[3]) {
+        // CRC of subsequent bytes only considering data
+        if (crc8_ccitt(0, buf + 3, 1) != buf[4]) {
             return -1;
         }
 
-        val = buf[0] << 8 | buf[2];
+        return buf[1] << 8 | buf[3];
     }
     else {
         i2c_read(i2c_dev, buf, 2, i2c_address);
-        val = buf[0] << 8 | buf[1];
+        return buf[0] << 8 | buf[1];
     }
-    return val;
 }
 
 // automatically find out address and CRC setting
