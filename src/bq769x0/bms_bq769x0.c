@@ -523,83 +523,74 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
     if (!bq769x0_alert_flag() && error_status == 0) {
         return;
     }
-    else {
+    else if (sys_stat.byte & 0b00111111) {
+        // Serious error occured (alert does not only indicate CC reading)
 
-        // first check, if only a new CC reading is available
-        if (sys_stat.CC_READY == 1) {
-            //printf("Interrupt: CC ready");
-            bms_read_current(conf, status);  // automatically clears CC ready flag
+        if (bq769x0_alert_flag() == true) {
+            sec_since_error = 0;
         }
 
-        // Serious error occured
-        if (sys_stat.byte & 0b00111111)
+        unsigned int sec_since_interrupt = uptime() - bq769x0_alert_timestamp();
+
+        if (abs((long)(sec_since_interrupt - sec_since_error)) > 2) {
+            sec_since_error = sec_since_interrupt;
+        }
+
+        // called only once per second
+        if (sec_since_interrupt >= sec_since_error)
         {
-            if (bq769x0_alert_flag() == true) {
-                sec_since_error = 0;
+            if (sys_stat.byte & 0b00100000) { // XR error
+                // datasheet recommendation: try to clear after waiting a few seconds
+                if (sec_since_error % 3 == 0) {
+                    LOG_DBG("Attempting to clear XR error");
+                    bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00100000);
+                    bms_chg_switch(conf, status, true);
+                    bms_dis_switch(conf, status, true);
+                }
             }
-
-            unsigned int sec_since_interrupt = uptime() - bq769x0_alert_timestamp();
-
-            if (abs((long)(sec_since_interrupt - sec_since_error)) > 2) {
-                sec_since_error = sec_since_interrupt;
+            if (sys_stat.byte & 0b00010000) { // Alert error
+                if (sec_since_error % 10 == 0) {
+                    LOG_DBG("Attempting to clear Alert error");
+                    bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00010000);
+                    bms_chg_switch(conf, status, true);
+                    bms_dis_switch(conf, status, true);
+                }
             }
-
-            // called only once per second
-            if (sec_since_interrupt >= sec_since_error)
-            {
-                if (sys_stat.byte & 0b00100000) { // XR error
-                    // datasheet recommendation: try to clear after waiting a few seconds
-                    if (sec_since_error % 3 == 0) {
-                        LOG_DBG("Attempting to clear XR error");
-                        bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00100000);
-                        bms_chg_switch(conf, status, true);
-                        bms_dis_switch(conf, status, true);
-                    }
+            if (sys_stat.byte & 0b00001000) { // UV error
+                bms_read_voltages(status);
+                if (status->cell_voltage_min > conf->cell_uv_reset) {
+                    LOG_DBG("Attempting to clear UV error");
+                    bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00001000);
+                    bms_dis_switch(conf, status, true);
                 }
-                if (sys_stat.byte & 0b00010000) { // Alert error
-                    if (sec_since_error % 10 == 0) {
-                        LOG_DBG("Attempting to clear Alert error");
-                        bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00010000);
-                        bms_chg_switch(conf, status, true);
-                        bms_dis_switch(conf, status, true);
-                    }
-                }
-                if (sys_stat.byte & 0b00001000) { // UV error
-                    bms_read_voltages(status);
-                    if (status->cell_voltage_min > conf->cell_uv_reset) {
-                        LOG_DBG("Attempting to clear UV error");
-                        bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00001000);
-                        bms_dis_switch(conf, status, true);
-                    }
-                }
-                if (sys_stat.byte & 0b00000100) { // OV error
-                    bms_read_voltages(status);
-                    if (status->cell_voltage_max < conf->cell_ov_reset) {
-                        LOG_DBG("Attempting to clear OV error");
-                        bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00000100);
-                        bms_chg_switch(conf, status, true);
-                    }
-                }
-                if (sys_stat.byte & 0b00000010) { // SCD
-                    if (sec_since_error % 60 == 0) {
-                        LOG_DBG("Attempting to clear SCD error");
-                        bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00000010);
-                        bms_dis_switch(conf, status, true);
-                    }
-                }
-                if (sys_stat.byte & 0b00000001) { // OCD
-                    if (sec_since_error % 60 == 0) {
-                        LOG_DBG("Attempting to clear OCD error");
-                        bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00000001);
-                        bms_dis_switch(conf, status, true);
-                    }
-                }
-                sec_since_error++;
             }
+            if (sys_stat.byte & 0b00000100) { // OV error
+                bms_read_voltages(status);
+                if (status->cell_voltage_max < conf->cell_ov_reset) {
+                    LOG_DBG("Attempting to clear OV error");
+                    bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00000100);
+                    bms_chg_switch(conf, status, true);
+                }
+            }
+            if (sys_stat.byte & 0b00000010) { // SCD
+                if (sec_since_error % 60 == 0) {
+                    LOG_DBG("Attempting to clear SCD error");
+                    bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00000010);
+                    bms_dis_switch(conf, status, true);
+                }
+            }
+            if (sys_stat.byte & 0b00000001) { // OCD
+                if (sec_since_error % 60 == 0) {
+                    LOG_DBG("Attempting to clear OCD error");
+                    bq769x0_write_byte(BQ769X0_SYS_STAT, 0b00000001);
+                    bms_dis_switch(conf, status, true);
+                }
+            }
+            sec_since_error++;
         }
-        else {
-            error_status = 0;
-        }
+    }
+    else {
+        error_status = 0;
     }
 }
 
