@@ -10,11 +10,6 @@
 
 #include <stdio.h>
 
-static const float soc_pct[] = {
-    100.0F,  95.0F,  90.0F,  85.0F,  80.0F,  85.0F,  70.0F,  65.0F,  60.0F,  55.0F,  50.0F,
-     45.0F,  40.0F,  35.0F,  30.0F,  25.0F,  20.0F,  15.0F,  10.0F,  5.0F,    0.0F
-};
-
 static float ocv_lfp[] = {
     3.392F, 3.314F, 3.309F, 3.308F, 3.304F, 3.296F, 3.283F, 3.275F, 3.271F, 3.268F, 3.265F,
     3.264F, 3.262F, 3.252F, 3.240F, 3.226F, 3.213F, 3.190F, 3.177F, 3.132F, 2.833F
@@ -244,21 +239,4 @@ bool bms_balancing_allowed(BmsConfig *conf, BmsStatus *status)
     return idle_sec >= conf->bal_idle_delay &&
         status->cell_voltage_max > conf->bal_cell_voltage_min &&
         voltage_diff > conf->bal_cell_voltage_diff;
-}
-
-void bms_reset_soc(BmsConfig *conf, BmsStatus *status, int percent)
-{
-    if (percent <= 100 && percent >= 0) {
-        status->soc = percent;
-    }
-    else if (conf->ocv != NULL) {
-        status->soc = interpolate(conf->ocv, soc_pct, conf->num_ocv_points,
-            status->cell_voltage_avg);
-    }
-    else {
-        // no OCV curve specified, use simplified estimation instead
-        float ocv_simple[2] = { conf->cell_chg_voltage, conf->cell_dis_voltage };
-        float soc_simple[2] = { 100.0F, 0.0F };
-        status->soc = interpolate(ocv_simple, soc_simple, 2, status->cell_voltage_avg);
-    }
 }

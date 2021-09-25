@@ -4,6 +4,7 @@ zephyr_include_directories(.)
 
 target_sources(app PRIVATE
         bms_common.c
+        bms_soc.c
         button.c
         data_nodes.cpp
         eeprom.cpp

@@ -246,11 +246,18 @@ bool bms_dis_allowed(BmsStatus *status);
 bool bms_balancing_allowed(BmsConfig *conf, BmsStatus *status);
 
 /**
- * SOC reset to specified value or calculation based on average cell open circuit voltage
+ * Reset SOC to specified value or calculate based on average cell open circuit voltage
  *
  * @param percent 0-100 %, -1 for calculation based on OCV
  */
-void bms_reset_soc(BmsConfig *conf, BmsStatus *status, int percent);
+void bms_soc_reset(BmsConfig *conf, BmsStatus *status, int percent);
+
+/**
+ * Update SOC based on most recent current measurement
+ *
+ * Function should be called each time after a new current measurement was obtained.
+ */
+void bms_soc_update(BmsConfig *conf, BmsStatus *status);
 
 /**
  * Apply charge/discharge temperature limits.

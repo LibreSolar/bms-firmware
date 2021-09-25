@@ -44,7 +44,7 @@ void main(void)
     bms_apply_temp_limits(&bms_conf);
 
     bms_update(&bms_conf, &bms_status);
-    bms_reset_soc(&bms_conf, &bms_status, -1);
+    bms_soc_reset(&bms_conf, &bms_status, -1);
 
     button_init();
 

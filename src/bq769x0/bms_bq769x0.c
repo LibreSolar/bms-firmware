@@ -43,6 +43,7 @@ void bms_update(BmsConfig *conf, BmsStatus *status)
 {
     bms_read_voltages(status);
     bms_read_current(conf, status);
+    bms_soc_update(conf, status);
     bms_read_temperatures(conf, status);
     bms_check_cell_temp(conf, status);      // bq769x0 doesn't support temperature settings
     bms_update_error_flags(conf, status);
@@ -390,30 +391,21 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
 
 void bms_read_current(BmsConfig *conf, BmsStatus *status)
 {
-    int adc_raw = 0;
-    static float coulomb_counter_mAs = 0;
     SYS_STAT_Type sys_stat;
     sys_stat.byte = bq769x0_read_byte(BQ769X0_SYS_STAT);
 
     // check if new current reading available
     if (sys_stat.CC_READY == 1)
     {
-        //printf("reading CC register...\n");
-        adc_raw = (bq769x0_read_byte(BQ769X0_CC_HI_BYTE) << 8) |
-            bq769x0_read_byte(BQ769X0_CC_LO_BYTE);
-        int32_t pack_current_mA = (int16_t) adc_raw * 8.44 / conf->shunt_res_mOhm;
-
-        coulomb_counter_mAs += pack_current_mA / 4;  // is read every 250 ms
-        float soc_delta = coulomb_counter_mAs / (conf->nominal_capacity_Ah * 3.6e4F);
-
-        if (fabs(soc_delta) > 0.1) {
-            // only update SoC after significant changes to maintain higher resolution
-            float soc_tmp = status->soc + soc_delta;
-            status->soc = CLAMP(soc_tmp, 0.0F, 100.0F);
-            coulomb_counter_mAs = 0;
+        int adc_raw = bq769x0_read_word(BQ769X0_CC_HI_BYTE);
+        if (adc_raw < 0) {
+            LOG_ERR("Error reading current measurement");
+            return;
         }
 
-        // reduce resolution for actual current value
+        int32_t pack_current_mA = (int16_t) adc_raw * 8.44 / conf->shunt_res_mOhm;
+
+        // remove noise around 0 A
         if (pack_current_mA > -10 && pack_current_mA < 10) {
             pack_current_mA = 0;
         }
@@ -426,11 +418,11 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
         }
 
         // no error occured which caused alert
-        if (!(sys_stat.byte & 0b00111111)) {
+        if (!(sys_stat.byte & BQ769X0_SYS_STAT_ERROR_MASK)) {
             bq769x0_alert_flag_reset();
         }
 
-        bq769x0_write_byte(BQ769X0_SYS_STAT, 0b10000000);  // Clear CC ready flag
+        bq769x0_write_byte(BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_CC_READY);  // clear CC ready flag
     }
 }
 

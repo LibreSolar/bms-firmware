@@ -65,7 +65,7 @@ void setup()
     bms_apply_balancing(&bms_conf, &bms_status);
 
     bms_update(&bms_conf, &bms_status);
-    bms_reset_soc(&bms_conf, &bms_status, -1);
+    bms_soc_reset(&bms_conf, &bms_status, -1);
     bms_dis_switch(&bms_conf, &bms_status, true);
     bms_chg_switch(&bms_conf, &bms_status, true);
 }
