@@ -616,18 +616,6 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
     }
 }
 
-#if BMS_DEBUG
-
-static const char *byte2bitstr(uint8_t b)
-{
-    static char str[9];
-    str[0] = '\0';
-    for (int z = 128; z > 0; z >>= 1) {
-        strcat(str, ((b & z) == z) ? "1" : "0");
-    }
-    return str;
-}
-
 void bms_print_register(uint8_t addr)
 {
     uint8_t reg = bq769x0_read_byte(addr);
@@ -654,7 +642,5 @@ void bms_print_registers()
     printf("0x59 BQ769X0_ADCGAIN2:  %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_ADCGAIN2)));
     */
 }
-
-#endif
 
 #endif // defined BQ769x0

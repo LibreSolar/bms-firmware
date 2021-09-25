@@ -401,18 +401,6 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
     // Nothing to do. ISL94202 handles errors automatically
 }
 
-#if BMS_DEBUG
-
-static const char *byte2bitstr(uint8_t b)
-{
-    static char str[9];
-    str[0] = '\0';
-    for (int z = 128; z > 0; z >>= 1) {
-        strcat(str, ((b & z) == z) ? "1" : "0");
-    }
-    return str;
-}
-
 void bms_print_register(uint8_t addr)
 {
     uint8_t reg;
@@ -431,7 +419,5 @@ void bms_print_registers()
         bms_print_register(i);
     }
 }
-
-#endif
 
 #endif // CONFIG_BMS_ISL94202

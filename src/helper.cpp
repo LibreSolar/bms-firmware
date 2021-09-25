@@ -50,3 +50,15 @@ float interpolate(const float a[], const float b[], size_t size, float value_a)
         return b[size - 1];         // value_a larger than last element
     }
 }
+
+const char *byte2bitstr(uint8_t b)
+{
+    static char str[9];
+
+    str[0] = '\0';
+    for (int z = 128; z > 0; z >>= 1) {
+        strcat(str, ((b & z) == z) ? "1" : "0");
+    }
+
+    return str;
+}

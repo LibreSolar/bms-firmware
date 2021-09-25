@@ -87,6 +87,15 @@ float interpolate(const float a[], const float b[], size_t size, float value_a);
  */
 uint32_t uptime();
 
+/**
+ * Convert byte to bit-string
+ *
+ * Attention: Uses static buffer, not thread-safe
+ *
+ * @returns pointer to bit-string (8 characters + null-byte)
+ */
+const char *byte2bitstr(uint8_t b);
+
 #ifdef __cplusplus
 }
 #endif
