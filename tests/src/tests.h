@@ -7,7 +7,7 @@
 #include <unity.h>
 #include <time.h>
 
-void common_tests();
-void bq769x0_tests();
-void isl94202_tests();
-void helper_tests();
+int common_tests();
+int bq769x0_tests();
+int isl94202_tests();
+int helper_tests();

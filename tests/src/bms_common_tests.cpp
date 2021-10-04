@@ -229,7 +229,7 @@ void balancing2normal_if_done()
 }
 */
 
-void common_tests()
+int common_tests()
 {
     UNITY_BEGIN();
 
@@ -258,5 +258,5 @@ void common_tests()
     //RUN_TEST(balancing2dis_at_increased_current);
     //RUN_TEST(balancing2dis_if_done);
 
-    UNITY_END();
+    return UNITY_END();
 }

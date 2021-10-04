@@ -13,7 +13,7 @@
 
 #include <stdio.h>
 
-#ifdef __ZEPHYR__
+#ifndef UNIT_TEST
 
 #include <zephyr.h>
 #include <drivers/gpio.h>
@@ -61,7 +61,7 @@ void isl94202_init()
     }
 }
 
-#endif
+#endif // UNIT_TEST
 
 int isl94202_write_word(uint8_t reg_addr, uint16_t word)
 {

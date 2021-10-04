@@ -4,11 +4,28 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdio.h>
+#include "unity.h"
+
+#include <zephyr.h>
+#include <device.h>
+
+#ifdef CONFIG_ARCH_POSIX
+#include "posix_board_if.h"
+#endif
+
+#include "tests.h"
+
 #include "pcb.h"
 
 #include "bms.h"
 
-#include "tests.h"
+extern "C" {
+
+void setUp (void) {}
+void tearDown (void) {}
+
+} /* extern "C" */
 
 BmsConfig bms_conf;
 BmsStatus bms_status;
@@ -70,15 +87,21 @@ void setup()
     bms_chg_switch(&bms_conf, &bms_status, true);
 }
 
-int main()
+void main(void)
 {
-    common_tests();
+    int err = 0;
+
+    err += common_tests();
 
 #ifdef BMS_BQ76940
-    bq769x0_tests();
+    err += bq769x0_tests();
 #elif defined(BMS_ISL94202)
-    isl94202_tests();
+    err += isl94202_tests();
 #endif
 
-    helper_tests();
+    err += helper_tests();
+
+#ifdef CONFIG_ARCH_POSIX
+    posix_exit(err);
+#endif
 }

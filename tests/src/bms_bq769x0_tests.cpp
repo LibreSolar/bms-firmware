@@ -107,7 +107,7 @@ void test_bq769x0_apply_cell_uv_limits()
     TEST_ASSERT(0);
 }
 
-void bq769x0_tests()
+int bq769x0_tests()
 {
     UNITY_BEGIN();
 
@@ -127,5 +127,5 @@ void bq769x0_tests()
     //RUN_TEST(test_bq769x0_apply_cell_ov_limits);
     //RUN_TEST(test_bq769x0_apply_cell_uv_limits);
 
-    UNITY_END();
+    return UNITY_END();
 }

@@ -334,7 +334,7 @@ void test_isl94202_apply_dis_ut_limit()
     TEST_ASSERT_EQUAL_HEX16(0x0BBD, *((uint16_t*)&mem_isl[0x3E]));      // datasheet: 0x0A93
 }
 
-void isl94202_tests()
+int isl94202_tests()
 {
     UNITY_BEGIN();
 
@@ -359,5 +359,5 @@ void isl94202_tests()
     RUN_TEST(test_isl94202_apply_dis_ot_limit);
     RUN_TEST(test_isl94202_apply_dis_ut_limit);
 
-    UNITY_END();
+    return UNITY_END();
 }

@@ -19,7 +19,7 @@
 #include <time.h>
 #include <string.h>
 
-#ifndef UNIT_TEST
+#ifdef __ZEPHYR__
 #include <logging/log.h>
 LOG_MODULE_REGISTER(bq769x0, CONFIG_LOG_DEFAULT_LEVEL);
 #endif

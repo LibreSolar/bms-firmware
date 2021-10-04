@@ -41,12 +41,12 @@ void test_interpolate_decreasing()
     TEST_ASSERT_EQUAL_FLOAT(2.0, value_b);
 }
 
-void helper_tests()
+int helper_tests()
 {
     UNITY_BEGIN();
 
     RUN_TEST(test_interpolate_increasing);
     RUN_TEST(test_interpolate_decreasing);
 
-    UNITY_END();
+    return UNITY_END();
 }

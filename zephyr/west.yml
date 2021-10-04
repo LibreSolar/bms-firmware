@@ -6,6 +6,8 @@ manifest:
       url-base: https://github.com/LibreSolar
     - name: thingset
       url-base: https://github.com/ThingSet
+    - name: throwtheswitch
+      url-base: https://github.com/ThrowTheSwitch
   projects:
     - name: zephyr
       remote: libresolar
@@ -24,3 +26,7 @@ manifest:
       remote: thingset
       revision: 634f4e92854ce4f1b7c4c41f1d8f3b0af7801de4
       path: zephyr/modules/thingset
+    - name: unity
+      path: zephyr/modules/unity
+      revision: 74cde089e65c3435ce9aa87d5c69f4f16b7f6ade
+      remote: throwtheswitch

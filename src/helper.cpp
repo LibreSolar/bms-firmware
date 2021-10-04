@@ -14,7 +14,7 @@
 
 uint32_t uptime()
 {
-#ifdef __ZEPHYR__
+#ifndef UNIT_TEST
     return k_uptime_get() / 1000;
 #else
     return time(NULL);

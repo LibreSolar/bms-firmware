@@ -1,0 +1,58 @@
+/*
+ * Copyright (c) The Libre Solar Project Contributors
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	/* delete conflicting nodes from Zephyr native_posix board */
+	/delete-node/ aliases;
+
+	pcb {
+		compatible = "bms";
+
+		type = "Native POSIX dummy";
+		version-str = "v0.1";
+		version-num = <1>;
+
+		num-cells-max = <8>;
+		num-thermistors-max = <2>;
+
+		current-max = <50>;
+		shunt-res = <1500>;
+	};
+
+	chosen {
+		zephyr,console = &uart0;
+		zephyr,shell-uart = &uart0;
+		zephyr,flash = &flash0;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led1: led_0 {
+			gpios = <&gpio0 14 GPIO_ACTIVE_HIGH>;
+			label = "LED 1";
+		};
+		led2: led_1 {
+			gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
+			label = "LED 2";
+		};
+	};
+
+	gpio_keys {
+		compatible = "gpio-keys";
+		power_button: button {
+			label = "Power Button";
+			gpios = <&gpio0 8 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+	aliases {
+		led-red = &led1;
+		led-green = &led2;
+		sw-pwr = &power_button;
+		uart-dbg = &uart0;
+		uart-uext = &uart0;
+	};
+};
