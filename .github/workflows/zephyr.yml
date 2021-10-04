@@ -5,7 +5,11 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: zephyrprojectrtos/ci:latest
+    container: zephyrprojectrtos/ci:v0.18.4
+    # Zephyr v2.7 requires newest SDK, which is not auto-selected by v0.18.4 docker image. Below
+    # env setting can be removed again after upgrade of the docker image.
+    env:
+      ZEPHYR_SDK_INSTALL_DIR: "/opt/toolchains/zephyr-sdk-0.13.1"
     steps:
       - name: Checkout
         uses: actions/checkout@v2
