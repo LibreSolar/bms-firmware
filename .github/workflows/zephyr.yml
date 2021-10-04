@@ -1,0 +1,34 @@
+name: Build with Zephyr toolchain
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: zephyrprojectrtos/ci:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: bms-firmware
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v1
+
+      - name: Initialize
+        working-directory: bms-firmware
+        run: |
+          pip3 install -U west
+          cd zephyr
+          west init -l .
+          west update
+          pip3 install -r rtos/scripts/requirements-base.txt
+
+      - name: Build firmware
+        working-directory: bms-firmware
+        run: |
+          cd zephyr
+          west build -p -b bms_5s50_sc
+          west build -p -b bms_8s50_ic@0.2
+          west build -p -b bms_15s80_sc
