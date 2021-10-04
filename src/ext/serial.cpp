@@ -14,7 +14,7 @@
 #include <drivers/uart.h>
 
 #include "thingset.h"
-#include "data_nodes.h"
+#include "data_objects.h"
 
 #if CONFIG_UEXT_SERIAL_THINGSET
 #define UART_DEVICE_NAME DT_LABEL(DT_ALIAS(uart_uext))

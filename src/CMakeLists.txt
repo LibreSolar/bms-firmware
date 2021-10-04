@@ -6,7 +6,7 @@ target_sources(app PRIVATE
         bms_common.c
         bms_soc.c
         button.c
-        data_nodes.cpp
+        data_objects.cpp
         eeprom.cpp
         helper.cpp
         leds.cpp

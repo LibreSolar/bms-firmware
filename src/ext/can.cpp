@@ -19,7 +19,7 @@
 LOG_MODULE_REGISTER(ext_can, CONFIG_CAN_LOG_LEVEL);
 
 #include "thingset.h"
-#include "data_nodes.h"
+#include "data_objects.h"
 
 #if DT_NODE_EXISTS(DT_CHILD(DT_PATH(switches), can_en))
 #define CAN_EN_GPIO DT_CHILD(DT_PATH(switches), can_en)

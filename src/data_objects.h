@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef DATA_NODES_H_
-#define DATA_NODES_H_
+#ifndef DATA_OBJECTS_H_
+#define DATA_OBJECTS_H_
 
 /**
  * @file
@@ -46,7 +46,7 @@
  * Increment the version number each time any data node IDs stored in NVM are changed. Otherwise
  * data might get corrupted.
  */
-#define DATA_NODES_VERSION 1
+#define DATA_OBJECTS_VERSION 1
 
 extern bool pub_serial_enable;
 extern bool pub_can_enable;
@@ -54,12 +54,12 @@ extern bool pub_can_enable;
 /**
  * Callback function to be called when conf values were changed
  */
-void data_nodes_update_conf();
+void data_objects_update_conf();
 
 /**
  * Initializes and reads data nodes from EEPROM
  */
-void data_nodes_init();
+void data_objects_init();
 
 /**
  * Callback to read and print BMS register via ThingSet
@@ -88,4 +88,4 @@ const char alphabet_crockford[] = "0123456789abcdefghjkmnpqrstvwxyz";
  */
 void uint64_to_base32(uint64_t in, char *out, size_t size, const char *alphabet);
 
-#endif /* DATA_NODES_H_ */
+#endif /* DATA_OBJECTS_H_ */

@@ -15,7 +15,7 @@
 #include "leds.h"
 #include "thingset.h"
 #include "helper.h"
-#include "data_nodes.h"
+#include "data_objects.h"
 
 BmsConfig bms_conf;
 BmsStatus bms_status;
@@ -32,7 +32,7 @@ void main(void)
     bms_init_config(&bms_conf, CONFIG_CELL_TYPE, CONFIG_BAT_CAPACITY_AH);
 
     // read custom configuration from EEPROM
-    data_nodes_init();
+    data_objects_init();
 
     bms_apply_cell_ovp(&bms_conf);
     bms_apply_cell_uvp(&bms_conf);

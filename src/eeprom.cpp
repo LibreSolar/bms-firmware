@@ -14,7 +14,7 @@
 
 #include "soc.h"
 #include "thingset.h"
-#include "data_nodes.h"
+#include "data_objects.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -88,7 +88,7 @@ void eeprom_restore_data()
     //    buf_header[0], buf_header[1], buf_header[2], buf_header[3],
     //    buf_header[4], buf_header[5], buf_header[6], buf_header[7]);
 
-    if (version == DATA_NODES_VERSION && len <= sizeof(buf)) {
+    if (version == DATA_OBJECTS_VERSION && len <= sizeof(buf)) {
         k_mutex_lock(&eeprom_buf_lock, K_FOREVER);
         err = eeprom_read(eeprom_dev, EEPROM_HEADER_SIZE, buf, len);
 
@@ -122,7 +122,7 @@ void eeprom_store_data()
     uint32_t crc = _calc_crc(buf + EEPROM_HEADER_SIZE, len);
 
     // store EEPROM_VERSION, number of bytes and CRC
-    *((uint16_t*)&buf[0]) = (uint16_t)DATA_NODES_VERSION;
+    *((uint16_t*)&buf[0]) = (uint16_t)DATA_OBJECTS_VERSION;
     *((uint16_t*)&buf[2]) = (uint16_t)(len);   // length of data
     *((uint32_t*)&buf[4]) = crc;
 

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "data_nodes.h"
+#include "data_objects.h"
 
 #include <zephyr.h>
 
@@ -57,7 +57,7 @@ static uint16_t reg_addr = 0;
  *
  * Normal priority data objects (consuming 2 or more bytes) start from IDs > 23 = 0x17
  */
-static DataNode data_nodes[] = {
+static DataNode data_objects[] = {
 
     // DEVICE INFORMATION /////////////////////////////////////////////////////
     // using IDs >= 0x18
@@ -82,7 +82,7 @@ static DataNode data_nodes[] = {
     // CONFIGURATION //////////////////////////////////////////////////////////
     // using IDs >= 0x30 except for high priority data objects
 
-    TS_NODE_PATH(ID_CONF, "conf", 0, &data_nodes_update_conf),
+    TS_NODE_PATH(ID_CONF, "conf", 0, &data_objects_update_conf),
 
     // general battery settings
 
@@ -265,9 +265,9 @@ static DataNode data_nodes[] = {
 #endif
 };
 
-ThingSet ts(data_nodes, sizeof(data_nodes)/sizeof(DataNode));
+ThingSet ts(data_objects, sizeof(data_objects)/sizeof(DataNode));
 
-void data_nodes_update_conf()
+void data_objects_update_conf()
 {
     // ToDo: Validate new settings before applying them
 
@@ -283,7 +283,7 @@ void data_nodes_update_conf()
     eeprom_store_data();
 }
 
-void data_nodes_init()
+void data_objects_init()
 {
 #ifndef UNIT_TEST
     uint8_t buf[12];
