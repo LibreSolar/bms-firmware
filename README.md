@@ -44,30 +44,14 @@ The chips currently supported by the firmware are listed below.
 This repository contains git submodules, so you need to clone (download) it by calling:
 
 ```
-git clone --recursive https://github.com/LibreSolar/charge-controller-firmware
+git clone --recursive https://github.com/LibreSolar/bms-firmware
 ```
 
 Unfortunately, the green GitHub "Clone or download" button does not include submodules. If you cloned the repository already and want to pull the submodules, run `git submodule update --init --recursive`.
 
-### PlatformIO
+Building the firmware requires the native Zephyr build system.
 
-It is suggested to use Visual Studio Code and PlatformIO for firmware development, as it simplifies compiling and uploading the code a lot:
-
-1. Install Visual Studio Code and [PlatformIO](https://platformio.org/platformio-ide) to build the firmware.
-
-2. Adjust configuration in `zephyr/prj.conf` if necessary.
-
-3. Select the correct board in `platformio.ini` by setting the variable `default_envs` under `[platformio]` to your board or create a file `custom.ini` with your personal settings. PlatformIO is configured for latest revision of the boards (see table above). For older revisions adjust `platformio.ini` and the `.json` files in `boards` folder manually or use native Zephyr environment.
-
-4. Connect the board via a programmer. See the Libre Solar website for [further project-agnostic instructions](https://learn.libre.solar/development/flashing_debugging.html ).
-
-5. Press the upload button at the bottom left corner in VS Code.
-
-### Native Zephyr environment
-
-You can also use the Zephyr build system directly for advanced configuration with `menuconfig` or if you need more recently added features.
-
-This guide assumes you have already installed the Zephyr SDK and the west tool according to the [Zephyr documentation](https://docs.zephyrproject.org/latest/getting_started/). Also make sure that `west` is at least at version `0.8.0`.
+This guide assumes you have already installed the Zephyr SDK and the west tool according to the [Zephyr documentation](https://docs.zephyrproject.org/latest/getting_started/).
 
 Now after you cloned the repository (see above), go into the root firmware directory and initialize a west workspace:
 
@@ -110,7 +94,7 @@ In Zephyr, all hardware-specific configuration is described in the [devicetree](
 
 The file `boards/arm/board_name/board_name.dts` contains the default devicetree specification (DTS) for a board. It is based on the DTS of the used MCU, which is included from the main Zephyr repository.
 
-In order to overwrite the default devicetree specification, so-called overlays can be used. An overlay file can be specified via the west command line. If it is stored as `board_name.overlay` in the `zephyr` subfolder, it will be recognized automatically when building the firmware for that board (also with PlatformIO).
+In order to overwrite the default devicetree specification, so-called overlays can be used. An overlay file can be specified via the west command line. If it is stored as `board_name.overlay` in the `zephyr` subfolder, it will be recognized automatically when building the firmware for that board.
 
 ### Application firmware configuration
 

@@ -25,6 +25,11 @@ jobs:
           west update
           pip3 install -r rtos/scripts/requirements-base.txt
 
+      - name: Trailing whitespace check
+        working-directory: bms-firmware
+        run: |
+          git diff --check `git rev-list HEAD | tail -n 1`..
+
       - name: Build firmware
         working-directory: bms-firmware
         run: |
