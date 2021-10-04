@@ -24,7 +24,7 @@ manifest:
           - hal_stm32
     - name: thingset-device-library
       remote: thingset
-      revision: 634f4e92854ce4f1b7c4c41f1d8f3b0af7801de4
+      revision: c3388d7a72e2d20760e7b4ad6c06b6b588849994
       path: zephyr/modules/thingset
     - name: unity
       path: zephyr/modules/unity

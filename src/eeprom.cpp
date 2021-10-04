@@ -96,7 +96,7 @@ void eeprom_restore_data()
         //for (int i = 0; i < len; i++) printf("%.2x ", buf[i]);
 
         if (_calc_crc(buf, len) == crc) {
-            int status = ts.bin_sub(buf, sizeof(buf), TS_WRITE_MASK, PUB_NVM);
+            int status = ts.bin_import(buf, sizeof(buf), TS_WRITE_MASK, SUBSET_NVM);
             printf("EEPROM: Data objects read and updated, ThingSet result: 0x%x\n", status);
         }
         else {
@@ -118,7 +118,7 @@ void eeprom_store_data()
 
     k_mutex_lock(&eeprom_buf_lock, K_FOREVER);
 
-    int len = ts.bin_pub(buf + EEPROM_HEADER_SIZE, sizeof(buf) - EEPROM_HEADER_SIZE, PUB_NVM);
+    int len = ts.bin_export(buf + EEPROM_HEADER_SIZE, sizeof(buf) - EEPROM_HEADER_SIZE, SUBSET_NVM);
     uint32_t crc = _calc_crc(buf + EEPROM_HEADER_SIZE, len);
 
     // store EEPROM_VERSION, number of bytes and CRC

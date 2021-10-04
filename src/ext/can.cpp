@@ -151,7 +151,7 @@ void can_pub_thread()
         if (pub_can_enable) {
             int data_len = 0;
             int start_pos = 0;
-            while ((data_len = ts.bin_pub_can(start_pos, PUB_CAN, can_node_addr, can_id, can_data))
+            while ((data_len = ts.bin_pub_can(start_pos, SUBSET_CAN, can_node_addr, can_id, can_data))
                      != -1)
             {
                 struct zcan_frame frame = {0};

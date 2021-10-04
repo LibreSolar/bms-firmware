@@ -35,10 +35,13 @@ static volatile bool command_flag = false;
 
 extern ThingSet ts;
 
+const char serial_subset_path[] = "serial";
+static ThingSetDataObject *serial_subset;
+
 void process_1s()
 {
     if (pub_serial_enable) {
-        int len = ts.txt_pub(buf_resp, sizeof(buf_resp), PUB_SER);
+        int len = ts.txt_statement(buf_resp, sizeof(buf_resp), serial_subset);
         for (int i = 0; i < len; i++) {
             uart_poll_out(uart_dev, buf_resp[i]);
         }
@@ -114,6 +117,8 @@ void serial_thread()
 
     uart_irq_callback_user_data_set(uart_dev, process_input, NULL);
     uart_irq_rx_enable(uart_dev);
+
+    serial_subset = ts.get_endpoint(serial_subset_path, strlen(serial_subset_path));
 
     while (true) {
         uint32_t now = k_uptime_get() / 1000;

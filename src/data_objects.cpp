@@ -35,7 +35,7 @@ static char device_id[9];
 static char auth_password[11];
 
 // struct to define ThingSet array node
-ArrayInfo cell_voltages_arr = {
+ThingSetArrayInfo cell_voltages_arr = {
     bms_status.cell_voltages, NUM_CELLS_MAX, NUM_CELLS_MAX, TS_T_FLOAT32
 };
 
@@ -57,215 +57,218 @@ static uint16_t reg_addr = 0;
  *
  * Normal priority data objects (consuming 2 or more bytes) start from IDs > 23 = 0x17
  */
-static DataNode data_objects[] = {
+static ThingSetDataObject data_objects[] = {
 
     // DEVICE INFORMATION /////////////////////////////////////////////////////
     // using IDs >= 0x18
 
-    TS_NODE_PATH(ID_INFO, "info", 0, NULL),
+    TS_GROUP(ID_INFO, "info", TS_NO_CALLBACK, ID_ROOT),
 
-    TS_NODE_STRING(0x19, "DeviceID", device_id, sizeof(device_id),
-        ID_INFO, TS_ANY_R | TS_MKR_W, PUB_NVM),
+    TS_ITEM_STRING(0x19, "DeviceID", device_id, sizeof(device_id),
+        ID_INFO, TS_ANY_R | TS_MKR_W, SUBSET_NVM),
 
-    TS_NODE_STRING(0x1A, "Manufacturer", manufacturer, 0,
+    TS_ITEM_STRING(0x1A, "Manufacturer", manufacturer, 0,
         ID_INFO, TS_ANY_R, 0),
 
-    TS_NODE_STRING(0x1B, "DeviceType", device_type, 0,
+    TS_ITEM_STRING(0x1B, "DeviceType", device_type, 0,
         ID_INFO, TS_ANY_R, 0),
 
-    TS_NODE_STRING(0x1C, "HardwareVersion", hardware_version, 0,
+    TS_ITEM_STRING(0x1C, "HardwareVersion", hardware_version, 0,
         ID_INFO, TS_ANY_R, 0),
 
-    TS_NODE_STRING(0x1D, "FirmwareVersion", firmware_version, 0,
+    TS_ITEM_STRING(0x1D, "FirmwareVersion", firmware_version, 0,
         ID_INFO, TS_ANY_R, 0),
 
     // CONFIGURATION //////////////////////////////////////////////////////////
     // using IDs >= 0x30 except for high priority data objects
 
-    TS_NODE_PATH(ID_CONF, "conf", 0, &data_objects_update_conf),
+    TS_GROUP(ID_CONF, "conf", &data_objects_update_conf, ID_ROOT),
 
     // general battery settings
 
-    TS_NODE_FLOAT(0x31, "BatNom_Ah", &bms_conf.nominal_capacity_Ah, 1,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_FLOAT(0x31, "BatNom_Ah", &bms_conf.nominal_capacity_Ah, 1,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
     // current limits
 
-    TS_NODE_FLOAT(0x40, "PcbDisSC_A", &bms_conf.dis_sc_limit, 1,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_FLOAT(0x40, "PcbDisSC_A", &bms_conf.dis_sc_limit, 1,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_UINT32(0x41, "PcbDisSC_us", &bms_conf.dis_sc_delay_us,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_UINT32(0x41, "PcbDisSC_us", &bms_conf.dis_sc_delay_us,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_FLOAT(0x42, "BatDisLim_A", &bms_conf.dis_oc_limit, 1,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_FLOAT(0x42, "BatDisLim_A", &bms_conf.dis_oc_limit, 1,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_UINT32(0x43, "BatDisLimDelay_ms", &bms_conf.dis_oc_delay_ms,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_UINT32(0x43, "BatDisLimDelay_ms", &bms_conf.dis_oc_delay_ms,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_FLOAT(0x44, "BatChgLim_A", &bms_conf.chg_oc_limit, 1,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_FLOAT(0x44, "BatChgLim_A", &bms_conf.chg_oc_limit, 1,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_UINT32(0x45, "BatChgLimDelay_ms", &bms_conf.chg_oc_delay_ms,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_UINT32(0x45, "BatChgLimDelay_ms", &bms_conf.chg_oc_delay_ms,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
     // temperature limits
 
-    TS_NODE_FLOAT(0x48, "DisUpLim_degC", &bms_conf.dis_ot_limit, 1,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_FLOAT(0x48, "DisUpLim_degC", &bms_conf.dis_ot_limit, 1,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_FLOAT(0x49, "DisLowLim_degC", &bms_conf.dis_ut_limit, 1,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_FLOAT(0x49, "DisLowLim_degC", &bms_conf.dis_ut_limit, 1,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_FLOAT(0x4A, "ChgUpLim_degC", &bms_conf.chg_ot_limit, 1,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_FLOAT(0x4A, "ChgUpLim_degC", &bms_conf.chg_ot_limit, 1,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_FLOAT(0x4B, "ChgLowLim_degC", &bms_conf.chg_ut_limit, 1,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_FLOAT(0x4B, "ChgLowLim_degC", &bms_conf.chg_ut_limit, 1,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_FLOAT(0x4C, "TempLimHyst_degC", &bms_conf.t_limit_hyst, 1,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_FLOAT(0x4C, "TempLimHyst_degC", &bms_conf.t_limit_hyst, 1,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
     // voltage limits
 
-    TS_NODE_FLOAT(0x50, "CellUpLim_V", &bms_conf.cell_ov_limit, 1,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_FLOAT(0x50, "CellUpLim_V", &bms_conf.cell_ov_limit, 1,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_FLOAT(0x51, "CellUpLimReset_V", &bms_conf.cell_ov_reset, 1,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_FLOAT(0x51, "CellUpLimReset_V", &bms_conf.cell_ov_reset, 1,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_UINT32(0x52, "CellUpLimDelay_ms", &bms_conf.cell_ov_delay_ms,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_UINT32(0x52, "CellUpLimDelay_ms", &bms_conf.cell_ov_delay_ms,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_FLOAT(0x53, "CellLowLim_V", &bms_conf.cell_uv_limit, 1,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_FLOAT(0x53, "CellLowLim_V", &bms_conf.cell_uv_limit, 1,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_FLOAT(0x54, "CellLowLimReset_V", &bms_conf.cell_uv_reset, 1,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_FLOAT(0x54, "CellLowLimReset_V", &bms_conf.cell_uv_reset, 1,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_UINT32(0x55, "CellLowLimDelay_ms", &bms_conf.cell_uv_delay_ms,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_UINT32(0x55, "CellLowLimDelay_ms", &bms_conf.cell_uv_delay_ms,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
     // balancing
 
-    TS_NODE_BOOL(0x58, "AutoBalEn", &bms_conf.auto_balancing_enabled,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_BOOL(0x58, "AutoBalEn", &bms_conf.auto_balancing_enabled,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_FLOAT(0x59, "BalCellDiff_V", &bms_conf.bal_cell_voltage_diff, 3,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_FLOAT(0x59, "BalCellDiff_V", &bms_conf.bal_cell_voltage_diff, 3,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_FLOAT(0x5A, "BalCellLowLim_V", &bms_conf.bal_cell_voltage_min, 1,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_FLOAT(0x5A, "BalCellLowLim_V", &bms_conf.bal_cell_voltage_min, 1,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_UINT16(0x5B, "BalIdleDelay_s", &bms_conf.bal_idle_delay,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_UINT16(0x5B, "BalIdleDelay_s", &bms_conf.bal_idle_delay,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_FLOAT(0x5C, "BalIdleTh_A", &bms_conf.bal_idle_current, 1,
-        ID_CONF, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_FLOAT(0x5C, "BalIdleTh_A", &bms_conf.bal_idle_current, 1,
+        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
     // INPUT DATA /////////////////////////////////////////////////////////////
     // using IDs >= 0x60
 
-    TS_NODE_PATH(ID_INPUT, "input", 0, NULL),
+    TS_GROUP(ID_INPUT, "input", TS_NO_CALLBACK, ID_ROOT),
 
-    TS_NODE_BOOL(0x61, "ChgEn", &bms_status.chg_enable,
-        ID_INPUT, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_BOOL(0x61, "ChgEn", &bms_status.chg_enable,
+        ID_INPUT, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_NODE_BOOL(0x62, "DisEn", &bms_status.dis_enable,
-        ID_INPUT, TS_ANY_R | TS_ANY_W, PUB_NVM),
+    TS_ITEM_BOOL(0x62, "DisEn", &bms_status.dis_enable,
+        ID_INPUT, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
     // OUTPUT DATA ////////////////////////////////////////////////////////////
     // using IDs >= 0x70 except for high priority data objects
 
-    TS_NODE_PATH(ID_OUTPUT, "output", 0, NULL),
+    TS_GROUP(ID_MEAS, "meas", TS_NO_CALLBACK, ID_ROOT),
 
-    TS_NODE_FLOAT(0x71, "Bat_V", &bms_status.pack_voltage, 2,
-        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
+    TS_ITEM_FLOAT(0x71, "Bat_V", &bms_status.pack_voltage, 2,
+        ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_NODE_FLOAT(0x72, "Bat_A", &bms_status.pack_current, 2,
-        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
+    TS_ITEM_FLOAT(0x72, "Bat_A", &bms_status.pack_current, 2,
+        ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_NODE_FLOAT(0x73, "Bat_degC", &bms_status.bat_temp_avg, 1,
-        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
+    TS_ITEM_FLOAT(0x73, "Bat_degC", &bms_status.bat_temp_avg, 1,
+        ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_NODE_FLOAT(0x74, "IC_degC", &bms_status.ic_temp, 1,
-        ID_OUTPUT, TS_ANY_R, 0),
+    TS_ITEM_FLOAT(0x74, "IC_degC", &bms_status.ic_temp, 1,
+        ID_MEAS, TS_ANY_R, 0),
 
-    //TS_NODE_FLOAT(0x75, "MCU_degC", &mcu_temp, 1,
-    //    ID_OUTPUT, TS_ANY_R, 0),
+    //TS_ITEM_FLOAT(0x75, "MCU_degC", &mcu_temp, 1,
+    //    ID_MEAS, TS_ANY_R, 0),
 
 #ifdef CONFIG_BMS_ISL94202   // currently only implemented in ISL94202-based boards (using TS2)
-    TS_NODE_FLOAT(0x76, "MOSFETs_degC", &bms_status.mosfet_temp, 1,
-        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
+    TS_ITEM_FLOAT(0x76, "MOSFETs_degC", &bms_status.mosfet_temp, 1,
+        ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 #endif
 
-    TS_NODE_FLOAT(0x7C, "SOC_pct", &bms_status.soc, 1,
-        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
+    TS_ITEM_FLOAT(0x7C, "SOC_pct", &bms_status.soc, 1,
+        ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_NODE_UINT32(0x7E, "ErrorFlags", &bms_status.error_flags,
-        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
+    TS_ITEM_UINT32(0x7E, "ErrorFlags", &bms_status.error_flags,
+        ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_NODE_UINT16(0x7F, "BmsState", &bms_status.state,
-        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
+    TS_ITEM_UINT16(0x7F, "BmsState", &bms_status.state,
+        ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_NODE_ARRAY(0x80, "Cells_V", &cell_voltages_arr, 3,
-        ID_OUTPUT, TS_ANY_R, PUB_SER),
+    TS_ITEM_ARRAY(0x80, "Cells_V", &cell_voltages_arr, 3,
+        ID_MEAS, TS_ANY_R, SUBSET_SER),
 
-    TS_NODE_FLOAT(0x9A, "CellAvg_V", &bms_status.cell_voltage_avg, 3,
-        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
+    TS_ITEM_FLOAT(0x9A, "CellAvg_V", &bms_status.cell_voltage_avg, 3,
+        ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_NODE_FLOAT(0x9B, "CellMin_V", &bms_status.cell_voltage_min, 3,
-        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
+    TS_ITEM_FLOAT(0x9B, "CellMin_V", &bms_status.cell_voltage_min, 3,
+        ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_NODE_FLOAT(0x9C, "CellMax_V", &bms_status.cell_voltage_max, 3,
-        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
+    TS_ITEM_FLOAT(0x9C, "CellMax_V", &bms_status.cell_voltage_max, 3,
+        ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_NODE_UINT32(0x9D, "BalancingStatus", &bms_status.balancing_status,
-        ID_OUTPUT, TS_ANY_R, PUB_SER | PUB_CAN),
+    TS_ITEM_UINT32(0x9D, "BalancingStatus", &bms_status.balancing_status,
+        ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
     // RECORDED DATA ///////////////////////////////////////////////////////
     // using IDs >= 0xA0
 
-    TS_NODE_PATH(ID_REC, "rec", 0, NULL),
+    TS_GROUP(ID_REC, "rec", TS_NO_CALLBACK, ID_ROOT),
 
     // CALIBRATION DATA ///////////////////////////////////////////////////////
     // using IDs >= 0xD0
 
-    TS_NODE_PATH(ID_CAL, "cal", 0, NULL),
+    TS_GROUP(ID_CAL, "cal", TS_NO_CALLBACK, ID_ROOT),
 
     // FUNCTION CALLS (EXEC) //////////////////////////////////////////////////
     // using IDs >= 0xE0
 
-    TS_NODE_PATH(ID_EXEC, "exec", 0, NULL),
+    TS_GROUP(ID_RPC, "rpc", TS_NO_CALLBACK, ID_ROOT),
 
-    TS_NODE_EXEC(0xE1, "shutdown", &bms_shutdown, ID_EXEC, TS_ANY_RW),
-    TS_NODE_EXEC(0xE2, "reset", &reset_device, ID_EXEC, TS_ANY_RW),
-    //TS_NODE_EXEC(0xE3, "bootloader-stm", &start_stm32_bootloader, ID_EXEC, TS_ANY_RW),
-    TS_NODE_EXEC(0xE4, "save-settings", &eeprom_store_data, ID_EXEC, TS_ANY_RW),
-    TS_NODE_EXEC(0xEA, "print-register", &print_register, ID_EXEC, TS_ANY_RW),
-    TS_NODE_UINT16(0xEB, "RegAddr", &reg_addr, 0xEA, TS_ANY_RW, 0),
-    TS_NODE_EXEC(0xEC, "print-registers", &bms_print_registers, ID_EXEC, TS_ANY_RW),
+    TS_FUNCTION(0xE1, "shutdown", &bms_shutdown, ID_RPC, TS_ANY_RW),
+    TS_FUNCTION(0xE2, "reset", &reset_device, ID_RPC, TS_ANY_RW),
+    //TS_FUNCTION(0xE3, "bootloader-stm", &start_stm32_bootloader, ID_RPC, TS_ANY_RW),
+    TS_FUNCTION(0xE4, "save-settings", &eeprom_store_data, ID_RPC, TS_ANY_RW),
+    TS_FUNCTION(0xEA, "print-register", &print_register, ID_RPC, TS_ANY_RW),
+    TS_ITEM_UINT16(0xEB, "RegAddr", &reg_addr, 0xEA, TS_ANY_RW, 0),
+    TS_FUNCTION(0xEC, "print-registers", &bms_print_registers, ID_RPC, TS_ANY_RW),
 
-    TS_NODE_EXEC(0xEE, "auth", &thingset_auth, 0, TS_ANY_RW),
-    TS_NODE_STRING(0xEF, "Password", auth_password, sizeof(auth_password), 0xEE, TS_ANY_RW, 0),
+    TS_FUNCTION(0xEE, "auth", &thingset_auth, 0, TS_ANY_RW),
+    TS_ITEM_STRING(0xEF, "Password", auth_password, sizeof(auth_password), 0xEE, TS_ANY_RW, 0),
 
     // PUBLICATION DATA ///////////////////////////////////////////////////////
     // using IDs >= 0xF0
 
-    TS_NODE_PATH(ID_PUB, "pub", 0, NULL),
+    TS_SUBSET(0xF3, "serial", SUBSET_SER, 0xF1, TS_ANY_RW),
+#if CONFIG_THINGSET_CAN
+    TS_SUBSET(0xF7, "can", SUBSET_CAN, 0xF5, TS_ANY_RW),
+#endif
 
-    TS_NODE_PATH(0xF1, "serial", ID_PUB, NULL),
-    TS_NODE_BOOL(0xF2, "Enable", &pub_serial_enable, 0xF1, TS_ANY_RW, 0),
-    TS_NODE_PUBSUB(0xF3, "IDs", PUB_SER, 0xF1, TS_ANY_RW, 0),
+    TS_GROUP(ID_PUB, ".pub", TS_NO_CALLBACK, ID_ROOT),
+
+    TS_GROUP(0xF1, "serial", TS_NO_CALLBACK, ID_PUB),
+    TS_ITEM_BOOL(0xF2, "Enable", &pub_serial_enable, 0xF1, TS_ANY_RW, 0),
 
 #if CONFIG_THINGSET_CAN
-    TS_NODE_PATH(0xF5, "can", ID_PUB, NULL),
-    TS_NODE_BOOL(0xF6, "Enable", &pub_can_enable, 0xF5, TS_ANY_RW, 0),
-    TS_NODE_PUBSUB(0xF7, "IDs", PUB_CAN, 0xF5, TS_ANY_RW, 0),
+    TS_GROUP(0xF5, "can", TS_NO_CALLBACK, ID_PUB),
+    TS_ITEM_BOOL(0xF6, "Enable", &pub_can_enable, 0xF5, TS_ANY_RW, 0),
 #endif
 };
 
-ThingSet ts(data_objects, sizeof(data_objects)/sizeof(DataNode));
+ThingSet ts(data_objects, ARRAY_SIZE(data_objects));
 
 void data_objects_update_conf()
 {
