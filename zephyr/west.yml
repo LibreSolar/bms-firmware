@@ -4,6 +4,8 @@ manifest:
       url-base: https://github.com/zephyrproject-rtos
     - name: libresolar
       url-base: https://github.com/LibreSolar
+    - name: thingset
+      url-base: https://github.com/ThingSet
   projects:
     - name: zephyr
       remote: libresolar
@@ -18,3 +20,7 @@ manifest:
           - cmsis
           - edtt
           - hal_stm32
+    - name: thingset-device-library
+      remote: thingset
+      revision: 634f4e92854ce4f1b7c4c41f1d8f3b0af7801de4
+      path: zephyr/modules/thingset

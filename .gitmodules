@@ -1,6 +1,3 @@
-[submodule "lib/thingset"]
-	path = lib/thingset
-	url = https://github.com/LibreSolar/thingset-device-library
 [submodule "lib/oled-display"]
 	path = lib/oled-display
 	url = https://github.com/LibreSolar/oled-display-library
