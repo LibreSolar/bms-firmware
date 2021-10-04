@@ -93,9 +93,9 @@ void main(void)
 
     err += common_tests();
 
-#ifdef BMS_BQ76940
+#ifdef CONFIG_BMS_BQ76940
     err += bq769x0_tests();
-#elif defined(BMS_ISL94202)
+#elif defined(CONFIG_BMS_ISL94202)
     err += isl94202_tests();
 #endif
 

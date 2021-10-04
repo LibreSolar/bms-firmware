@@ -42,7 +42,8 @@ void test_isl94202_init()
 
     // expected feature control register
     uint16_t fc_reg = 0;
-    fc_reg |= 1U << 5;  // XT2M
+    fc_reg |= 1U << 5;   // XT2M
+    fc_reg |= 1U << 8;   // CB_EOC
     fc_reg |= 1U << 14;  // CBDC
     TEST_ASSERT_EQUAL_HEX16(fc_reg, *((uint16_t*)&mem_isl[0x4A]));
 }
@@ -113,6 +114,9 @@ void test_isl94202_read_pack_current()
 
 void test_isl94202_read_error_flags()
 {
+    /* assume CFET and DFET are on */
+    *((uint16_t*)&mem_isl[0x86]) = 0x03U;
+
     *((uint16_t*)&mem_isl[0x80]) = 0x01U << 2;
     bms_update_error_flags(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_CELL_UNDERVOLTAGE, bms_status.error_flags);
@@ -156,6 +160,20 @@ void test_isl94202_read_error_flags()
     *((uint16_t*)&mem_isl[0x80]) = 0x01U << 12;
     bms_update_error_flags(&bms_conf, &bms_status);
     TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_CELL_FAILURE, bms_status.error_flags);
+
+    /* preparation for additional CHG / DSG FET error flags */
+    *((uint16_t*)&mem_isl[0x80]) = 0;
+    bms_status.state = BMS_STATE_NORMAL;
+
+    /* turn CFET off */
+    *((uint16_t*)&mem_isl[0x86]) = 0x01;
+    bms_update_error_flags(&bms_conf, &bms_status);
+    TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_CHG_OFF, bms_status.error_flags);
+
+    /* turn DFET off */
+    *((uint16_t*)&mem_isl[0x86]) = 0x02;
+    bms_update_error_flags(&bms_conf, &bms_status);
+    TEST_ASSERT_EQUAL_UINT32(1U << BMS_ERR_DIS_OFF, bms_status.error_flags);
 }
 
 void test_isl94202_read_temperatures()
