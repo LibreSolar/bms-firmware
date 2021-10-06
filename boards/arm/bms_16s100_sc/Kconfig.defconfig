@@ -1,0 +1,15 @@
+# Copyright (c) The Libre Solar Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+if BOARD_BMS_16S100_SC
+
+config BOARD
+	default "bms_16s100_sc"
+
+config LIBRE_SOLAR_TYPE_ID
+	default 10
+
+config BMS_BQ769X2
+	default y
+
+endif # BOARD_BMS_16S100_SC

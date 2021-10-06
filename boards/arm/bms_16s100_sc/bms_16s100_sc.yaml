@@ -1,0 +1,19 @@
+identifier: bms_16s100_sc
+name: BMS-16S100-SC
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+ram: 144
+flash: 512
+supported:
+  - uart
+  - gpio
+  - i2c
+  - spi
+  - nvs
+  - dma
+  - usb_device
+  - lptim

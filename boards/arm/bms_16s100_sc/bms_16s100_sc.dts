@@ -1,0 +1,235 @@
+/*
+ * Copyright (c) The Libre Solar Project Contributors
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+#include <st/g0/stm32g0b1Xe.dtsi>
+#include <st/g0/stm32g0b1c(c-e)tx-pinctrl.dtsi>
+
+/ {
+	model = "Libre Solar BMS 16S100 IC";
+	compatible = "st,stm32g0b1";
+
+	pcb {
+		compatible = "bms";
+
+		type = "BMS 16S100 SC";
+		version-str = "v0.1";
+		version-num = <1>;
+
+		num-cells-max = <16>;
+		num-thermistors-max = <2>;
+
+		current-max = <100>;
+		shunt-res = <1000>;
+	};
+
+	chosen {
+		zephyr,console = &usart2;
+		zephyr,shell-uart = &usart2;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+		zephyr,code-partition = &slot0_partition;
+	};
+
+	power-states {
+		stop0: state0 {
+			compatible = "zephyr,power-state";
+			power-state-name = "suspend-to-idle";
+			substate-id = <1>;
+			min-residency-us = <20>;
+		};
+		stop1: state1 {
+			compatible = "zephyr,power-state";
+			power-state-name = "suspend-to-idle";
+			substate-id = <2>;
+			min-residency-us = <100>;
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led1: led_0 {
+			gpios = <&gpioa 5 GPIO_ACTIVE_HIGH>;	// Nucleo board
+			//gpios = <&gpioc 13 GPIO_ACTIVE_HIGH>;	// actual BMS board
+			label = "LED 1";
+		};
+		led2: led_1 {
+			gpios = <&gpioc 14 GPIO_ACTIVE_HIGH>;
+			label = "LED 2";
+		};
+	};
+
+	gpio_keys {
+		compatible = "gpio-keys";
+		power_button: button {
+			label = "Power Button";
+			gpios = <&gpioc 13 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+	switches {
+		compatible = "switch";
+		can_en {
+			gpios = <&gpiod 2 GPIO_ACTIVE_LOW>;
+			label = "CAN transceiver enable";
+		};
+	};
+
+	aliases {
+		led-red = &led1;
+		led-green = &led2;
+		uart-dbg = &usart2;
+		uart-uext = &usart1;
+		i2c-uext = &i2c1;
+		sw-pwr = &power_button;
+	};
+
+	/* this should be upstreamed to Zephyr, see also PR 34963 */
+	soc {
+		can {
+			compatible = "bosch,m-can-base";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			std-filter-elements = <28>;
+			ext-filter-elements = <8>;
+			rx-fifo0-elements = <3>;
+			rx-fifo1-elements = <3>;
+			rx-buffer-elements = <0>;
+			tx-buffer-elements = <3>;
+
+			can1: can@40006400 {
+				compatible = "st,stm32-fdcan";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x40006400 0x400>, <0x4000A400 0x350>;
+				reg-names = "m_can", "message_ram";
+				interrupts = <21 0>, <22 0>;
+				interrupt-names = "LINE_0", "LINE_1";
+				status = "disabled";
+				label = "CAN_1";
+			};
+		};
+	};
+};
+
+&clk_hsi {
+	status = "okay";
+};
+
+&pll {
+	div-m = <1>;
+	mul-n = <8>;
+	div-p = <2>;
+	div-q = <2>;
+	div-r = <2>;
+	clocks = <&clk_hsi>;
+	status = "okay";
+};
+
+&rcc {
+	clocks = <&pll>;
+	clock-frequency = <DT_FREQ_M(64)>;
+	ahb-prescaler = <1>;
+	apb1-prescaler = <1>;
+};
+
+zephyr_udc0: &usb {
+	pinctrl-0 = <&usb_dm_pa11 &usb_dp_pa12>;
+	status = "okay";
+};
+
+&usart1 {
+	pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&usart2 {
+	pinctrl-0 = <&usart2_tx_pa2 &usart2_rx_pa3>;
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&iwdg {
+	status = "okay";
+};
+
+&i2c1 {
+	pinctrl-0 = <&i2c1_scl_pb6 &i2c1_sda_pb7>;
+	clock-frequency = <I2C_BITRATE_FAST>;
+	status = "okay";
+};
+
+&i2c2 {
+	pinctrl-0 = <&i2c2_scl_pb10 &i2c2_sda_pb11>;
+	clock-frequency = <I2C_BITRATE_STANDARD>;
+	status = "okay";
+
+	bq769x2@8 {
+		compatible = "ti,bq769x2-i2c";
+		label = "BQ76952";
+		reg = <0x08>;	/* 0x10 >> 1 */
+		alert-gpios = <&gpiob 8 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&spi1 {
+	pinctrl-0 = <&spi1_nss_pb0 &spi1_sck_pb3
+		     &spi1_miso_pb4 &spi1_mosi_pb5>;
+	status = "okay";
+};
+
+&spi2 {
+	pinctrl-0 = <&spi2_nss_pb12 &spi2_sck_pb13
+		     &spi2_miso_pb14 &spi2_mosi_pb15>;
+	status = "okay";
+};
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		boot_partition: partition@0 {
+			label = "mcuboot";
+			reg = <0x00000000 0x0000C000>;
+			read-only;
+		};
+		slot0_partition: partition@C000 {
+			label = "image-0";
+			reg = <0x0000C000 0x00032000>;
+		};
+		slot1_partition: partition@3E000 {
+			label = "image-1";
+			reg = <0x0003E000 0x00032000>;
+		};
+		/* final 64KiB reserved for app storage partition */
+		storage_partition: partition@70000 {
+			label = "storage";
+			reg = <0x00070000 0x00010000>;
+		};
+	};
+};
+
+&cpu0 {
+	cpu-power-states = <&stop0 &stop1>;
+};
+
+&lptim1 {
+	status = "okay";
+};
+
+&can1 {
+	pinctrl-0 = <&fdcan1_rx_pd0 &fdcan1_tx_pd1>;
+	bus-speed = <500000>;
+	bus-speed-data = <500000>;
+	sjw = <1>;
+	sjw-data = <1>;
+	sample-point = <875>;
+	sample-point-data = <875>;
+	status = "okay";
+};
