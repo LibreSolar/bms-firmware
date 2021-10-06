@@ -1,0 +1,8 @@
+# Copyright (c) The Libre Solar Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+properties:
+    alert-gpios:
+      type: phandle-array
+      required: true
+      description: Alert interrupt of bq769x2

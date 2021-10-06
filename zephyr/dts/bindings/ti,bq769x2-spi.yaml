@@ -1,0 +1,10 @@
+# Copyright (c) The Libre Solar Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+    Texas Instruments BQ769x2 3s to 16s High Accuracy Battery Monitor and
+    Protector for Li-Ion, Li-Polymer, and LiFePO4 Battery Packs (SPI)
+
+compatible: "ti,bq769x2-spi"
+
+include: ["ti,bq769x2-common.yaml", "spi-device.yaml"]

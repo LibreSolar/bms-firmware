@@ -14,6 +14,7 @@ target_sources(app PRIVATE
 )
 
 add_subdirectory(bq769x0)
+add_subdirectory(bq769x2)
 add_subdirectory(isl94202)
 
 add_subdirectory(ext)

@@ -22,6 +22,11 @@ config BMS_BQ76940
     help
       Texas Instruments bq76940 used as BMS IC
 
+config BMS_BQ769X2
+    bool
+    help
+      Texas Instruments bq769x2 used as BMS IC
+
 config BMS_ISL94202
     bool
     help
