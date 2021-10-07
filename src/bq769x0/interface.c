@@ -165,7 +165,7 @@ void bq769x0_init()
 
     i2c_dev = device_get_binding(I2C_DEV);
     if (!i2c_dev) {
-        printk("I2C: Device driver not found.\n");
+        LOG_ERR("I2C device not found");
     }
 
     alert_interrupt_flag = true;   // init with true to check and clear errors at start-up

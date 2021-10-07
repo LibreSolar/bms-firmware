@@ -29,11 +29,11 @@ extern "C" {
 void isl94202_init();
 
 /**
- * Writes one byte to ISL94202 IC registers
+ * Writes multiple bytes to ISL94202 IC registers
  *
- * @param addr The address to write to
+ * @param reg_addr The address to write to
  * @param data The pointer to the data buffer
- * @param num_bytes Number of bytes to read
+ * @param num_bytes Number of bytes to write
  *
  * @returns 0 if successful
  */
@@ -50,7 +50,7 @@ int isl94202_write_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes);
 int isl94202_write_word(uint8_t reg_addr, uint16_t word);
 
 /**
- * Reads num_bytes from ISL94202 IC registers
+ * Reads multiple bytes from ISL94202 IC registers
  *
  * @param addr The address to read the bytes from
  * @param data The pointer to where the data should be stored
