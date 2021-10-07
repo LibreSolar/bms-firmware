@@ -9,6 +9,72 @@
 
 #include <stdint.h>
 
+// Direct commands
+
+#define BQ769X2_CMD_CONTROL_STATUS      0x00
+
+#define BQ769X2_CMD_SAFETY_ALERT_A      0x02
+#define BQ769X2_CMD_SAFETY_STATUS_A     0x03
+#define BQ769X2_CMD_SAFETY_ALERT_B      0x04
+#define BQ769X2_CMD_SAFETY_STATUS_B     0x05
+#define BQ769X2_CMD_SAFETY_ALERT_C      0x06
+#define BQ769X2_CMD_SAFETY_STATUS_C     0x07
+
+#define BQ769X2_CMD_PF_ALERT_A          0x0A
+#define BQ769X2_CMD_PF_STATUS_A         0x0B
+#define BQ769X2_CMD_PF_ALERT_B          0x0C
+#define BQ769X2_CMD_PF_STATUS_B         0x0D
+#define BQ769X2_CMD_PF_ALERT_C          0x0E
+#define BQ769X2_CMD_PF_STATUS_C         0x0F
+#define BQ769X2_CMD_PF_ALERT_D          0x10
+#define BQ769X2_CMD_PF_STATUS_D         0x11
+
+#define BQ769X2_CMD_BATTERY_STATUS      0x12
+
+#define BQ769X2_CMD_VOLTAGE_CELL_1      0x14
+#define BQ769X2_CMD_VOLTAGE_CELL_2      0x16
+#define BQ769X2_CMD_VOLTAGE_CELL_3      0x18
+#define BQ769X2_CMD_VOLTAGE_CELL_4      0x1A
+#define BQ769X2_CMD_VOLTAGE_CELL_5      0x1C
+#define BQ769X2_CMD_VOLTAGE_CELL_6      0x1E
+#define BQ769X2_CMD_VOLTAGE_CELL_7      0x20
+#define BQ769X2_CMD_VOLTAGE_CELL_8      0x22
+#define BQ769X2_CMD_VOLTAGE_CELL_9      0x24
+#define BQ769X2_CMD_VOLTAGE_CELL_10     0x26
+#define BQ769X2_CMD_VOLTAGE_CELL_11     0x28
+#define BQ769X2_CMD_VOLTAGE_CELL_12     0x2A
+#define BQ769X2_CMD_VOLTAGE_CELL_13     0x2C
+#define BQ769X2_CMD_VOLTAGE_CELL_14     0x2E
+#define BQ769X2_CMD_VOLTAGE_CELL_15     0x30
+#define BQ769X2_CMD_VOLTAGE_CELL_16     0x32
+#define BQ769X2_CMD_VOLTAGE_STACK       0x34
+#define BQ769X2_CMD_VOLTAGE_PACK        0x36
+#define BQ769X2_CMD_VOLTAGE_LD          0x38
+
+#define BQ769X2_CMD_CURRENT_CC2         0x3A
+
+#define BQ769X2_CMD_ALARM_STATUS        0x62
+#define BQ769X2_CMD_ALARM_RAW_STATUS    0x64
+#define BQ769X2_CMD_ALARM_ENABLE        0x66
+
+#define BQ769X2_CMD_TEMP_INT            0x68
+#define BQ769X2_CMD_TEMP_CFETOFF        0x6A
+#define BQ769X2_CMD_TEMP_DFETOFF        0x6C
+#define BQ769X2_CMD_TEMP_ALERT          0x6E
+#define BQ769X2_CMD_TEMP_TS1            0x70
+#define BQ769X2_CMD_TEMP_TS2            0x72
+#define BQ769X2_CMD_TEMP_TS3            0x74
+#define BQ769X2_CMD_TEMP_HDQ            0x76
+#define BQ769X2_CMD_TEMP_DCHG           0x78
+#define BQ769X2_CMD_TEMP_DDSG           0x7A
+
+#define BQ769X2_CMD_FET_STATUS          0x7F
+
+// Subcommands
+
+#define BQ769X2_CMD_SUBCMD_LOWER        0x3E
+#define BQ769X2_CMD_SUBCMD_UPPER        0x3F
+
 // Data Memory
 
 // Calibration (manual section 13.2)
