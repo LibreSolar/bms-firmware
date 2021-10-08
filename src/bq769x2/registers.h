@@ -274,4 +274,61 @@
 static const uint16_t SCD_threshold_setting [] =
     { 10, 20, 40, 60, 80, 100, 125, 150, 175, 200, 250, 300, 350, 400, 450, 500 }; // mV
 
+// Status register content
+
+typedef union {
+    struct {
+        uint8_t RSVD        :2;
+        uint8_t CUV         :1;     // Cell undervoltage
+        uint8_t COV         :1;     // Cell overvoltage
+        uint8_t OCC         :1;     // Overcurrent in charge
+        uint8_t OCD1        :1;     // Overcurrent in discharge 1
+        uint8_t OCD2        :1;     // Overcurrent in discharge 2
+        uint8_t SCD         :1;     // Short circuit in discharge
+    };
+    uint8_t byte;
+} SAFETY_STATUS_A_Type;
+
+typedef union {
+    struct {
+        uint8_t UTC         :1;     // Undertemperature in charge
+        uint8_t UTD         :1;     // Undertemperature in discharge
+        uint8_t UTINT       :1;     // Internal die undertemperature
+        uint8_t RSVD        :1;
+        uint8_t OTC         :1;     // Overtemperature in charge
+        uint8_t OTD         :1;     // Overtemperature in discharge
+        uint8_t OTINT       :1;     // Internal die overtemperature
+        uint8_t OTF         :1;     // FET overtemperature
+    };
+    uint8_t byte;
+} SAFETY_STATUS_B_Type;
+
+typedef union {
+    struct {
+        uint8_t RSVD1       :1;
+        uint8_t HWDF        :1;     // Host watchdog safety fault
+        uint8_t PTO         :1;     // Precharge timeout
+        uint8_t RSVD2       :1;
+        uint8_t COVL        :1;     // Latched cell overvoltage
+        uint8_t OCDL        :1;     // Latched overcurrent in discharge
+        uint8_t SCDL        :1;     // Latched short circuit in discharge
+        uint8_t OCD3        :1;     // Overcurrent in discharge 3
+    };
+    uint8_t byte;
+} SAFETY_STATUS_C_Type;
+
+typedef union {
+    struct {
+        uint8_t CHG_FET     :1;
+        uint8_t PCHG_FET    :1;
+        uint8_t DSG_FET     :1;
+        uint8_t PDSG_FET    :1;
+        uint8_t DCHG_PIN    :1;
+        uint8_t DDSG_PIN    :1;
+        uint8_t ALRT_PIN    :1;
+        uint8_t RSVD        :1;
+    };
+    uint8_t byte;
+} FET_STATUS_Type;
+
 #endif /* BQ769X2_REGISTERS_H_ */

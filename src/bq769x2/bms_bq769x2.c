@@ -166,7 +166,47 @@ void bms_read_voltages(BmsStatus *status)
 
 void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
 {
-    // TODO
+    uint32_t error_flags = 0;
+    SAFETY_STATUS_A_Type stat_a;
+    SAFETY_STATUS_B_Type stat_b;
+    SAFETY_STATUS_C_Type stat_c;
+    FET_STATUS_Type fet_status;
+
+    // safety alert: immediately set if a fault condition occured
+    // safety fault (status registers): only set if alert persists for specified time
+
+    bq769x2_read_bytes(BQ769X2_CMD_SAFETY_STATUS_A, &stat_a.byte, 1);
+    bq769x2_read_bytes(BQ769X2_CMD_SAFETY_STATUS_B, &stat_b.byte, 1);
+    bq769x2_read_bytes(BQ769X2_CMD_SAFETY_STATUS_C, &stat_c.byte, 1);
+    bq769x2_read_bytes(BQ769X2_CMD_FET_STATUS, &fet_status.byte, 1);
+
+    error_flags |= stat_a.CUV << BMS_ERR_CELL_UNDERVOLTAGE;
+    error_flags |= stat_a.COV << BMS_ERR_CELL_OVERVOLTAGE;
+    error_flags |= stat_a.SCD << BMS_ERR_SHORT_CIRCUIT;
+    error_flags |= stat_a.OCD1 << BMS_ERR_DIS_OVERCURRENT;
+    error_flags |= stat_a.OCC << BMS_ERR_CHG_OVERCURRENT;
+    //error_flags |= ? << BMS_ERR_OPEN_WIRE;
+    error_flags |= stat_b.UTD << BMS_ERR_DIS_UNDERTEMP;
+    error_flags |= stat_b.OTD << BMS_ERR_DIS_OVERTEMP;
+    error_flags |= stat_b.UTC << BMS_ERR_CHG_UNDERTEMP;
+    error_flags |= stat_b.OTC << BMS_ERR_CHG_OVERTEMP;
+    error_flags |= stat_b.OTINT << BMS_ERR_INT_OVERTEMP;
+    error_flags |= stat_b.OTF << BMS_ERR_FET_OVERTEMP;
+    //error_flags |= 1U << BMS_ERR_CELL_FAILURE;
+
+    if (!fet_status.DSG_FET &&
+        (status->state == BMS_STATE_DIS || status->state == BMS_STATE_NORMAL))
+    {
+        error_flags |= 1U << BMS_ERR_DIS_OFF;
+    }
+
+    if (!fet_status.CHG_FET &&
+        (status->state == BMS_STATE_CHG || status->state == BMS_STATE_NORMAL))
+    {
+        error_flags |= 1U << BMS_ERR_CHG_OFF;
+    }
+
+    status->error_flags = error_flags;
 }
 
 void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
