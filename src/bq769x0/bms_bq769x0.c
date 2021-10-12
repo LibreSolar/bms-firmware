@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "pcb.h"
+#include "board.h"
 
 #if CONFIG_BMS_BQ76920 || CONFIG_BMS_BQ76930 || CONFIG_BMS_BQ76940
 
@@ -135,7 +135,7 @@ bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
 {
     long idle_secs = uptime() - status->no_idle_timestamp;
-    int num_sections = NUM_CELLS_MAX / 5;
+    int num_sections = BOARD_NUM_CELLS_MAX / 5;
 
     // check for millisecond-timer overflow
     if (idle_secs < 0) {
@@ -351,7 +351,7 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     int num_temps = 1;
     float sum_temps = status->bat_temps[0];
 
-    if (NUM_THERMISTORS_MAX >= 2) {     // bq76930 or bq76940
+    if (BOARD_NUM_THERMISTORS_MAX >= 2) {     // bq76930 or bq76940
         adc_raw = (bq769x0_read_byte(BQ769X0_TS2_HI_BYTE) & 0b00111111) << 8 |
             bq769x0_read_byte(BQ769X0_TS2_LO_BYTE);
         vtsx = adc_raw * 0.382; // mV
@@ -369,7 +369,7 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
         sum_temps += status->bat_temps[1];
     }
 
-    if (NUM_THERMISTORS_MAX == 3) {     // bq76940
+    if (BOARD_NUM_THERMISTORS_MAX == 3) {     // bq76940
         adc_raw = (bq769x0_read_byte(BQ769X0_TS3_HI_BYTE) & 0b00111111) << 8 |
             bq769x0_read_byte(BQ769X0_TS3_LO_BYTE);
         vtsx = adc_raw * 0.382; // mV
@@ -433,7 +433,7 @@ void bms_read_voltages(BmsStatus *status)
     float sum_voltages = 0;
     float v_max = 0, v_min = 10;
 
-    for (int i = 0; i < NUM_CELLS_MAX; i++) {
+    for (int i = 0; i < BOARD_NUM_CELLS_MAX; i++) {
         adc_raw = bq769x0_read_word(BQ769X0_VC1_HI_BYTE + i*2) & 0x3FFF;
         status->cell_voltages[i] = (adc_raw * adc_gain * 1e-3F + adc_offset) * 1e-3F;
 

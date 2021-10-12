@@ -5,7 +5,7 @@
  */
 
 #include "bms.h"
-#include "pcb.h"
+#include "board.h"
 #include "helper.h"
 
 #include <stdio.h>

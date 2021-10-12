@@ -13,7 +13,7 @@
  * Hardware interface for bq769x2 IC
  */
 
-#include "pcb.h"
+#include "board.h"
 
 #ifdef __cplusplus
 extern "C" {

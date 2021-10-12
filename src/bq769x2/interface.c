@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "pcb.h"
+#include "board.h"
 #include "helper.h"
 
 #if CONFIG_BMS_BQ769X2

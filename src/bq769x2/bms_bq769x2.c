@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "pcb.h"
+#include "board.h"
 
 #if CONFIG_BMS_BQ769X2
 
@@ -140,7 +140,7 @@ void bms_read_voltages(BmsStatus *status)
     float sum_voltages = 0;
     float v_max = 0, v_min = 10;
 
-    for (int i = 0; i < NUM_CELLS_MAX; i++) {
+    for (int i = 0; i < BOARD_NUM_CELLS_MAX; i++) {
         bq769x2_direct_read_i2(BQ769X2_CMD_VOLTAGE_CELL_1 + i*2, &voltage);
         status->cell_voltages[i] = voltage * 1e-3F;     // unit: 1 mV
 

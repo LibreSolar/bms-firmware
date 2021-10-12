@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "pcb.h"
+#include "board.h"
 
 #ifdef CONFIG_BMS_ISL94202
 
@@ -314,7 +314,7 @@ void bms_read_voltages(BmsStatus *status)
     int conn_cells = 0;
     float sum_voltages = 0;
 
-    for (int i = 0; i < NUM_CELLS_MAX; i++) {
+    for (int i = 0; i < BOARD_NUM_CELLS_MAX; i++) {
         adc_raw = isl94202_read_word(ISL94202_CELL1 + i*2) & 0x0FFF;
         status->cell_voltages[i] = (float)adc_raw * 18 * 800 / 4095 / 3 / 1000;
 

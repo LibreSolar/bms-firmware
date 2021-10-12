@@ -16,7 +16,7 @@
 
 #include "tests.h"
 
-#include "pcb.h"
+#include "board.h"
 
 #include "bms.h"
 
@@ -64,7 +64,7 @@ void setup()
     bms_conf.t_limit_hyst = 2;
     bms_apply_temp_limits(&bms_conf);
 
-    bms_conf.shunt_res_mOhm = SHUNT_RESISTOR;
+    bms_conf.shunt_res_mOhm = BOARD_SHUNT_RESISTOR;
     bms_conf.ocv = OCV;
     bms_conf.num_ocv_points = sizeof(OCV)/sizeof(float);
 

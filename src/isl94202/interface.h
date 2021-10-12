@@ -13,7 +13,7 @@
  * Hardware interface for ISL94202 IC
  */
 
-#include "pcb.h"
+#include "board.h"
 
 #ifdef __cplusplus
 extern "C" {

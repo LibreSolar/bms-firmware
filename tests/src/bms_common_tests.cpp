@@ -32,14 +32,14 @@ void init_conf()
     bms_conf.bal_idle_delay = 5*60;
     bms_conf.bal_cell_voltage_diff = 0.01;
 
-    for (int i = 0; i < NUM_CELLS_MAX; i++) {
+    for (int i = 0; i < BOARD_NUM_CELLS_MAX; i++) {
         bms_status.cell_voltages[i] = 3.3;
     }
     bms_status.cell_voltage_min = 3.3;
     bms_status.cell_voltage_max = 3.3;
     bms_status.cell_voltage_avg = 3.3;
 
-    for (int i = 0; i < NUM_THERMISTORS_MAX; i++) {
+    for (int i = 0; i < BOARD_NUM_THERMISTORS_MAX; i++) {
         bms_status.bat_temps[i] = 25;
     }
     bms_status.bat_temp_min = 25;

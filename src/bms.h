@@ -13,7 +13,7 @@
  * Battery Management System (BMS) module for different analog frontends
  */
 
-#include "pcb.h"
+#include "board.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -108,9 +108,9 @@ typedef struct
     bool dis_enable;                            ///< Manual enable/disable setting for discharging
 
     uint16_t connected_cells;                   ///< \brief Actual number of cells connected (might
-                                                ///< be less than NUM_CELLS_MAX)
+                                                ///< be less than BOARD_NUM_CELLS_MAX)
 
-    float cell_voltages[NUM_CELLS_MAX];         ///< Single cell voltages (V)
+    float cell_voltages[BOARD_NUM_CELLS_MAX];   ///< Single cell voltages (V)
     float cell_voltage_max;                     ///< Maximum cell voltage (V)
     float cell_voltage_min;                     ///< Minimum cell voltage (V)
     float cell_voltage_avg;                     ///< Average cell voltage (V)
@@ -119,7 +119,7 @@ typedef struct
     float pack_current;                         ///< \brief Battery pack current, charging direction
                                                 ///< has positive sign (A)
 
-    float bat_temps[NUM_THERMISTORS_MAX];       ///< Battery temperatures (°C)
+    float bat_temps[BOARD_NUM_THERMISTORS_MAX]; ///< Battery temperatures (°C)
     float bat_temp_max;                         ///< Maximum battery temperature (°C)
     float bat_temp_min;                         ///< Minimum battery temperature (°C)
     float bat_temp_avg;                         ///< Average battery temperature (°C)

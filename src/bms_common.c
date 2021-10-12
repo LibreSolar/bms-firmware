@@ -5,7 +5,7 @@
  */
 
 #include "bms.h"
-#include "pcb.h"
+#include "board.h"
 #include "helper.h"
 
 #include <stdio.h>
@@ -32,14 +32,14 @@ void bms_init_config(BmsConfig *conf, int type, float nominal_capacity)
 
     conf->nominal_capacity_Ah = nominal_capacity;
 
-    if (conf->nominal_capacity_Ah < PCB_MAX_CURRENT) {
+    if (conf->nominal_capacity_Ah < BOARD_MAX_CURRENT) {
         // 1C should be safe for all batteries
         conf->dis_oc_limit = conf->nominal_capacity_Ah;
         conf->chg_oc_limit = conf->nominal_capacity_Ah;
     }
     else {
-        conf->dis_oc_limit = PCB_MAX_CURRENT;
-        conf->chg_oc_limit = PCB_MAX_CURRENT;
+        conf->dis_oc_limit = BOARD_MAX_CURRENT;
+        conf->chg_oc_limit = BOARD_MAX_CURRENT;
     }
     conf->dis_oc_delay_ms  = 320;
     conf->chg_oc_delay_ms  = 320;
@@ -53,7 +53,7 @@ void bms_init_config(BmsConfig *conf, int type, float nominal_capacity)
     conf->chg_ot_limit =  45;
     conf->t_limit_hyst =   5;
 
-    conf->shunt_res_mOhm = SHUNT_RESISTOR;
+    conf->shunt_res_mOhm = BOARD_SHUNT_RESISTOR;
 
     conf->cell_ov_delay_ms = 2000;
     conf->cell_uv_delay_ms = 2000;

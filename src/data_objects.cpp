@@ -14,7 +14,7 @@
 #include <sys/crc.h>
 #endif
 
-#include "pcb.h"
+#include "board.h"
 
 #include "thingset.h"
 #include "bms.h"
@@ -36,7 +36,7 @@ static char auth_password[11];
 
 // struct to define ThingSet array node
 ThingSetArrayInfo cell_voltages_arr = {
-    bms_status.cell_voltages, NUM_CELLS_MAX, NUM_CELLS_MAX, TS_T_FLOAT32
+    bms_status.cell_voltages, BOARD_NUM_CELLS_MAX, BOARD_NUM_CELLS_MAX, TS_T_FLOAT32
 };
 
 bool pub_serial_enable = IS_ENABLED(CONFIG_THINGSET_SERIAL_PUB_DEFAULT);
