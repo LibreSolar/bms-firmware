@@ -4,18 +4,16 @@
 set(BOARD_ROOT ${CMAKE_SOURCE_DIR}/..)
 set(DTS_ROOT ${CMAKE_SOURCE_DIR}/../zephyr)
 
-#set(BOARD "native_posix")
-#set(ZEPHYR_TOOLCHAIN_VARIANT "host")
+set(BOARD "native_posix")
 
 cmake_minimum_required(VERSION 3.13.1)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
 project(libre_solar_bms_tests)
+
 add_definitions(-DUNIT_TEST=1)
 add_definitions(-DUNITY_OUTPUT_COLOR)
 add_definitions(-DUNITY_EXCLUDE_SETJMP)
-add_definitions(-DCONFIG_BOARD_BMS_8S50_IC=1)
-add_definitions(-DCONFIG_BMS_ISL94202=1)
 
 add_subdirectory(../src build/src)
 

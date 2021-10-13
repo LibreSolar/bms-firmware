@@ -9,7 +9,4 @@ config BOARD
 config LIBRE_SOLAR_TYPE_ID
 	default 10
 
-config BMS_BQ769X2
-	default y
-
 endif # BOARD_BMS_16S100_SC

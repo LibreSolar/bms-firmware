@@ -9,7 +9,4 @@ config BOARD
 config LIBRE_SOLAR_TYPE_ID
 	default 2
 
-config BMS_BQ76930
-	default y
-
 endif # BOARD_BMS_15S80_SC

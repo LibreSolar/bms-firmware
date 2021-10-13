@@ -6,8 +6,6 @@
 
 #include "board.h"
 
-#ifdef CONFIG_BMS_ISL94202
-
 #include "interface.h"
 #include "registers.h"
 
@@ -144,5 +142,3 @@ int isl94202_read_word(uint8_t reg_addr)
         return -1;
     }
 }
-
-#endif // CONFIG_BMS_ISL94202

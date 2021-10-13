@@ -6,8 +6,6 @@
 
 #include "board.h"
 
-#ifdef CONFIG_BMS_ISL94202
-
 #include "bms.h"
 #include "registers.h"
 #include "interface.h"
@@ -405,5 +403,3 @@ void bms_print_registers()
         bms_print_register(i);
     }
 }
-
-#endif // CONFIG_BMS_ISL94202

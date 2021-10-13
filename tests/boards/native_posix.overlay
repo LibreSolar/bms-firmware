@@ -56,3 +56,12 @@
 		uart-uext = &uart0;
 	};
 };
+
+&i2c0 {
+	isl94202: isl94202@28 {
+		compatible = "renesas,isl94202";
+		label = "ISL94202";
+		reg = <0x28>;	/* 0x50 >> 1 */
+		status = "okay";
+	};
+};

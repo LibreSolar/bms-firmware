@@ -7,8 +7,6 @@
 #include "board.h"
 #include "helper.h"
 
-#if CONFIG_BMS_BQ769X2
-
 #include "interface.h"
 #include "registers.h"
 
@@ -89,5 +87,3 @@ int bq769x2_direct_read_i2(const uint8_t reg_addr, int16_t *value)
 
     return ret;
 }
-
-#endif // defined BQ769X2

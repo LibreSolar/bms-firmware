@@ -7,8 +7,6 @@
 #include "board.h"
 #include "helper.h"
 
-#if CONFIG_BMS_BQ76920 || CONFIG_BMS_BQ76930 || CONFIG_BMS_BQ76940
-
 #include "interface.h"
 #include "registers.h"
 
@@ -203,5 +201,3 @@ time_t bq769x0_alert_timestamp()
 {
     return alert_interrupt_timestamp;
 }
-
-#endif // defined BQ769x0

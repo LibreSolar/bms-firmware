@@ -6,8 +6,6 @@
 
 #include "board.h"
 
-#if CONFIG_BMS_BQ76920 || CONFIG_BMS_BQ76930 || CONFIG_BMS_BQ76940
-
 #include "bms.h"
 #include "registers.h"
 #include "interface.h"
@@ -19,10 +17,8 @@
 #include <time.h>
 #include <string.h>
 
-#ifdef __ZEPHYR__
 #include <logging/log.h>
 LOG_MODULE_REGISTER(bq769x0, CONFIG_LOG_DEFAULT_LEVEL);
-#endif
 
 extern int adc_gain;    // factory-calibrated, read out from chip (uV/LSB)
 extern int adc_offset;  // factory-calibrated, read out from chip (mV)
@@ -611,5 +607,3 @@ void bms_print_registers()
     printf("0x59 BQ769X0_ADCGAIN2:  %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_ADCGAIN2)));
     */
 }
-
-#endif // defined BQ769x0

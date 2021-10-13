@@ -91,11 +91,13 @@ void main(void)
 {
     int err = 0;
 
+    k_sleep(K_MSEC(100));
+
     err += common_tests();
 
-#ifdef CONFIG_BMS_BQ76940
+#ifdef CONFIG_BQ769X0
     err += bq769x0_tests();
-#elif defined(CONFIG_BMS_ISL94202)
+#elif defined(CONFIG_ISL94202)
     err += isl94202_tests();
 #endif
 

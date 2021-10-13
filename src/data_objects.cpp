@@ -194,7 +194,7 @@ static ThingSetDataObject data_objects[] = {
     //TS_ITEM_FLOAT(0x75, "MCU_degC", &mcu_temp, 1,
     //    ID_MEAS, TS_ANY_R, 0),
 
-#ifdef CONFIG_BMS_ISL94202   // currently only implemented in ISL94202-based boards (using TS2)
+#ifdef CONFIG_ISL94202   // currently only implemented in ISL94202-based boards (using TS2)
     TS_ITEM_FLOAT(0x76, "MOSFETs_degC", &bms_status.mosfet_temp, 1,
         ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 #endif

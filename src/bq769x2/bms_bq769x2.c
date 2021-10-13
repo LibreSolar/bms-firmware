@@ -6,8 +6,6 @@
 
 #include "board.h"
 
-#if CONFIG_BMS_BQ769X2
-
 #include "bms.h"
 #include "registers.h"
 #include "interface.h"
@@ -225,5 +223,3 @@ void bms_print_registers()
 {
     // TODO
 }
-
-#endif // defined BQ769X2
