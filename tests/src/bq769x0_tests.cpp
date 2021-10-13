@@ -4,9 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "tests.h"
+#include "bq769x0_tests.h"
 
 #include "bms.h"
+
+#include "unity.h"
 
 #include <time.h>
 #include <stdio.h>

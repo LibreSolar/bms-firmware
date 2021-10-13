@@ -4,10 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <unity.h>
-#include <time.h>
+#ifndef COMMON_TESTS_H_
+#define COMMON_TESTS_H_
 
 int common_tests();
-int bq769x0_tests();
-int isl94202_tests();
-int helper_tests();
+
+#endif /* COMMON_TESTS_H_ */

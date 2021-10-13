@@ -4,8 +4,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <stdio.h>
+#include "bms.h"
+#include "board.h"
+
+#include "bq769x0_tests.h"
+#include "common_tests.h"
+#include "helper_tests.h"
+#include "isl94202_tests.h"
+
 #include "unity.h"
+
+#include <stdio.h>
 
 #include <zephyr.h>
 #include <device.h>
@@ -13,12 +22,6 @@
 #ifdef CONFIG_ARCH_POSIX
 #include "posix_board_if.h"
 #endif
-
-#include "tests.h"
-
-#include "board.h"
-
-#include "bms.h"
 
 extern "C" {
 
