@@ -58,6 +58,15 @@
 };
 
 &i2c0 {
+	bq769x0: bq769x0@8 {
+		compatible = "ti,bq769x0";
+		label = "BQ76930";
+		reg = <0x08>;    	// ignored (firmware will auto-detect I2C address)
+		alert-gpios = <&gpio0 12 GPIO_ACTIVE_HIGH>;
+		status = "disabled";
+	};
+
+	/* selected by default, override via overlay */
 	isl94202: isl94202@28 {
 		compatible = "renesas,isl94202";
 		label = "ISL94202";

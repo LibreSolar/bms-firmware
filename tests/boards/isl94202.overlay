@@ -1,0 +1,15 @@
+/*
+ * Copyright (c) The Libre Solar Project Contributors
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "native_posix.overlay"
+
+&bq769x0 {
+        status = "disabled";
+};
+
+&isl94202 {
+        status = "okay";
+};

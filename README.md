@@ -147,3 +147,7 @@ Build and run the tests with the following command:
 
     cd tests
     west build -p -b native_posix -t run
+
+By default, the unit tests are run for the ISL94202 IC, but you can select other ICs by specifying an overlay located in `tests/boards`.
+
+    west build -p -b native_posix -t run -- -DDTC_OVERLAY_FILE="boards/bq769x0.overlay"
