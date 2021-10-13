@@ -22,6 +22,8 @@ extern "C" {
 #include <stdint.h>
 #include <string.h>
 
+uint8_t bq769x2_checksum_add(uint8_t previous, uint8_t data);
+
 /**
  * Initialization of bq769x2 IC
  */
@@ -68,6 +70,76 @@ int bq769x2_direct_read_u2(const uint8_t reg_addr, uint16_t *value);
  * @returns 0 if successful, negative errno otherwise
  */
 int bq769x2_direct_read_i2(const uint8_t reg_addr, int16_t *value);
+
+/**
+ * Read 8-bit unsigned integer via subcommand from bq769x2 IC
+ *
+ * @param subcmd The subcommand to read the bytes from
+ * @param value Pointer to where the value should be stored
+ *
+ * @returns 0 if successful, negative errno otherwise
+ */
+int bq769x2_subcmd_read_u1(const uint16_t subcmd, uint8_t *value);
+
+/**
+ * Read 16-bit unsigned integer via subcommand from bq769x2 IC
+ *
+ * @param subcmd The subcommand to read the bytes from
+ * @param value Pointer to where the value should be stored
+ *
+ * @returns 0 if successful, negative errno otherwise
+ */
+int bq769x2_subcmd_read_u2(const uint16_t subcmd, uint16_t *value);
+
+/**
+ * Read 32-bit unsigned integer via subcommand from bq769x2 IC
+ *
+ * @param subcmd The subcommand to read the bytes from
+ * @param value Pointer to where the value should be stored
+ *
+ * @returns 0 if successful, negative errno otherwise
+ */
+int bq769x2_subcmd_read_u4(const uint16_t subcmd, uint32_t *value);
+
+/**
+ * Read 8-bit signed integer via subcommand from bq769x2 IC
+ *
+ * @param subcmd The subcommand to read the bytes from
+ * @param value Pointer to where the value should be stored
+ *
+ * @returns 0 if successful, negative errno otherwise
+ */
+int bq769x2_subcmd_read_i1(const uint16_t subcmd, int8_t *value);
+
+/**
+ * Read 16-bit signed integer via subcommand from bq769x2 IC
+ *
+ * @param subcmd The subcommand to read the bytes from
+ * @param value Pointer to where the value should be stored
+ *
+ * @returns 0 if successful, negative errno otherwise
+ */
+int bq769x2_subcmd_read_i2(const uint16_t subcmd, int16_t *value);
+
+/**
+ * Read 32-bit signed integer via subcommand from bq769x2 IC
+ *
+ * @param subcmd The subcommand to read the bytes from
+ * @param value Pointer to where the value should be stored
+ *
+ * @returns 0 if successful, negative errno otherwise
+ */
+int bq769x2_subcmd_read_i4(const uint16_t subcmd, int32_t *value);
+
+/**
+ * Read 32-bit float via subcommand from bq769x2 IC
+ *
+ * @param subcmd The subcommand to read the bytes from
+ * @param value Pointer to where the value should be stored
+ *
+ * @returns 0 if successful, negative errno otherwise
+ */
+int bq769x2_subcmd_read_f4(const uint16_t subcmd, float *value);
 
 #ifdef __cplusplus
 }

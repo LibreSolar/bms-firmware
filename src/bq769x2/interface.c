@@ -10,8 +10,6 @@
 #include "interface.h"
 #include "registers.h"
 
-#ifndef UNIT_TEST
-
 #include <zephyr.h>
 #include <drivers/gpio.h>
 #include <drivers/i2c.h>
@@ -27,6 +25,8 @@ LOG_MODULE_REGISTER(bms, CONFIG_LOG_DEFAULT_LEVEL);
 
 #define BQ_ALERT_PORT DT_GPIO_LABEL(BQ769X2_INST, alert_gpios)
 #define BQ_ALERT_PIN  DT_GPIO_PIN(BQ769X2_INST, alert_gpios)
+
+#ifndef UNIT_TEST
 
 static const struct device *i2c_dev;
 static const uint8_t i2c_address = I2C_ADDRESS;
@@ -86,4 +86,106 @@ int bq769x2_direct_read_i2(const uint8_t reg_addr, int16_t *value)
     *value = *(int16_t *)&u16;
 
     return ret;
+}
+
+static int bq769x2_subcmd_read(const uint16_t subcmd, uint32_t *value, const size_t num_bytes)
+{
+    static uint8_t buf_data[0x20];
+    int err;
+
+    // write the subcommand we want to read data from
+    uint8_t buf_subcmd[2] = { subcmd & 0x00FF, subcmd >> 8 };
+    bq769x2_write_bytes(BQ769X2_CMD_SUBCMD_LOWER, buf_subcmd, 2);
+
+    k_usleep(500);  // most subcommands need approx 500 us to complete
+
+    // wait until data is ready
+    int num_tries = 0;
+    do {
+        bq769x2_read_bytes(BQ769X2_CMD_SUBCMD_LOWER, buf_data, 2);
+        num_tries++;
+        if (num_tries > 10) {
+            LOG_ERR("Reached maximum number of tries to read subcommand");
+            return -EIO;
+        }
+    } while (buf_subcmd[0] != buf_data[0] || buf_subcmd[1] != buf_data[1]);
+
+    // read data length
+    uint8_t data_length;
+    err = bq769x2_read_bytes(BQ769X2_SUBCMD_DATA_LENGTH, &data_length, 1);
+    data_length = data_length - 4;  // substract subcmd + checksum + length bytes
+    if (err || data_length > 0x20 || num_bytes > 4) {
+        LOG_ERR("Subcmd data length 0x%X or num_bytes invalid", data_length);
+        return -EIO;
+    }
+
+    // read all available data (needed for checksum calculation, may be more than num_bytes)
+    *value = 0;
+    uint8_t checksum = buf_subcmd[0] + buf_subcmd[1];
+    bq769x2_read_bytes(BQ769X2_SUBCMD_DATA_START, buf_data, data_length);
+    for (int i = 0; i < data_length; i++) {
+        if (i < num_bytes) {
+            *value += buf_data[i] << (i * 8);
+        }
+        checksum += buf_data[i];
+    }
+    checksum = ~checksum;
+
+    // validate data with checksum
+    bq769x2_read_bytes(BQ769X2_SUBCMD_DATA_CHECKSUM, buf_data, 1);
+    if (buf_data[0] != checksum) {
+        LOG_ERR("Subcmd checksum incorrect: calculated 0x%X, read 0x%X", checksum, buf_data[0]);
+        return -EIO;
+    }
+
+    return 0;
+}
+
+int bq769x2_subcmd_read_u1(const uint16_t subcmd, uint8_t *value)
+{
+    uint32_t u32;
+    int ret = bq769x2_subcmd_read(subcmd, &u32, 1);
+    *value = (uint8_t)u32;
+    return ret;
+}
+
+int bq769x2_subcmd_read_u2(const uint16_t subcmd, uint16_t *value)
+{
+    uint32_t u32;
+    int ret = bq769x2_subcmd_read(subcmd, &u32, 2);
+    *value = (uint16_t)u32;
+    return ret;
+}
+
+int bq769x2_subcmd_read_u4(const uint16_t subcmd, uint32_t *value)
+{
+    return bq769x2_subcmd_read(subcmd, value, 4);
+}
+
+int bq769x2_subcmd_read_i1(const uint16_t subcmd, int8_t *value)
+{
+    uint32_t u32;
+    int ret = bq769x2_subcmd_read(subcmd, &u32, 1);
+    *value = *(int8_t *)&u32;
+    return ret;
+}
+
+int bq769x2_subcmd_read_i2(const uint16_t subcmd, int16_t *value)
+{
+    uint32_t u32;
+    uint16_t u16;
+    int ret = bq769x2_subcmd_read(subcmd, &u32, 2);
+    u16 = (uint16_t)u32;    // doing narrowing conversion first avoids compiler warnings
+    *value = *(int16_t *)&u16;
+    return ret;
+}
+
+int bq769x2_subcmd_read_i4(const uint16_t subcmd, int32_t *value)
+{
+    return bq769x2_subcmd_read(subcmd, (uint32_t *)value, 4);
+}
+
+int bq769x2_subcmd_read_f4(const uint16_t subcmd, float *value)
+{
+    return bq769x2_subcmd_read(subcmd, (uint32_t *)value, 4);
 }
