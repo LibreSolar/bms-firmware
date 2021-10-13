@@ -8,16 +8,16 @@
 
 / {
         pcb {
-                num-cells-max = <15>;
+                num-cells-max = <16>;
         };
 };
 
 &bq769x0 {
-        status = "okay";
+        status = "disabled";
 };
 
 &bq769x2 {
-        status = "disabled";
+        status = "okay";
 };
 
 &isl94202 {

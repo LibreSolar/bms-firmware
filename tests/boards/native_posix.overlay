@@ -66,6 +66,14 @@
 		status = "disabled";
 	};
 
+	bq769x2: bq769x2@8 {
+		compatible = "ti,bq769x2-i2c";
+		label = "BQ76952";
+		reg = <0x08>;	/* 0x10 >> 1 */
+		alert-gpios = <&gpio0 8 GPIO_ACTIVE_HIGH>;
+		status = "disabled";
+	};
+
 	/* selected by default, override via overlay */
 	isl94202: isl94202@28 {
 		compatible = "renesas,isl94202";

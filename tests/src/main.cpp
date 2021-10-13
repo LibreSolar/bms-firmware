@@ -8,6 +8,7 @@
 #include "board.h"
 
 #include "bq769x0_tests.h"
+#include "bq769x2_tests.h"
 #include "common_tests.h"
 #include "helper_tests.h"
 #include "isl94202_tests.h"
@@ -100,6 +101,8 @@ void main(void)
 
 #ifdef CONFIG_BQ769X0
     err += bq769x0_tests();
+#elif defined(CONFIG_BQ769X2)
+    err += bq769x2_tests();
 #elif defined(CONFIG_ISL94202)
     err += isl94202_tests();
 #endif

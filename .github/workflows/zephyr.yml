@@ -46,5 +46,6 @@ jobs:
         working-directory: bms-firmware
         run: |
           cd tests
-          west build -p -b native_posix -t run -- -DDTC_OVERLAY_FILE="boards/isl94202.overlay"
           west build -p -b native_posix -t run -- -DDTC_OVERLAY_FILE="boards/bq769x0.overlay"
+          west build -p -b native_posix -t run -- -DDTC_OVERLAY_FILE="boards/bq769x2.overlay"
+          west build -p -b native_posix -t run -- -DDTC_OVERLAY_FILE="boards/isl94202.overlay"

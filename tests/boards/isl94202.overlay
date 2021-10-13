@@ -10,6 +10,10 @@
         status = "disabled";
 };
 
+&bq769x2 {
+        status = "disabled";
+};
+
 &isl94202 {
         status = "okay";
 };
