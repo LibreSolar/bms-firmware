@@ -178,6 +178,136 @@ void test_bq769x2_subcmd_read_f4()
     TEST_ASSERT_EQUAL_FLOAT(1.234F, value);
 }
 
+void test_bq769x2_subcmd_write_u1()
+{
+    uint8_t chk_len_expected[2];
+    uint8_t data_expected[4];
+
+    data_expected[0x0] = 0xFF;
+
+    chk_len_expected[0x0] = 0;        // checksum
+    chk_len_expected[0x1] = 4 + 1;    // length
+
+    int err = bq769x2_subcmd_write_u1(0, UINT8_MAX);
+    TEST_ASSERT_EQUAL(0, err);
+
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(chk_len_expected, mem_bq_direct + 0x60, 2);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, 1);
+}
+
+void test_bq769x2_subcmd_write_u2()
+{
+    uint8_t chk_len_expected[2];
+    uint8_t data_expected[4];
+
+    data_expected[0x0] = 0x00;     // LSB
+    data_expected[0x1] = 0xFF;     // MSB
+
+    chk_len_expected[0x0] = 0;        // checksum
+    chk_len_expected[0x1] = 4 + 2;    // length
+
+    int err = bq769x2_subcmd_write_u2(0, 0xFF00);
+    TEST_ASSERT_EQUAL(0, err);
+
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(chk_len_expected, mem_bq_direct + 0x60, 2);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, 2);
+}
+
+void test_bq769x2_subcmd_write_u4()
+{
+    uint8_t chk_len_expected[2];
+    uint8_t data_expected[4];
+
+    data_expected[0x0] = 0xAA;     // LSB
+    data_expected[0x1] = 0xBB;
+    data_expected[0x2] = 0xCC;
+    data_expected[0x3] = 0xDD;     // MSB
+
+    chk_len_expected[0x0] = (uint8_t)~(0xAA + 0xBB + 0xCC + 0xDD);
+    chk_len_expected[0x1] = 4 + 4;
+
+    int err = bq769x2_subcmd_write_u4(0, 0xDDCCBBAA);
+    TEST_ASSERT_EQUAL(0, err);
+
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(chk_len_expected, mem_bq_direct + 0x60, 2);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, 4);
+}
+
+void test_bq769x2_subcmd_write_i1()
+{
+    uint8_t chk_len_expected[2];
+    uint8_t data_expected[4];
+
+    data_expected[0x0] = 0x80;
+
+    chk_len_expected[0x0] = (uint8_t)~0x80;   // checksum
+    chk_len_expected[0x1] = 4 + 1;            // length
+
+    int err = bq769x2_subcmd_write_i1(0, INT8_MIN);
+    TEST_ASSERT_EQUAL(0, err);
+
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(chk_len_expected, mem_bq_direct + 0x60, 2);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, 1);
+}
+
+void test_bq769x2_subcmd_write_i2()
+{
+    uint8_t chk_len_expected[2];
+    uint8_t data_expected[4];
+
+    data_expected[0x0] = 0x00;     // LSB
+    data_expected[0x1] = 0x80;     // MSB
+
+    chk_len_expected[0x0] = (uint8_t)~0x80;   // checksum
+    chk_len_expected[0x1] = 4 + 2;            // length
+
+    int err = bq769x2_subcmd_write_i2(0, INT16_MIN);
+    TEST_ASSERT_EQUAL(0, err);
+
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(chk_len_expected, mem_bq_direct + 0x60, 2);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, 2);
+}
+
+void test_bq769x2_subcmd_write_i4()
+{
+    uint8_t chk_len_expected[2];
+    uint8_t data_expected[4];
+
+    data_expected[0x0] = 0x00;     // LSB
+    data_expected[0x1] = 0x00;
+    data_expected[0x2] = 0x00;
+    data_expected[0x3] = 0x80;     // MSB
+
+    chk_len_expected[0x0] = (uint8_t)~0x80;   // checksum
+    chk_len_expected[0x1] = 4 + 4;            // length
+
+    int err = bq769x2_subcmd_write_i4(0, INT32_MIN);
+    TEST_ASSERT_EQUAL(0, err);
+
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(chk_len_expected, mem_bq_direct + 0x60, 2);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, 4);
+}
+
+void test_bq769x2_subcmd_write_f4()
+{
+    uint8_t chk_len_expected[2];
+    uint8_t data_expected[4];
+
+    data_expected[0x0] = 0xB6;     // LSB
+    data_expected[0x1] = 0xF3;
+    data_expected[0x2] = 0x9D;
+    data_expected[0x3] = 0x3F;     // MSB
+
+    chk_len_expected[0x0] = (uint8_t)~(0xB6 + 0xF3 + 0x9D + 0x3F);
+    chk_len_expected[0x1] = 4 + 4;
+
+    int err = bq769x2_subcmd_write_f4(0, 1.234F);
+    TEST_ASSERT_EQUAL(0, err);
+
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(chk_len_expected, mem_bq_direct + 0x60, 2);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, 4);
+}
+
 int bq769x2_tests()
 {
     UNITY_BEGIN();
@@ -194,6 +324,16 @@ int bq769x2_tests()
     RUN_TEST(test_bq769x2_subcmd_read_i4);
 
     RUN_TEST(test_bq769x2_subcmd_read_f4);
+
+    RUN_TEST(test_bq769x2_subcmd_write_u1);
+    RUN_TEST(test_bq769x2_subcmd_write_u2);
+    RUN_TEST(test_bq769x2_subcmd_write_u4);
+
+    RUN_TEST(test_bq769x2_subcmd_write_i1);
+    RUN_TEST(test_bq769x2_subcmd_write_i2);
+    RUN_TEST(test_bq769x2_subcmd_write_i4);
+
+    RUN_TEST(test_bq769x2_subcmd_write_f4);
 
     return UNITY_END();
 }

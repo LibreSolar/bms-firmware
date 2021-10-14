@@ -141,6 +141,36 @@ static int bq769x2_subcmd_read(const uint16_t subcmd, uint32_t *value, const siz
     return 0;
 }
 
+static int bq769x2_subcmd_write(const uint16_t subcmd, const uint32_t value, const size_t num_bytes)
+{
+    uint8_t buf_data[4];
+
+    if (num_bytes > 4) {
+        LOG_ERR("Subcmd num_bytes 0x%X invalid", num_bytes);
+        return -ENOTSUP;
+    }
+
+    // write the subcommand we want to write data to
+    uint8_t buf_subcmd[2] = { subcmd & 0x00FF, subcmd >> 8 };
+    bq769x2_write_bytes(BQ769X2_CMD_SUBCMD_LOWER, buf_subcmd, 2);
+
+    // write actual data and calculate checksum
+    uint8_t checksum = buf_subcmd[0] + buf_subcmd[1];
+    for (int i = 0; i < num_bytes; i++) {
+        buf_data[i] = (value >> (i * 8)) & 0x000000FF;
+        checksum += buf_data[i];
+    }
+    checksum = ~checksum;
+    bq769x2_write_bytes(BQ769X2_SUBCMD_DATA_START, buf_data, num_bytes);
+
+    // write checksum and data length as one word
+    buf_data[0] = checksum;
+    buf_data[1] = num_bytes + 4;
+    bq769x2_write_bytes(BQ769X2_SUBCMD_DATA_CHECKSUM, buf_data, 2);
+
+    return 0;
+}
+
 int bq769x2_subcmd_read_u1(const uint16_t subcmd, uint8_t *value)
 {
     uint32_t u32;
@@ -188,4 +218,40 @@ int bq769x2_subcmd_read_i4(const uint16_t subcmd, int32_t *value)
 int bq769x2_subcmd_read_f4(const uint16_t subcmd, float *value)
 {
     return bq769x2_subcmd_read(subcmd, (uint32_t *)value, 4);
+}
+
+int bq769x2_subcmd_write_u1(const uint16_t subcmd, uint8_t value)
+{
+    return bq769x2_subcmd_write(subcmd, value, 1);
+}
+
+int bq769x2_subcmd_write_u2(const uint16_t subcmd, uint16_t value)
+{
+    return bq769x2_subcmd_write(subcmd, value, 2);
+}
+
+int bq769x2_subcmd_write_u4(const uint16_t subcmd, uint32_t value)
+{
+    return bq769x2_subcmd_write(subcmd, value, 4);
+}
+
+int bq769x2_subcmd_write_i1(const uint16_t subcmd, int8_t value)
+{
+    return bq769x2_subcmd_write(subcmd, value, 1);
+}
+
+int bq769x2_subcmd_write_i2(const uint16_t subcmd, int16_t value)
+{
+    return bq769x2_subcmd_write(subcmd, value, 2);
+}
+
+int bq769x2_subcmd_write_i4(const uint16_t subcmd, int32_t value)
+{
+    return bq769x2_subcmd_write(subcmd, value, 4);
+}
+
+int bq769x2_subcmd_write_f4(const uint16_t subcmd, float value)
+{
+    uint32_t *u32 = (uint32_t *)&value;
+    return bq769x2_subcmd_write(subcmd, *u32, 4);
 }
