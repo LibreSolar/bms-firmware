@@ -17,7 +17,6 @@
 #include <time.h>
 #include <string.h>
 
-#include <logging/log.h>
 LOG_MODULE_REGISTER(bq769x0, CONFIG_LOG_DEFAULT_LEVEL);
 
 extern int adc_gain;    // factory-calibrated, read out from chip (uV/LSB)

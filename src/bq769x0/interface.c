@@ -10,6 +10,22 @@
 #include "interface.h"
 #include "registers.h"
 
+#include <string.h>
+
+#include <zephyr.h>
+#include <drivers/gpio.h>
+#include <drivers/i2c.h>
+#include <sys/crc.h>
+
+LOG_MODULE_REGISTER(bq769x0_if, CONFIG_LOG_DEFAULT_LEVEL);
+
+#define BQ769X0_INST DT_INST(0, ti_bq769x0)
+
+#define I2C_DEV DT_LABEL(DT_PARENT(BQ769X0_INST))
+
+#define BQ_ALERT_PORT DT_GPIO_LABEL(BQ769X0_INST, alert_gpios)
+#define BQ_ALERT_PIN  DT_GPIO_PIN(BQ769X0_INST, alert_gpios)
+
 int adc_gain;    // factory-calibrated, read out from chip (uV/LSB)
 int adc_offset;  // factory-calibrated, read out from chip (mV)
 
@@ -18,23 +34,6 @@ static bool alert_interrupt_flag;
 static time_t alert_interrupt_timestamp;
 
 #ifndef UNIT_TEST
-
-#include <string.h>
-
-#include <zephyr.h>
-#include <drivers/gpio.h>
-#include <drivers/i2c.h>
-#include <sys/crc.h>
-
-#include <logging/log.h>
-LOG_MODULE_REGISTER(bms, CONFIG_LOG_DEFAULT_LEVEL);
-
-#define BQ769X0_INST DT_INST(0, ti_bq769x0)
-
-#define I2C_DEV DT_LABEL(DT_PARENT(BQ769X0_INST))
-
-#define BQ_ALERT_PORT DT_GPIO_LABEL(BQ769X0_INST, alert_gpios)
-#define BQ_ALERT_PIN  DT_GPIO_PIN(BQ769X0_INST, alert_gpios)
 
 static const struct device *i2c_dev;
 static const struct device *alert_pin_dev;

@@ -15,8 +15,7 @@
 #include <drivers/i2c.h>
 #include <string.h>
 
-#include <logging/log.h>
-LOG_MODULE_REGISTER(bms, CONFIG_LOG_DEFAULT_LEVEL);
+LOG_MODULE_REGISTER(bq769x2_if, CONFIG_LOG_DEFAULT_LEVEL);
 
 #define BQ769X2_INST DT_INST(0, ti_bq769x2_i2c)
 

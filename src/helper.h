@@ -16,78 +16,31 @@
 #include <string.h>
 #include <stdint.h>
 
+#ifdef __INTELLISENSE__
+/*
+ * VS Code intellisense can't cope with all the Zephyr macro layers for logging, so provide it
+ * with something more simple and make it silent.
+ */
+
+#define LOG_DBG(...) printf(__VA_ARGS__)
+
+#define LOG_INF(...) printf(__VA_ARGS__)
+
+#define LOG_WRN(...) printf(__VA_ARGS__)
+
+#define LOG_ERR(...) printf(__VA_ARGS__)
+
+#define LOG_MODULE_REGISTER(...)
+
+#else
+
+#include <logging/log.h>
+
+#endif /* VSCODE_INTELLISENSE_HACK */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#ifndef __ZEPHYR__
-/* below macros are taken from Zephyr util.h */
-
-/* Evaluates to 0 if cond is true-ish; compile error otherwise */
-#define ZERO_OR_COMPILE_ERROR(cond) ((int) sizeof(char[1 - 2 * !(cond)]) - 1)
-
-/* Evaluates to 0 if array is an array; compile error if not array (e.g.
- * pointer)
- */
-#define IS_ARRAY(array) \
-	ZERO_OR_COMPILE_ERROR( \
-		!__builtin_types_compatible_p(__typeof__(array), \
-					      __typeof__(&(array)[0])))
-
-/* Evaluates to number of elements in an array; compile error if not
- * an array (e.g. pointer)
- */
-#define ARRAY_SIZE(array) \
-	((unsigned long) (IS_ARRAY(array) + \
-		(sizeof(array) / sizeof((array)[0]))))
-
-/**
- * @def MAX
- * @brief The larger value between @p a and @p b.
- * @note Arguments are evaluated twice.
- */
-#ifndef MAX
-/* Use Z_MAX for a GCC-only, single evaluation version */
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
-#endif
-
-/**
- * @def MIN
- * @brief The smaller value between @p a and @p b.
- * @note Arguments are evaluated twice.
- */
-#ifndef MIN
-/* Use Z_MIN for a GCC-only, single evaluation version */
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#endif
-
-/**
- * @def CLAMP
- * @brief Clamp a value to a given range.
- * @note Arguments are evaluated multiple times.
- */
-#ifndef CLAMP
-/* Use Z_CLAMP for a GCC-only, single evaluation version */
-#define CLAMP(val, low, high) (((val) <= (low)) ? (low) : MIN(val, high))
-#endif
-
-#ifndef LOG_DBG
-#define LOG_DBG(...) printf(__VA_ARGS__)
-#endif
-
-#ifndef LOG_INF
-#define LOG_INF(...) printf(__VA_ARGS__)
-#endif
-
-#ifndef LOG_WRN
-#define LOG_WRN(...) printf(__VA_ARGS__)
-#endif
-
-#ifndef LOG_ERR
-#define LOG_ERR(...) printf(__VA_ARGS__)
-#endif
-
-#endif /* __ZEPHYR__ */
 
 /**
  * Interpolation in a look-up table. Values of a must be monotonically increasing/decreasing

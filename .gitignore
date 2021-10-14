@@ -1,8 +1,8 @@
 .pio
 .clang_complete
 .gcc-flags.json
-.vscode/browse.vc.db*
-.vscode
+.vscode/*
+!.vscode/c_cpp_properties.json
 .west
 html
 memory.map
