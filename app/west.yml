@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 manifest:
   remotes:
     - name: zephyrproject-rtos
@@ -12,12 +14,7 @@ manifest:
     - name: zephyr
       remote: zephyrproject-rtos
       revision: v2.7-branch
-      # path must be something else than zephyr as we get a Kconfig include recursion otherwise
-      path: rtos
       import:
-        # main zephyr modules should be placed in here into zephyr subdirectory
-        path-prefix: zephyr
-        # only get modules we actually need
         name-whitelist:
           - cmsis
           - edtt
@@ -25,8 +22,8 @@ manifest:
     - name: thingset-device-library
       remote: thingset
       revision: c3388d7a72e2d20760e7b4ad6c06b6b588849994
-      path: zephyr/modules/thingset
+      path: modules/thingset
     - name: unity
-      path: zephyr/modules/unity
+      path: modules/unity
       revision: 74cde089e65c3435ce9aa87d5c69f4f16b7f6ade
       remote: throwtheswitch

@@ -5,11 +5,9 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: zephyrprojectrtos/ci:v0.18.4
-    # Zephyr v2.7 requires newest SDK, which is not auto-selected by v0.18.4 docker image. Below
-    # env setting can be removed again after upgrade of the docker image.
+    container: zephyrprojectrtos/ci:v0.21.0
     env:
-      ZEPHYR_SDK_INSTALL_DIR: "/opt/toolchains/zephyr-sdk-0.13.1"
+      CMAKE_PREFIX_PATH: /opt/toolchains
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -24,10 +22,9 @@ jobs:
         working-directory: bms-firmware
         run: |
           pip3 install -U west
-          cd zephyr
-          west init -l .
+          west init -l app
           west update
-          pip3 install -r rtos/scripts/requirements-base.txt
+          pip3 install -r zephyr/scripts/requirements-base.txt
 
       - name: Trailing whitespace check
         working-directory: bms-firmware
@@ -37,7 +34,7 @@ jobs:
       - name: Build firmware
         working-directory: bms-firmware
         run: |
-          cd zephyr
+          cd app
           west build -p -b bms_5s50_sc
           west build -p -b bms_8s50_ic@0.2
           west build -p -b bms_15s80_sc

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 set(BOARD_ROOT ${CMAKE_SOURCE_DIR}/..)
-set(DTS_ROOT ${CMAKE_SOURCE_DIR}/../zephyr)
+set(DTS_ROOT ${CMAKE_SOURCE_DIR}/..)
 
 set(BOARD "native_posix")
 
@@ -15,16 +15,16 @@ add_definitions(-DUNIT_TEST=1)
 add_definitions(-DUNITY_OUTPUT_COLOR)
 add_definitions(-DUNITY_EXCLUDE_SETJMP)
 
-add_subdirectory(../src build/src)
+add_subdirectory(../app/src build/app)
 
 zephyr_include_directories(./src)
-zephyr_include_directories(../src)
+zephyr_include_directories(../app/src)
 
-zephyr_include_directories(../zephyr/modules/thingset/src)
-zephyr_include_directories(../zephyr/modules/unity/src)
+zephyr_include_directories(../modules/thingset/src)
+zephyr_include_directories(../modules/unity/src)
 
 target_sources(app PRIVATE
-        ../zephyr/modules/unity/src/unity.c
+        ../modules/unity/src/unity.c
         src/main.cpp
         src/bq769x0_interface_stub.c
         src/bq769x0_tests.cpp

@@ -2,14 +2,34 @@
     "configurations": [
         {
             "name": "Zephyr",
+            "includePath": [
+                "${workspaceFolder}/app/src",
+                "${workspaceFolder}/app/build/zephyr/include/generated",
+                "${workspaceFolder}/lib/oled-display/src",
+                "${workspaceFolder}/modules/hal/cmsis/CMSIS/Core/Include",
+                "${workspaceFolder}/modules/hal/stm32/stm32cube/stm32g0xx/soc",
+                "${workspaceFolder}/modules/thingset/src",
+                "${workspaceFolder}/modules/unity/src",
+                "${workspaceFolder}/zephyr/include",
+                "${workspaceFolder}/zephyr/soc/arm/st_stm32/common",
+                "${workspaceFolder}/zephyr/soc/arm/st_stm32/stm32g0",
+                ""
+            ],
             "browse": {
+                "path": [
+                    "${workspaceFolder}/app/src",
+                    "${workspaceFolder}/modules/thingset/src",
+                    "${workspaceFolder}/modules/unity/src"
+                ],
                 "limitSymbolsToIncludedHeaders": true
             },
-            "compileCommands": "${workspaceFolder}/zephyr/build/compile_commands.json",
+            "defines": [
+                "FIRMWARE_VERSION_ID=\"v21.0-21-ga535fa8\""
+            ],
             "cStandard": "c99",
             "cppStandard": "c++14",
             "forcedInclude": [
-                "${workspaceFolder}/zephyr/build/zephyr/include/generated/autoconf.h"
+                "${workspaceFolder}/app/build/zephyr/include/generated/autoconf.h"
             ]
         }
     ],

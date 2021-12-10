@@ -1,2 +1,2 @@
 
-rsource "../zephyr/Kconfig"
+rsource "../app/Kconfig"
