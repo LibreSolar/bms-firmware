@@ -6,11 +6,11 @@ This repository contains the firmware based on [Zephyr RTOS](https://www.zephyrp
 
 ## Development and release model
 
-The `main` branch contains the latest release of the firmware plus some cherry-picked bug-fixes. So you can always pull this branch to get a stable and working firmware for your BMS.
+The `main` branch is used for ongoing development of the firmware.
 
-New features are developed in the `develop` branch and merged into `main` after passing tests with multiple boards. The `develop` branch is changed frequently and may even be rebased to fix previous commits. Use this branch only if you want to try out most recent features and be aware that something might be broken.
+Releases are created from `main` after significant updates have been introduced to the firmware. Each release has to pass tests with multiple boards.
 
-Releases are generated from `main` after significant changes have been made. The year is used as the major version number. The minor version number starts at zero and is increased for each release in that year.
+A release is tagged with a version number consisting of the release year and a release count for that year (starting at zero). For back-porting of bug-fixes, a branch named after the release followed by `-branch` is created, e.g. `v21.0-branch`.
 
 ## Supported boards
 
@@ -49,6 +49,11 @@ git clone --recursive https://github.com/LibreSolar/bms-firmware
 ```
 
 Unfortunately, the green GitHub "Clone or download" button does not include submodules. If you cloned the repository already and want to pull the submodules, run `git submodule update --init --recursive`.
+
+As the `main` branch may contain unstable code, make sure to select the desired release branch (see GitHub for a list of releases and branches):
+```
+git switch <your-release>-branch
+```
 
 Building the firmware requires the native Zephyr build system.
 
