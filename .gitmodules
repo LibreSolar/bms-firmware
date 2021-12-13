@@ -1,3 +1,0 @@
-[submodule "lib/oled-display"]
-	path = lib/oled-display
-	url = https://github.com/LibreSolar/oled-display-library

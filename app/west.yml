@@ -19,11 +19,15 @@ manifest:
           - cmsis
           - edtt
           - hal_stm32
+    - name: oled-display-library
+      remote: libresolar
+      revision: cc3033c0daace8cb50ab0e6406a9498cc81cdb39
+      path: modules/oled-display
     - name: thingset-device-library
       remote: thingset
       revision: c3388d7a72e2d20760e7b4ad6c06b6b588849994
       path: modules/thingset
     - name: unity
-      path: modules/unity
-      revision: 74cde089e65c3435ce9aa87d5c69f4f16b7f6ade
       remote: throwtheswitch
+      revision: 74cde089e65c3435ce9aa87d5c69f4f16b7f6ade
+      path: modules/unity

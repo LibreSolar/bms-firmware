@@ -5,9 +5,9 @@
             "includePath": [
                 "${workspaceFolder}/app/src",
                 "${workspaceFolder}/app/build/zephyr/include/generated",
-                "${workspaceFolder}/lib/oled-display/src",
                 "${workspaceFolder}/modules/hal/cmsis/CMSIS/Core/Include",
                 "${workspaceFolder}/modules/hal/stm32/stm32cube/stm32g0xx/soc",
+                "${workspaceFolder}/modules/oled-display/src",
                 "${workspaceFolder}/modules/thingset/src",
                 "${workspaceFolder}/modules/unity/src",
                 "${workspaceFolder}/zephyr/include",
