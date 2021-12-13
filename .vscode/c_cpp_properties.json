@@ -5,21 +5,21 @@
             "includePath": [
                 "${workspaceFolder}/app/src",
                 "${workspaceFolder}/app/build/zephyr/include/generated",
-                "${workspaceFolder}/modules/hal/cmsis/CMSIS/Core/Include",
-                "${workspaceFolder}/modules/hal/stm32/stm32cube/stm32g0xx/soc",
-                "${workspaceFolder}/modules/oled-display/src",
-                "${workspaceFolder}/modules/thingset/src",
-                "${workspaceFolder}/modules/unity/src",
-                "${workspaceFolder}/zephyr/include",
-                "${workspaceFolder}/zephyr/soc/arm/st_stm32/common",
-                "${workspaceFolder}/zephyr/soc/arm/st_stm32/stm32g0",
+                "${workspaceFolder}/../modules/hal/cmsis/CMSIS/Core/Include",
+                "${workspaceFolder}/../modules/hal/stm32/stm32cube/stm32g0xx/soc",
+                "${workspaceFolder}/../modules/oled-display/src",
+                "${workspaceFolder}/../modules/thingset/src",
+                "${workspaceFolder}/../modules/unity/src",
+                "${workspaceFolder}/../zephyr/include",
+                "${workspaceFolder}/../zephyr/soc/arm/st_stm32/common",
+                "${workspaceFolder}/../zephyr/soc/arm/st_stm32/stm32g0",
                 ""
             ],
             "browse": {
                 "path": [
                     "${workspaceFolder}/app/src",
-                    "${workspaceFolder}/modules/thingset/src",
-                    "${workspaceFolder}/modules/unity/src"
+                    "${workspaceFolder}/../modules/thingset/src",
+                    "${workspaceFolder}/../modules/unity/src"
                 ],
                 "limitSymbolsToIncludedHeaders": true
             },

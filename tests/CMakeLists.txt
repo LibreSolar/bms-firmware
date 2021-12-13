@@ -20,11 +20,11 @@ add_subdirectory(../app/src build/app)
 zephyr_include_directories(./src)
 zephyr_include_directories(../app/src)
 
-zephyr_include_directories(../modules/thingset/src)
-zephyr_include_directories(../modules/unity/src)
+zephyr_include_directories(../../modules/thingset/src)
+zephyr_include_directories(../../modules/unity/src)
 
 target_sources(app PRIVATE
-        ../modules/unity/src/unity.c
+        ../../modules/unity/src/unity.c
         src/main.cpp
         src/bq769x0_interface_stub.c
         src/bq769x0_tests.cpp
