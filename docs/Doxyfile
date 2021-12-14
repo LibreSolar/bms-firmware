@@ -1,0 +1,11 @@
+# Doxygen configuration
+#
+# Only contains most important options, as HTML rendering is done by Sphinx
+
+INPUT              = ../app/src
+OUTPUT_DIRECTORY   = build/doxygen
+RECURSIVE          = YES
+GENERATE_HTML      = NO
+GENERATE_LATEX     = NO
+GENERATE_XML       = YES
+GENERATE_TREEVIEW  = YES

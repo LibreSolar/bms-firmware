@@ -1,0 +1,5 @@
+breathe
+Sphinx<4
+sphinx-notfound-page
+sphinx-rtd-theme
+sphinx-tabs
