@@ -1,0 +1,12 @@
+# Copyright (c) The Libre Solar Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+if BOARD_OKAI
+
+config BOARD
+	default "okai"
+
+config LIBRE_SOLAR_TYPE_ID
+	default 128
+
+endif # BOARD_OKAI

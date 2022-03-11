@@ -1,0 +1,16 @@
+identifier: okai
+name: OKAI
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+ram: 16
+flash: 128
+supported:
+  - gpio
+  - i2c
+  - spi
+  - watchdog
+  - adc
