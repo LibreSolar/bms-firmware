@@ -37,6 +37,7 @@ jobs:
           west build -p -b bms_5s50_sc
           west build -p -b bms_8s50_ic@0.2
           west build -p -b bms_15s80_sc
+          west build -p -b bms_16s100_sc
 
       - name: Run unit-tests
         working-directory: bms-firmware

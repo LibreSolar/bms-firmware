@@ -16,19 +16,19 @@
 		compatible = "bms";
 
 		type = "BMS 16S100 SC";
-		version-str = "v0.1";
-		version-num = <1>;
+		version-str = "v0.2";
+		version-num = <2>;
 
 		num-cells-max = <16>;
 		num-thermistors-max = <2>;
 
 		current-max = <100>;
-		shunt-res = <1000>;
+		shunt-res = <500>;
 	};
 
 	chosen {
-		zephyr,console = &usart2;
-		zephyr,shell-uart = &usart2;
+		zephyr,console = &usart1;
+		zephyr,shell-uart = &usart1;
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
 		zephyr,code-partition = &slot0_partition;
@@ -52,8 +52,8 @@
 	leds {
 		compatible = "gpio-leds";
 		led1: led_0 {
-			gpios = <&gpioa 5 GPIO_ACTIVE_HIGH>;	// Nucleo board
-			//gpios = <&gpioc 13 GPIO_ACTIVE_HIGH>;	// actual BMS board
+			//gpios = <&gpioa 5 GPIO_ACTIVE_HIGH>;	// Nucleo board
+			gpios = <&gpioc 13 GPIO_ACTIVE_HIGH>;	// actual BMS board
 			label = "LED 1";
 		};
 		led2: led_1 {
@@ -66,7 +66,7 @@
 		compatible = "gpio-keys";
 		power_button: button {
 			label = "Power Button";
-			gpios = <&gpioc 13 GPIO_ACTIVE_LOW>;
+			gpios = <&gpioa 1 GPIO_ACTIVE_HIGH>;
 		};
 	};
 
@@ -81,8 +81,8 @@
 	aliases {
 		led-red = &led1;
 		led-green = &led2;
-		uart-dbg = &usart2;
-		uart-uext = &usart1;
+		uart-dbg = &usart1;
+		uart-uext = &usart2;
 		i2c-uext = &i2c1;
 		sw-pwr = &power_button;
 	};
@@ -115,7 +115,8 @@
 	};
 };
 
-&clk_hsi {
+&clk_hse {
+	clock-frequency = <DT_FREQ_M(8)>;
 	status = "okay";
 };
 
@@ -125,7 +126,7 @@
 	div-p = <2>;
 	div-q = <2>;
 	div-r = <2>;
-	clocks = <&clk_hsi>;
+	clocks = <&clk_hse>;
 	status = "okay";
 };
 
@@ -149,11 +150,19 @@ zephyr_udc0: &usb {
 	status = "okay";
 };
 
+&usart1_rx_pa10 {
+	bias-pull-up;	// avoid junk characters if pin is left floating
+};
+
 &usart2 {
 	pinctrl-0 = <&usart2_tx_pa2 &usart2_rx_pa3>;
 	pinctrl-names = "default";
 	current-speed = <115200>;
 	status = "okay";
+};
+
+&usart2_rx_pa3 {
+	bias-pull-up;	// avoid junk characters if pin is left floating
 };
 
 &iwdg {
@@ -168,7 +177,7 @@ zephyr_udc0: &usb {
 };
 
 &i2c2 {
-	pinctrl-0 = <&i2c2_scl_pb10 &i2c2_sda_pb11>;
+	pinctrl-0 = <&i2c2_scl_pb13 &i2c2_sda_pb14>;
 	pinctrl-names = "default";
 	clock-frequency = <I2C_BITRATE_STANDARD>;
 	status = "okay";
