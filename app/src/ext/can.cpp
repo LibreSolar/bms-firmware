@@ -163,7 +163,7 @@ void can_pub_thread()
                 if (data_len >= 0) {
                     frame.dlc = data_len;
 
-                    if (can_send(can_dev, &frame, K_MSEC(10), can_pub_isr, NULL) != CAN_TX_OK) {
+                    if (can_send(can_dev, &frame, K_MSEC(10), can_pub_isr, NULL) != 0) {
                         LOG_DBG("Error sending CAN frame");
                     }
                 }

@@ -10,7 +10,7 @@
 
 #ifndef UNIT_TEST
 #include <drivers/hwinfo.h>
-#include <power/reboot.h>
+#include <sys/reboot.h>
 #include <sys/crc.h>
 #endif
 
