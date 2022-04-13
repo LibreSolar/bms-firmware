@@ -102,7 +102,8 @@ void main(void)
 #ifdef CONFIG_BQ769X0
     err += bq769x0_tests();
 #elif defined(CONFIG_BQ769X2)
-    err += bq769x2_tests();
+    err += bq769x2_tests_functions();
+    err += bq769x2_tests_interface();
 #elif defined(CONFIG_ISL94202)
     err += isl94202_tests();
 #endif

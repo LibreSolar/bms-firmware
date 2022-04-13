@@ -308,7 +308,7 @@ void test_bq769x2_subcmd_write_f4()
     TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, 4);
 }
 
-int bq769x2_tests()
+int bq769x2_tests_interface()
 {
     UNITY_BEGIN();
 

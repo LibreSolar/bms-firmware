@@ -16,6 +16,8 @@
 #define BQ_SUBCMD_MEM_OFFSET    (0x9180)
 #define BQ_SUBCMD_MEM_SIZE      (0x9400 - 0x9180)
 
-int bq769x2_tests();
+int bq769x2_tests_interface();
+
+int bq769x2_tests_functions();
 
 #endif /* BQ769X2_TESTS_H_ */
