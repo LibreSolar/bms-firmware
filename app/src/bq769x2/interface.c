@@ -181,24 +181,26 @@ static int bq769x2_subcmd_write(const uint16_t subcmd, const uint32_t value, con
         goto err;
     }
 
-    // write actual data and calculate checksum
-    uint8_t checksum = buf_subcmd[0] + buf_subcmd[1];
-    for (int i = 0; i < num_bytes; i++) {
-        buf_data[i] = (value >> (i * 8)) & 0x000000FF;
-        checksum += buf_data[i];
-    }
-    checksum = ~checksum;
-    err = bq769x2_write_bytes(BQ769X2_SUBCMD_DATA_START, buf_data, num_bytes);
-    if (err) {
-        goto err;
-    }
+    if (num_bytes > 0) {
+        // write actual data and calculate checksum
+        uint8_t checksum = buf_subcmd[0] + buf_subcmd[1];
+        for (int i = 0; i < num_bytes; i++) {
+            buf_data[i] = (value >> (i * 8)) & 0x000000FF;
+            checksum += buf_data[i];
+        }
+        checksum = ~checksum;
+        err = bq769x2_write_bytes(BQ769X2_SUBCMD_DATA_START, buf_data, num_bytes);
+        if (err) {
+            goto err;
+        }
 
-    // write checksum and data length as one word
-    buf_data[0] = checksum;
-    buf_data[1] = num_bytes + 4;
-    err = bq769x2_write_bytes(BQ769X2_SUBCMD_DATA_CHECKSUM, buf_data, 2);
-    if (err) {
-        goto err;
+        // write checksum and data length as one word
+        buf_data[0] = checksum;
+        buf_data[1] = num_bytes + 4;
+        err = bq769x2_write_bytes(BQ769X2_SUBCMD_DATA_CHECKSUM, buf_data, 2);
+        if (err) {
+            goto err;
+        }
     }
 
     return 0;
@@ -206,6 +208,11 @@ static int bq769x2_subcmd_write(const uint16_t subcmd, const uint32_t value, con
 err:
     LOG_ERR("I2C error for subcmd_read: %d", err);
     return err;
+}
+
+int bq769x2_subcmd_cmd_only(const uint16_t subcmd)
+{
+    return bq769x2_subcmd_write(subcmd, 0, 0);
 }
 
 int bq769x2_subcmd_read_u1(const uint16_t subcmd, uint8_t *value)

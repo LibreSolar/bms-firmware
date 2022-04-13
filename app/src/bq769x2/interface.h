@@ -72,6 +72,15 @@ int bq769x2_direct_read_u2(const uint8_t reg_addr, uint16_t *value);
 int bq769x2_direct_read_i2(const uint8_t reg_addr, int16_t *value);
 
 /**
+ * Execute subcommand without data (command-only) in bq769x2 IC
+ *
+ * @param subcmd The subcommand to execute
+ *
+ * @returns 0 if successful, negative errno otherwise
+ */
+int bq769x2_subcmd_cmd_only(const uint16_t subcmd);
+
+/**
  * Read 8-bit unsigned integer via subcommand from bq769x2 IC
  *
  * @param subcmd The subcommand to read the bytes from

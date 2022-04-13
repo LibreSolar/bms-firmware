@@ -69,6 +69,22 @@ void test_bq769x2_direct_read_i2()
     TEST_ASSERT_EQUAL(INT16_MIN, i2);
 }
 
+void test_bq769x2_subcmd_cmd_only()
+{
+    // reset subcommand
+    uint8_t subcmd_expected[2] = { 0x12, 0x00 }; // LOWER, UPPER
+
+    // pre-set register
+    mem_bq_direct[0x3E] = 0xFF;
+    mem_bq_direct[0x3F] = 0xFF;
+
+    // write subcmd register via API
+    int err = bq769x2_subcmd_cmd_only(0x0012);
+    TEST_ASSERT_EQUAL(0, err);
+
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(subcmd_expected, mem_bq_direct + 0x3E, 2);
+}
+
 void test_bq769x2_subcmd_read_u1()
 {
     uint8_t value = 0;
@@ -314,6 +330,8 @@ int bq769x2_tests_interface()
 
     RUN_TEST(test_bq769x2_direct_read_u2);
     RUN_TEST(test_bq769x2_direct_read_i2);
+
+    RUN_TEST(test_bq769x2_subcmd_cmd_only);
 
     RUN_TEST(test_bq769x2_subcmd_read_u1);
     RUN_TEST(test_bq769x2_subcmd_read_u2);
