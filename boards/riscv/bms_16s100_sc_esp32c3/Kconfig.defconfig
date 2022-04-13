@@ -1,0 +1,23 @@
+# Copyright (c) The Libre Solar Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD
+	default "bms_16s100_sc_esp32c3"
+
+config LIBRE_SOLAR_TYPE_ID
+	default 10
+
+config ENTROPY_ESP32_RNG
+	default y if ENTROPY_GENERATOR
+
+if BT
+
+config HEAP_MEM_POOL_SIZE
+	default 16384
+
+choice BT_HCI_BUS_TYPE
+	default BT_ESP32
+
+endchoice
+
+endif # BT

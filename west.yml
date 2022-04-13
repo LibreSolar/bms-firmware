@@ -18,6 +18,7 @@ manifest:
         name-whitelist:
           - cmsis
           - edtt
+          - hal_espressif
           - hal_stm32
     - name: oled-display-library
       remote: libresolar

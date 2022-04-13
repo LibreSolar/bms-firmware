@@ -16,7 +16,7 @@
 #include "data_objects.h"
 #include "thingset.h"
 
-#if CONFIG_UEXT_SERIAL_THINGSET
+#if CONFIG_UEXT_SERIAL_THINGSET && DT_NODE_EXISTS(DT_ALIAS(uart_uext))
 #define UART_DEVICE_NAME DT_LABEL(DT_ALIAS(uart_uext))
 #elif DT_NODE_EXISTS(DT_ALIAS(uart_dbg))
 #define UART_DEVICE_NAME DT_LABEL(DT_ALIAS(uart_dbg))
