@@ -18,11 +18,12 @@ extern BmsConfig bms_conf;
 extern BmsStatus bms_status;
 
 // defined in bq769x2_interface_stub
-extern uint8_t mem_bq_direct[BQ_DIRECT_MEM_SIZE];
-extern uint8_t mem_bq_subcmd[BQ_SUBCMD_MEM_SIZE];
+static uint8_t *mem_bq;
 
 int bq769x2_tests_functions()
 {
+    mem_bq = bq769x2_get_mem();
+
     UNITY_BEGIN();
 
     // ToDo
