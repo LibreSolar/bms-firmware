@@ -82,8 +82,6 @@
 #define BQ769X2_SUBCMD_PF_ENABLE           0x0024
 #define BQ769X2_SUBCMD_PF_RESET            0x0029
 #define BQ769X2_SUBCMD_SEAL                0x0030
-#define BQ769X2_SUBCMD_SAVED_PF_STATUS     0x0053
-#define BQ769X2_SUBCMD_MANUFACTURING       0x0057
 #define BQ769X2_SUBCMD_RESET_PASSQ         0x0082
 #define BQ769X2_SUBCMD_PTO_RECOVER         0x008A
 #define BQ769X2_SUBCMD_SET_CFGUPDATE       0x0090
@@ -120,38 +118,38 @@
 
 // Subcommands with data
 
-#define BQ769X2_SUBCMD_DEVICE_NUMBER        0x0001
-#define BQ769X2_SUBCMD_FW_VERSION           0x0002
-#define BQ769X2_SUBCMD_HW_VERSION           0x0003
-#define BQ769X2_SUBCMD_IROM_SIG             0x0004
-#define BQ769X2_SUBCMD_STATIC_CFG_SIG       0x0005
-#define BQ769X2_SUBCMD_PREV_MACWRITE        0x0007
-#define BQ769X2_SUBCMD_DROM_SIG             0x0009
-#define BQ769X2_SUBCMD_SECURITY_KEYS        0x0035
-#define BQ769X2_SUBCMD_SAVED_PF_STATUS      0x0053
-#define BQ769X2_SUBCMD_MANUFACTURING_STATUS 0x0057
-#define BQ769X2_SUBCMD_MANU_DATA            0x0070
-#define BQ769X2_SUBCMD_DASTATUS1            0x0071
-#define BQ769X2_SUBCMD_DASTATUS2            0x0072
-#define BQ769X2_SUBCMD_DASTATUS3            0x0073
-#define BQ769X2_SUBCMD_DASTATUS4            0x0074
-#define BQ769X2_SUBCMD_DASTATUS5            0x0075
-#define BQ769X2_SUBCMD_DASTATUS6            0x0076
-#define BQ769X2_SUBCMD_DASTATUS7            0x0077
-#define BQ769X2_SUBCMD_CUV_SNAPSHOT         0x0080
-#define BQ769X2_SUBCMD_COV_SNAPSHOT         0x0081
-#define BQ769X2_SUBCMD_CB_ACTIVE_CELLS      0x0083
-#define BQ769X2_SUBCMD_CB_SET_LVL           0x0084
-#define BQ769X2_SUBCMD_CBSTATUS1            0x0085
-#define BQ769X2_SUBCMD_CBSTATUS2            0x0086
-#define BQ769X2_SUBCMD_CBSTATUS3            0x0087
-#define BQ769X2_SUBCMD_FET_CONTROL          0x0097
-#define BQ769X2_SUBCMD_REG12_CONTROL        0x0098
-#define BQ769X2_SUBCMD_OTP_WR_CHECK         0x00a0
-#define BQ769X2_SUBCMD_OTP_WRITE            0x00a1
-#define BQ769X2_SUBCMD_READ_CAL1            0xf081
-#define BQ769X2_SUBCMD_CAL_CUV              0xf090
-#define BQ769X2_SUBCMD_CAL_COV              0xf091
+#define BQ769X2_SUBCMD_DEVICE_NUMBER   0x0001
+#define BQ769X2_SUBCMD_FW_VERSION      0x0002
+#define BQ769X2_SUBCMD_HW_VERSION      0x0003
+#define BQ769X2_SUBCMD_IROM_SIG        0x0004
+#define BQ769X2_SUBCMD_STATIC_CFG_SIG  0x0005
+#define BQ769X2_SUBCMD_PREV_MACWRITE   0x0007
+#define BQ769X2_SUBCMD_DROM_SIG        0x0009
+#define BQ769X2_SUBCMD_SECURITY_KEYS   0x0035
+#define BQ769X2_SUBCMD_SAVED_PF_STATUS 0x0053
+#define BQ769X2_SUBCMD_MFG_STATUS      0x0057
+#define BQ769X2_SUBCMD_MANU_DATA       0x0070
+#define BQ769X2_SUBCMD_DASTATUS1       0x0071
+#define BQ769X2_SUBCMD_DASTATUS2       0x0072
+#define BQ769X2_SUBCMD_DASTATUS3       0x0073
+#define BQ769X2_SUBCMD_DASTATUS4       0x0074
+#define BQ769X2_SUBCMD_DASTATUS5       0x0075
+#define BQ769X2_SUBCMD_DASTATUS6       0x0076
+#define BQ769X2_SUBCMD_DASTATUS7       0x0077
+#define BQ769X2_SUBCMD_CUV_SNAPSHOT    0x0080
+#define BQ769X2_SUBCMD_COV_SNAPSHOT    0x0081
+#define BQ769X2_SUBCMD_CB_ACTIVE_CELLS 0x0083
+#define BQ769X2_SUBCMD_CB_SET_LVL      0x0084
+#define BQ769X2_SUBCMD_CBSTATUS1       0x0085
+#define BQ769X2_SUBCMD_CBSTATUS2       0x0086
+#define BQ769X2_SUBCMD_CBSTATUS3       0x0087
+#define BQ769X2_SUBCMD_FET_CONTROL     0x0097
+#define BQ769X2_SUBCMD_REG12_CONTROL   0x0098
+#define BQ769X2_SUBCMD_OTP_WR_CHECK    0x00a0
+#define BQ769X2_SUBCMD_OTP_WRITE       0x00a1
+#define BQ769X2_SUBCMD_READ_CAL1       0xf081
+#define BQ769X2_SUBCMD_CAL_CUV         0xf090
+#define BQ769X2_SUBCMD_CAL_COV         0xf091
 
 // Data Memory
 
@@ -376,10 +374,10 @@ typedef union {
 typedef union {
     struct
     {
-        uint8_t RSVD1 : 1;
+        uint8_t RSVD_0 : 1;
         uint8_t HWDF : 1; // Host watchdog safety fault
         uint8_t PTO : 1;  // Precharge timeout
-        uint8_t RSVD2 : 1;
+        uint8_t RSVD_1 : 1;
         uint8_t COVL : 1; // Latched cell overvoltage
         uint8_t OCDL : 1; // Latched overcurrent in discharge
         uint8_t SCDL : 1; // Latched short circuit in discharge
@@ -402,5 +400,21 @@ typedef union {
     };
     uint8_t byte;
 } FET_STATUS_Type;
+
+typedef union {
+    struct
+    {
+        uint8_t PCHG_TEST : 1;
+        uint8_t CHG_TEST : 1;
+        uint8_t DSG_TEST : 1;
+        uint8_t RSVD_0 : 1;
+        uint8_t FET_EN : 1;
+        uint8_t PDSG_TEST : 1;
+        uint8_t PF_EN : 1;
+        uint8_t OTPW_EN : 1;
+        uint8_t RSVD_1 : 8;
+    };
+    uint16_t u16;
+} MFG_STATUS_Type;
 
 #endif /* BQ769X2_REGISTERS_H_ */

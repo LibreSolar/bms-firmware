@@ -20,6 +20,20 @@
 void bms_init_hardware()
 {
     bq769x2_init();
+
+    // disable automatic turn-on of all MOSFETs
+    bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_ALL_FETS_OFF);
+
+    // setting FET_EN is required to exit the default FET test mode and enable normal FET control
+    MFG_STATUS_Type mfg_status;
+    bq769x2_subcmd_read_u2(BQ769X2_SUBCMD_MFG_STATUS, &mfg_status.u16);
+    if (mfg_status.FET_EN == 0) {
+        // FET_ENABLE subcommand sets FET_EN bit in MFG_STATUS and MFG_STATUS_INIT registers
+        bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_FET_ENABLE);
+    }
+
+    // disable sleep mode to avoid switching off the CHG MOSFET automatically
+    bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_SLEEP_DISABLE);
 }
 
 void bms_update(BmsConfig *conf, BmsStatus *status)
@@ -30,6 +44,41 @@ void bms_update(BmsConfig *conf, BmsStatus *status)
     bms_read_temperatures(conf, status);
     bms_update_error_flags(conf, status);
     bms_apply_balancing(conf, status);
+}
+
+void bms_state_machine(BmsConfig *conf, BmsStatus *status)
+{
+    bms_handle_errors(conf, status);
+
+    if (status->state == BMS_STATE_OFF) {
+        if (bms_startup_inhibit()) {
+            return;
+        }
+
+        if (bms_dis_allowed(status) || bms_chg_allowed(status)) {
+            // the bq chip will automatically take care of the conditions and only enable the
+            // FETs in the allowed directions
+            bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_ALL_FETS_ON);
+        }
+    }
+
+    // FET switching is autonomously handled by the bq chip, so we just read back the status
+
+    FET_STATUS_Type fet_status;
+    bq769x2_read_bytes(BQ769X2_CMD_FET_STATUS, &fet_status.byte, 1);
+
+    if (fet_status.CHG_FET && fet_status.DSG_FET) {
+        status->state = BMS_STATE_NORMAL;
+    }
+    else if (fet_status.CHG_FET) {
+        status->state = BMS_STATE_CHG;
+    }
+    else if (fet_status.DSG_FET) {
+        status->state = BMS_STATE_DIS;
+    }
+    else {
+        status->state = BMS_STATE_OFF;
+    }
 }
 
 void bms_set_error_flag(BmsStatus *status, uint32_t flag, bool value)
@@ -50,14 +99,14 @@ void bms_shutdown()
 
 bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
-    // TODO
+    // handled by bq769x2 in autonomous mode, manual disable of a FET currently not supported
 
     return 0;
 }
 
 bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
-    // TODO
+    // handled by bq769x2 in autonomous mode, manual disable of a FET currently not supported
 
     return 0;
 }
@@ -191,16 +240,6 @@ void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
     error_flags |= stat_b.OTINT << BMS_ERR_INT_OVERTEMP;
     error_flags |= stat_b.OTF << BMS_ERR_FET_OVERTEMP;
     // error_flags |= 1U << BMS_ERR_CELL_FAILURE;
-
-    if (!fet_status.DSG_FET
-        && (status->state == BMS_STATE_DIS || status->state == BMS_STATE_NORMAL)) {
-        error_flags |= 1U << BMS_ERR_DIS_OFF;
-    }
-
-    if (!fet_status.CHG_FET
-        && (status->state == BMS_STATE_CHG || status->state == BMS_STATE_NORMAL)) {
-        error_flags |= 1U << BMS_ERR_CHG_OFF;
-    }
 
     status->error_flags = error_flags;
 }

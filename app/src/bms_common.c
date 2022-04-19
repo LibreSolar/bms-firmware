@@ -111,7 +111,7 @@ void bms_init_config(BmsConfig *conf, int type, float nominal_capacity)
     }
 }
 
-void bms_state_machine(BmsConfig *conf, BmsStatus *status)
+__weak void bms_state_machine(BmsConfig *conf, BmsStatus *status)
 {
     bms_handle_errors(conf, status);
 

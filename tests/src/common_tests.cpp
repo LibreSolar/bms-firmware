@@ -235,6 +235,8 @@ int common_tests()
 {
     UNITY_BEGIN();
 
+#if !CONFIG_BQ769X2
+
     // state machine
     RUN_TEST(no_off2dis_if_dis_nok);
     RUN_TEST(off2dis_if_dis_ok);
@@ -252,6 +254,8 @@ int common_tests()
     RUN_TEST(normal2dis_if_chg_nok);
 
     RUN_TEST(normal2chg_if_dis_nok);
+
+#endif
 
     // RUN_TEST(no_normal2balancing_if_nok);
     // RUN_TEST(normal2balancing_if_ok);   // ok = high SOC and current low
