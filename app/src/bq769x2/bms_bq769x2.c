@@ -17,9 +17,15 @@
 #include <string.h>
 #include <time.h>
 
+LOG_MODULE_REGISTER(bq769x0, CONFIG_LOG_DEFAULT_LEVEL);
+
 void bms_init_hardware()
 {
     bq769x2_init();
+
+    uint16_t device_number;
+    bq769x2_subcmd_read_u2(BQ769X2_SUBCMD_DEVICE_NUMBER, &device_number);
+    LOG_INF("detected bq device number: 0x%x", device_number);
 
     // disable automatic turn-on of all MOSFETs
     bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_ALL_FETS_OFF);
@@ -258,5 +264,13 @@ void bms_print_register(uint8_t addr)
 
 void bms_print_registers()
 {
-    // TODO
+    printf("Status: ------------------\n");
+    bms_print_register(BQ769X2_CMD_SAFETY_STATUS_A);
+    bms_print_register(BQ769X2_CMD_SAFETY_STATUS_B);
+    bms_print_register(BQ769X2_CMD_SAFETY_STATUS_C);
+    bms_print_register(BQ769X2_CMD_BATTERY_STATUS);
+    bms_print_register(BQ769X2_CMD_BATTERY_STATUS + 1);
+    bms_print_register(BQ769X2_CMD_ALARM_STATUS);
+    bms_print_register(BQ769X2_CMD_ALARM_STATUS + 1);
+    bms_print_register(BQ769X2_CMD_FET_STATUS);
 }
