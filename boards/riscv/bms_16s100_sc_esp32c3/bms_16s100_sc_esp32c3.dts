@@ -31,8 +31,8 @@
 
 	chosen {
 		zephyr,sram = &sram0;
-		zephyr,console = &uart0;
-		zephyr,shell-uart = &uart0;
+		zephyr,console = &usb_serial;
+		zephyr,shell-uart = &usb_serial;
 		zephyr,flash = &flash0;
 		zephyr,code-partition = &slot0_partition;
 	};
@@ -68,8 +68,23 @@
 	aliases {
 		led-red = &led1;
 		led-green = &led2;
-		uart-dbg = &uart0;
+		uart-dbg = &usb_serial;
 		sw-pwr = &power_button;
+	};
+
+	/* temporary solution until USB serial driver is merged upstream */
+	soc {
+		usb_serial: uart@60043000 {
+			compatible = "espressif,esp32-usb-serial";
+			reg = <0x60043000 0x400>;
+			label = "USB_SERIAL_0";
+			status = "okay";
+			interrupts = <USB_INTR_SOURCE>;
+			interrupt-parent = <&intc>;
+			clocks = <&rtc ESP32_USB_MODULE>;
+			current-speed = <115200>;
+			peripheral = <0>;
+		};
 	};
 };
 
