@@ -7,20 +7,20 @@
 #include "board.h"
 
 #include "bms.h"
-#include "registers.h"
-#include "interface.h"
 #include "helper.h"
+#include "interface.h"
+#include "registers.h"
 
-#include <math.h>       // log for thermistor calculation
-#include <stdlib.h>     // for abs() function
+#include <math.h> // log for thermistor calculation
 #include <stdio.h>
-#include <time.h>
+#include <stdlib.h> // for abs() function
 #include <string.h>
+#include <time.h>
 
 LOG_MODULE_REGISTER(bq769x0, CONFIG_LOG_DEFAULT_LEVEL);
 
-extern int adc_gain;    // factory-calibrated, read out from chip (uV/LSB)
-extern int adc_offset;  // factory-calibrated, read out from chip (mV)
+extern int adc_gain;   // factory-calibrated, read out from chip (uV/LSB)
+extern int adc_offset; // factory-calibrated, read out from chip (mV)
 
 /**
  * Checks if temperatures are within the limits, otherwise disables CHG/DSG FET
@@ -40,7 +40,7 @@ void bms_update(BmsConfig *conf, BmsStatus *status)
     bms_read_current(conf, status);
     bms_soc_update(conf, status);
     bms_read_temperatures(conf, status);
-    bms_check_cell_temp(conf, status);      // bq769x0 doesn't support temperature settings
+    bms_check_cell_temp(conf, status); // bq769x0 doesn't support temperature settings
     bms_update_error_flags(conf, status);
     bms_apply_balancing(conf, status);
 }
@@ -62,17 +62,25 @@ void bms_set_error_flag(BmsStatus *status, uint32_t flag, bool value)
 
 void bms_check_cell_temp(BmsConfig *conf, BmsStatus *status)
 {
-    bool chg_overtemp = status->bat_temp_max > conf->chg_ot_limit -
-        ((status->error_flags & (1UL << BMS_ERR_CHG_OVERTEMP)) ? conf->t_limit_hyst : 0);
+    bool chg_overtemp =
+        status->bat_temp_max
+        > conf->chg_ot_limit
+              - ((status->error_flags & (1UL << BMS_ERR_CHG_OVERTEMP)) ? conf->t_limit_hyst : 0);
 
-    bool chg_undertemp = status->bat_temp_min < conf->chg_ut_limit +
-        ((status->error_flags & (1UL << BMS_ERR_CHG_UNDERTEMP)) ? conf->t_limit_hyst : 0);
+    bool chg_undertemp =
+        status->bat_temp_min
+        < conf->chg_ut_limit
+              + ((status->error_flags & (1UL << BMS_ERR_CHG_UNDERTEMP)) ? conf->t_limit_hyst : 0);
 
-    bool dis_overtemp = status->bat_temp_max > conf->dis_ot_limit -
-        ((status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP)) ? conf->t_limit_hyst : 0);
+    bool dis_overtemp =
+        status->bat_temp_max
+        > conf->dis_ot_limit
+              - ((status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP)) ? conf->t_limit_hyst : 0);
 
-    bool dis_undertemp = status->bat_temp_min < conf->dis_ut_limit +
-        ((status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP)) ? conf->t_limit_hyst : 0);
+    bool dis_undertemp =
+        status->bat_temp_min
+        < conf->dis_ut_limit
+              + ((status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP)) ? conf->t_limit_hyst : 0);
 
     if (chg_overtemp != (bool)(status->error_flags & (1UL << BMS_ERR_CHG_OVERTEMP))) {
         bms_set_error_flag(status, BMS_ERR_CHG_OVERTEMP, chg_overtemp);
@@ -139,11 +147,10 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
     }
 
     // check if balancing allowed
-    if (idle_secs >= conf->bal_idle_delay &&
-        status->cell_voltage_max > conf->bal_cell_voltage_min &&
-        (status->cell_voltage_max - status->cell_voltage_min) > conf->bal_cell_voltage_diff)
+    if (idle_secs >= conf->bal_idle_delay && status->cell_voltage_max > conf->bal_cell_voltage_min
+        && (status->cell_voltage_max - status->cell_voltage_min) > conf->bal_cell_voltage_diff)
     {
-        status->balancing_status = 0;  // current status will be set in following loop
+        status->balancing_status = 0; // current status will be set in following loop
 
         int balancing_flags;
         int balancing_flags_target;
@@ -152,14 +159,14 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
             // find cells which should be balanced and sort them by voltage descending
             int cell_list[5];
             int cell_counter = 0;
-            for (int i = 0; i < 5; i++)
-            {
-                if ((status->cell_voltages[section * 5 + i] - status->cell_voltage_min) >
-                    conf->bal_cell_voltage_diff)
+            for (int i = 0; i < 5; i++) {
+                if ((status->cell_voltages[section * 5 + i] - status->cell_voltage_min)
+                    > conf->bal_cell_voltage_diff)
                 {
                     int j = cell_counter;
-                    while (j > 0 && status->cell_voltages[section * 5 + cell_list[j - 1]] <
-                        status->cell_voltages[section * 5 + i])
+                    while (j > 0
+                           && status->cell_voltages[section * 5 + cell_list[j - 1]]
+                                  < status->cell_voltages[section * 5 + i])
                     {
                         cell_list[j] = cell_list[j - 1];
                         j--;
@@ -175,16 +182,15 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
                 balancing_flags_target = balancing_flags | (1 << cell_list[i]);
 
                 // check if attempting to balance adjacent cells
-                bool adjacent_cell_collision =
-                    ((balancing_flags_target << 1) & balancing_flags) ||
-                    ((balancing_flags << 1) & balancing_flags_target);
+                bool adjacent_cell_collision = ((balancing_flags_target << 1) & balancing_flags)
+                                               || ((balancing_flags << 1) & balancing_flags_target);
 
                 if (adjacent_cell_collision == false) {
                     balancing_flags = balancing_flags_target;
                 }
             }
 
-            LOG_DBG("Setting CELLBAL%d register to: %s", section+1, byte2bitstr(balancing_flags));
+            LOG_DBG("Setting CELLBAL%d register to: %s", section + 1, byte2bitstr(balancing_flags));
 
             status->balancing_status |= balancing_flags << section * 5;
 
@@ -264,8 +270,7 @@ float bms_apply_dis_ocp(BmsConfig *conf)
     bq769x0_write_byte(BQ769X0_PROTECT2, protect2.byte);
 
     // returns the actual current threshold value
-    return (long)OCD_threshold_setting[protect2.OCD_THRESH] * 1000 /
-        conf->shunt_res_mOhm;
+    return (long)OCD_threshold_setting[protect2.OCD_THRESH] * 1000 / conf->shunt_res_mOhm;
 }
 
 int bms_apply_cell_uvp(BmsConfig *conf)
@@ -276,7 +281,7 @@ int bms_apply_cell_uvp(BmsConfig *conf)
     protect3.byte = bq769x0_read_byte(BQ769X0_PROTECT3);
 
     uv_trip = ((((long)(conf->cell_uv_limit * 1000) - adc_offset) * 1000 / adc_gain) >> 4) & 0x00FF;
-    uv_trip += 1;   // always round up for lower cell voltage
+    uv_trip += 1; // always round up for lower cell voltage
     bq769x0_write_byte(BQ769X0_UV_TRIP, uv_trip);
 
     protect3.UV_DELAY = 0;
@@ -331,27 +336,27 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     unsigned long rts = 0;
 
     // calculate R_thermistor according to bq769x0 datasheet
-    adc_raw = (bq769x0_read_byte(BQ769X0_TS1_HI_BYTE) & 0b00111111) << 8 |
-        bq769x0_read_byte(BQ769X0_TS1_LO_BYTE);
-    vtsx = adc_raw * 0.382; // mV
+    adc_raw = (bq769x0_read_byte(BQ769X0_TS1_HI_BYTE) & 0b00111111) << 8
+              | bq769x0_read_byte(BQ769X0_TS1_LO_BYTE);
+    vtsx = adc_raw * 0.382;                 // mV
     rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
 
     // Temperature calculation using Beta equation
     // - According to bq769x0 datasheet, only 10k thermistors should be used
     // - 25°C reference temperature for Beta equation assumed
-    tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
+    tmp = 1.0 / (1.0 / (273.15 + 25) + 1.0 / conf->thermistor_beta * log(rts / 10000.0)); // K
     status->bat_temps[0] = tmp - 273.15;
     status->bat_temp_min = status->bat_temps[0];
     status->bat_temp_max = status->bat_temps[0];
     int num_temps = 1;
     float sum_temps = status->bat_temps[0];
 
-    if (BOARD_NUM_THERMISTORS_MAX >= 2) {     // bq76930 or bq76940
-        adc_raw = (bq769x0_read_byte(BQ769X0_TS2_HI_BYTE) & 0b00111111) << 8 |
-            bq769x0_read_byte(BQ769X0_TS2_LO_BYTE);
-        vtsx = adc_raw * 0.382; // mV
-        rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
-        tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
+    if (BOARD_NUM_THERMISTORS_MAX >= 2) { // bq76930 or bq76940
+        adc_raw = (bq769x0_read_byte(BQ769X0_TS2_HI_BYTE) & 0b00111111) << 8
+                  | bq769x0_read_byte(BQ769X0_TS2_LO_BYTE);
+        vtsx = adc_raw * 0.382;                                                               // mV
+        rts = 10000.0 * vtsx / (3300.0 - vtsx);                                               // Ohm
+        tmp = 1.0 / (1.0 / (273.15 + 25) + 1.0 / conf->thermistor_beta * log(rts / 10000.0)); // K
         status->bat_temps[1] = tmp - 273.15;
 
         if (status->bat_temps[1] < status->bat_temp_min) {
@@ -364,12 +369,12 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
         sum_temps += status->bat_temps[1];
     }
 
-    if (BOARD_NUM_THERMISTORS_MAX == 3) {     // bq76940
-        adc_raw = (bq769x0_read_byte(BQ769X0_TS3_HI_BYTE) & 0b00111111) << 8 |
-            bq769x0_read_byte(BQ769X0_TS3_LO_BYTE);
-        vtsx = adc_raw * 0.382; // mV
-        rts = 10000.0 * vtsx / (3300.0 - vtsx); // Ohm
-        tmp = 1.0/(1.0/(273.15+25) + 1.0/conf->thermistor_beta*log(rts/10000.0)); // K
+    if (BOARD_NUM_THERMISTORS_MAX == 3) { // bq76940
+        adc_raw = (bq769x0_read_byte(BQ769X0_TS3_HI_BYTE) & 0b00111111) << 8
+                  | bq769x0_read_byte(BQ769X0_TS3_LO_BYTE);
+        vtsx = adc_raw * 0.382;                                                               // mV
+        rts = 10000.0 * vtsx / (3300.0 - vtsx);                                               // Ohm
+        tmp = 1.0 / (1.0 / (273.15 + 25) + 1.0 / conf->thermistor_beta * log(rts / 10000.0)); // K
         status->bat_temps[2] = tmp - 273.15;
 
         if (status->bat_temps[2] < status->bat_temp_min) {
@@ -390,15 +395,14 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
     sys_stat.byte = bq769x0_read_byte(BQ769X0_SYS_STAT);
 
     // check if new current reading available
-    if (sys_stat.CC_READY == 1)
-    {
+    if (sys_stat.CC_READY == 1) {
         int adc_raw = bq769x0_read_word(BQ769X0_CC_HI_BYTE);
         if (adc_raw < 0) {
             LOG_ERR("Error reading current measurement");
             return;
         }
 
-        int32_t pack_current_mA = (int16_t) adc_raw * 8.44 / conf->shunt_res_mOhm;
+        int32_t pack_current_mA = (int16_t)adc_raw * 8.44 / conf->shunt_res_mOhm;
 
         // remove noise around 0 A
         if (pack_current_mA > -10 && pack_current_mA < 10) {
@@ -417,7 +421,7 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
             bq769x0_alert_flag_reset();
         }
 
-        bq769x0_write_byte(BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_CC_READY);  // clear CC ready flag
+        bq769x0_write_byte(BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_CC_READY); // clear CC ready flag
     }
 }
 
@@ -429,7 +433,7 @@ void bms_read_voltages(BmsStatus *status)
     float v_max = 0, v_min = 10;
 
     for (int i = 0; i < BOARD_NUM_CELLS_MAX; i++) {
-        adc_raw = bq769x0_read_word(BQ769X0_VC1_HI_BYTE + i*2) & 0x3FFF;
+        adc_raw = bq769x0_read_word(BQ769X0_VC1_HI_BYTE + i * 2) & 0x3FFF;
         status->cell_voltages[i] = (adc_raw * adc_gain * 1e-3F + adc_offset) * 1e-3F;
 
         if (status->cell_voltages[i] > 0.5F) {
@@ -450,8 +454,8 @@ void bms_read_voltages(BmsStatus *status)
 
     // read battery pack voltage
     adc_raw = bq769x0_read_word(BQ769X0_BAT_HI_BYTE);
-    status->pack_voltage = (4.0F * adc_gain * adc_raw * 1e-3F +
-        status->connected_cells * adc_offset) * 1e-3F;
+    status->pack_voltage =
+        (4.0F * adc_gain * adc_raw * 1e-3F + status->connected_cells * adc_offset) * 1e-3F;
 }
 
 void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
@@ -460,36 +464,40 @@ void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
     sys_stat.byte = bq769x0_read_byte(BQ769X0_SYS_STAT);
 
     uint32_t error_flags_temp = 0;
-    if (sys_stat.UV)      error_flags_temp |= 1U << BMS_ERR_CELL_UNDERVOLTAGE;
-    if (sys_stat.OV)      error_flags_temp |= 1U << BMS_ERR_CELL_OVERVOLTAGE;
-    if (sys_stat.SCD)     error_flags_temp |= 1U << BMS_ERR_SHORT_CIRCUIT;
-    if (sys_stat.OCD)     error_flags_temp |= 1U << BMS_ERR_DIS_OVERCURRENT;
+    if (sys_stat.UV)
+        error_flags_temp |= 1U << BMS_ERR_CELL_UNDERVOLTAGE;
+    if (sys_stat.OV)
+        error_flags_temp |= 1U << BMS_ERR_CELL_OVERVOLTAGE;
+    if (sys_stat.SCD)
+        error_flags_temp |= 1U << BMS_ERR_SHORT_CIRCUIT;
+    if (sys_stat.OCD)
+        error_flags_temp |= 1U << BMS_ERR_DIS_OVERCURRENT;
 
     if (status->pack_current > conf->chg_oc_limit) {
         // ToDo: consider conf->chg_oc_delay
         error_flags_temp |= 1U << BMS_ERR_CHG_OVERCURRENT;
     }
 
-    if (status->bat_temp_max > conf->chg_ot_limit ||
-        (status->error_flags & (1UL << BMS_ERR_CHG_OVERTEMP)))
+    if (status->bat_temp_max > conf->chg_ot_limit
+        || (status->error_flags & (1UL << BMS_ERR_CHG_OVERTEMP)))
     {
         error_flags_temp |= 1U << BMS_ERR_CHG_OVERTEMP;
     }
 
-    if (status->bat_temp_min < conf->chg_ut_limit ||
-        (status->error_flags & (1UL << BMS_ERR_CHG_UNDERTEMP)))
+    if (status->bat_temp_min < conf->chg_ut_limit
+        || (status->error_flags & (1UL << BMS_ERR_CHG_UNDERTEMP)))
     {
         error_flags_temp |= 1U << BMS_ERR_CHG_UNDERTEMP;
     }
 
-    if (status->bat_temp_max > conf->dis_ot_limit ||
-        (status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP)))
+    if (status->bat_temp_max > conf->dis_ot_limit
+        || (status->error_flags & (1UL << BMS_ERR_DIS_OVERTEMP)))
     {
         error_flags_temp |= 1U << BMS_ERR_DIS_OVERTEMP;
     }
 
-    if (status->bat_temp_min < conf->dis_ut_limit ||
-        (status->error_flags & (1UL << BMS_ERR_DIS_UNDERTEMP)))
+    if (status->bat_temp_min < conf->dis_ut_limit
+        || (status->error_flags & (1UL << BMS_ERR_DIS_UNDERTEMP)))
     {
         error_flags_temp |= 1U << BMS_ERR_DIS_UNDERTEMP;
     }
@@ -523,8 +531,7 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
         }
 
         // called only once per second
-        if (sec_since_interrupt >= sec_since_error)
-        {
+        if (sec_since_interrupt >= sec_since_error) {
             if (sys_stat.DEVICE_XREADY) {
                 // datasheet recommendation: try to clear after waiting a few seconds
                 if (sec_since_error % 3 == 0) {

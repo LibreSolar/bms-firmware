@@ -6,10 +6,10 @@
 
 #if CONFIG_THINGSET_CAN
 
-#include <zephyr.h>
 #include <device.h>
-#include <drivers/gpio.h>
 #include <drivers/can.h>
+#include <drivers/gpio.h>
+#include <zephyr.h>
 
 #ifdef CONFIG_ISOTP
 #include <canbus/isotp.h>
@@ -18,8 +18,8 @@
 #include <logging/log.h>
 LOG_MODULE_REGISTER(ext_can, CONFIG_CAN_LOG_LEVEL);
 
-#include "thingset.h"
 #include "data_objects.h"
+#include "thingset.h"
 
 #if DT_NODE_EXISTS(DT_CHILD(DT_PATH(switches), can_en))
 #define CAN_EN_GPIO DT_CHILD(DT_PATH(switches), can_en)
@@ -33,23 +33,23 @@ static const struct device *can_dev;
 #ifdef CONFIG_ISOTP
 
 #define RX_THREAD_STACK_SIZE 1024
-#define RX_THREAD_PRIORITY 2
+#define RX_THREAD_PRIORITY   2
 
 const struct isotp_fc_opts fc_opts = {
-    .bs = 8,                // block size
-    .stmin = 1              // minimum separation time = 100 ms
+    .bs = 8,   // block size
+    .stmin = 1 // minimum separation time = 100 ms
 };
 
 struct isotp_msg_id rx_addr = {
     .id_type = CAN_EXTENDED_IDENTIFIER,
-    .use_ext_addr = 0,      // Normal ISO-TP addressing (using only CAN ID)
-    .use_fixed_addr = 1,    // enable SAE J1939 compatible addressing
+    .use_ext_addr = 0,   // Normal ISO-TP addressing (using only CAN ID)
+    .use_fixed_addr = 1, // enable SAE J1939 compatible addressing
 };
 
 struct isotp_msg_id tx_addr = {
     .id_type = CAN_EXTENDED_IDENTIFIER,
-    .use_ext_addr = 0,      // Normal ISO-TP addressing (using only CAN ID)
-    .use_fixed_addr = 1,    // enable SAE J1939 compatible addressing
+    .use_ext_addr = 0,   // Normal ISO-TP addressing (using only CAN ID)
+    .use_fixed_addr = 1, // enable SAE J1939 compatible addressing
 };
 
 static struct isotp_recv_ctx recv_ctx;
@@ -71,10 +71,10 @@ void can_rx_thread()
 
     while (1) {
         /* re-assign address in every loop as it may have been changed via ThingSet */
-        rx_addr.ext_id = TS_CAN_BASE_REQRESP | TS_CAN_PRIO_REQRESP |
-            TS_CAN_TARGET_SET(can_node_addr);
-        tx_addr.ext_id = TS_CAN_BASE_REQRESP | TS_CAN_PRIO_REQRESP |
-            TS_CAN_SOURCE_SET(can_node_addr);
+        rx_addr.ext_id =
+            TS_CAN_BASE_REQRESP | TS_CAN_PRIO_REQRESP | TS_CAN_TARGET_SET(can_node_addr);
+        tx_addr.ext_id =
+            TS_CAN_BASE_REQRESP | TS_CAN_PRIO_REQRESP | TS_CAN_SOURCE_SET(can_node_addr);
 
         ret = isotp_bind(&recv_ctx, can_dev, &rx_addr, &tx_addr, &fc_opts, K_FOREVER);
         if (ret != ISOTP_N_OK) {
@@ -115,8 +115,8 @@ void can_rx_thread()
         }
 
         if (resp_len > 0) {
-            ret = isotp_send(&send_ctx, can_dev, tx_buffer, resp_len,
-                        &recv_ctx.tx_addr, &recv_ctx.rx_addr, send_complete_cb, NULL);
+            ret = isotp_send(&send_ctx, can_dev, tx_buffer, resp_len, &recv_ctx.tx_addr,
+                             &recv_ctx.rx_addr, send_complete_cb, NULL);
             if (ret != ISOTP_N_OK) {
                 LOG_DBG("Error while sending data to ID %d [%d]", tx_addr.ext_id, ret);
             }
@@ -124,14 +124,14 @@ void can_rx_thread()
     }
 }
 
-K_THREAD_DEFINE(can_rx, RX_THREAD_STACK_SIZE, can_rx_thread, NULL, NULL, NULL,
-    RX_THREAD_PRIORITY, 0, 1500);
+K_THREAD_DEFINE(can_rx, RX_THREAD_STACK_SIZE, can_rx_thread, NULL, NULL, NULL, RX_THREAD_PRIORITY,
+                0, 1500);
 
 #endif /* CONFIG_ISOTP */
 
 void can_pub_isr(int error, void *arg)
 {
-	// Do nothing. Publication messages are fire and forget.
+    // Do nothing. Publication messages are fire and forget.
 }
 
 void can_pub_thread()
@@ -141,7 +141,7 @@ void can_pub_thread()
 
     const struct device *can_en_dev = device_get_binding(DT_GPIO_LABEL(CAN_EN_GPIO, gpios));
     gpio_pin_configure(can_en_dev, DT_GPIO_PIN(CAN_EN_GPIO, gpios),
-        DT_GPIO_FLAGS(CAN_EN_GPIO, gpios) | GPIO_OUTPUT_ACTIVE);
+                       DT_GPIO_FLAGS(CAN_EN_GPIO, gpios) | GPIO_OUTPUT_ACTIVE);
 
     can_dev = device_get_binding("CAN_1");
 
@@ -151,13 +151,13 @@ void can_pub_thread()
         if (pub_can_enable) {
             int data_len = 0;
             int start_pos = 0;
-            while ((data_len = ts.bin_pub_can(start_pos, SUBSET_CAN, can_node_addr, can_id, can_data))
-                     != -1)
-            {
-                struct zcan_frame frame = {0};
+            while (
+                (data_len = ts.bin_pub_can(start_pos, SUBSET_CAN, can_node_addr, can_id, can_data))
+                != -1) {
+                struct zcan_frame frame = { 0 };
                 frame.id_type = CAN_EXTENDED_IDENTIFIER;
-                frame.rtr     = CAN_DATAFRAME;
-                frame.id      = can_id;
+                frame.rtr = CAN_DATAFRAME;
+                frame.id = can_id;
                 memcpy(frame.data, can_data, 8);
 
                 if (data_len >= 0) {

@@ -6,16 +6,16 @@
 
 #ifndef UNIT_TEST
 
-#include <zephyr.h>
 #include <stdio.h>
+#include <zephyr.h>
 
 #include "bms.h"
 #include "button.h"
+#include "data_objects.h"
 #include "eeprom.h"
+#include "helper.h"
 #include "leds.h"
 #include "thingset.h"
-#include "helper.h"
-#include "data_objects.h"
 
 BmsConfig bms_conf;
 BmsStatus bms_status;
@@ -23,8 +23,8 @@ extern ThingSet ts;
 
 void main(void)
 {
-    printf("Hardware: Libre Solar %s (%s)\n",
-        DT_PROP(DT_PATH(pcb), type), DT_PROP(DT_PATH(pcb), version_str));
+    printf("Hardware: Libre Solar %s (%s)\n", DT_PROP(DT_PATH(pcb), type),
+           DT_PROP(DT_PATH(pcb), version_str));
     printf("Firmware: %s\n", FIRMWARE_VERSION_ID);
 
     bms_init_hardware();
@@ -60,7 +60,7 @@ void main(void)
             k_sleep(K_MSEC(10000));
         }
 
-        //bms_print_registers();
+        // bms_print_registers();
 
         eeprom_update();
 

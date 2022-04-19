@@ -7,15 +7,15 @@
 #include "board.h"
 
 #include "bms.h"
-#include "registers.h"
-#include "interface.h"
 #include "helper.h"
+#include "interface.h"
+#include "registers.h"
 
-#include <math.h>       // log for thermistor calculation
-#include <stdlib.h>     // for abs() function
+#include <math.h> // log for thermistor calculation
 #include <stdio.h>
-#include <time.h>
+#include <stdlib.h> // for abs() function
 #include <string.h>
+#include <time.h>
 
 void bms_init_hardware()
 {
@@ -111,7 +111,7 @@ int bms_apply_temp_limits(BmsConfig *bms)
 
 void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
 {
-    int16_t temp = 0;   // unit: 0.1 K
+    int16_t temp = 0; // unit: 0.1 K
 
     /* by default, only TS1 is configured as cell temperature sensor */
     bq769x2_direct_read_i2(BQ769X2_CMD_TEMP_TS1, &temp);
@@ -139,8 +139,8 @@ void bms_read_voltages(BmsStatus *status)
     float v_max = 0, v_min = 10;
 
     for (int i = 0; i < BOARD_NUM_CELLS_MAX; i++) {
-        bq769x2_direct_read_i2(BQ769X2_CMD_VOLTAGE_CELL_1 + i*2, &voltage);
-        status->cell_voltages[i] = voltage * 1e-3F;     // unit: 1 mV
+        bq769x2_direct_read_i2(BQ769X2_CMD_VOLTAGE_CELL_1 + i * 2, &voltage);
+        status->cell_voltages[i] = voltage * 1e-3F; // unit: 1 mV
 
         if (status->cell_voltages[i] > 0.5F) {
             conn_cells++;
@@ -159,7 +159,7 @@ void bms_read_voltages(BmsStatus *status)
     status->cell_voltage_max = v_max;
 
     bq769x2_direct_read_i2(BQ769X2_CMD_VOLTAGE_STACK, &voltage);
-    status->pack_voltage = voltage * 1e-2F;      // unit: 10 mV
+    status->pack_voltage = voltage * 1e-2F; // unit: 10 mV
 }
 
 void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
@@ -183,24 +183,22 @@ void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
     error_flags |= stat_a.SCD << BMS_ERR_SHORT_CIRCUIT;
     error_flags |= stat_a.OCD1 << BMS_ERR_DIS_OVERCURRENT;
     error_flags |= stat_a.OCC << BMS_ERR_CHG_OVERCURRENT;
-    //error_flags |= ? << BMS_ERR_OPEN_WIRE;
+    // error_flags |= ? << BMS_ERR_OPEN_WIRE;
     error_flags |= stat_b.UTD << BMS_ERR_DIS_UNDERTEMP;
     error_flags |= stat_b.OTD << BMS_ERR_DIS_OVERTEMP;
     error_flags |= stat_b.UTC << BMS_ERR_CHG_UNDERTEMP;
     error_flags |= stat_b.OTC << BMS_ERR_CHG_OVERTEMP;
     error_flags |= stat_b.OTINT << BMS_ERR_INT_OVERTEMP;
     error_flags |= stat_b.OTF << BMS_ERR_FET_OVERTEMP;
-    //error_flags |= 1U << BMS_ERR_CELL_FAILURE;
+    // error_flags |= 1U << BMS_ERR_CELL_FAILURE;
 
-    if (!fet_status.DSG_FET &&
-        (status->state == BMS_STATE_DIS || status->state == BMS_STATE_NORMAL))
-    {
+    if (!fet_status.DSG_FET
+        && (status->state == BMS_STATE_DIS || status->state == BMS_STATE_NORMAL)) {
         error_flags |= 1U << BMS_ERR_DIS_OFF;
     }
 
-    if (!fet_status.CHG_FET &&
-        (status->state == BMS_STATE_CHG || status->state == BMS_STATE_NORMAL))
-    {
+    if (!fet_status.CHG_FET
+        && (status->state == BMS_STATE_CHG || status->state == BMS_STATE_NORMAL)) {
         error_flags |= 1U << BMS_ERR_CHG_OFF;
     }
 

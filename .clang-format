@@ -1,0 +1,32 @@
+# Format definition for Libre Solar firmware
+#
+# Use Clang-Format plugin in VS Code and add "editor.formatOnSave": true to settings
+
+# Generic format
+BasedOnStyle: LLVM
+UseTab: Never
+IndentWidth: 4
+TabWidth: 4
+ColumnLimit: 100
+AccessModifierOffset: -4
+
+# Indentation and alignment
+AllowShortEnumsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AlignConsecutiveAssignments: false
+AlignConsecutiveMacros: true
+AlignEscapedNewlines: DontAlign
+BreakBeforeBinaryOperators: NonAssignment
+IndentCaseLabels: true
+
+# Braces
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterControlStatement: MultiLine
+  AfterEnum: true
+  AfterStruct: true
+  AfterFunction: true
+  BeforeElse: true
+  SplitEmptyFunction: false
+Cpp11BracedListStyle: false

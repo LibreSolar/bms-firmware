@@ -10,13 +10,13 @@
 
 #include "unity.h"
 
-#include <time.h>
 #include <stdio.h>
+#include <time.h>
 
 extern BmsConfig bms_conf;
 extern BmsStatus bms_status;
 
-extern uint8_t mem_bq[0x60];     // defined in bq769x0_interface_stub
+extern uint8_t mem_bq[0x60]; // defined in bq769x0_interface_stub
 
 // fill RAM and flash with suitable values
 static void init_bq769x0_ram()
@@ -49,7 +49,7 @@ void test_bq769x0_read_pack_voltage()
 {
     init_bq769x0_ram();
     bms_read_voltages(&bms_status);
-    TEST_ASSERT_EQUAL_FLOAT(3.3*8, roundf(bms_status.pack_voltage * 10) / 10);
+    TEST_ASSERT_EQUAL_FLOAT(3.3 * 8, roundf(bms_status.pack_voltage * 10) / 10);
 }
 
 void test_bq769x0_read_min_max_avg_voltage()
@@ -113,21 +113,21 @@ int bq769x0_tests()
 {
     UNITY_BEGIN();
 
-    //RUN_TEST(test_bq769x0_init);
+    // RUN_TEST(test_bq769x0_init);
 
-    //RUN_TEST(test_bq769x0_read_cell_voltages);
-    //RUN_TEST(test_bq769x0_read_pack_voltage);
-    //RUN_TEST(test_bq769x0_read_min_max_avg_voltage);
-    //RUN_TEST(test_bq769x0_read_pack_current);
-    //RUN_TEST(test_bq769x0_read_error_flags);
-    //RUN_TEST(test_bq769x0_read_temperatures);
+    // RUN_TEST(test_bq769x0_read_cell_voltages);
+    // RUN_TEST(test_bq769x0_read_pack_voltage);
+    // RUN_TEST(test_bq769x0_read_min_max_avg_voltage);
+    // RUN_TEST(test_bq769x0_read_pack_current);
+    // RUN_TEST(test_bq769x0_read_error_flags);
+    // RUN_TEST(test_bq769x0_read_temperatures);
 
-    //RUN_TEST(test_bq769x0_apply_dis_ocp_limits);
-    //RUN_TEST(test_bq769x0_apply_chg_ocp_limits);
-    //RUN_TEST(test_bq769x0_apply_dis_scp_limits);
+    // RUN_TEST(test_bq769x0_apply_dis_ocp_limits);
+    // RUN_TEST(test_bq769x0_apply_chg_ocp_limits);
+    // RUN_TEST(test_bq769x0_apply_dis_scp_limits);
 
-    //RUN_TEST(test_bq769x0_apply_cell_ov_limits);
-    //RUN_TEST(test_bq769x0_apply_cell_uv_limits);
+    // RUN_TEST(test_bq769x0_apply_cell_ov_limits);
+    // RUN_TEST(test_bq769x0_apply_cell_uv_limits);
 
     return UNITY_END();
 }

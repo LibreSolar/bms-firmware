@@ -10,16 +10,16 @@
 #include "interface.h"
 #include "registers.h"
 
-#include <zephyr.h>
 #include <drivers/gpio.h>
 #include <drivers/i2c.h>
 #include <string.h>
+#include <zephyr.h>
 
 LOG_MODULE_REGISTER(bq769x2_if, CONFIG_LOG_DEFAULT_LEVEL);
 
 #define BQ769X2_INST DT_INST(0, ti_bq769x2_i2c)
 
-#define I2C_DEV DT_LABEL(DT_PARENT(BQ769X2_INST))
+#define I2C_DEV     DT_LABEL(DT_PARENT(BQ769X2_INST))
 #define I2C_ADDRESS DT_REG_ADDR(BQ769X2_INST)
 
 #define BQ_ALERT_PORT DT_GPIO_LABEL(BQ769X2_INST, alert_gpios)
@@ -44,7 +44,7 @@ int bq769x2_write_bytes(const uint8_t reg_addr, const uint8_t *data, const size_
         return -EINVAL;
     }
 
-    buf[0] = reg_addr;		// first byte contains register address
+    buf[0] = reg_addr; // first byte contains register address
     memcpy(buf + 1, data, num_bytes);
 
     return i2c_write(i2c_dev, buf, num_bytes + 1, I2C_ADDRESS);
@@ -74,7 +74,7 @@ int bq769x2_direct_read_u2(const uint8_t reg_addr, uint16_t *value)
         LOG_ERR("direct_read_u2 failed");
     }
     else {
-        *value = buf[0] | buf[1] << 8;      // little-endian byte order
+        *value = buf[0] | buf[1] << 8; // little-endian byte order
     }
 
     return err;
@@ -104,7 +104,7 @@ static int bq769x2_subcmd_read(const uint16_t subcmd, uint32_t *value, const siz
         goto err;
     }
 
-    k_usleep(500);  // most subcommands need approx 500 us to complete
+    k_usleep(500); // most subcommands need approx 500 us to complete
 
     // wait until data is ready
     int num_tries = 0;
@@ -126,7 +126,7 @@ static int bq769x2_subcmd_read(const uint16_t subcmd, uint32_t *value, const siz
     if (err) {
         goto err;
     }
-    data_length = data_length - 4;  // substract subcmd + checksum + length bytes
+    data_length = data_length - 4; // substract subcmd + checksum + length bytes
     if (err || data_length > 0x20 || num_bytes > 4) {
         LOG_ERR("Subcmd data length 0x%X or num_bytes invalid", data_length);
         return -EIO;

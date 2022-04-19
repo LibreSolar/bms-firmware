@@ -8,15 +8,15 @@
 
 #include "bms.h"
 
-#define SLEEP_TIME 	K_MSEC(100)
+#define SLEEP_TIME K_MSEC(100)
 
 extern BmsConfig bms_conf;
 extern BmsStatus bms_status;
 
 #ifndef UNIT_TEST
 
-#include <zephyr.h>
 #include <drivers/gpio.h>
+#include <zephyr.h>
 
 #define LED_DIS_PORT DT_GPIO_LABEL(DT_ALIAS(led_red), gpios)
 #define LED_DIS_PIN  DT_GPIO_PIN(DT_ALIAS(led_red), gpios)
@@ -43,16 +43,16 @@ void leds_dis_set(bool on)
 
 void leds_update_thread()
 {
-	led_dis_dev = device_get_binding(LED_DIS_PORT);
-	gpio_pin_configure(led_dis_dev, LED_DIS_PIN, GPIO_OUTPUT);
+    led_dis_dev = device_get_binding(LED_DIS_PORT);
+    gpio_pin_configure(led_dis_dev, LED_DIS_PIN, GPIO_OUTPUT);
 
-	led_chg_dev = device_get_binding(LED_CHG_PORT);
-	gpio_pin_configure(led_chg_dev, LED_CHG_PIN, GPIO_OUTPUT);
+    led_chg_dev = device_get_binding(LED_CHG_PORT);
+    gpio_pin_configure(led_chg_dev, LED_CHG_PIN, GPIO_OUTPUT);
 
-	while (1) {
+    while (1) {
         leds_update();
-		k_sleep(SLEEP_TIME);
-	}
+        k_sleep(SLEEP_TIME);
+    }
 }
 
 void leds_update()
@@ -116,8 +116,14 @@ K_THREAD_DEFINE(leds, 256, leds_update_thread, NULL, NULL, NULL, 4, 0, 0);
 
 #else
 
-void leds_chg_set(bool on) {;}
+void leds_chg_set(bool on)
+{
+    ;
+}
 
-void leds_dis_set(bool on) {;}
+void leds_dis_set(bool on)
+{
+    ;
+}
 
 #endif // UNIT_TEST

@@ -10,15 +10,15 @@
 
 #ifndef UNIT_TEST
 #include <drivers/hwinfo.h>
-#include <sys/reboot.h>
 #include <sys/crc.h>
+#include <sys/reboot.h>
 #endif
 
 #include "board.h"
 
-#include "thingset.h"
 #include "bms.h"
 #include "eeprom.h"
+#include "thingset.h"
 
 #include <stdio.h>
 
@@ -35,9 +35,8 @@ static char device_id[9];
 static char auth_password[11];
 
 // struct to define ThingSet array node
-ThingSetArrayInfo cell_voltages_arr = {
-    bms_status.cell_voltages, BOARD_NUM_CELLS_MAX, BOARD_NUM_CELLS_MAX, TS_T_FLOAT32
-};
+ThingSetArrayInfo cell_voltages_arr = { bms_status.cell_voltages, BOARD_NUM_CELLS_MAX,
+                                        BOARD_NUM_CELLS_MAX, TS_T_FLOAT32 };
 
 bool pub_serial_enable = IS_ENABLED(CONFIG_THINGSET_SERIAL_PUB_DEFAULT);
 
@@ -57,6 +56,7 @@ static uint16_t reg_addr = 0;
  *
  * Normal priority data objects (consuming 2 or more bytes) start from IDs > 23 = 0x17
  */
+/* clang-format off */
 static ThingSetDataObject data_objects[] = {
 
     // DEVICE INFORMATION /////////////////////////////////////////////////////
@@ -267,6 +267,7 @@ static ThingSetDataObject data_objects[] = {
     TS_ITEM_BOOL(0xF6, "Enable", &pub_can_enable, 0xF5, TS_ANY_RW, 0),
 #endif
 };
+/* clang-format on */
 
 ThingSet ts(data_objects, ARRAY_SIZE(data_objects));
 
@@ -318,14 +319,14 @@ void thingset_auth()
     static const char pass_exp[] = CONFIG_THINGSET_EXPERT_PASSWORD;
     static const char pass_mkr[] = CONFIG_THINGSET_MAKER_PASSWORD;
 
-    if (strlen(pass_exp) == strlen(auth_password) &&
-        strncmp(auth_password, pass_exp, strlen(pass_exp)) == 0)
+    if (strlen(pass_exp) == strlen(auth_password)
+        && strncmp(auth_password, pass_exp, strlen(pass_exp)) == 0)
     {
         printf("Authenticated as expert user\n");
         ts.set_authentication(TS_EXP_MASK | TS_USR_MASK);
     }
-    else if (strlen(pass_mkr) == strlen(auth_password) &&
-        strncmp(auth_password, pass_mkr, strlen(pass_mkr)) == 0)
+    else if (strlen(pass_mkr) == strlen(auth_password)
+             && strncmp(auth_password, pass_mkr, strlen(pass_mkr)) == 0)
     {
         printf("Authenticated as maker\n");
         ts.set_authentication(TS_MKR_MASK | TS_USR_MASK);
@@ -350,7 +351,7 @@ void uint64_to_base32(uint64_t in, char *out, size_t size, const char *alphabet)
     }
 
     for (int i = 0; i < len; i++) {
-        out[len-i-1] = alphabet[(in >> (i * 5)) % 32];
+        out[len - i - 1] = alphabet[(in >> (i * 5)) % 32];
     }
     out[len] = '\0';
 }

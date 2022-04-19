@@ -11,8 +11,8 @@
 
 #include "unity.h"
 
-#include <time.h>
 #include <stdio.h>
+#include <time.h>
 
 extern BmsConfig bms_conf;
 extern BmsStatus bms_status;

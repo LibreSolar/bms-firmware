@@ -11,8 +11,8 @@
 
 #include "unity.h"
 
-#include <time.h>
 #include <stdio.h>
+#include <time.h>
 
 extern BmsConfig bms_conf;
 extern BmsStatus bms_status;
@@ -90,8 +90,8 @@ void test_bq769x2_subcmd_read_u1()
 
     mem_bq[0x40] = 0xFF;
 
-    mem_bq[0x60] = 0;        // checksum
-    mem_bq[0x61] = 4 + 1;    // length
+    mem_bq[0x60] = 0;     // checksum
+    mem_bq[0x61] = 4 + 1; // length
 
     int err = bq769x2_subcmd_read_u1(0, &value);
     TEST_ASSERT_EQUAL(0, err);
@@ -102,11 +102,11 @@ void test_bq769x2_subcmd_read_u2()
 {
     uint16_t value = 0;
 
-    mem_bq[0x40] = 0x00;     // LSB
-    mem_bq[0x41] = 0xFF;     // MSB
+    mem_bq[0x40] = 0x00; // LSB
+    mem_bq[0x41] = 0xFF; // MSB
 
-    mem_bq[0x60] = 0;        // checksum
-    mem_bq[0x61] = 4 + 2;    // length
+    mem_bq[0x60] = 0;     // checksum
+    mem_bq[0x61] = 4 + 2; // length
 
     int err = bq769x2_subcmd_read_u2(0, &value);
     TEST_ASSERT_EQUAL(0, err);
@@ -117,12 +117,12 @@ void test_bq769x2_subcmd_read_u4()
 {
     uint32_t value = 0;
 
-    mem_bq[0x40] = 0xAA;     // LSB
+    mem_bq[0x40] = 0xAA; // LSB
     mem_bq[0x41] = 0xBB;
     mem_bq[0x42] = 0xCC;
-    mem_bq[0x43] = 0xDD;     // MSB
+    mem_bq[0x43] = 0xDD; // MSB
 
-    mem_bq[0x60] = (uint8_t)~(0xAA + 0xBB + 0xCC + 0xDD);
+    mem_bq[0x60] = (uint8_t) ~(0xAA + 0xBB + 0xCC + 0xDD);
     mem_bq[0x61] = 4 + 4;
 
     int err = bq769x2_subcmd_read_u4(0, &value);
@@ -136,8 +136,8 @@ void test_bq769x2_subcmd_read_i1()
 
     mem_bq[0x40] = 0x80;
 
-    mem_bq[0x60] = (uint8_t)~0x80;   // checksum
-    mem_bq[0x61] = 4 + 1;            // length
+    mem_bq[0x60] = (uint8_t)~0x80; // checksum
+    mem_bq[0x61] = 4 + 1;          // length
 
     int err = bq769x2_subcmd_read_i1(0, &value);
     TEST_ASSERT_EQUAL(0, err);
@@ -148,11 +148,11 @@ void test_bq769x2_subcmd_read_i2()
 {
     int16_t value = 0;
 
-    mem_bq[0x40] = 0x00;     // LSB
-    mem_bq[0x41] = 0x80;     // MSB
+    mem_bq[0x40] = 0x00; // LSB
+    mem_bq[0x41] = 0x80; // MSB
 
-    mem_bq[0x60] = (uint8_t)~0x80;   // checksum
-    mem_bq[0x61] = 4 + 2;            // length
+    mem_bq[0x60] = (uint8_t)~0x80; // checksum
+    mem_bq[0x61] = 4 + 2;          // length
 
     int err = bq769x2_subcmd_read_i2(0, &value);
     TEST_ASSERT_EQUAL(0, err);
@@ -163,13 +163,13 @@ void test_bq769x2_subcmd_read_i4()
 {
     int32_t value = 0;
 
-    mem_bq[0x40] = 0x00;     // LSB
+    mem_bq[0x40] = 0x00; // LSB
     mem_bq[0x41] = 0x00;
     mem_bq[0x42] = 0x00;
-    mem_bq[0x43] = 0x80;     // MSB
+    mem_bq[0x43] = 0x80; // MSB
 
-    mem_bq[0x60] = (uint8_t)~0x80;   // checksum
-    mem_bq[0x61] = 4 + 4;            // length
+    mem_bq[0x60] = (uint8_t)~0x80; // checksum
+    mem_bq[0x61] = 4 + 4;          // length
 
     int err = bq769x2_subcmd_read_i4(0, &value);
     TEST_ASSERT_EQUAL(0, err);
@@ -180,12 +180,12 @@ void test_bq769x2_subcmd_read_f4()
 {
     float value = 0.0F;
 
-    mem_bq[0x40] = 0xB6;     // LSB
+    mem_bq[0x40] = 0xB6; // LSB
     mem_bq[0x41] = 0xF3;
     mem_bq[0x42] = 0x9D;
-    mem_bq[0x43] = 0x3F;     // MSB
+    mem_bq[0x43] = 0x3F; // MSB
 
-    mem_bq[0x60] = (uint8_t)~(0xB6 + 0xF3 + 0x9D + 0x3F);
+    mem_bq[0x60] = (uint8_t) ~(0xB6 + 0xF3 + 0x9D + 0x3F);
     mem_bq[0x61] = 4 + 4;
 
     int err = bq769x2_subcmd_read_f4(0, &value);
@@ -200,8 +200,8 @@ void test_bq769x2_subcmd_write_u1()
 
     data_expected[0x0] = 0xFF;
 
-    chk_len_expected[0x0] = 0;        // checksum
-    chk_len_expected[0x1] = 4 + 1;    // length
+    chk_len_expected[0x0] = 0;     // checksum
+    chk_len_expected[0x1] = 4 + 1; // length
 
     int err = bq769x2_subcmd_write_u1(0, UINT8_MAX);
     TEST_ASSERT_EQUAL(0, err);
@@ -215,11 +215,11 @@ void test_bq769x2_subcmd_write_u2()
     uint8_t chk_len_expected[2];
     uint8_t data_expected[4];
 
-    data_expected[0x0] = 0x00;     // LSB
-    data_expected[0x1] = 0xFF;     // MSB
+    data_expected[0x0] = 0x00; // LSB
+    data_expected[0x1] = 0xFF; // MSB
 
-    chk_len_expected[0x0] = 0;        // checksum
-    chk_len_expected[0x1] = 4 + 2;    // length
+    chk_len_expected[0x0] = 0;     // checksum
+    chk_len_expected[0x1] = 4 + 2; // length
 
     int err = bq769x2_subcmd_write_u2(0, 0xFF00);
     TEST_ASSERT_EQUAL(0, err);
@@ -233,12 +233,12 @@ void test_bq769x2_subcmd_write_u4()
     uint8_t chk_len_expected[2];
     uint8_t data_expected[4];
 
-    data_expected[0x0] = 0xAA;     // LSB
+    data_expected[0x0] = 0xAA; // LSB
     data_expected[0x1] = 0xBB;
     data_expected[0x2] = 0xCC;
-    data_expected[0x3] = 0xDD;     // MSB
+    data_expected[0x3] = 0xDD; // MSB
 
-    chk_len_expected[0x0] = (uint8_t)~(0xAA + 0xBB + 0xCC + 0xDD);
+    chk_len_expected[0x0] = (uint8_t) ~(0xAA + 0xBB + 0xCC + 0xDD);
     chk_len_expected[0x1] = 4 + 4;
 
     int err = bq769x2_subcmd_write_u4(0, 0xDDCCBBAA);
@@ -255,8 +255,8 @@ void test_bq769x2_subcmd_write_i1()
 
     data_expected[0x0] = 0x80;
 
-    chk_len_expected[0x0] = (uint8_t)~0x80;   // checksum
-    chk_len_expected[0x1] = 4 + 1;            // length
+    chk_len_expected[0x0] = (uint8_t)~0x80; // checksum
+    chk_len_expected[0x1] = 4 + 1;          // length
 
     int err = bq769x2_subcmd_write_i1(0, INT8_MIN);
     TEST_ASSERT_EQUAL(0, err);
@@ -270,11 +270,11 @@ void test_bq769x2_subcmd_write_i2()
     uint8_t chk_len_expected[2];
     uint8_t data_expected[4];
 
-    data_expected[0x0] = 0x00;     // LSB
-    data_expected[0x1] = 0x80;     // MSB
+    data_expected[0x0] = 0x00; // LSB
+    data_expected[0x1] = 0x80; // MSB
 
-    chk_len_expected[0x0] = (uint8_t)~0x80;   // checksum
-    chk_len_expected[0x1] = 4 + 2;            // length
+    chk_len_expected[0x0] = (uint8_t)~0x80; // checksum
+    chk_len_expected[0x1] = 4 + 2;          // length
 
     int err = bq769x2_subcmd_write_i2(0, INT16_MIN);
     TEST_ASSERT_EQUAL(0, err);
@@ -288,13 +288,13 @@ void test_bq769x2_subcmd_write_i4()
     uint8_t chk_len_expected[2];
     uint8_t data_expected[4];
 
-    data_expected[0x0] = 0x00;     // LSB
+    data_expected[0x0] = 0x00; // LSB
     data_expected[0x1] = 0x00;
     data_expected[0x2] = 0x00;
-    data_expected[0x3] = 0x80;     // MSB
+    data_expected[0x3] = 0x80; // MSB
 
-    chk_len_expected[0x0] = (uint8_t)~0x80;   // checksum
-    chk_len_expected[0x1] = 4 + 4;            // length
+    chk_len_expected[0x0] = (uint8_t)~0x80; // checksum
+    chk_len_expected[0x1] = 4 + 4;          // length
 
     int err = bq769x2_subcmd_write_i4(0, INT32_MIN);
     TEST_ASSERT_EQUAL(0, err);
@@ -308,12 +308,12 @@ void test_bq769x2_subcmd_write_f4()
     uint8_t chk_len_expected[2];
     uint8_t data_expected[4];
 
-    data_expected[0x0] = 0xB6;     // LSB
+    data_expected[0x0] = 0xB6; // LSB
     data_expected[0x1] = 0xF3;
     data_expected[0x2] = 0x9D;
-    data_expected[0x3] = 0x3F;     // MSB
+    data_expected[0x3] = 0x3F; // MSB
 
-    chk_len_expected[0x0] = (uint8_t)~(0xB6 + 0xF3 + 0x9D + 0x3F);
+    chk_len_expected[0x0] = (uint8_t) ~(0xB6 + 0xF3 + 0x9D + 0x3F);
     chk_len_expected[0x1] = 4 + 4;
 
     int err = bq769x2_subcmd_write_f4(0, 1.234F);

@@ -13,12 +13,12 @@
 
 #ifndef UNIT_TEST
 
-#include <zephyr.h>
 #include <drivers/gpio.h>
 #include <drivers/i2c.h>
 #include <string.h>
+#include <zephyr.h>
 
-#define I2C_DEV DT_LABEL(DT_PARENT(DT_INST(0, renesas_isl94202)))
+#define I2C_DEV     DT_LABEL(DT_PARENT(DT_INST(0, renesas_isl94202)))
 #define I2C_ADDRESS DT_REG_ADDR(DT_INST(0, renesas_isl94202))
 
 #define I2C_PULLUP_GPIO DT_CHILD(DT_PATH(switches), i2c_pullup)
@@ -33,7 +33,7 @@ int isl94202_write_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes)
     if ((reg_addr > 0x58 && reg_addr < 0x7F) || reg_addr + num_bytes > 0xAB || num_bytes > 4)
         return -1;
 
-    buf[0] = reg_addr;		// first byte contains register address
+    buf[0] = reg_addr; // first byte contains register address
     memcpy(buf + 1, data, num_bytes);
 
     return i2c_write(i2c_dev, buf, num_bytes + 1, I2C_ADDRESS);
@@ -69,7 +69,8 @@ int isl94202_write_word(uint8_t reg_addr, uint16_t word)
     return isl94202_write_bytes(reg_addr, buf, 2);
 }
 
-int isl94202_write_delay(uint8_t reg_addr, uint8_t delay_unit, uint16_t delay_value, uint8_t extra_bits)
+int isl94202_write_delay(uint8_t reg_addr, uint8_t delay_unit, uint16_t delay_value,
+                         uint8_t extra_bits)
 {
     if (delay_unit > ISL94202_DELAY_MIN || extra_bits > 0xF) {
         return 0;
@@ -96,13 +97,13 @@ int isl94202_write_delay(uint8_t reg_addr, uint8_t delay_unit, uint16_t delay_va
     return isl94202_write_word(reg_addr, reg) == 0;
 }
 
-float isl94202_write_current_limit(uint8_t reg_addr,
-    const uint16_t *voltage_thresholds_mV, int num_thresholds,
-    float current_limit, float shunt_res_mOhm,
-    uint8_t delay_unit, uint16_t delay_value)
+float isl94202_write_current_limit(uint8_t reg_addr, const uint16_t *voltage_thresholds_mV,
+                                   int num_thresholds, float current_limit, float shunt_res_mOhm,
+                                   uint8_t delay_unit, uint16_t delay_value)
 {
     uint8_t threshold_raw = 0;
-    float actual_current_limit = voltage_thresholds_mV[0] / shunt_res_mOhm;	// initialize with lowest value
+    float actual_current_limit =
+        voltage_thresholds_mV[0] / shunt_res_mOhm; // initialize with lowest value
 
     // choose lower current limit if target setting not exactly possible
     for (int i = num_thresholds - 1; i >= 0; i--) {
@@ -134,7 +135,7 @@ int isl94202_write_voltage(uint8_t reg_addr, float voltage, uint8_t extra_bits)
 
 int isl94202_read_word(uint8_t reg_addr)
 {
-    uint8_t buf[2] = {0};
+    uint8_t buf[2] = { 0 };
     if (isl94202_read_bytes(reg_addr, buf, 2) == 0) {
         return buf[0] + (buf[1] << 8);
     }

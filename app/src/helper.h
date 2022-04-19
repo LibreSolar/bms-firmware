@@ -13,8 +13,8 @@
  * General helper functions
  */
 
-#include <string.h>
 #include <stdint.h>
+#include <string.h>
 
 #ifdef __INTELLISENSE__
 /*

@@ -7,24 +7,24 @@
 #include "board.h"
 
 #include "bms.h"
-#include "registers.h"
-#include "interface.h"
 #include "helper.h"
+#include "interface.h"
+#include "registers.h"
 
-#include <stdlib.h>     // for abs() function
-#include <stdio.h>
-#include <time.h>
-#include <string.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h> // for abs() function
+#include <string.h>
+#include <time.h>
 
 // Lookup-table for temperatures according to datasheet
-static const float lut_temp_volt[] = {0.153, 0.295, 0.463, 0.710, 0.755};
-static const float lut_temp_degc[] = {80, 50, 25, 0, -40};
+static const float lut_temp_volt[] = { 0.153, 0.295, 0.463, 0.710, 0.755 };
+static const float lut_temp_degc[] = { 80, 50, 25, 0, -40 };
 
 static void set_num_cells(int num)
 {
     uint8_t cell_reg = 0;
-    switch(num) {
+    switch (num) {
         case 3:
             cell_reg = 0b10000011;
             break;
@@ -48,9 +48,9 @@ static void set_num_cells(int num)
     }
     isl94202_write_bytes(ISL94202_MOD_CELL + 1, &cell_reg, 1);
     // ToDo: Double write for certain bytes (see datasheet 7.1.10) --> move this to _hw.c file
-    //k_sleep(30);
-    //isl94202_write_bytes(ISL94202_MOD_CELL + 1, &cell_reg, 1);
-    //k_sleep(30);
+    // k_sleep(30);
+    // isl94202_write_bytes(ISL94202_MOD_CELL + 1, &cell_reg, 1);
+    // k_sleep(30);
 }
 
 void bms_init_hardware()
@@ -165,26 +165,23 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
 
 float bms_apply_dis_scp(BmsConfig *conf)
 {
-    return isl94202_write_current_limit(ISL94202_SCDT_SCD,
-        DSC_Thresholds, sizeof(DSC_Thresholds)/sizeof(uint16_t),
-        conf->dis_sc_limit, conf->shunt_res_mOhm,
-        ISL94202_DELAY_US, conf->dis_sc_delay_us);
+    return isl94202_write_current_limit(
+        ISL94202_SCDT_SCD, DSC_Thresholds, sizeof(DSC_Thresholds) / sizeof(uint16_t),
+        conf->dis_sc_limit, conf->shunt_res_mOhm, ISL94202_DELAY_US, conf->dis_sc_delay_us);
 }
 
 float bms_apply_chg_ocp(BmsConfig *conf)
 {
-    return isl94202_write_current_limit(ISL94202_OCCT_OCC,
-        OCC_Thresholds, sizeof(OCC_Thresholds)/sizeof(uint16_t),
-        conf->chg_oc_limit, conf->shunt_res_mOhm,
-        ISL94202_DELAY_MS, conf->chg_oc_delay_ms);
+    return isl94202_write_current_limit(
+        ISL94202_OCCT_OCC, OCC_Thresholds, sizeof(OCC_Thresholds) / sizeof(uint16_t),
+        conf->chg_oc_limit, conf->shunt_res_mOhm, ISL94202_DELAY_MS, conf->chg_oc_delay_ms);
 }
 
 float bms_apply_dis_ocp(BmsConfig *conf)
 {
-    return isl94202_write_current_limit(ISL94202_OCDT_OCD,
-        OCD_Thresholds, sizeof(OCD_Thresholds)/sizeof(uint16_t),
-        conf->dis_oc_limit, conf->shunt_res_mOhm,
-        ISL94202_DELAY_MS, conf->dis_oc_delay_ms);
+    return isl94202_write_current_limit(
+        ISL94202_OCDT_OCD, OCD_Thresholds, sizeof(OCD_Thresholds) / sizeof(uint16_t),
+        conf->dis_oc_limit, conf->shunt_res_mOhm, ISL94202_DELAY_MS, conf->dis_oc_delay_ms);
 }
 
 int bms_apply_cell_ovp(BmsConfig *conf)
@@ -201,16 +198,16 @@ int bms_apply_cell_ovp(BmsConfig *conf)
 
     // keeping CPW at the default value of 1 ms
     return isl94202_write_voltage(ISL94202_OVL_CPW, conf->cell_ov_limit, 1)
-        && isl94202_write_voltage(ISL94202_OVR, conf->cell_ov_reset, 0)
-        && isl94202_write_delay(ISL94202_OVDT, ISL94202_DELAY_MS, conf->cell_ov_delay_ms, 0);
+           && isl94202_write_voltage(ISL94202_OVR, conf->cell_ov_reset, 0)
+           && isl94202_write_delay(ISL94202_OVDT, ISL94202_DELAY_MS, conf->cell_ov_delay_ms, 0);
 }
 
 int bms_apply_cell_uvp(BmsConfig *conf)
 {
     // keeping LPW at the default value of 1 ms
     return isl94202_write_voltage(ISL94202_UVL_LPW, conf->cell_uv_limit, 1)
-        && isl94202_write_voltage(ISL94202_UVR, conf->cell_uv_reset, 0)
-        && isl94202_write_delay(ISL94202_UVDT, ISL94202_DELAY_MS, conf->cell_uv_delay_ms, 0);
+           && isl94202_write_voltage(ISL94202_UVR, conf->cell_uv_reset, 0)
+           && isl94202_write_delay(ISL94202_UVDT, ISL94202_DELAY_MS, conf->cell_uv_delay_ms, 0);
 }
 
 // using default setting TGain = 0 (GAIN = 2) with 22k resistors
@@ -219,40 +216,48 @@ int bms_apply_temp_limits(BmsConfig *conf)
     float adc_voltage;
 
     // Charge over-temperature
-    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt,
-        sizeof(lut_temp_degc)/sizeof(float), conf->chg_ot_limit);
-    isl94202_write_word(ISL94202_COTS, (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_COTS_Msk);
+    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt, sizeof(lut_temp_degc) / sizeof(float),
+                              conf->chg_ot_limit);
+    isl94202_write_word(ISL94202_COTS,
+                        (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_COTS_Msk);
 
-    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt,
-        sizeof(lut_temp_degc)/sizeof(float), conf->chg_ot_limit - conf->t_limit_hyst);
-    isl94202_write_word(ISL94202_COTR, (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_COTR_Msk);
+    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt, sizeof(lut_temp_degc) / sizeof(float),
+                              conf->chg_ot_limit - conf->t_limit_hyst);
+    isl94202_write_word(ISL94202_COTR,
+                        (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_COTR_Msk);
 
     // Charge under-temperature
-    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt,
-        sizeof(lut_temp_degc)/sizeof(float), conf->chg_ut_limit);
-    isl94202_write_word(ISL94202_CUTS, (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_CUTS_Msk);
+    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt, sizeof(lut_temp_degc) / sizeof(float),
+                              conf->chg_ut_limit);
+    isl94202_write_word(ISL94202_CUTS,
+                        (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_CUTS_Msk);
 
-    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt,
-        sizeof(lut_temp_degc)/sizeof(float), conf->chg_ut_limit + conf->t_limit_hyst);
-    isl94202_write_word(ISL94202_CUTR, (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_CUTR_Msk);
+    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt, sizeof(lut_temp_degc) / sizeof(float),
+                              conf->chg_ut_limit + conf->t_limit_hyst);
+    isl94202_write_word(ISL94202_CUTR,
+                        (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_CUTR_Msk);
 
     // Discharge over-temperature
-    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt,
-        sizeof(lut_temp_degc)/sizeof(float), conf->dis_ot_limit);
-    isl94202_write_word(ISL94202_DOTS, (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DOTS_Msk);
+    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt, sizeof(lut_temp_degc) / sizeof(float),
+                              conf->dis_ot_limit);
+    isl94202_write_word(ISL94202_DOTS,
+                        (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DOTS_Msk);
 
-    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt,
-        sizeof(lut_temp_degc)/sizeof(float), conf->dis_ot_limit - conf->t_limit_hyst);
-    isl94202_write_word(ISL94202_DOTR, (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DOTR_Msk);
+    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt, sizeof(lut_temp_degc) / sizeof(float),
+                              conf->dis_ot_limit - conf->t_limit_hyst);
+    isl94202_write_word(ISL94202_DOTR,
+                        (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DOTR_Msk);
 
     // Discharge under-temperature
-    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt,
-        sizeof(lut_temp_degc)/sizeof(float), conf->dis_ut_limit);
-    isl94202_write_word(ISL94202_DUTS, (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DUTS_Msk);
+    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt, sizeof(lut_temp_degc) / sizeof(float),
+                              conf->dis_ut_limit);
+    isl94202_write_word(ISL94202_DUTS,
+                        (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DUTS_Msk);
 
-    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt,
-        sizeof(lut_temp_degc)/sizeof(float), conf->dis_ut_limit + conf->t_limit_hyst);
-    isl94202_write_word(ISL94202_DUTR, (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DUTR_Msk);
+    adc_voltage = interpolate(lut_temp_degc, lut_temp_volt, sizeof(lut_temp_degc) / sizeof(float),
+                              conf->dis_ut_limit + conf->t_limit_hyst);
+    isl94202_write_word(ISL94202_DUTR,
+                        (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DUTR_Msk);
 
     return 1;
 }
@@ -270,8 +275,8 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     adc_raw = isl94202_read_word(ISL94202_XT1) & 0x0FFF;
     float adc_v = (float)adc_raw * 1.8 / 4095 / 2;
 
-    status->bat_temp_avg = interpolate(lut_temp_volt, lut_temp_degc,
-        sizeof(lut_temp_degc)/sizeof(float), adc_v);
+    status->bat_temp_avg =
+        interpolate(lut_temp_volt, lut_temp_degc, sizeof(lut_temp_degc) / sizeof(float), adc_v);
 
     // only single battery temperature measurement
     status->bat_temp_min = status->bat_temp_avg;
@@ -281,8 +286,8 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     adc_raw = isl94202_read_word(ISL94202_XT2) & 0x0FFF;
     adc_v = (float)adc_raw * 1.8 / 4095 / 2;
 
-    status->mosfet_temp = interpolate(lut_temp_volt, lut_temp_degc,
-        sizeof(lut_temp_degc)/sizeof(float), adc_v);
+    status->mosfet_temp =
+        interpolate(lut_temp_volt, lut_temp_degc, sizeof(lut_temp_degc) / sizeof(float), adc_v);
 }
 
 void bms_read_current(BmsConfig *conf, BmsStatus *status)
@@ -313,7 +318,7 @@ void bms_read_voltages(BmsStatus *status)
     float sum_voltages = 0;
 
     for (int i = 0; i < BOARD_NUM_CELLS_MAX; i++) {
-        adc_raw = isl94202_read_word(ISL94202_CELL1 + i*2) & 0x0FFF;
+        adc_raw = isl94202_read_word(ISL94202_CELL1 + i * 2) & 0x0FFF;
         status->cell_voltages[i] = (float)adc_raw * 18 * 800 / 4095 / 3 / 1000;
 
         if (i == 0) {
@@ -336,8 +341,8 @@ void bms_read_voltages(BmsStatus *status)
     status->connected_cells = conn_cells;
     status->cell_voltage_avg = sum_voltages / conn_cells;
 
-    //adc_raw = isl94202_read_word(ISL94202_VBATT) & 0x0FFF;
-    //status->pack_voltage = (float)adc_raw * 1.8 * 32 / 4095;
+    // adc_raw = isl94202_read_word(ISL94202_VBATT) & 0x0FFF;
+    // status->pack_voltage = (float)adc_raw * 1.8 * 32 / 4095;
 
     // VBATT based pack voltage seems very inaccurate, so take sum of cell voltages instead
     status->pack_voltage = sum_voltages;
@@ -352,27 +357,39 @@ void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
     isl94202_read_bytes(ISL94202_STAT0, stat, 2);
     isl94202_read_bytes(ISL94202_CTRL1, &ctrl1, 1);
 
-    if (stat[0] & ISL94202_STAT0_UVF_Msk)   error_flags |= 1U << BMS_ERR_CELL_UNDERVOLTAGE;
-    if (stat[0] & ISL94202_STAT0_OVF_Msk)   error_flags |= 1U << BMS_ERR_CELL_OVERVOLTAGE;
-    if (stat[1] & ISL94202_STAT1_DSCF_Msk)  error_flags |= 1U << BMS_ERR_SHORT_CIRCUIT;
-    if (stat[1] & ISL94202_STAT1_DOCF_Msk)  error_flags |= 1U << BMS_ERR_DIS_OVERCURRENT;
-    if (stat[1] & ISL94202_STAT1_COCF_Msk)  error_flags |= 1U << BMS_ERR_CHG_OVERCURRENT;
-    if (stat[1] & ISL94202_STAT1_OPENF_Msk) error_flags |= 1U << BMS_ERR_OPEN_WIRE;
-    if (stat[0] & ISL94202_STAT0_DUTF_Msk)  error_flags |= 1U << BMS_ERR_DIS_UNDERTEMP;
-    if (stat[0] & ISL94202_STAT0_DOTF_Msk)  error_flags |= 1U << BMS_ERR_DIS_OVERTEMP;
-    if (stat[0] & ISL94202_STAT0_CUTF_Msk)  error_flags |= 1U << BMS_ERR_CHG_UNDERTEMP;
-    if (stat[0] & ISL94202_STAT0_COTF_Msk)  error_flags |= 1U << BMS_ERR_CHG_OVERTEMP;
-    if (stat[1] & ISL94202_STAT1_IOTF_Msk)  error_flags |= 1U << BMS_ERR_INT_OVERTEMP;
-    if (stat[1] & ISL94202_STAT1_CELLF_Msk) error_flags |= 1U << BMS_ERR_CELL_FAILURE;
+    if (stat[0] & ISL94202_STAT0_UVF_Msk)
+        error_flags |= 1U << BMS_ERR_CELL_UNDERVOLTAGE;
+    if (stat[0] & ISL94202_STAT0_OVF_Msk)
+        error_flags |= 1U << BMS_ERR_CELL_OVERVOLTAGE;
+    if (stat[1] & ISL94202_STAT1_DSCF_Msk)
+        error_flags |= 1U << BMS_ERR_SHORT_CIRCUIT;
+    if (stat[1] & ISL94202_STAT1_DOCF_Msk)
+        error_flags |= 1U << BMS_ERR_DIS_OVERCURRENT;
+    if (stat[1] & ISL94202_STAT1_COCF_Msk)
+        error_flags |= 1U << BMS_ERR_CHG_OVERCURRENT;
+    if (stat[1] & ISL94202_STAT1_OPENF_Msk)
+        error_flags |= 1U << BMS_ERR_OPEN_WIRE;
+    if (stat[0] & ISL94202_STAT0_DUTF_Msk)
+        error_flags |= 1U << BMS_ERR_DIS_UNDERTEMP;
+    if (stat[0] & ISL94202_STAT0_DOTF_Msk)
+        error_flags |= 1U << BMS_ERR_DIS_OVERTEMP;
+    if (stat[0] & ISL94202_STAT0_CUTF_Msk)
+        error_flags |= 1U << BMS_ERR_CHG_UNDERTEMP;
+    if (stat[0] & ISL94202_STAT0_COTF_Msk)
+        error_flags |= 1U << BMS_ERR_CHG_OVERTEMP;
+    if (stat[1] & ISL94202_STAT1_IOTF_Msk)
+        error_flags |= 1U << BMS_ERR_INT_OVERTEMP;
+    if (stat[1] & ISL94202_STAT1_CELLF_Msk)
+        error_flags |= 1U << BMS_ERR_CELL_FAILURE;
 
-    if (!(ctrl1 & ISL94202_CTRL1_DFET_Msk) &&
-        (status->state == BMS_STATE_DIS || status->state == BMS_STATE_NORMAL))
+    if (!(ctrl1 & ISL94202_CTRL1_DFET_Msk)
+        && (status->state == BMS_STATE_DIS || status->state == BMS_STATE_NORMAL))
     {
         error_flags |= 1U << BMS_ERR_DIS_OFF;
     }
 
-    if (!(ctrl1 & ISL94202_CTRL1_CFET_Msk) &&
-        (status->state == BMS_STATE_CHG || status->state == BMS_STATE_NORMAL))
+    if (!(ctrl1 & ISL94202_CTRL1_CFET_Msk)
+        && (status->state == BMS_STATE_CHG || status->state == BMS_STATE_NORMAL))
     {
         error_flags |= 1U << BMS_ERR_CHG_OFF;
     }

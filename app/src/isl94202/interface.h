@@ -19,9 +19,9 @@
 extern "C" {
 #endif
 
-#include <time.h>
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <time.h>
 
 /**
  * Initialization of ISL94202 IC
@@ -95,10 +95,9 @@ int isl94202_write_delay(uint8_t reg_addr, uint8_t delay_unit, uint16_t delay_va
  *
  * @returns Actual threshold current in A or 0 in case of error
  */
-float isl94202_write_current_limit(uint8_t reg_addr,
-    const uint16_t *voltage_thresholds_mV, int num_thresholds,
-    float current_limit, float shunt_res_mOhm,
-    uint8_t delay_unit, uint16_t delay_value);
+float isl94202_write_current_limit(uint8_t reg_addr, const uint16_t *voltage_thresholds_mV,
+                                   int num_thresholds, float current_limit, float shunt_res_mOhm,
+                                   uint8_t delay_unit, uint16_t delay_value);
 
 /**
  * Writes a voltage setting to specified register

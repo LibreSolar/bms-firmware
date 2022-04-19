@@ -10,8 +10,8 @@
 
 #include "unity.h"
 
-#include <time.h>
 #include <stdio.h>
+#include <time.h>
 
 extern BmsConfig bms_conf;
 extern BmsStatus bms_status;
@@ -31,7 +31,7 @@ void init_conf()
     bms_conf.t_limit_hyst = 2;
 
     bms_conf.bal_cell_voltage_min = 3.2;
-    bms_conf.bal_idle_delay = 5*60;
+    bms_conf.bal_idle_delay = 5 * 60;
     bms_conf.bal_cell_voltage_diff = 0.01;
 
     for (int i = 0; i < BOARD_NUM_CELLS_MAX; i++) {
@@ -247,18 +247,18 @@ int common_tests()
 
     RUN_TEST(dis2off_if_dis_nok);
     RUN_TEST(dis2normal_if_chg_ok);
-    //RUN_TEST(dis2balancing_if_ok);
+    // RUN_TEST(dis2balancing_if_ok);
 
     RUN_TEST(normal2dis_if_chg_nok);
 
     RUN_TEST(normal2chg_if_dis_nok);
 
-    //RUN_TEST(no_normal2balancing_if_nok);
-    //RUN_TEST(normal2balancing_if_ok);   // ok = high SOC and current low
-    //RUN_TEST(balancing2normal_at_increased_current);
-    //RUN_TEST(balancing2normal_if_done);
-    //RUN_TEST(balancing2dis_at_increased_current);
-    //RUN_TEST(balancing2dis_if_done);
+    // RUN_TEST(no_normal2balancing_if_nok);
+    // RUN_TEST(normal2balancing_if_ok);   // ok = high SOC and current low
+    // RUN_TEST(balancing2normal_at_increased_current);
+    // RUN_TEST(balancing2normal_if_done);
+    // RUN_TEST(balancing2dis_at_increased_current);
+    // RUN_TEST(balancing2dis_if_done);
 
     return UNITY_END();
 }

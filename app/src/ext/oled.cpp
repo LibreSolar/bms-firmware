@@ -9,9 +9,9 @@
 #include <math.h>
 #include <stdio.h>
 
-#include <zephyr.h>
 #include <device.h>
 #include <drivers/gpio.h>
+#include <zephyr.h>
 
 #include "bms.h"
 #include "board.h"
@@ -48,14 +48,14 @@ void oled_update()
     len = snprintf(buf, sizeof(buf), "SOC:%.0f", bms_status.soc);
     oled.writeString(buf, len);
 
-    //oled.setTextCursor(0, 16);
-    //len = snprintf(buf, sizeof(buf), "Load: %.2fV", load_voltage);
-    //oled.writeString(buf, len);
+    // oled.setTextCursor(0, 16);
+    // len = snprintf(buf, sizeof(buf), "Load: %.2fV", load_voltage);
+    // oled.writeString(buf, len);
 
     for (int i = 0; i < BOARD_NUM_CELLS_MAX; i++) {
         if (blink_on || !(bms_status.balancing_status & (1 << i))) {
             oled.setTextCursor((i % 2 == 0) ? 0 : 64, 24 + (i / 2) * 8);
-            len = snprintf(buf, sizeof(buf), "%d:%.3f V", i+1, bms_status.cell_voltages[i]);
+            len = snprintf(buf, sizeof(buf), "%d:%.3f V", i + 1, bms_status.cell_voltages[i]);
             oled.writeString(buf, len);
         }
     }

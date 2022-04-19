@@ -19,8 +19,8 @@
 extern "C" {
 #endif
 
-#include <time.h>
 #include <stdbool.h>
+#include <time.h>
 
 /**
  * Initialization of bq769x0 IC

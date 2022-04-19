@@ -17,8 +17,8 @@
 
 #include <stdio.h>
 
-#include <zephyr.h>
 #include <device.h>
+#include <zephyr.h>
 
 #ifdef CONFIG_ARCH_POSIX
 #include "posix_board_if.h"
@@ -26,8 +26,8 @@
 
 extern "C" {
 
-void setUp (void) {}
-void tearDown (void) {}
+void setUp(void) {}
+void tearDown(void) {}
 
 } /* extern "C" */
 
@@ -41,16 +41,16 @@ float OCV[] = { // 100, 95, ..., 0 %
 
 void setup()
 {
-    bms_conf.dis_sc_limit  = 35.0;
-    bms_conf.dis_sc_delay_us  = 200;
+    bms_conf.dis_sc_limit = 35.0;
+    bms_conf.dis_sc_delay_us = 200;
     bms_apply_dis_scp(&bms_conf);
 
-    bms_conf.dis_oc_limit  = 25.0;
-    bms_conf.dis_oc_delay_ms  = 320;
+    bms_conf.dis_oc_limit = 25.0;
+    bms_conf.dis_oc_delay_ms = 320;
     bms_apply_dis_ocp(&bms_conf);
 
-    bms_conf.chg_oc_limit  = 20.0;
-    bms_conf.chg_oc_delay_ms  = 320;
+    bms_conf.chg_oc_limit = 20.0;
+    bms_conf.chg_oc_delay_ms = 320;
     bms_apply_chg_ocp(&bms_conf);
 
     bms_conf.cell_ov_limit = 3.65;
@@ -70,10 +70,10 @@ void setup()
 
     bms_conf.shunt_res_mOhm = BOARD_SHUNT_RESISTOR;
     bms_conf.ocv = OCV;
-    bms_conf.num_ocv_points = sizeof(OCV)/sizeof(float);
+    bms_conf.num_ocv_points = sizeof(OCV) / sizeof(float);
 
     bms_conf.nominal_capacity_Ah = 45.0;
-    bms_status.connected_cells = 4;  // ToDo: Function to determine number of cells automatically
+    bms_status.connected_cells = 4; // ToDo: Function to determine number of cells automatically
 
     // get voltage and temperature measurements before switching on
     bms_update(&bms_conf, &bms_status);

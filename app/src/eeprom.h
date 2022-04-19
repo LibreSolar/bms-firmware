@@ -7,7 +7,7 @@
 #ifndef EEPROM_H_
 #define EEPROM_H_
 
-#define EEPROM_UPDATE_INTERVAL  (6*60*60)       // update every 6 hours
+#define EEPROM_UPDATE_INTERVAL (6 * 60 * 60) // update every 6 hours
 
 /**
  * @file
