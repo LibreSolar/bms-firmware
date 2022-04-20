@@ -12,31 +12,29 @@
 #include <string.h>
 
 // Memory of bq769x2 for direct commands
-static uint8_t mem_bq[BQ_MEM_SIZE];
+uint8_t mem_bq_direct[BQ_DIRECT_MEM_SIZE];
 
-uint8_t *bq769x2_get_mem(void)
-{
-    return mem_bq;
-}
+// Memory of bq769x2 for subcommands
+uint8_t mem_bq_subcmd[BQ_SUBCMD_MEM_SIZE];
 
 int bq769x2_write_bytes(const uint8_t reg_addr, const uint8_t *data, const size_t num_bytes)
 {
-    if (reg_addr >= sizeof(mem_bq)) {
+    if (reg_addr >= sizeof(mem_bq_direct)) {
         return -EINVAL;
     }
 
-    memcpy(mem_bq + reg_addr, data, num_bytes);
+    memcpy(mem_bq_direct + reg_addr, data, num_bytes);
 
     return 0;
 }
 
 int bq769x2_read_bytes(const uint8_t reg_addr, uint8_t *data, const size_t num_bytes)
 {
-    if (reg_addr >= sizeof(mem_bq)) {
+    if (reg_addr >= sizeof(mem_bq_direct)) {
         return -EINVAL;
     }
 
-    memcpy(data, mem_bq + reg_addr, num_bytes);
+    memcpy(data, mem_bq_direct + reg_addr, num_bytes);
 
     return 0;
 }
