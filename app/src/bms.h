@@ -278,7 +278,8 @@ void bms_soc_update(BmsConfig *conf, BmsStatus *status);
  * Apply charge/discharge temperature limits.
  *
  * @param conf BMS configuration containing the limit settings
- * @returns 1 for success or 0 in case of error
+ *
+ * @returns 0 on success, otherwise negative error code.
  */
 int bms_apply_temp_limits(BmsConfig *conf);
 

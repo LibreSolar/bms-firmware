@@ -259,7 +259,7 @@ int bms_apply_temp_limits(BmsConfig *conf)
     isl94202_write_word(ISL94202_DUTR,
                         (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DUTR_Msk);
 
-    return 1;
+    return 0;
 }
 
 // using default setting TGain = 0 (GAIN = 2) with 22k resistors
