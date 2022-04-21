@@ -98,7 +98,7 @@ void bms_shutdown()
     isl94202_write_bytes(ISL94202_CTRL3, &reg, 1);
 }
 
-bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
+int bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
     uint8_t reg;
     isl94202_read_bytes(ISL94202_CTRL1, &reg, 1);
@@ -111,7 +111,7 @@ bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
     return isl94202_write_bytes(ISL94202_CTRL1, &reg, 1);
 }
 
-bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
+int bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
     uint8_t reg;
     isl94202_read_bytes(ISL94202_CTRL1, &reg, 1);

@@ -113,7 +113,7 @@ void bms_shutdown()
     bq769x0_write_byte(BQ769X0_SYS_CTRL1, 0x2);
 }
 
-bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
+int bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
     SYS_CTRL2_Type sys_ctrl2;
 
@@ -121,10 +121,10 @@ bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
     sys_ctrl2.CHG_ON = enable;
     bq769x0_write_byte(BQ769X0_SYS_CTRL2, sys_ctrl2.byte);
 
-    return true;
+    return 0;
 }
 
-bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
+int bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
     SYS_CTRL2_Type sys_ctrl2;
 
@@ -132,7 +132,7 @@ bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
     sys_ctrl2.DSG_ON = enable;
     bq769x0_write_byte(BQ769X0_SYS_CTRL2, sys_ctrl2.byte);
 
-    return true;
+    return 0;
 }
 
 void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)

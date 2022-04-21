@@ -103,14 +103,14 @@ void bms_shutdown()
     // TODO
 }
 
-bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
+int bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
     // handled by bq769x2 in autonomous mode, manual disable of a FET currently not supported
 
     return 0;
 }
 
-bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
+int bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
 {
     // handled by bq769x2 in autonomous mode, manual disable of a FET currently not supported
 

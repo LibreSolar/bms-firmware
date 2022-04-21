@@ -205,13 +205,25 @@ void bms_shutdown();
 
 /**
  * Enable/disable charge MOSFET
+ *
+ * @param conf Pointer to BMS configuration.
+ * @param status Pointer to BMS status object.
+ * @param enable Desired status of the MOSFET.
+ *
+ * @returns 0 on success, otherwise negative error code.
  */
-bool bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable);
+int bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable);
 
 /**
  * Enable/disable discharge MOSFET
+ *
+ * @param conf Pointer to BMS configuration.
+ * @param status Pointer to BMS status object.
+ * @param enable Desired status of the MOSFET.
+ *
+ * @returns 0 on success, otherwise negative error code.
  */
-bool bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable);
+int bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable);
 
 /**
  * Charging error flags check
