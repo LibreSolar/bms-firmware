@@ -145,9 +145,16 @@ float bms_apply_dis_ocp(BmsConfig *conf)
 
 int bms_apply_cell_uvp(BmsConfig *conf)
 {
-    // TODO
+    uint8_t cuv_threshold = lroundf(conf->cell_uv_limit * 1000.0F / 50.6F);
+    uint16_t cuv_delay = lroundf(conf->cell_uv_delay_ms / 3.3F);
 
-    return 0;
+    cuv_threshold = CLAMP(cuv_threshold, 20, 90);
+    cuv_delay = CLAMP(cuv_delay, 1, 2047);
+
+    int err_threshold = bq769x2_subcmd_write_u1(BQ769X2_PROT_CUV_THRESHOLD, cuv_threshold);
+    int err_delay = bq769x2_subcmd_write_u2(BQ769X2_PROT_CUV_DELAY, cuv_delay);
+
+    return (err_threshold == 0 && err_delay == 0);
 }
 
 int bms_apply_cell_ovp(BmsConfig *conf)
