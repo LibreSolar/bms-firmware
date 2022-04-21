@@ -196,132 +196,100 @@ void test_bq769x2_subcmd_read_f4()
 
 void test_bq769x2_subcmd_write_u1()
 {
-    uint8_t chk_len_expected[2];
-    uint8_t data_expected[4];
+    uint8_t data_expected[] = { 0xFF };
+    uint8_t chk_expected = (uint8_t) ~(0x91 + 0x80 + 0xFF);
+    uint8_t len_expected = 4 + sizeof(data_expected);
 
-    data_expected[0x0] = 0xFF;
-
-    chk_len_expected[0x0] = 0;     // checksum
-    chk_len_expected[0x1] = 4 + 1; // length
-
-    int err = bq769x2_subcmd_write_u1(0, UINT8_MAX);
+    int err = bq769x2_subcmd_write_u1(0x9180, UINT8_MAX);
     TEST_ASSERT_EQUAL(0, err);
 
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(chk_len_expected, mem_bq_direct + 0x60, 2);
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, 1);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, sizeof(data_expected));
+    TEST_ASSERT_EQUAL_HEX8(chk_expected, mem_bq_direct[0x60]);
+    TEST_ASSERT_EQUAL_HEX8(len_expected, mem_bq_direct[0x61]);
 }
 
 void test_bq769x2_subcmd_write_u2()
 {
-    uint8_t chk_len_expected[2];
-    uint8_t data_expected[4];
+    uint8_t data_expected[] = { 0x00, 0xFF };
+    uint8_t chk_expected = (uint8_t) ~(0x91 + 0x80 + 0xFF);
+    uint8_t len_expected = 4 + sizeof(data_expected);
 
-    data_expected[0x0] = 0x00; // LSB
-    data_expected[0x1] = 0xFF; // MSB
-
-    chk_len_expected[0x0] = 0;     // checksum
-    chk_len_expected[0x1] = 4 + 2; // length
-
-    int err = bq769x2_subcmd_write_u2(0, 0xFF00);
+    int err = bq769x2_subcmd_write_u2(0x9180, 0xFF00);
     TEST_ASSERT_EQUAL(0, err);
 
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(chk_len_expected, mem_bq_direct + 0x60, 2);
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, 2);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, sizeof(data_expected));
+    TEST_ASSERT_EQUAL_HEX8(chk_expected, mem_bq_direct[0x60]);
+    TEST_ASSERT_EQUAL_HEX8(len_expected, mem_bq_direct[0x61]);
 }
 
 void test_bq769x2_subcmd_write_u4()
 {
-    uint8_t chk_len_expected[2];
-    uint8_t data_expected[4];
+    uint8_t data_expected[] = { 0xAA, 0xBB, 0xCC, 0xDD };
+    uint8_t chk_expected = (uint8_t) ~(0x91 + 0x80 + 0xAA + 0xBB + 0xCC + 0xDD);
+    uint8_t len_expected = 4 + sizeof(data_expected);
 
-    data_expected[0x0] = 0xAA; // LSB
-    data_expected[0x1] = 0xBB;
-    data_expected[0x2] = 0xCC;
-    data_expected[0x3] = 0xDD; // MSB
-
-    chk_len_expected[0x0] = (uint8_t) ~(0xAA + 0xBB + 0xCC + 0xDD);
-    chk_len_expected[0x1] = 4 + 4;
-
-    int err = bq769x2_subcmd_write_u4(0, 0xDDCCBBAA);
+    int err = bq769x2_subcmd_write_u4(0x9180, 0xDDCCBBAA);
     TEST_ASSERT_EQUAL(0, err);
 
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(chk_len_expected, mem_bq_direct + 0x60, 2);
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, 4);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, sizeof(data_expected));
+    TEST_ASSERT_EQUAL_HEX8(chk_expected, mem_bq_direct[0x60]);
+    TEST_ASSERT_EQUAL_HEX8(len_expected, mem_bq_direct[0x61]);
 }
 
 void test_bq769x2_subcmd_write_i1()
 {
-    uint8_t chk_len_expected[2];
-    uint8_t data_expected[4];
+    uint8_t data_expected[] = { 0x80 };
+    uint8_t chk_expected = (uint8_t) ~(0x91 + 0x80 + 0x80);
+    uint8_t len_expected = 4 + sizeof(data_expected);
 
-    data_expected[0x0] = 0x80;
-
-    chk_len_expected[0x0] = (uint8_t)~0x80; // checksum
-    chk_len_expected[0x1] = 4 + 1;          // length
-
-    int err = bq769x2_subcmd_write_i1(0, INT8_MIN);
+    int err = bq769x2_subcmd_write_i1(0x9180, INT8_MIN);
     TEST_ASSERT_EQUAL(0, err);
 
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(chk_len_expected, mem_bq_direct + 0x60, 2);
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, 1);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, sizeof(data_expected));
+    TEST_ASSERT_EQUAL_HEX8(chk_expected, mem_bq_direct[0x60]);
+    TEST_ASSERT_EQUAL_HEX8(len_expected, mem_bq_direct[0x61]);
 }
 
 void test_bq769x2_subcmd_write_i2()
 {
-    uint8_t chk_len_expected[2];
-    uint8_t data_expected[4];
+    uint8_t data_expected[] = { 0x00, 0x80 };
+    uint8_t chk_expected = (uint8_t) ~(0x91 + 0x80 + 0x00 + 0x80);
+    uint8_t len_expected = 4 + sizeof(data_expected);
 
-    data_expected[0x0] = 0x00; // LSB
-    data_expected[0x1] = 0x80; // MSB
-
-    chk_len_expected[0x0] = (uint8_t)~0x80; // checksum
-    chk_len_expected[0x1] = 4 + 2;          // length
-
-    int err = bq769x2_subcmd_write_i2(0, INT16_MIN);
+    int err = bq769x2_subcmd_write_i2(0x9180, INT16_MIN);
     TEST_ASSERT_EQUAL(0, err);
 
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(chk_len_expected, mem_bq_direct + 0x60, 2);
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, 2);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, sizeof(data_expected));
+    TEST_ASSERT_EQUAL_HEX8(chk_expected, mem_bq_direct[0x60]);
+    TEST_ASSERT_EQUAL_HEX8(len_expected, mem_bq_direct[0x61]);
 }
 
 void test_bq769x2_subcmd_write_i4()
 {
-    uint8_t chk_len_expected[2];
-    uint8_t data_expected[4];
+    uint8_t data_expected[] = { 0x00, 0x00, 0x00, 0x80 };
+    uint8_t chk_expected = (uint8_t) ~(0x91 + 0x80 + 0x00 + 0x00 + 0x00 + 0x80);
+    uint8_t len_expected = 4 + sizeof(data_expected);
 
-    data_expected[0x0] = 0x00; // LSB
-    data_expected[0x1] = 0x00;
-    data_expected[0x2] = 0x00;
-    data_expected[0x3] = 0x80; // MSB
-
-    chk_len_expected[0x0] = (uint8_t)~0x80; // checksum
-    chk_len_expected[0x1] = 4 + 4;          // length
-
-    int err = bq769x2_subcmd_write_i4(0, INT32_MIN);
+    int err = bq769x2_subcmd_write_i4(0x9180, INT32_MIN);
     TEST_ASSERT_EQUAL(0, err);
 
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(chk_len_expected, mem_bq_direct + 0x60, 2);
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, 4);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, sizeof(data_expected));
+    TEST_ASSERT_EQUAL_HEX8(chk_expected, mem_bq_direct[0x60]);
+    TEST_ASSERT_EQUAL_HEX8(len_expected, mem_bq_direct[0x61]);
 }
 
 void test_bq769x2_subcmd_write_f4()
 {
-    uint8_t chk_len_expected[2];
-    uint8_t data_expected[4];
+    uint8_t data_expected[] = { 0xB6, 0xF3, 0x9D, 0x3F };
+    uint8_t chk_expected = (uint8_t) ~(0x91 + 0x80 + 0xB6 + 0xF3 + 0x9D + 0x3F);
+    uint8_t len_expected = 4 + sizeof(data_expected);
 
-    data_expected[0x0] = 0xB6; // LSB
-    data_expected[0x1] = 0xF3;
-    data_expected[0x2] = 0x9D;
-    data_expected[0x3] = 0x3F; // MSB
-
-    chk_len_expected[0x0] = (uint8_t) ~(0xB6 + 0xF3 + 0x9D + 0x3F);
-    chk_len_expected[0x1] = 4 + 4;
-
-    int err = bq769x2_subcmd_write_f4(0, 1.234F);
+    int err = bq769x2_subcmd_write_f4(0x9180, 1.234F);
     TEST_ASSERT_EQUAL(0, err);
 
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(chk_len_expected, mem_bq_direct + 0x60, 2);
-    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, 4);
+    TEST_ASSERT_EQUAL_HEX8_ARRAY(data_expected, mem_bq_direct + 0x40, sizeof(data_expected));
+    TEST_ASSERT_EQUAL_HEX8(chk_expected, mem_bq_direct[0x60]);
+    TEST_ASSERT_EQUAL_HEX8(len_expected, mem_bq_direct[0x61]);
 }
 
 int bq769x2_tests_interface()
