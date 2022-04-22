@@ -186,28 +186,36 @@ float bms_apply_dis_ocp(BmsConfig *conf)
 
 int bms_apply_cell_ovp(BmsConfig *conf)
 {
+    int err = 0;
+
     // also apply balancing thresholds here
-    isl94202_write_voltage(ISL94202_CBMIN, conf->bal_cell_voltage_min, 0);
-    isl94202_write_voltage(ISL94202_CBMAX, 4.5F, 0); // no upper limit for balancing
-    isl94202_write_voltage(ISL94202_CBMINDV, conf->bal_cell_voltage_diff, 0);
-    isl94202_write_voltage(ISL94202_CBMAXDV, 1.0F, 0); // no tight limit for voltage delta
+    err += isl94202_write_voltage(ISL94202_CBMIN, conf->bal_cell_voltage_min, 0);
+    err += isl94202_write_voltage(ISL94202_CBMAX, 4.5F, 0); // no upper limit for balancing
+    err += isl94202_write_voltage(ISL94202_CBMINDV, conf->bal_cell_voltage_diff, 0);
+    err += isl94202_write_voltage(ISL94202_CBMAXDV, 1.0F, 0); // no tight limit for voltage delta
 
     // EOC condition needs to be set to bal_cell_voltage_min instead of cell_chg_voltage to enable
     // balancing during idle
-    isl94202_write_voltage(ISL94202_EOC, conf->bal_cell_voltage_min, 0);
+    err += isl94202_write_voltage(ISL94202_EOC, conf->bal_cell_voltage_min, 0);
 
     // keeping CPW at the default value of 1 ms
-    return isl94202_write_voltage(ISL94202_OVL_CPW, conf->cell_ov_limit, 1)
-           && isl94202_write_voltage(ISL94202_OVR, conf->cell_ov_reset, 0)
-           && isl94202_write_delay(ISL94202_OVDT, ISL94202_DELAY_MS, conf->cell_ov_delay_ms, 0);
+    err += isl94202_write_voltage(ISL94202_OVL_CPW, conf->cell_ov_limit, 1);
+    err += isl94202_write_voltage(ISL94202_OVR, conf->cell_ov_reset, 0);
+    err += isl94202_write_delay(ISL94202_OVDT, ISL94202_DELAY_MS, conf->cell_ov_delay_ms, 0);
+
+    return err == 0;
 }
 
 int bms_apply_cell_uvp(BmsConfig *conf)
 {
+    int err = 0;
+
     // keeping LPW at the default value of 1 ms
-    return isl94202_write_voltage(ISL94202_UVL_LPW, conf->cell_uv_limit, 1)
-           && isl94202_write_voltage(ISL94202_UVR, conf->cell_uv_reset, 0)
-           && isl94202_write_delay(ISL94202_UVDT, ISL94202_DELAY_MS, conf->cell_uv_delay_ms, 0);
+    err += isl94202_write_voltage(ISL94202_UVL_LPW, conf->cell_uv_limit, 1);
+    err += isl94202_write_voltage(ISL94202_UVR, conf->cell_uv_reset, 0);
+    err += isl94202_write_delay(ISL94202_UVDT, ISL94202_DELAY_MS, conf->cell_uv_delay_ms, 0);
+
+    return err == 0;
 }
 
 // using default setting TGain = 0 (GAIN = 2) with 22k resistors
@@ -268,11 +276,13 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     uint16_t adc_raw;
 
     // Internal temperature
-    adc_raw = isl94202_read_word(ISL94202_IT) & 0x0FFF;
+    isl94202_read_word(ISL94202_IT, &adc_raw);
+    adc_raw &= 0x0FFF;
     status->ic_temp = (float)adc_raw * 1.8 / 4095 * 1000 / 1.8527 - 273.15;
 
     // External temperature 1
-    adc_raw = isl94202_read_word(ISL94202_XT1) & 0x0FFF;
+    isl94202_read_word(ISL94202_XT1, &adc_raw);
+    adc_raw &= 0x0FFF;
     float adc_v = (float)adc_raw * 1.8 / 4095 / 2;
 
     status->bat_temp_avg =
@@ -283,7 +293,8 @@ void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
     status->bat_temp_max = status->bat_temp_avg;
 
     // External temperature 2 (used for MOSFET temperature sensing)
-    adc_raw = isl94202_read_word(ISL94202_XT2) & 0x0FFF;
+    isl94202_read_word(ISL94202_XT2, &adc_raw);
+    adc_raw &= 0x0FFF;
     adc_v = (float)adc_raw * 1.8 / 4095 / 2;
 
     status->mosfet_temp =
@@ -306,7 +317,9 @@ void bms_read_current(BmsConfig *conf, BmsStatus *status)
     sign -= (buf[0] & ISL94202_STAT2_DCHING_Msk) >> ISL94202_STAT2_DCHING_Pos;
 
     // ADC value
-    uint16_t adc_raw = isl94202_read_word(ISL94202_ISNS) & 0x0FFF;
+    uint16_t adc_raw;
+    isl94202_read_word(ISL94202_ISNS, &adc_raw);
+    adc_raw &= 0x0FFF;
 
     status->pack_current = (float)(sign * adc_raw * 1800) / 4095 / gain / conf->shunt_res_mOhm;
 }
@@ -318,7 +331,8 @@ void bms_read_voltages(BmsStatus *status)
     float sum_voltages = 0;
 
     for (int i = 0; i < BOARD_NUM_CELLS_MAX; i++) {
-        adc_raw = isl94202_read_word(ISL94202_CELL1 + i * 2) & 0x0FFF;
+        isl94202_read_word(ISL94202_CELL1 + i * 2, &adc_raw);
+        adc_raw &= 0x0FFF;
         status->cell_voltages[i] = (float)adc_raw * 18 * 800 / 4095 / 3 / 1000;
 
         if (i == 0) {

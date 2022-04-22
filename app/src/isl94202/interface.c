@@ -73,7 +73,7 @@ int isl94202_write_delay(uint8_t reg_addr, uint8_t delay_unit, uint16_t delay_va
                          uint8_t extra_bits)
 {
     if (delay_unit > ISL94202_DELAY_MIN || extra_bits > 0xF) {
-        return 0;
+        return -1;
     }
 
     uint8_t unit_final = delay_unit;
@@ -86,7 +86,7 @@ int isl94202_write_delay(uint8_t reg_addr, uint8_t delay_unit, uint16_t delay_va
             value_final = value_final / 60;
         }
         else {
-            return 0;
+            return -1;
         }
         unit_final++;
     }
@@ -94,7 +94,7 @@ int isl94202_write_delay(uint8_t reg_addr, uint8_t delay_unit, uint16_t delay_va
     // delay value: bits 0-9, unit: bits A-B, extra bits: C-E
     uint16_t reg = value_final | (unit_final << 0xA) | (extra_bits << 0xC);
 
-    return isl94202_write_word(reg_addr, reg) == 0;
+    return isl94202_write_word(reg_addr, reg);
 }
 
 float isl94202_write_current_limit(uint8_t reg_addr, const uint16_t *voltage_thresholds_mV,
@@ -125,19 +125,20 @@ int isl94202_write_voltage(uint8_t reg_addr, float voltage, uint8_t extra_bits)
     uint16_t voltage_raw = voltage * 4095 * 3 / 1.8 / 8;
 
     if (voltage_raw > 0x0FFF) {
-        return 0;
+        return -1;
     }
 
     reg |= (voltage_raw & 0x0FFF);
 
-    return isl94202_write_word(reg_addr, reg) == 0;
+    return isl94202_write_word(reg_addr, reg);
 }
 
-int isl94202_read_word(uint8_t reg_addr)
+int isl94202_read_word(uint8_t reg_addr, uint16_t *value)
 {
     uint8_t buf[2] = { 0 };
     if (isl94202_read_bytes(reg_addr, buf, 2) == 0) {
-        return buf[0] + (buf[1] << 8);
+        *value = buf[0] + (buf[1] << 8);
+        return 0;
     }
     else {
         return -1;

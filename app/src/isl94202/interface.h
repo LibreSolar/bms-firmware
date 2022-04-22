@@ -35,7 +35,7 @@ void isl94202_init();
  * @param data The pointer to the data buffer
  * @param num_bytes Number of bytes to write
  *
- * @returns 0 if successful
+ * @returns 0 on success, otherwise negative error code.
  */
 int isl94202_write_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes);
 
@@ -45,7 +45,7 @@ int isl94202_write_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes);
  * @param addr The address to write to
  * @param word The word to be written
  *
- * @returns 0 if successful
+ * @returns 0 on success, otherwise negative error code.
  */
 int isl94202_write_word(uint8_t reg_addr, uint16_t word);
 
@@ -56,7 +56,7 @@ int isl94202_write_word(uint8_t reg_addr, uint16_t word);
  * @param data The pointer to where the data should be stored
  * @param num_bytes Number of bytes to read
  *
- * @returns 0 if successful
+ * @returns 0 on success, otherwise negative error code.
  */
 int isl94202_read_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes);
 
@@ -64,10 +64,11 @@ int isl94202_read_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes);
  * Reads a word from ISL94202 IC registers
  *
  * @param addr The address of the word
+ * @param value Pointer to the variable to store the result
  *
- * @returns the (unsigned) word or -1 in case of CRC error
+ * @returns 0 on success, otherwise negative error code.
  */
-int isl94202_read_word(uint8_t reg_addr);
+int isl94202_read_word(uint8_t reg_addr, uint16_t *value);
 
 /**
  * Writes a delay + extra bits to specified register
@@ -77,7 +78,7 @@ int isl94202_read_word(uint8_t reg_addr);
  * @param delay_value Value of the delay in the given unit
  * @param extra_bits Four extra bits C-F
  *
- * @returns Actual threshold current in A or 0 in case of error
+ * @returns 0 on success, otherwise negative error code.
  */
 int isl94202_write_delay(uint8_t reg_addr, uint8_t delay_unit, uint16_t delay_value,
                          uint8_t extra_bits);
@@ -106,7 +107,7 @@ float isl94202_write_current_limit(uint8_t reg_addr, const uint16_t *voltage_thr
  * @param voltage Voltage setting (V)
  * @param extra_bits Four extra bits left of voltage setting, set to 0 if not applicable
  *
- * @returns 1 for success or 0 in case of error
+ * @returns 0 on success, otherwise negative error code.
  */
 int isl94202_write_voltage(uint8_t reg_addr, float voltage, uint8_t extra_bits);
 
