@@ -169,18 +169,25 @@ void bms_init_hardware();
 
 /**
  * Initialization of BmsStatus with suitable default values.
+ *
+ * @param status Pointer to BMS status object that should be initialized.
  */
 void bms_init_status(BmsStatus *status);
 
 /**
  * Initialization of BmsConfig with typical default values for the given cell type.
  *
- * Type must be defined as int, as enum CellType cannot be set via Kconfig.
+ * @param conf Pointer to BMS configuration that should be initialized.
+ * @param type One of enum CellType (defined as int so that it can be set via Kconfig).
+ * @param nominal_capacity Nominal capacity of the battery pack.
  */
 void bms_init_config(BmsConfig *conf, int type, float nominal_capacity);
 
 /**
  * Main BMS state machine
+ *
+ * @param conf Pointer to BMS configuration.
+ * @param status Pointer to BMS status object.
  */
 void bms_state_machine(BmsConfig *conf, BmsStatus *status);
 
@@ -188,6 +195,9 @@ void bms_state_machine(BmsConfig *conf, BmsStatus *status);
  * Update measurements and check for errors before calling the state machine
  *
  * Should be called at least once every 250 ms to get correct coulomb counting
+ *
+ * @param conf Pointer to BMS configuration.
+ * @param status Pointer to BMS status object.
  */
 void bms_update(BmsConfig *conf, BmsStatus *status);
 
