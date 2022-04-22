@@ -168,9 +168,25 @@ int bms_apply_cell_uvp(BmsConfig *conf)
 
 int bms_apply_cell_ovp(BmsConfig *conf)
 {
-    // TODO
+    int err = 0;
 
-    return 0;
+    uint8_t cov_threshold = lroundf(conf->cell_ov_limit * 1000.0F / 50.6F);
+    uint8_t cov_hyst = lroundf(MAX(conf->cell_ov_limit - conf->cell_ov_reset, 0) * 1000.0F / 50.6F);
+    uint16_t cov_delay = lroundf(conf->cell_ov_delay_ms / 3.3F);
+
+    cov_threshold = CLAMP(cov_threshold, 20, 110);
+    cov_hyst = CLAMP(cov_hyst, 2, 20);
+    cov_delay = CLAMP(cov_delay, 1, 2047);
+
+    err += bq769x2_subcmd_write_u1(BQ769X2_PROT_COV_THRESHOLD, cov_threshold);
+    err += bq769x2_subcmd_write_u1(BQ769X2_PROT_COV_RECOV_HYST, cov_hyst);
+    err += bq769x2_subcmd_write_u2(BQ769X2_PROT_COV_DELAY, cov_delay);
+
+    conf->cell_ov_limit = cov_threshold * 50.6F / 1000.0F;
+    conf->cell_ov_reset = (cov_threshold - cov_hyst) * 50.6F / 1000.0F;
+    conf->cell_ov_delay_ms = cov_delay * 3.3F;
+
+    return err;
 }
 
 int bms_apply_temp_limits(BmsConfig *bms)

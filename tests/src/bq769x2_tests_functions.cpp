@@ -21,6 +21,12 @@ extern BmsStatus bms_status;
 extern uint8_t mem_bq_direct[BQ_DIRECT_MEM_SIZE];
 extern uint8_t mem_bq_subcmd[BQ_SUBCMD_MEM_SIZE];
 
+/*
+ * Below tests use actual register numbers (instead of defines from registers.h) in order to
+ * double-check the register defines vs. datasheet. Also magic numbers for min/max/default
+ * values are obtained from the datasheet
+ */
+
 void test_bq769x2_apply_cell_uvp()
 {
     int err;
@@ -96,11 +102,87 @@ void test_bq769x2_apply_cell_uvp()
     TEST_ASSERT_EQUAL_UINT8(20, mem_bq_subcmd[0x927B - BQ_SUBCMD_MEM_OFFSET]);
 }
 
+void test_bq769x2_apply_cell_ovp()
+{
+    int err;
+
+    // default
+    bms_conf.cell_ov_limit = 86 * 50.6F / 1000.0F;
+    bms_conf.cell_ov_reset = 84 * 50.6F / 1000.0F;
+    bms_conf.cell_ov_delay_ms = 74 * 3.3F;
+    err = bms_apply_cell_ovp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(86 * 50.6F / 1000.0F, bms_conf.cell_ov_limit);
+    TEST_ASSERT_EQUAL_FLOAT(84 * 50.6F / 1000.0F, bms_conf.cell_ov_reset);
+    TEST_ASSERT_EQUAL_FLOAT(roundf(74 * 3.3F), bms_conf.cell_ov_delay_ms);
+    TEST_ASSERT_EQUAL_UINT8(86, mem_bq_subcmd[0x9278 - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(74, mem_bq_subcmd[0x9279 - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(0, mem_bq_subcmd[0x927A - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(2, mem_bq_subcmd[0x927C - BQ_SUBCMD_MEM_OFFSET]);
+
+    // min
+    bms_conf.cell_ov_limit = 20 * 50.6F / 1000.0F;
+    bms_conf.cell_ov_reset = 18 * 50.6F / 1000.0F;
+    bms_conf.cell_ov_delay_ms = 1 * 3.3F;
+    err = bms_apply_cell_ovp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(20 * 50.6F / 1000.0F, bms_conf.cell_ov_limit);
+    TEST_ASSERT_EQUAL_FLOAT(18 * 50.6F / 1000.0F, bms_conf.cell_ov_reset);
+    TEST_ASSERT_EQUAL_FLOAT(roundf(1 * 3.3F), bms_conf.cell_ov_delay_ms);
+    TEST_ASSERT_EQUAL_UINT8(20, mem_bq_subcmd[0x9278 - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(1, mem_bq_subcmd[0x9279 - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(0, mem_bq_subcmd[0x927A - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(2, mem_bq_subcmd[0x927C - BQ_SUBCMD_MEM_OFFSET]);
+
+    // too little
+    bms_conf.cell_ov_limit = 19 * 50.6F / 1000.0F;
+    bms_conf.cell_ov_reset = 20 * 50.6F / 1000.0F;
+    bms_conf.cell_ov_delay_ms = 0.0F;
+    err = bms_apply_cell_ovp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(20 * 50.6F / 1000.0F, bms_conf.cell_ov_limit);
+    TEST_ASSERT_EQUAL_FLOAT(18 * 50.6F / 1000.0F, bms_conf.cell_ov_reset);
+    TEST_ASSERT_EQUAL_FLOAT(roundf(1 * 3.3F), bms_conf.cell_ov_delay_ms);
+    TEST_ASSERT_EQUAL_UINT8(20, mem_bq_subcmd[0x9278 - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(1, mem_bq_subcmd[0x9279 - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(0, mem_bq_subcmd[0x927A - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(2, mem_bq_subcmd[0x927C - BQ_SUBCMD_MEM_OFFSET]);
+
+    // max
+    bms_conf.cell_ov_limit = 110 * 50.6F / 1000.0F;
+    bms_conf.cell_ov_reset = 90 * 50.6F / 1000.0F;
+    bms_conf.cell_ov_delay_ms = 2047 * 3.3F;
+    err = bms_apply_cell_ovp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(110 * 50.6F / 1000.0F, bms_conf.cell_ov_limit);
+    TEST_ASSERT_EQUAL_FLOAT(90 * 50.6F / 1000.0F, bms_conf.cell_ov_reset);
+    TEST_ASSERT_EQUAL_FLOAT(roundf(2047 * 3.3F), bms_conf.cell_ov_delay_ms);
+    TEST_ASSERT_EQUAL_UINT8(110, mem_bq_subcmd[0x9278 - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(2047U & 0xFF, mem_bq_subcmd[0x9279 - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(2047U >> 8, mem_bq_subcmd[0x927A - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(20, mem_bq_subcmd[0x927C - BQ_SUBCMD_MEM_OFFSET]);
+
+    // too much
+    bms_conf.cell_ov_limit = 111 * 50.6F / 1000.0F;
+    bms_conf.cell_ov_reset = 112 * 50.6F / 1000.0F;
+    bms_conf.cell_ov_delay_ms = 2048 * 3.3F;
+    err = bms_apply_cell_ovp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(110 * 50.6F / 1000.0F, bms_conf.cell_ov_limit);
+    TEST_ASSERT_EQUAL_FLOAT(108 * 50.6F / 1000.0F, bms_conf.cell_ov_reset);
+    TEST_ASSERT_EQUAL_FLOAT(roundf(2047 * 3.3F), bms_conf.cell_ov_delay_ms);
+    TEST_ASSERT_EQUAL_UINT8(110, mem_bq_subcmd[0x9278 - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(2047U & 0xFF, mem_bq_subcmd[0x9279 - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(2047U >> 8, mem_bq_subcmd[0x927A - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(2, mem_bq_subcmd[0x927C - BQ_SUBCMD_MEM_OFFSET]);
+}
+
 int bq769x2_tests_functions()
 {
     UNITY_BEGIN();
 
     RUN_TEST(test_bq769x2_apply_cell_uvp);
+    RUN_TEST(test_bq769x2_apply_cell_ovp);
 
     return UNITY_END();
 }
