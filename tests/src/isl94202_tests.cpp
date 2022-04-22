@@ -215,7 +215,7 @@ void test_isl94202_read_temperatures()
 
 void test_isl94202_apply_dis_ocp_limits()
 {
-    float act = 0;
+    int err;
 
     // see datasheet table 10.4
     bms_conf.shunt_res_mOhm = 2.0; // take something different from 1.0
@@ -224,26 +224,29 @@ void test_isl94202_apply_dis_ocp_limits()
 
     // lower than minimum possible setting
     bms_conf.dis_oc_limit = 1;
-    act = bms_apply_dis_ocp(&bms_conf);
-    TEST_ASSERT_EQUAL_FLOAT(2, act); // take lowest possible value
+    err = bms_apply_dis_ocp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(2, bms_conf.dis_oc_limit); // take lowest possible value
     TEST_ASSERT_EQUAL_HEX16(delay | (0x0 << 12), *((uint16_t *)&mem_isl[0x16]));
 
     // something in the middle
     bms_conf.dis_oc_limit = 20;
-    act = bms_apply_dis_ocp(&bms_conf);
-    TEST_ASSERT_EQUAL_FLOAT(16, act); // round to next lower value
+    err = bms_apply_dis_ocp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(16, bms_conf.dis_oc_limit); // round to next lower value
     TEST_ASSERT_EQUAL_HEX16(delay | (0x4U << 12), *((uint16_t *)&mem_isl[0x16]));
 
     // higher than maximum possible setting
     bms_conf.dis_oc_limit = 50;
-    act = bms_apply_dis_ocp(&bms_conf);
-    TEST_ASSERT_EQUAL_FLOAT(48, act);
+    err = bms_apply_dis_ocp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(48, bms_conf.dis_oc_limit);
     TEST_ASSERT_EQUAL_HEX16(delay | (0x7U << 12), *((uint16_t *)&mem_isl[0x16]));
 }
 
 void test_isl94202_apply_chg_ocp_limits()
 {
-    float act = 0;
+    int err;
 
     // see datasheet table 10.5
     bms_conf.shunt_res_mOhm = 2.0; // take something different from 1.0
@@ -252,26 +255,29 @@ void test_isl94202_apply_chg_ocp_limits()
 
     // lower than minimum possible setting
     bms_conf.chg_oc_limit = 0.4;
-    act = bms_apply_chg_ocp(&bms_conf);
-    TEST_ASSERT_EQUAL_FLOAT(0.5, act); // take lowest possible value
+    err = bms_apply_chg_ocp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(0.5, bms_conf.chg_oc_limit); // take lowest possible value
     TEST_ASSERT_EQUAL_HEX16(delay | (0x0 << 12), *((uint16_t *)&mem_isl[0x18]));
 
     // something in the middle
     bms_conf.chg_oc_limit = 5.0;
-    act = bms_apply_chg_ocp(&bms_conf);
-    TEST_ASSERT_EQUAL_FLOAT(4.0, act); // round to next lower value
+    err = bms_apply_chg_ocp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(4.0, bms_conf.chg_oc_limit); // round to next lower value
     TEST_ASSERT_EQUAL_HEX16(delay | (0x4U << 12), *((uint16_t *)&mem_isl[0x18]));
 
     // higher than maximum possible setting
     bms_conf.chg_oc_limit = 50.0;
-    act = bms_apply_chg_ocp(&bms_conf);
-    TEST_ASSERT_EQUAL_FLOAT(12.0, act);
+    err = bms_apply_chg_ocp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(12.0, bms_conf.chg_oc_limit);
     TEST_ASSERT_EQUAL_HEX16(delay | (0x7U << 12), *((uint16_t *)&mem_isl[0x18]));
 }
 
 void test_isl94202_apply_dis_scp_limits()
 {
-    float act = 0;
+    int err;
 
     // see datasheet table 10.6
     bms_conf.shunt_res_mOhm = 2.0; // take something different from 1.0
@@ -280,20 +286,23 @@ void test_isl94202_apply_dis_scp_limits()
 
     // lower than minimum possible setting
     bms_conf.dis_sc_limit = 5;
-    act = bms_apply_dis_scp(&bms_conf);
-    TEST_ASSERT_EQUAL_FLOAT(8, act); // take lowest possible value
+    err = bms_apply_dis_scp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(8, bms_conf.dis_sc_limit); // take lowest possible value
     TEST_ASSERT_EQUAL_HEX16(delay | (0x0 << 12), *((uint16_t *)&mem_isl[0x1A]));
 
     // something in the middle
     bms_conf.dis_sc_limit = 40;
-    act = bms_apply_dis_scp(&bms_conf);
-    TEST_ASSERT_EQUAL_FLOAT(32, act); // round to next lower value
+    err = bms_apply_dis_scp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(32, bms_conf.dis_sc_limit); // round to next lower value
     TEST_ASSERT_EQUAL_HEX16(delay | (0x4U << 12), *((uint16_t *)&mem_isl[0x1A]));
 
     // higher than maximum possible setting
     bms_conf.dis_sc_limit = 150;
-    act = bms_apply_dis_scp(&bms_conf);
-    TEST_ASSERT_EQUAL_FLOAT(128, act);
+    err = bms_apply_dis_scp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(128, bms_conf.dis_sc_limit);
     TEST_ASSERT_EQUAL_HEX16(delay | (0x7U << 12), *((uint16_t *)&mem_isl[0x1A]));
 }
 

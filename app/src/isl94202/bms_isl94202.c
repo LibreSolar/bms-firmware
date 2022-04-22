@@ -163,25 +163,49 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
     status->balancing_status = reg;
 }
 
-float bms_apply_dis_scp(BmsConfig *conf)
+int bms_apply_dis_scp(BmsConfig *conf)
 {
-    return isl94202_write_current_limit(
+    float actual_limit = isl94202_write_current_limit(
         ISL94202_SCDT_SCD, DSC_Thresholds, sizeof(DSC_Thresholds) / sizeof(uint16_t),
         conf->dis_sc_limit, conf->shunt_res_mOhm, ISL94202_DELAY_US, conf->dis_sc_delay_us);
+
+    if (actual_limit > 0) {
+        conf->dis_sc_limit = actual_limit;
+        return 0;
+    }
+    else {
+        return -1;
+    }
 }
 
-float bms_apply_chg_ocp(BmsConfig *conf)
+int bms_apply_chg_ocp(BmsConfig *conf)
 {
-    return isl94202_write_current_limit(
+    float actual_limit = isl94202_write_current_limit(
         ISL94202_OCCT_OCC, OCC_Thresholds, sizeof(OCC_Thresholds) / sizeof(uint16_t),
         conf->chg_oc_limit, conf->shunt_res_mOhm, ISL94202_DELAY_MS, conf->chg_oc_delay_ms);
+
+    if (actual_limit > 0) {
+        conf->chg_oc_limit = actual_limit;
+        return 0;
+    }
+    else {
+        return -1;
+    }
 }
 
-float bms_apply_dis_ocp(BmsConfig *conf)
+int bms_apply_dis_ocp(BmsConfig *conf)
 {
-    return isl94202_write_current_limit(
+    float actual_limit = isl94202_write_current_limit(
         ISL94202_OCDT_OCD, OCD_Thresholds, sizeof(OCD_Thresholds) / sizeof(uint16_t),
         conf->dis_oc_limit, conf->shunt_res_mOhm, ISL94202_DELAY_MS, conf->dis_oc_delay_ms);
+
+    if (actual_limit > 0) {
+        conf->dis_oc_limit = actual_limit;
+        return 0;
+    }
+    else {
+        return -1;
+    }
 }
 
 int bms_apply_cell_ovp(BmsConfig *conf)

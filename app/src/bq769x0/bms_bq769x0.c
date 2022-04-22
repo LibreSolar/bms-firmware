@@ -210,7 +210,7 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
     }
 }
 
-float bms_apply_dis_scp(BmsConfig *conf)
+int bms_apply_dis_scp(BmsConfig *conf)
 {
     PROTECT1_Type protect1;
 
@@ -235,17 +235,21 @@ float bms_apply_dis_scp(BmsConfig *conf)
 
     bq769x0_write_byte(BQ769X0_PROTECT1, protect1.byte);
 
-    // returns the actual current threshold value
-    return (long)SCD_threshold_setting[protect1.SCD_THRESH] * 1000 / conf->shunt_res_mOhm;
-}
+    // store actually configured values
+    conf->dis_sc_limit = SCD_threshold_setting[protect1.SCD_THRESH] * 1000 / conf->shunt_res_mOhm;
+    conf->dis_sc_delay_us = SCD_delay_setting[protect1.SCD_DELAY];
 
-float bms_apply_chg_ocp(BmsConfig *conf)
-{
-    // ToDo: Software protection for charge overcurrent
     return 0;
 }
 
-float bms_apply_dis_ocp(BmsConfig *conf)
+int bms_apply_chg_ocp(BmsConfig *conf)
+{
+    // ToDo: Software protection for charge overcurrent
+
+    return -1;
+}
+
+int bms_apply_dis_ocp(BmsConfig *conf)
 {
     PROTECT2_Type protect2;
 
@@ -269,8 +273,11 @@ float bms_apply_dis_ocp(BmsConfig *conf)
 
     bq769x0_write_byte(BQ769X0_PROTECT2, protect2.byte);
 
-    // returns the actual current threshold value
-    return (long)OCD_threshold_setting[protect2.OCD_THRESH] * 1000 / conf->shunt_res_mOhm;
+    // store actually configured values
+    conf->dis_oc_limit = OCD_threshold_setting[protect2.OCD_THRESH] * 1000 / conf->shunt_res_mOhm;
+    conf->dis_oc_delay_ms = OCD_delay_setting[protect2.OCD_DELAY];
+
+    return 0;
 }
 
 int bms_apply_cell_uvp(BmsConfig *conf)

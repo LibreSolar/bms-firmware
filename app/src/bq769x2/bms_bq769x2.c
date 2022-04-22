@@ -122,25 +122,25 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
     // TODO
 }
 
-float bms_apply_dis_scp(BmsConfig *conf)
+int bms_apply_dis_scp(BmsConfig *conf)
 {
     // TODO
 
-    return 0;
+    return -1;
 }
 
-float bms_apply_chg_ocp(BmsConfig *conf)
+int bms_apply_chg_ocp(BmsConfig *conf)
 {
     // TODO
 
-    return 0;
+    return -1;
 }
 
-float bms_apply_dis_ocp(BmsConfig *conf)
+int bms_apply_dis_ocp(BmsConfig *conf)
 {
     // TODO
 
-    return 0;
+    return -1;
 }
 
 int bms_apply_cell_uvp(BmsConfig *conf)
