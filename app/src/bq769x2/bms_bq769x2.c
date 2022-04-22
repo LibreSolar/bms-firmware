@@ -148,15 +148,19 @@ int bms_apply_cell_uvp(BmsConfig *conf)
     int err = 0;
 
     uint8_t cuv_threshold = lroundf(conf->cell_uv_limit * 1000.0F / 50.6F);
+    uint8_t cuv_hyst = lroundf(MAX(conf->cell_uv_reset - conf->cell_uv_limit, 0) * 1000.0F / 50.6F);
     uint16_t cuv_delay = lroundf(conf->cell_uv_delay_ms / 3.3F);
 
     cuv_threshold = CLAMP(cuv_threshold, 20, 90);
+    cuv_hyst = CLAMP(cuv_hyst, 2, 20);
     cuv_delay = CLAMP(cuv_delay, 1, 2047);
 
     err += bq769x2_subcmd_write_u1(BQ769X2_PROT_CUV_THRESHOLD, cuv_threshold);
+    err += bq769x2_subcmd_write_u1(BQ769X2_PROT_CUV_RECOV_HYST, cuv_hyst);
     err += bq769x2_subcmd_write_u2(BQ769X2_PROT_CUV_DELAY, cuv_delay);
 
     conf->cell_uv_limit = cuv_threshold * 50.6F / 1000.0F;
+    conf->cell_uv_reset = (cuv_threshold + cuv_hyst) * 50.6F / 1000.0F;
     conf->cell_uv_delay_ms = cuv_delay * 3.3F;
 
     return err;
