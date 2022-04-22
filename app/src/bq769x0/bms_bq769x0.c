@@ -301,8 +301,11 @@ int bms_apply_cell_uvp(BmsConfig *conf)
 
     bq769x0_write_byte(BQ769X0_PROTECT3, protect3.byte);
 
-    // returns the actual current threshold value
-    return ((long)1 << 12 | uv_trip << 4) * adc_gain / 1000 + adc_offset;
+    // store actually configured values
+    conf->cell_uv_limit = ((long)1 << 12 | uv_trip << 4) * adc_gain / 1000 + adc_offset;
+    conf->cell_uv_delay_ms = UV_delay_setting[protect3.UV_DELAY];
+
+    return 0;
 }
 
 int bms_apply_cell_ovp(BmsConfig *conf)
@@ -325,13 +328,18 @@ int bms_apply_cell_ovp(BmsConfig *conf)
 
     bq769x0_write_byte(BQ769X0_PROTECT3, protect3.byte);
 
-    // returns the actual current threshold value
-    return ((long)1 << 13 | ov_trip << 4) * adc_gain / 1000 + adc_offset;
+    // store actually configured values
+
+    conf->cell_ov_limit = ((long)1 << 13 | ov_trip << 4) * adc_gain / 1000 + adc_offset;
+    conf->cell_ov_delay_ms = OV_delay_setting[protect3.OV_DELAY];
+
+    return 0;
 }
 
 int bms_apply_temp_limits(BmsConfig *bms)
 {
     // bq769x0 don't support temperature limits --> has to be solved in software
+
     return 0;
 }
 

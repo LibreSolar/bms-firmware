@@ -312,7 +312,8 @@ void test_isl94202_apply_cell_ov_limits()
     bms_conf.cell_ov_reset = 4.15;
     bms_conf.cell_ov_delay_ms = 999;
     uint16_t delay = 999 + (1U << 10);
-    bms_apply_cell_ovp(&bms_conf);
+    int err = bms_apply_cell_ovp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_HEX16(0x1E2A, *((uint16_t *)&mem_isl[0x00])); // limit voltage
     TEST_ASSERT_EQUAL_HEX16(0x0DD4, *((uint16_t *)&mem_isl[0x02])); // recovery voltage
     TEST_ASSERT_EQUAL_HEX16(delay, *((uint16_t *)&mem_isl[0x10]));  // delay
@@ -324,7 +325,8 @@ void test_isl94202_apply_cell_uv_limits()
     bms_conf.cell_uv_reset = 3.0;
     bms_conf.cell_uv_delay_ms = 2222;
     uint16_t delay = 2222 / 1000 + (2U << 10);
-    bms_apply_cell_uvp(&bms_conf);
+    int err = bms_apply_cell_uvp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_HEX16(0x18FF, *((uint16_t *)&mem_isl[0x04]));
     TEST_ASSERT_EQUAL_HEX16(0x09FF, *((uint16_t *)&mem_isl[0x06]));
     TEST_ASSERT_EQUAL_HEX16(delay, *((uint16_t *)&mem_isl[0x12]));

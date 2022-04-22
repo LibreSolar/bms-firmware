@@ -323,7 +323,8 @@ int bms_apply_chg_ocp(BmsConfig *conf);
  * Apply cell undervoltage protection (UVP) threshold and delay.
  *
  * @param conf BMS configuration containing the limit settings
- * @returns 1 for success or 0 in case of error
+ *
+ * @returns 0 on success, otherwise negative error code.
  */
 int bms_apply_cell_uvp(BmsConfig *conf);
 
@@ -331,7 +332,8 @@ int bms_apply_cell_uvp(BmsConfig *conf);
  * Apply cell overvoltage protection (OVP) threshold and delay.
  *
  * @param conf BMS configuration containing the limit settings
- * @returns 1 for success or 0 in case of error
+ *
+ * @returns 0 on success, otherwise negative error code.
  */
 int bms_apply_cell_ovp(BmsConfig *conf);
 

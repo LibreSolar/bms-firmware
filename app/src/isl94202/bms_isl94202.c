@@ -227,7 +227,7 @@ int bms_apply_cell_ovp(BmsConfig *conf)
     err += isl94202_write_voltage(ISL94202_OVR, conf->cell_ov_reset, 0);
     err += isl94202_write_delay(ISL94202_OVDT, ISL94202_DELAY_MS, conf->cell_ov_delay_ms, 0);
 
-    return err == 0;
+    return err;
 }
 
 int bms_apply_cell_uvp(BmsConfig *conf)
@@ -239,7 +239,7 @@ int bms_apply_cell_uvp(BmsConfig *conf)
     err += isl94202_write_voltage(ISL94202_UVR, conf->cell_uv_reset, 0);
     err += isl94202_write_delay(ISL94202_UVDT, ISL94202_DELAY_MS, conf->cell_uv_delay_ms, 0);
 
-    return err == 0;
+    return err;
 }
 
 // using default setting TGain = 0 (GAIN = 2) with 22k resistors
