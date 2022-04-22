@@ -156,6 +156,9 @@ int bms_apply_cell_uvp(BmsConfig *conf)
     err += bq769x2_subcmd_write_u1(BQ769X2_PROT_CUV_THRESHOLD, cuv_threshold);
     err += bq769x2_subcmd_write_u2(BQ769X2_PROT_CUV_DELAY, cuv_delay);
 
+    conf->cell_uv_limit = cuv_threshold * 50.6F / 1000.0F;
+    conf->cell_uv_delay_ms = cuv_delay * 3.3F;
+
     return err;
 }
 
