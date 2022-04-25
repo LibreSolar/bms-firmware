@@ -27,7 +27,7 @@ static void init_bq769x0_ram()
 void test_bq769x0_init()
 {
     init_bq769x0_ram();
-    bms_init_hardware();
+    bms_init_hardware(&bms_conf);
     TEST_ASSERT(0);
 }
 

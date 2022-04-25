@@ -40,7 +40,7 @@ static void init_isl94202_ram()
 void test_isl94202_init()
 {
     init_isl94202_ram();
-    bms_init_hardware();
+    bms_init_hardware(&bms_conf);
 
     // expected feature control register
     uint16_t fc_reg = 0;

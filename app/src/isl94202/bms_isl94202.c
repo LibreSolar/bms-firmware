@@ -53,7 +53,7 @@ static void set_num_cells(int num)
     // k_sleep(30);
 }
 
-void bms_init_hardware()
+void bms_init_hardware(BmsConfig *conf)
 {
     uint8_t reg;
 

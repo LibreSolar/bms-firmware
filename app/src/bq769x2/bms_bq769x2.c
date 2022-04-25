@@ -19,13 +19,16 @@
 
 LOG_MODULE_REGISTER(bq769x0, CONFIG_LOG_DEFAULT_LEVEL);
 
-void bms_init_hardware()
+void bms_init_hardware(BmsConfig *conf)
 {
     bq769x2_init();
 
     uint16_t device_number;
     bq769x2_subcmd_read_u2(BQ769X2_SUBCMD_DEVICE_NUMBER, &device_number);
     LOG_INF("detected bq device number: 0x%x", device_number);
+
+    // configure shunt value
+    bq769x2_subcmd_write_f4(BQ769X2_CAL_CURR_CC_GAIN, 7.4768F / conf->shunt_res_mOhm);
 
     // disable automatic turn-on of all MOSFETs
     bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_ALL_FETS_OFF);

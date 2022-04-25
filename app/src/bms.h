@@ -163,11 +163,6 @@ enum BmsErrorFlag
 };
 
 /**
- * Initialization of BMS incl. setup of communication. This function does not yet set any config.
- */
-void bms_init_hardware();
-
-/**
  * Initialization of BmsStatus with suitable default values.
  *
  * @param status Pointer to BMS status object that should be initialized.
@@ -182,6 +177,13 @@ void bms_init_status(BmsStatus *status);
  * @param nominal_capacity Nominal capacity of the battery pack.
  */
 void bms_init_config(BmsConfig *conf, int type, float nominal_capacity);
+
+/**
+ * Initialization of BMS incl. setup of communication. This function does not yet set any config.
+ *
+ * @param conf Pointer to BMS configuration.
+ */
+void bms_init_hardware(BmsConfig *conf);
 
 /**
  * Main BMS state machine

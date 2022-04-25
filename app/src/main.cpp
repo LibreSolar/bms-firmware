@@ -27,12 +27,13 @@ void main(void)
            DT_PROP(DT_PATH(pcb), version_str));
     printf("Firmware: %s\n", FIRMWARE_VERSION_ID);
 
-    bms_init_hardware();
     bms_init_status(&bms_status);
     bms_init_config(&bms_conf, CONFIG_CELL_TYPE, CONFIG_BAT_CAPACITY_AH);
 
     // read custom configuration from EEPROM
     data_objects_init();
+
+    bms_init_hardware(&bms_conf);
 
     bms_apply_cell_ovp(&bms_conf);
     bms_apply_cell_uvp(&bms_conf);
