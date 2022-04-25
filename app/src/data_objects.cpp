@@ -252,9 +252,9 @@ static ThingSetDataObject data_objects[] = {
     // PUBLICATION DATA ///////////////////////////////////////////////////////
     // using IDs >= 0xF0
 
-    TS_SUBSET(0xF3, "serial", SUBSET_SER, 0xF1, TS_ANY_RW),
+    TS_SUBSET(0xF3, "serial", SUBSET_SER, ID_ROOT, TS_ANY_RW),
 #if CONFIG_THINGSET_CAN
-    TS_SUBSET(0xF7, "can", SUBSET_CAN, 0xF5, TS_ANY_RW),
+    TS_SUBSET(0xF7, "can", SUBSET_CAN, ID_ROOT, TS_ANY_RW),
 #endif
 
     TS_GROUP(ID_PUB, ".pub", TS_NO_CALLBACK, ID_ROOT),
