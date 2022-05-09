@@ -27,7 +27,7 @@ void bms_init_hardware(BmsConfig *conf)
     bq769x2_subcmd_read_u2(BQ769X2_SUBCMD_DEVICE_NUMBER, &device_number);
     LOG_INF("detected bq device number: 0x%x", device_number);
 
-    // configure shunt value
+    // configure shunt value based on nominal value of VREF2 (could be improved by calibration)
     bq769x2_subcmd_write_f4(BQ769X2_CAL_CURR_CC_GAIN, 7.4768F / conf->shunt_res_mOhm);
 
     // disable automatic turn-on of all MOSFETs

@@ -69,6 +69,8 @@
 
 // Command-only subcommands
 
+// remark: PF_RESET (0x0029) is deprecated according to Reference Manual Rev. B
+
 #define BQ769X2_SUBCMD_EXIT_DEEPSLEEP      0x000E
 #define BQ769X2_SUBCMD_DEEPSLEEP           0x000F
 #define BQ769X2_SUBCMD_SHUTDOWN            0x0010
@@ -80,7 +82,6 @@
 #define BQ769X2_SUBCMD_DSGTEST             0x0020
 #define BQ769X2_SUBCMD_FET_ENABLE          0x0022
 #define BQ769X2_SUBCMD_PF_ENABLE           0x0024
-#define BQ769X2_SUBCMD_PF_RESET            0x0029
 #define BQ769X2_SUBCMD_SEAL                0x0030
 #define BQ769X2_SUBCMD_RESET_PASSQ         0x0082
 #define BQ769X2_SUBCMD_PTO_RECOVER         0x008A
