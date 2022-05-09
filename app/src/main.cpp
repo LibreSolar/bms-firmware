@@ -17,6 +17,8 @@
 #include "leds.h"
 #include "thingset.h"
 
+LOG_MODULE_REGISTER(bms_main, CONFIG_LOG_DEFAULT_LEVEL);
+
 BmsConfig bms_conf;
 BmsStatus bms_status;
 extern ThingSet ts;
@@ -33,7 +35,10 @@ void main(void)
     // read custom configuration from EEPROM
     data_objects_init();
 
-    bms_init_hardware(&bms_conf);
+    while (bms_init_hardware(&bms_conf) != 0) {
+        LOG_ERR("BMS hardware initialization failed, retrying in 10s");
+        k_sleep(K_MSEC(10000));
+    }
 
     bms_apply_cell_ovp(&bms_conf);
     bms_apply_cell_uvp(&bms_conf);

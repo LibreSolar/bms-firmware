@@ -5,6 +5,7 @@
  */
 
 #include "board.h"
+#include "helper.h"
 
 #include "interface.h"
 #include "registers.h"
@@ -17,6 +18,8 @@
 #include <drivers/i2c.h>
 #include <string.h>
 #include <zephyr.h>
+
+LOG_MODULE_REGISTER(isl94202_if, CONFIG_LOG_DEFAULT_LEVEL);
 
 #define I2C_DEV     DT_LABEL(DT_PARENT(DT_INST(0, renesas_isl94202)))
 #define I2C_ADDRESS DT_REG_ADDR(DT_INST(0, renesas_isl94202))
@@ -44,7 +47,7 @@ int isl94202_read_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes)
     return i2c_write_read(i2c_dev, I2C_ADDRESS, &reg_addr, 1, data, num_bytes);
 }
 
-void isl94202_init()
+int isl94202_init()
 {
     // activate pull-up at I2C SDA and SCL
     const struct device *i2c_pullup;
@@ -54,9 +57,11 @@ void isl94202_init()
 
     i2c_dev = device_get_binding(I2C_DEV);
     if (!i2c_dev) {
-        printk("I2C: Device driver not found.\n");
-        return;
+        LOG_ERR("I2C device not found");
+        return -ENODEV;
     }
+
+    return 0;
 }
 
 #endif // UNIT_TEST

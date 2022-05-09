@@ -182,8 +182,10 @@ void bms_init_config(BmsConfig *conf, int type, float nominal_capacity);
  * Initialization of BMS incl. setup of communication. This function does not yet set any config.
  *
  * @param conf Pointer to BMS configuration.
+ *
+ * @returns 0 on success, otherwise negative error code.
  */
-void bms_init_hardware(BmsConfig *conf);
+int bms_init_hardware(BmsConfig *conf);
 
 /**
  * Main BMS state machine

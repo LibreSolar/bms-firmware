@@ -21,7 +21,7 @@
 static const float lut_temp_volt[] = { 0.153, 0.295, 0.463, 0.710, 0.755 };
 static const float lut_temp_degc[] = { 80, 50, 25, 0, -40 };
 
-static void set_num_cells(int num)
+static int set_num_cells(int num)
 {
     uint8_t cell_reg = 0;
     switch (num) {
@@ -46,34 +46,55 @@ static void set_num_cells(int num)
         default:
             break;
     }
-    isl94202_write_bytes(ISL94202_MOD_CELL + 1, &cell_reg, 1);
+
     // ToDo: Double write for certain bytes (see datasheet 7.1.10) --> move this to _hw.c file
     // k_sleep(30);
     // isl94202_write_bytes(ISL94202_MOD_CELL + 1, &cell_reg, 1);
     // k_sleep(30);
+
+    return isl94202_write_bytes(ISL94202_MOD_CELL + 1, &cell_reg, 1);
 }
 
-void bms_init_hardware(BmsConfig *conf)
+int bms_init_hardware(BmsConfig *conf)
 {
+    int err;
     uint8_t reg;
 
-    isl94202_init();
-    set_num_cells(CONFIG_NUM_CELLS_IN_SERIES);
+    err = isl94202_init();
+    if (err) {
+        return err;
+    }
+
+    err = set_num_cells(CONFIG_NUM_CELLS_IN_SERIES);
+    if (err) {
+        return err;
+    }
 
     // xTemp2 monitoring MOSFETs and not cells
     reg = ISL94202_SETUP0_XT2M_Msk;
-    isl94202_write_bytes(ISL94202_SETUP0, &reg, 1);
+    err = isl94202_write_bytes(ISL94202_SETUP0, &reg, 1);
+    if (err) {
+        return err;
+    }
 
     // Enable balancing during charging and EOC conditions
     reg = ISL94202_SETUP1_CBDC_Msk | ISL94202_SETUP1_CB_EOC_Msk;
-    isl94202_write_bytes(ISL94202_SETUP1, &reg, 1);
+    err = isl94202_write_bytes(ISL94202_SETUP1, &reg, 1);
+    if (err) {
+        return err;
+    }
 
     // Enable FET control via microcontroller
     reg = ISL94202_CTRL2_UCFET_Msk;
-    isl94202_write_bytes(ISL94202_CTRL2, &reg, 1);
+    err = isl94202_write_bytes(ISL94202_CTRL2, &reg, 1);
+    if (err) {
+        return err;
+    }
 
     // Remark: Ideal diode control via DFODOV and DFODUV bits of SETUP1 register doesn't have any
     // effect because of FET control via microcontroller.
+
+    return 0;
 }
 
 void bms_update(BmsConfig *conf, BmsStatus *status)

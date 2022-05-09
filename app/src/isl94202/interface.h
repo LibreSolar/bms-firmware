@@ -25,8 +25,10 @@ extern "C" {
 
 /**
  * Initialization of ISL94202 IC
+ *
+ * @returns 0 on success, otherwise negative error code.
  */
-void isl94202_init();
+int isl94202_init();
 
 /**
  * Writes multiple bytes to ISL94202 IC registers

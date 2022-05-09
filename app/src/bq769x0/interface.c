@@ -115,40 +115,40 @@ int32_t bq769x0_read_word(uint8_t reg_addr)
 }
 
 // automatically find out address and CRC setting
-static bool determine_address_and_crc(void)
+static int determine_address_and_crc(void)
 {
     i2c_address = 0x08;
     crc_enabled = true;
     bq769x0_write_byte(BQ769X0_CC_CFG, 0x19);
     if (bq769x0_read_byte(BQ769X0_CC_CFG) == 0x19) {
-        return true;
+        return 0;
     }
 
     i2c_address = 0x18;
     crc_enabled = true;
     bq769x0_write_byte(BQ769X0_CC_CFG, 0x19);
     if (bq769x0_read_byte(BQ769X0_CC_CFG) == 0x19) {
-        return true;
+        return 0;
     }
 
     i2c_address = 0x08;
     crc_enabled = false;
     bq769x0_write_byte(BQ769X0_CC_CFG, 0x19);
     if (bq769x0_read_byte(BQ769X0_CC_CFG) == 0x19) {
-        return true;
+        return 0;
     }
 
     i2c_address = 0x18;
     crc_enabled = false;
     bq769x0_write_byte(BQ769X0_CC_CFG, 0x19);
     if (bq769x0_read_byte(BQ769X0_CC_CFG) == 0x19) {
-        return true;
+        return 0;
     }
 
-    return false;
+    return -EIO;
 }
 
-void bq769x0_init()
+int bq769x0_init()
 {
     alert_pin_dev = device_get_binding(BQ_ALERT_PORT);
     gpio_pin_configure(alert_pin_dev, BQ_ALERT_PIN, GPIO_INPUT);
@@ -160,11 +160,13 @@ void bq769x0_init()
     i2c_dev = device_get_binding(I2C_DEV);
     if (!i2c_dev) {
         LOG_ERR("I2C device not found");
+        return -ENODEV;
     }
 
     alert_interrupt_flag = true; // init with true to check and clear errors at start-up
 
-    if (determine_address_and_crc()) {
+    int err = determine_address_and_crc();
+    if (err) {
         // initial settings for bq769x0
         bq769x0_write_byte(BQ769X0_SYS_CTRL1, 0b00011000); // switch external thermistor and ADC on
         bq769x0_write_byte(BQ769X0_SYS_CTRL2, 0b01000000); // switch CC_EN on
@@ -176,9 +178,11 @@ void bq769x0_init()
                       | ((bq769x0_read_byte(BQ769X0_ADCGAIN2) & 0b11100000) >> 5)); // uV/LSB
     }
     else {
-        // TODO: do something else... e.g. set error flag
         LOG_ERR("BMS communication error");
+        return err;
     }
+
+    return 0;
 }
 
 #endif // UNIT_TEST

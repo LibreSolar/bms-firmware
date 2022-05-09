@@ -19,30 +19,57 @@
 
 LOG_MODULE_REGISTER(bq769x0, CONFIG_LOG_DEFAULT_LEVEL);
 
-void bms_init_hardware(BmsConfig *conf)
+int bms_init_hardware(BmsConfig *conf)
 {
-    bq769x2_init();
+    int err = 0;
+
+    err = bq769x2_init();
+    if (err) {
+        return err;
+    }
 
     uint16_t device_number;
-    bq769x2_subcmd_read_u2(BQ769X2_SUBCMD_DEVICE_NUMBER, &device_number);
-    LOG_INF("detected bq device number: 0x%x", device_number);
+    err = bq769x2_subcmd_read_u2(BQ769X2_SUBCMD_DEVICE_NUMBER, &device_number);
+    if (err) {
+        return err;
+    }
+    else {
+        LOG_INF("detected bq device number: 0x%x", device_number);
+    }
 
     // configure shunt value based on nominal value of VREF2 (could be improved by calibration)
-    bq769x2_subcmd_write_f4(BQ769X2_CAL_CURR_CC_GAIN, 7.4768F / conf->shunt_res_mOhm);
+    err = bq769x2_subcmd_write_f4(BQ769X2_CAL_CURR_CC_GAIN, 7.4768F / conf->shunt_res_mOhm);
+    if (err) {
+        return err;
+    }
 
     // disable automatic turn-on of all MOSFETs
-    bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_ALL_FETS_OFF);
+    err = bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_ALL_FETS_OFF);
+    if (err) {
+        return err;
+    }
 
     // setting FET_EN is required to exit the default FET test mode and enable normal FET control
     MFG_STATUS_Type mfg_status;
-    bq769x2_subcmd_read_u2(BQ769X2_SUBCMD_MFG_STATUS, &mfg_status.u16);
-    if (mfg_status.FET_EN == 0) {
+    err = bq769x2_subcmd_read_u2(BQ769X2_SUBCMD_MFG_STATUS, &mfg_status.u16);
+    if (err) {
+        return err;
+    }
+    else if (mfg_status.FET_EN == 0) {
         // FET_ENABLE subcommand sets FET_EN bit in MFG_STATUS and MFG_STATUS_INIT registers
-        bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_FET_ENABLE);
+        err = bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_FET_ENABLE);
+        if (err) {
+            return err;
+        }
     }
 
     // disable sleep mode to avoid switching off the CHG MOSFET automatically
-    bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_SLEEP_DISABLE);
+    err = bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_SLEEP_DISABLE);
+    if (err) {
+        return err;
+    }
+
+    return 0;
 }
 
 void bms_update(BmsConfig *conf, BmsStatus *status)

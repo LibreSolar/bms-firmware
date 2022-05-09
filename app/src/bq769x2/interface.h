@@ -27,7 +27,7 @@ uint8_t bq769x2_checksum_add(uint8_t previous, uint8_t data);
 /**
  * Initialization of bq769x2 IC
  */
-void bq769x2_init();
+int bq769x2_init();
 
 /**
  * Writes multiple bytes to bq769x2 IC registers

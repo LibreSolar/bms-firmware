@@ -55,11 +55,15 @@ int bq769x2_read_bytes(const uint8_t reg_addr, uint8_t *data, const size_t num_b
     return i2c_write_read(i2c_dev, i2c_address, &reg_addr, 1, data, num_bytes);
 }
 
-void bq769x2_init()
+int bq769x2_init()
 {
     i2c_dev = device_get_binding(I2C_DEV);
     if (!i2c_dev) {
         LOG_ERR("I2C device not found");
+        return -ENODEV;
+    }
+    else {
+        return 0;
     }
 }
 

@@ -29,9 +29,9 @@ extern int adc_offset; // factory-calibrated, read out from chip (mV)
  */
 void bms_check_cell_temp(BmsConfig *conf, BmsStatus *status);
 
-void bms_init_hardware(BmsConfig *conf)
+int bms_init_hardware(BmsConfig *conf)
 {
-    bq769x0_init();
+    return bq769x0_init();
 }
 
 void bms_update(BmsConfig *conf, BmsStatus *status)

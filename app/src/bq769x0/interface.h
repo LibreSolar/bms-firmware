@@ -28,7 +28,7 @@ extern "C" {
  * - Determines I2C address
  * - Sets ALERT pin interrupt
  */
-void bq769x0_init();
+int bq769x0_init();
 
 /**
  * Writes one byte to bq769x0 IC
