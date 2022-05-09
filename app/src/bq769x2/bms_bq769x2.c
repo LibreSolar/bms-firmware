@@ -103,7 +103,7 @@ bool bms_startup_inhibit()
 
 void bms_shutdown()
 {
-    // TODO
+    bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_SHUTDOWN);
 }
 
 int bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
