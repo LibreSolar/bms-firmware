@@ -37,7 +37,7 @@ static struct k_sem rx_buf_mutex; // binary semaphore used as mutex in ISR conte
 
 extern ThingSet ts;
 
-const char serial_subset_path[] = "serial";
+const char serial_subset_path[] = "mSerial";
 static ThingSetDataObject *serial_subset;
 
 void serial_pub_msg()
