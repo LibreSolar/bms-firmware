@@ -335,11 +335,16 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
     // TODO
 }
 
-void bms_print_register(uint8_t addr)
+void bms_print_register(uint16_t addr)
 {
-    uint8_t reg;
-    bq769x2_read_bytes(addr, &reg, 1);
-    printf("0x%.2X: 0x%.2X = %s\n", addr, reg, byte2bitstr(reg));
+    uint8_t value;
+    if (addr < 0x7F) {
+        bq769x2_read_bytes(addr, &value, 1);
+    }
+    else {
+        bq769x2_subcmd_read_u1(addr, &value);
+    }
+    printf("0x%.2X: 0x%.2X = %s\n", addr, value, byte2bitstr(value));
 }
 
 void bms_print_registers()

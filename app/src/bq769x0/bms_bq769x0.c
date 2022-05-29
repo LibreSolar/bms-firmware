@@ -602,9 +602,9 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
     }
 }
 
-void bms_print_register(uint8_t addr)
+void bms_print_register(uint16_t addr)
 {
-    uint8_t reg = bq769x0_read_byte(addr);
+    uint8_t reg = bq769x0_read_byte((uint8_t)addr);
     printf("0x%.2X: 0x%.2X = %s\n", addr, reg, byte2bitstr(reg));
 }
 

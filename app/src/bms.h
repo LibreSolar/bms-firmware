@@ -383,9 +383,11 @@ void bms_update_error_flags(BmsConfig *conf, BmsStatus *status);
 void bms_handle_errors(BmsConfig *conf, BmsStatus *status);
 
 /**
- * Print passed BMS IC register
+ * Print BMS IC register
+ *
+ * @param addr Address of the register
  */
-void bms_print_register(uint8_t addr);
+void bms_print_register(uint16_t addr);
 
 /**
  * Print all BMS IC registers

@@ -461,10 +461,10 @@ void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
     // Nothing to do. ISL94202 handles errors automatically
 }
 
-void bms_print_register(uint8_t addr)
+void bms_print_register(uint16_t addr)
 {
     uint8_t reg;
-    isl94202_read_bytes(addr, &reg, 1);
+    isl94202_read_bytes((uint8_t)addr, &reg, 1);
     printf("0x%.2X: 0x%.2X = %s\n", addr, reg, byte2bitstr(reg));
 }
 
