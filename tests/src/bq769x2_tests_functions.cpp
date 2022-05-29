@@ -27,6 +27,55 @@ extern uint8_t mem_bq_subcmd[BQ_SUBCMD_MEM_SIZE];
  * values are obtained from the datasheet
  */
 
+void test_bq769x2_apply_dis_scp()
+{
+    int err;
+
+    // default
+    bms_conf.dis_sc_limit = 10.0F / bms_conf.shunt_res_mOhm; // reg value 0 = 10 mV
+    bms_conf.dis_sc_delay_us = (2 - 1) * 15;                 // 15 us (reg value 1 = no delay)
+    err = bms_apply_dis_scp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(10.0F / bms_conf.shunt_res_mOhm, bms_conf.dis_sc_limit);
+    TEST_ASSERT_EQUAL_FLOAT((2 - 1) * 15, bms_conf.dis_sc_delay_us);
+    TEST_ASSERT_EQUAL_UINT8(0, mem_bq_subcmd[0x9286 - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(2, mem_bq_subcmd[0x9287 - BQ_SUBCMD_MEM_OFFSET]);
+
+    // min
+    bms_conf.dis_sc_delay_us = (1 - 1) * 15; // 15 us (reg value 1 = no delay)
+    err = bms_apply_dis_scp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT((1 - 1) * 15, bms_conf.dis_sc_delay_us);
+    TEST_ASSERT_EQUAL_UINT8(1, mem_bq_subcmd[0x9287 - BQ_SUBCMD_MEM_OFFSET]);
+
+    // too little
+    bms_conf.dis_sc_limit = 5.0F / bms_conf.shunt_res_mOhm;
+    err = bms_apply_dis_scp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(10.0F / bms_conf.shunt_res_mOhm, bms_conf.dis_sc_limit);
+    TEST_ASSERT_EQUAL_UINT8(0, mem_bq_subcmd[0x9286 - BQ_SUBCMD_MEM_OFFSET]);
+
+    // max
+    bms_conf.dis_sc_limit = 500.0F / bms_conf.shunt_res_mOhm; // reg value 015 = 500 mV
+    bms_conf.dis_sc_delay_us = (31 - 1) * 15;
+    err = bms_apply_dis_scp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(500.0F / bms_conf.shunt_res_mOhm, bms_conf.dis_sc_limit);
+    TEST_ASSERT_EQUAL_FLOAT((31 - 1) * 15, bms_conf.dis_sc_delay_us);
+    TEST_ASSERT_EQUAL_UINT8(15, mem_bq_subcmd[0x9286 - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(31, mem_bq_subcmd[0x9287 - BQ_SUBCMD_MEM_OFFSET]);
+
+    // too much
+    bms_conf.dis_sc_limit = 600.0F / bms_conf.shunt_res_mOhm;
+    bms_conf.dis_sc_delay_us = (32 - 1) * 15;
+    err = bms_apply_dis_scp(&bms_conf);
+    TEST_ASSERT_EQUAL(0, err);
+    TEST_ASSERT_EQUAL_FLOAT(500.0F / bms_conf.shunt_res_mOhm, bms_conf.dis_sc_limit);
+    TEST_ASSERT_EQUAL_FLOAT((31 - 1) * 15, bms_conf.dis_sc_delay_us);
+    TEST_ASSERT_EQUAL_UINT8(15, mem_bq_subcmd[0x9286 - BQ_SUBCMD_MEM_OFFSET]);
+    TEST_ASSERT_EQUAL_UINT8(31, mem_bq_subcmd[0x9287 - BQ_SUBCMD_MEM_OFFSET]);
+}
+
 void test_bq769x2_apply_cell_uvp()
 {
     int err;
@@ -181,6 +230,7 @@ int bq769x2_tests_functions()
 {
     UNITY_BEGIN();
 
+    RUN_TEST(test_bq769x2_apply_dis_scp);
     RUN_TEST(test_bq769x2_apply_cell_uvp);
     RUN_TEST(test_bq769x2_apply_cell_ovp);
 

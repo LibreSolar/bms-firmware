@@ -154,9 +154,27 @@ void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
 
 int bms_apply_dis_scp(BmsConfig *conf)
 {
-    // TODO
+    int err = 0;
 
-    return -1;
+    uint8_t scp_threshold = 0;
+    uint16_t shunt_voltage = conf->dis_sc_limit * conf->shunt_res_mOhm;
+    for (int i = ARRAY_SIZE(SCD_threshold_setting) - 1; i > 0; i--) {
+        if (shunt_voltage >= SCD_threshold_setting[i]) {
+            scp_threshold = i;
+            break;
+        }
+    }
+
+    uint16_t scp_delay = conf->dis_sc_delay_us / 15.0F + 1;
+    scp_delay = CLAMP(scp_delay, 1, 31);
+
+    err += bq769x2_subcmd_write_u1(BQ769X2_PROT_SCD_THRESHOLD, scp_threshold);
+    err += bq769x2_subcmd_write_u1(BQ769X2_PROT_SCD_DELAY, scp_delay);
+
+    conf->dis_sc_limit = SCD_threshold_setting[scp_threshold] / conf->shunt_res_mOhm;
+    conf->dis_sc_delay_us = (scp_delay - 1) * 15;
+
+    return err;
 }
 
 int bms_apply_chg_ocp(BmsConfig *conf)
