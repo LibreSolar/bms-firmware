@@ -88,109 +88,119 @@ void test_bq769x2_subcmd_read_u1()
 {
     uint8_t value = 0;
 
-    mem_bq_direct[0x40] = 0xFF;
+    mem_bq_subcmd[0x0000] = 0xFF;
+    mem_bq_subcmd[0x0001] = 0x00;
+    mem_bq_subcmd[0x0002] = 0x00;
+    mem_bq_subcmd[0x0003] = 0x00;
 
-    mem_bq_direct[0x60] = 0;     // checksum
-    mem_bq_direct[0x61] = 4 + 1; // length
+    uint8_t chk_expected = 0;
 
     int err = bq769x2_subcmd_read_u1(0, &value);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL(UINT8_MAX, value);
+    TEST_ASSERT_EQUAL_HEX8(chk_expected, mem_bq_direct[0x60]);
 }
 
 void test_bq769x2_subcmd_read_u2()
 {
     uint16_t value = 0;
 
-    mem_bq_direct[0x40] = 0x00; // LSB
-    mem_bq_direct[0x41] = 0xFF; // MSB
+    mem_bq_subcmd[0x0000] = 0x00; // LSB
+    mem_bq_subcmd[0x0001] = 0xFF; // MSB
+    mem_bq_subcmd[0x0002] = 0x00;
+    mem_bq_subcmd[0x0003] = 0x00;
 
-    mem_bq_direct[0x60] = 0;     // checksum
-    mem_bq_direct[0x61] = 4 + 2; // length
+    uint8_t chk_expected = 0;
 
     int err = bq769x2_subcmd_read_u2(0, &value);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL(0xFF00, value);
+    TEST_ASSERT_EQUAL_HEX8(chk_expected, mem_bq_direct[0x60]);
 }
 
 void test_bq769x2_subcmd_read_u4()
 {
     uint32_t value = 0;
 
-    mem_bq_direct[0x40] = 0xAA; // LSB
-    mem_bq_direct[0x41] = 0xBB;
-    mem_bq_direct[0x42] = 0xCC;
-    mem_bq_direct[0x43] = 0xDD; // MSB
+    mem_bq_subcmd[0x0000] = 0xAA; // LSB
+    mem_bq_subcmd[0x0001] = 0xBB;
+    mem_bq_subcmd[0x0002] = 0xCC;
+    mem_bq_subcmd[0x0003] = 0xDD; // MSB
 
-    mem_bq_direct[0x60] = (uint8_t) ~(0xAA + 0xBB + 0xCC + 0xDD);
-    mem_bq_direct[0x61] = 4 + 4;
+    uint8_t chk_expected = (uint8_t) ~(0xAA + 0xBB + 0xCC + 0xDD);
 
     int err = bq769x2_subcmd_read_u4(0, &value);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL(0xDDCCBBAA, value);
+    TEST_ASSERT_EQUAL_HEX8(chk_expected, mem_bq_direct[0x60]);
 }
 
 void test_bq769x2_subcmd_read_i1()
 {
     int8_t value = 0;
 
-    mem_bq_direct[0x40] = 0x80;
+    mem_bq_subcmd[0x0000] = 0x80;
+    mem_bq_subcmd[0x0001] = 0x00;
+    mem_bq_subcmd[0x0002] = 0x00;
+    mem_bq_subcmd[0x0003] = 0x00;
 
-    mem_bq_direct[0x60] = (uint8_t)~0x80; // checksum
-    mem_bq_direct[0x61] = 4 + 1;          // length
+    uint8_t chk_expected = (uint8_t)~0x80;
 
     int err = bq769x2_subcmd_read_i1(0, &value);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL(INT8_MIN, value);
+    TEST_ASSERT_EQUAL_HEX8(chk_expected, mem_bq_direct[0x60]);
 }
 
 void test_bq769x2_subcmd_read_i2()
 {
     int16_t value = 0;
 
-    mem_bq_direct[0x40] = 0x00; // LSB
-    mem_bq_direct[0x41] = 0x80; // MSB
+    mem_bq_subcmd[0x0000] = 0x00; // LSB
+    mem_bq_subcmd[0x0001] = 0x80; // MSB
+    mem_bq_subcmd[0x0002] = 0x00;
+    mem_bq_subcmd[0x0003] = 0x00;
 
-    mem_bq_direct[0x60] = (uint8_t)~0x80; // checksum
-    mem_bq_direct[0x61] = 4 + 2;          // length
+    uint8_t chk_expected = (uint8_t)~0x80;
 
     int err = bq769x2_subcmd_read_i2(0, &value);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL(INT16_MIN, value);
+    TEST_ASSERT_EQUAL_HEX8(chk_expected, mem_bq_direct[0x60]);
 }
 
 void test_bq769x2_subcmd_read_i4()
 {
     int32_t value = 0;
 
-    mem_bq_direct[0x40] = 0x00; // LSB
-    mem_bq_direct[0x41] = 0x00;
-    mem_bq_direct[0x42] = 0x00;
-    mem_bq_direct[0x43] = 0x80; // MSB
+    mem_bq_subcmd[0x0000] = 0x00; // LSB
+    mem_bq_subcmd[0x0001] = 0x00;
+    mem_bq_subcmd[0x0002] = 0x00;
+    mem_bq_subcmd[0x0003] = 0x80; // MSB
 
-    mem_bq_direct[0x60] = (uint8_t)~0x80; // checksum
-    mem_bq_direct[0x61] = 4 + 4;          // length
+    uint8_t chk_expected = (uint8_t)~0x80;
 
     int err = bq769x2_subcmd_read_i4(0, &value);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL(INT32_MIN, value);
+    TEST_ASSERT_EQUAL_HEX8(chk_expected, mem_bq_direct[0x60]);
 }
 
 void test_bq769x2_subcmd_read_f4()
 {
     float value = 0.0F;
 
-    mem_bq_direct[0x40] = 0xB6; // LSB
-    mem_bq_direct[0x41] = 0xF3;
-    mem_bq_direct[0x42] = 0x9D;
-    mem_bq_direct[0x43] = 0x3F; // MSB
+    mem_bq_subcmd[0x0000] = 0xB6; // LSB
+    mem_bq_subcmd[0x0001] = 0xF3;
+    mem_bq_subcmd[0x0002] = 0x9D;
+    mem_bq_subcmd[0x0003] = 0x3F; // MSB
 
-    mem_bq_direct[0x60] = (uint8_t) ~(0xB6 + 0xF3 + 0x9D + 0x3F);
-    mem_bq_direct[0x61] = 4 + 4;
+    uint8_t chk_expected = (uint8_t) ~(0xB6 + 0xF3 + 0x9D + 0x3F);
 
     int err = bq769x2_subcmd_read_f4(0, &value);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(1.234F, value);
+    TEST_ASSERT_EQUAL_HEX8(chk_expected, mem_bq_direct[0x60]);
 }
 
 void test_bq769x2_subcmd_write_u1()

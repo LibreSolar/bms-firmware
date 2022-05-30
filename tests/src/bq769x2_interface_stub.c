@@ -26,20 +26,42 @@ int bq769x2_write_bytes(const uint8_t reg_addr, const uint8_t *data, const size_
 
     memcpy(&mem_bq_direct[reg_addr], data, num_bytes);
 
-    // writing to BQ769X2_SUBCMD_DATA_LENGTH starts execution of the command
     if (reg_addr == BQ769X2_SUBCMD_DATA_CHECKSUM || reg_addr == BQ769X2_SUBCMD_DATA_LENGTH) {
+        // writing to BQ769X2_SUBCMD_DATA_LENGTH starts execution of a subcommand
 
         uint16_t subcmd_addr = (mem_bq_direct[BQ769X2_CMD_SUBCMD_UPPER] << 8)
                                + mem_bq_direct[BQ769X2_CMD_SUBCMD_LOWER];
         uint8_t subcmd_bytes = mem_bq_direct[BQ769X2_SUBCMD_DATA_LENGTH] - 4;
 
-        if (subcmd_addr < BQ_SUBCMD_MEM_OFFSET
-            || subcmd_addr > (BQ_SUBCMD_MEM_OFFSET + BQ_SUBCMD_MEM_SIZE)) {
+        if (subcmd_addr >= sizeof(mem_bq_subcmd)) {
             return -EINVAL;
         }
 
-        memcpy(&mem_bq_subcmd[subcmd_addr - BQ_SUBCMD_MEM_OFFSET],
-               &mem_bq_direct[BQ769X2_SUBCMD_DATA_START], subcmd_bytes);
+        memcpy(&mem_bq_subcmd[subcmd_addr], &mem_bq_direct[BQ769X2_SUBCMD_DATA_START],
+               subcmd_bytes);
+    }
+    else if (reg_addr == BQ769X2_CMD_SUBCMD_LOWER && num_bytes == 2) {
+        // writing to SUBCMD register initiates a subcmd read
+
+        uint16_t subcmd_addr = (mem_bq_direct[BQ769X2_CMD_SUBCMD_UPPER] << 8)
+                               + mem_bq_direct[BQ769X2_CMD_SUBCMD_LOWER];
+
+        if (subcmd_addr >= sizeof(mem_bq_subcmd)) {
+            return -EINVAL;
+        }
+
+        memcpy(&mem_bq_direct[BQ769X2_SUBCMD_DATA_START], &mem_bq_subcmd[subcmd_addr], 4);
+
+        // always assume maximum data type length of 4 bytes
+        uint8_t checksum =
+            mem_bq_direct[BQ769X2_CMD_SUBCMD_UPPER] + mem_bq_direct[BQ769X2_CMD_SUBCMD_LOWER];
+        for (int i = 0; i < 4; i++) {
+            checksum += mem_bq_direct[BQ769X2_SUBCMD_DATA_START + i];
+        }
+        checksum = ~checksum;
+
+        mem_bq_direct[BQ769X2_SUBCMD_DATA_LENGTH] = 4 + 4;
+        mem_bq_direct[BQ769X2_SUBCMD_DATA_CHECKSUM] = checksum;
     }
 
     return 0;

@@ -12,9 +12,8 @@
  *
  * Used subcommand address space starts with 0x9180 and ends below 0x9400
  */
-#define BQ_DIRECT_MEM_SIZE      (0x80)
-#define BQ_SUBCMD_MEM_OFFSET    (0x9180)
-#define BQ_SUBCMD_MEM_SIZE      (0x9400 - 0x9180)
+#define BQ_DIRECT_MEM_SIZE (0x80)
+#define BQ_SUBCMD_MEM_SIZE (0x9400)
 
 int bq769x2_tests_interface();
 
