@@ -19,6 +19,20 @@
 
 LOG_MODULE_REGISTER(bq769x0, CONFIG_LOG_DEFAULT_LEVEL);
 
+static int detect_num_cells(Bms *bms)
+{
+    bms_read_voltages(bms);
+
+    uint16_t vcell_mode = 0;
+    for (int i = 0; i < BOARD_NUM_CELLS_MAX; i++) {
+        if (bms->status.cell_voltages[i] > 0.5F) {
+            vcell_mode |= 1U << i;
+        }
+    }
+
+    return bq769x2_subcmd_write_u2(BQ769X2_SET_CONF_VCELL_MODE, vcell_mode);
+}
+
 int bms_init_hardware(Bms *bms)
 {
     int err = 0;
@@ -65,6 +79,11 @@ int bms_init_hardware(Bms *bms)
 
     // disable sleep mode to avoid switching off the CHG MOSFET automatically
     err = bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_SLEEP_DISABLE);
+    if (err) {
+        return err;
+    }
+
+    err = detect_num_cells(bms);
     if (err) {
         return err;
     }
