@@ -310,9 +310,55 @@ int bms_apply_cell_ovp(Bms *bms)
 
 int bms_apply_temp_limits(Bms *bms)
 {
-    // TODO
+    int err = 0;
+    uint8_t hyst = CLAMP(bms->conf.t_limit_hyst, 1, 20);
 
-    return 0;
+    if (bms->conf.dis_ot_limit < 0.0F || bms->conf.chg_ot_limit < 0.0F
+        || bms->conf.dis_ot_limit < bms->conf.dis_ut_limit + 20.0F
+        || bms->conf.chg_ot_limit < bms->conf.chg_ut_limit + 20.0F)
+    {
+        // values not plausible
+        return -1;
+    }
+
+    int8_t otc_threshold = CLAMP(bms->conf.chg_ot_limit, -40, 120);
+    int8_t otc_recovery = CLAMP(otc_threshold - hyst, -40, 120);
+    int8_t otd_threshold = CLAMP(bms->conf.dis_ot_limit, -40, 120);
+    int8_t otd_recovery = CLAMP(otd_threshold - hyst, -40, 120);
+
+    int8_t utc_threshold = CLAMP(bms->conf.chg_ut_limit, -40, 120);
+    int8_t utc_recovery = CLAMP(utc_threshold + hyst, -40, 120);
+    int8_t utd_threshold = CLAMP(bms->conf.dis_ut_limit, -40, 120);
+    int8_t utd_recovery = CLAMP(utd_threshold + hyst, -40, 120);
+
+    err += bq769x2_subcmd_write_i1(BQ769X2_PROT_OTC_THRESHOLD, otc_threshold);
+    err += bq769x2_subcmd_write_i1(BQ769X2_PROT_OTC_RECOVERY, otc_recovery);
+    err += bq769x2_subcmd_write_i1(BQ769X2_PROT_OTD_THRESHOLD, otd_threshold);
+    err += bq769x2_subcmd_write_i1(BQ769X2_PROT_OTD_RECOVERY, otd_recovery);
+
+    err += bq769x2_subcmd_write_i1(BQ769X2_PROT_UTC_THRESHOLD, utc_threshold);
+    err += bq769x2_subcmd_write_i1(BQ769X2_PROT_UTC_RECOVERY, utc_recovery);
+    err += bq769x2_subcmd_write_i1(BQ769X2_PROT_UTD_THRESHOLD, utd_threshold);
+    err += bq769x2_subcmd_write_i1(BQ769X2_PROT_UTD_RECOVERY, utd_recovery);
+
+    bms->conf.chg_ot_limit = otc_threshold;
+    bms->conf.dis_ot_limit = otd_threshold;
+    bms->conf.chg_ut_limit = utc_threshold;
+    bms->conf.dis_ut_limit = utd_threshold;
+    bms->conf.t_limit_hyst = hyst;
+
+    // temperature protection has to be enabled manually
+    SAFETY_STATUS_B_Type prot_enabled_b;
+    err += bq769x2_subcmd_read_u1(BQ769X2_SET_PROT_ENABLED_B, &prot_enabled_b.byte);
+    if (!err) {
+        prot_enabled_b.OTC = 1;
+        prot_enabled_b.OTD = 1;
+        prot_enabled_b.UTC = 1;
+        prot_enabled_b.UTD = 1;
+        err += bq769x2_subcmd_write_u1(BQ769X2_SET_PROT_ENABLED_B, prot_enabled_b.byte);
+    }
+
+    return err;
 }
 
 void bms_read_temperatures(Bms *bms)

@@ -341,6 +341,165 @@ void test_bq769x2_apply_cell_ovp()
     TEST_ASSERT_EQUAL_UINT8(2, mem_bq_subcmd[0x927C]);
 }
 
+void test_bq769x2_apply_temp_limits()
+{
+    int err;
+
+    mem_bq_subcmd[0x9262] = 0;
+
+    // default
+    bms.conf.dis_ot_limit = 60;
+    bms.conf.dis_ut_limit = 0;
+    bms.conf.chg_ot_limit = 55;
+    bms.conf.chg_ut_limit = 0;
+    bms.conf.t_limit_hyst = 5;
+
+    err = bms_apply_temp_limits(&bms);
+    TEST_ASSERT_EQUAL(0, err);
+
+    TEST_ASSERT_EQUAL_FLOAT(5, bms.conf.t_limit_hyst);
+
+    TEST_ASSERT_EQUAL_FLOAT(60, bms.conf.dis_ot_limit);
+    TEST_ASSERT_EQUAL_INT8(60, mem_bq_subcmd[0x929D]);
+    TEST_ASSERT_EQUAL_INT8(55, mem_bq_subcmd[0x929F]);
+
+    TEST_ASSERT_EQUAL_FLOAT(0, bms.conf.dis_ut_limit);
+    TEST_ASSERT_EQUAL_INT8(0, mem_bq_subcmd[0x92A9]);
+    TEST_ASSERT_EQUAL_INT8(5, mem_bq_subcmd[0x92AB]);
+
+    TEST_ASSERT_EQUAL_FLOAT(55, bms.conf.chg_ot_limit);
+    TEST_ASSERT_EQUAL_INT8(55, mem_bq_subcmd[0x929A]);
+    TEST_ASSERT_EQUAL_INT8(50, mem_bq_subcmd[0x929C]);
+
+    TEST_ASSERT_EQUAL_FLOAT(0, bms.conf.chg_ut_limit);
+    TEST_ASSERT_EQUAL_INT8(0, mem_bq_subcmd[0x92A6]);
+    TEST_ASSERT_EQUAL_INT8(5, mem_bq_subcmd[0x92A8]);
+
+    // min
+    bms.conf.dis_ot_limit = 0;
+    bms.conf.dis_ut_limit = -40;
+    bms.conf.chg_ot_limit = 0;
+    bms.conf.chg_ut_limit = -40;
+    bms.conf.t_limit_hyst = 1;
+
+    err = bms_apply_temp_limits(&bms);
+    TEST_ASSERT_EQUAL(0, err);
+
+    TEST_ASSERT_EQUAL_FLOAT(1, bms.conf.t_limit_hyst);
+
+    TEST_ASSERT_EQUAL_FLOAT(0, bms.conf.dis_ot_limit);
+    TEST_ASSERT_EQUAL_INT8(0, mem_bq_subcmd[0x929D]);
+    TEST_ASSERT_EQUAL_INT8(-1, mem_bq_subcmd[0x929F]);
+
+    TEST_ASSERT_EQUAL_FLOAT(-40, bms.conf.dis_ut_limit);
+    TEST_ASSERT_EQUAL_INT8(-40, mem_bq_subcmd[0x92A9]);
+    TEST_ASSERT_EQUAL_INT8(-39, mem_bq_subcmd[0x92AB]);
+
+    TEST_ASSERT_EQUAL_FLOAT(0, bms.conf.chg_ot_limit);
+    TEST_ASSERT_EQUAL_INT8(0, mem_bq_subcmd[0x929A]);
+    TEST_ASSERT_EQUAL_INT8(-1, mem_bq_subcmd[0x929C]);
+
+    TEST_ASSERT_EQUAL_FLOAT(-40, bms.conf.chg_ut_limit);
+    TEST_ASSERT_EQUAL_INT8(-40, mem_bq_subcmd[0x92A6]);
+    TEST_ASSERT_EQUAL_INT8(-39, mem_bq_subcmd[0x92A8]);
+
+    // too little
+    bms.conf.dis_ot_limit = -50;
+    bms.conf.dis_ut_limit = -50;
+    bms.conf.chg_ot_limit = -50;
+    bms.conf.chg_ut_limit = -50;
+    bms.conf.t_limit_hyst = 0;
+
+    err = bms_apply_temp_limits(&bms);
+    TEST_ASSERT_EQUAL(-1, err); // should fail
+
+    bms.conf.dis_ot_limit = 0;
+    bms.conf.dis_ut_limit = -50;
+    bms.conf.chg_ot_limit = 0;
+    bms.conf.chg_ut_limit = -50;
+    bms.conf.t_limit_hyst = 0;
+
+    err = bms_apply_temp_limits(&bms);
+    TEST_ASSERT_EQUAL(0, err);
+
+    TEST_ASSERT_EQUAL_FLOAT(1, bms.conf.t_limit_hyst);
+
+    TEST_ASSERT_EQUAL_FLOAT(0, bms.conf.dis_ot_limit);
+    TEST_ASSERT_EQUAL_INT8(0, mem_bq_subcmd[0x929D]);
+    TEST_ASSERT_EQUAL_INT8(-1, mem_bq_subcmd[0x929F]);
+
+    TEST_ASSERT_EQUAL_FLOAT(-40, bms.conf.dis_ut_limit);
+    TEST_ASSERT_EQUAL_INT8(-40, mem_bq_subcmd[0x92A9]);
+    TEST_ASSERT_EQUAL_INT8(-39, mem_bq_subcmd[0x92AB]);
+
+    TEST_ASSERT_EQUAL_FLOAT(0, bms.conf.chg_ot_limit);
+    TEST_ASSERT_EQUAL_INT8(0, mem_bq_subcmd[0x929A]);
+    TEST_ASSERT_EQUAL_INT8(-1, mem_bq_subcmd[0x929C]);
+
+    TEST_ASSERT_EQUAL_FLOAT(-40, bms.conf.chg_ut_limit);
+    TEST_ASSERT_EQUAL_INT8(-40, mem_bq_subcmd[0x92A6]);
+    TEST_ASSERT_EQUAL_INT8(-39, mem_bq_subcmd[0x92A8]);
+
+    // max
+    bms.conf.dis_ot_limit = 120;
+    bms.conf.dis_ut_limit = 100;
+    bms.conf.chg_ot_limit = 120;
+    bms.conf.chg_ut_limit = 100;
+    bms.conf.t_limit_hyst = 20;
+
+    err = bms_apply_temp_limits(&bms);
+    TEST_ASSERT_EQUAL(0, err);
+
+    TEST_ASSERT_EQUAL_FLOAT(20, bms.conf.t_limit_hyst);
+
+    TEST_ASSERT_EQUAL_FLOAT(120, bms.conf.dis_ot_limit);
+    TEST_ASSERT_EQUAL_INT8(120, mem_bq_subcmd[0x929D]);
+    TEST_ASSERT_EQUAL_INT8(100, mem_bq_subcmd[0x929F]);
+
+    TEST_ASSERT_EQUAL_FLOAT(100, bms.conf.dis_ut_limit);
+    TEST_ASSERT_EQUAL_INT8(100, mem_bq_subcmd[0x92A9]);
+    TEST_ASSERT_EQUAL_INT8(120, mem_bq_subcmd[0x92AB]);
+
+    TEST_ASSERT_EQUAL_FLOAT(120, bms.conf.chg_ot_limit);
+    TEST_ASSERT_EQUAL_INT8(120, mem_bq_subcmd[0x929A]);
+    TEST_ASSERT_EQUAL_INT8(100, mem_bq_subcmd[0x929C]);
+
+    TEST_ASSERT_EQUAL_FLOAT(100, bms.conf.chg_ut_limit);
+    TEST_ASSERT_EQUAL_INT8(100, mem_bq_subcmd[0x92A6]);
+    TEST_ASSERT_EQUAL_INT8(120, mem_bq_subcmd[0x92A8]);
+
+    // too much
+    bms.conf.dis_ot_limit = 130;
+    bms.conf.dis_ut_limit = 100;
+    bms.conf.chg_ot_limit = 130;
+    bms.conf.chg_ut_limit = 100;
+    bms.conf.t_limit_hyst = 30;
+
+    err = bms_apply_temp_limits(&bms);
+    TEST_ASSERT_EQUAL(0, err);
+
+    TEST_ASSERT_EQUAL_FLOAT(20, bms.conf.t_limit_hyst);
+
+    TEST_ASSERT_EQUAL_FLOAT(120, bms.conf.dis_ot_limit);
+    TEST_ASSERT_EQUAL_INT8(120, mem_bq_subcmd[0x929D]);
+    TEST_ASSERT_EQUAL_INT8(100, mem_bq_subcmd[0x929F]);
+
+    TEST_ASSERT_EQUAL_FLOAT(100, bms.conf.dis_ut_limit);
+    TEST_ASSERT_EQUAL_INT8(100, mem_bq_subcmd[0x92A9]);
+    TEST_ASSERT_EQUAL_INT8(120, mem_bq_subcmd[0x92AB]);
+
+    TEST_ASSERT_EQUAL_FLOAT(120, bms.conf.chg_ot_limit);
+    TEST_ASSERT_EQUAL_INT8(120, mem_bq_subcmd[0x929A]);
+    TEST_ASSERT_EQUAL_INT8(100, mem_bq_subcmd[0x929C]);
+
+    TEST_ASSERT_EQUAL_FLOAT(100, bms.conf.chg_ut_limit);
+    TEST_ASSERT_EQUAL_INT8(100, mem_bq_subcmd[0x92A6]);
+    TEST_ASSERT_EQUAL_INT8(120, mem_bq_subcmd[0x92A8]);
+
+    // check if the protection was enabled
+    TEST_ASSERT_EQUAL((1U << 0) | (1U << 1) | (1U << 4) | (1U << 5), mem_bq_subcmd[0x9262]);
+}
+
 int bq769x2_tests_functions()
 {
     UNITY_BEGIN();
@@ -350,6 +509,7 @@ int bq769x2_tests_functions()
     RUN_TEST(test_bq769x2_apply_dis_ocp);
     RUN_TEST(test_bq769x2_apply_cell_uvp);
     RUN_TEST(test_bq769x2_apply_cell_ovp);
+    RUN_TEST(test_bq769x2_apply_temp_limits);
 
     return UNITY_END();
 }
