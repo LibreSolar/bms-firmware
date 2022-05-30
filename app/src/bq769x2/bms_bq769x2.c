@@ -231,6 +231,14 @@ int bms_apply_cell_uvp(Bms *bms)
     bms->conf.cell_uv_reset = (cuv_threshold + cuv_hyst) * 50.6F / 1000.0F;
     bms->conf.cell_uv_delay_ms = cuv_delay * 3.3F;
 
+    // CUV protection needs to be enabled, as it is not active by default
+    SAFETY_STATUS_A_Type prot_enabled_a;
+    err += bq769x2_subcmd_read_u1(BQ769X2_SET_PROT_ENABLED_A, &prot_enabled_a.byte);
+    if (!err) {
+        prot_enabled_a.CUV = 1;
+        err += bq769x2_subcmd_write_u1(BQ769X2_SET_PROT_ENABLED_A, prot_enabled_a.byte);
+    }
+
     return err;
 }
 
@@ -254,6 +262,8 @@ int bms_apply_cell_ovp(Bms *bms)
     bms->conf.cell_ov_limit = cov_threshold * 50.6F / 1000.0F;
     bms->conf.cell_ov_reset = (cov_threshold - cov_hyst) * 50.6F / 1000.0F;
     bms->conf.cell_ov_delay_ms = cov_delay * 3.3F;
+
+    // COV protection is enabled by default in BQ769X2_SET_PROT_ENABLED_A register.
 
     return err;
 }
