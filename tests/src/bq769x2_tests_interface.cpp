@@ -14,8 +14,7 @@
 #include <stdio.h>
 #include <time.h>
 
-extern BmsConfig bms_conf;
-extern BmsStatus bms_status;
+extern Bms bms;
 
 // defined in bq769x2_interface_stub
 extern uint8_t mem_bq_direct[BQ_DIRECT_MEM_SIZE];

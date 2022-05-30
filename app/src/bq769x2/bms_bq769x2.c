@@ -19,7 +19,7 @@
 
 LOG_MODULE_REGISTER(bq769x0, CONFIG_LOG_DEFAULT_LEVEL);
 
-int bms_init_hardware(BmsConfig *conf)
+int bms_init_hardware(Bms *bms)
 {
     int err = 0;
 
@@ -38,7 +38,7 @@ int bms_init_hardware(BmsConfig *conf)
     }
 
     // configure shunt value based on nominal value of VREF2 (could be improved by calibration)
-    err = bq769x2_subcmd_write_f4(BQ769X2_CAL_CURR_CC_GAIN, 7.4768F / conf->shunt_res_mOhm);
+    err = bq769x2_subcmd_write_f4(BQ769X2_CAL_CURR_CC_GAIN, 7.4768F / bms->conf.shunt_res_mOhm);
     if (err) {
         return err;
     }
@@ -72,26 +72,26 @@ int bms_init_hardware(BmsConfig *conf)
     return 0;
 }
 
-void bms_update(BmsConfig *conf, BmsStatus *status)
+void bms_update(Bms *bms)
 {
-    bms_read_voltages(status);
-    bms_read_current(conf, status);
-    bms_soc_update(conf, status);
-    bms_read_temperatures(conf, status);
-    bms_update_error_flags(conf, status);
-    bms_apply_balancing(conf, status);
+    bms_read_voltages(bms);
+    bms_read_current(bms);
+    bms_soc_update(bms);
+    bms_read_temperatures(bms);
+    bms_update_error_flags(bms);
+    bms_apply_balancing(bms);
 }
 
-void bms_state_machine(BmsConfig *conf, BmsStatus *status)
+void bms_state_machine(Bms *bms)
 {
-    bms_handle_errors(conf, status);
+    bms_handle_errors(bms);
 
-    if (status->state == BMS_STATE_OFF) {
+    if (bms->status.state == BMS_STATE_OFF) {
         if (bms_startup_inhibit()) {
             return;
         }
 
-        if (bms_dis_allowed(status) || bms_chg_allowed(status)) {
+        if (bms_dis_allowed(bms) || bms_chg_allowed(bms)) {
             // the bq chip will automatically take care of the conditions and only enable the
             // FETs in the allowed directions
             bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_ALL_FETS_ON);
@@ -104,20 +104,20 @@ void bms_state_machine(BmsConfig *conf, BmsStatus *status)
     bq769x2_read_bytes(BQ769X2_CMD_FET_STATUS, &fet_status.byte, 1);
 
     if (fet_status.CHG_FET && fet_status.DSG_FET) {
-        status->state = BMS_STATE_NORMAL;
+        bms->status.state = BMS_STATE_NORMAL;
     }
     else if (fet_status.CHG_FET) {
-        status->state = BMS_STATE_CHG;
+        bms->status.state = BMS_STATE_CHG;
     }
     else if (fet_status.DSG_FET) {
-        status->state = BMS_STATE_DIS;
+        bms->status.state = BMS_STATE_DIS;
     }
     else {
-        status->state = BMS_STATE_OFF;
+        bms->status.state = BMS_STATE_OFF;
     }
 }
 
-void bms_set_error_flag(BmsStatus *status, uint32_t flag, bool value)
+void bms_set_error_flag(Bms *bms, uint32_t flag, bool value)
 {
     // TODO
 }
@@ -133,31 +133,31 @@ void bms_shutdown()
     bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_SHUTDOWN);
 }
 
-int bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable)
+int bms_chg_switch(Bms *bms, bool enable)
 {
     // handled by bq769x2 in autonomous mode, manual disable of a FET currently not supported
 
     return 0;
 }
 
-int bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable)
+int bms_dis_switch(Bms *bms, bool enable)
 {
     // handled by bq769x2 in autonomous mode, manual disable of a FET currently not supported
 
     return 0;
 }
 
-void bms_apply_balancing(BmsConfig *conf, BmsStatus *status)
+void bms_apply_balancing(Bms *bms)
 {
     // TODO
 }
 
-int bms_apply_dis_scp(BmsConfig *conf)
+int bms_apply_dis_scp(Bms *bms)
 {
     int err = 0;
 
     uint8_t scp_threshold = 0;
-    uint16_t shunt_voltage = conf->dis_sc_limit * conf->shunt_res_mOhm;
+    uint16_t shunt_voltage = bms->conf.dis_sc_limit * bms->conf.shunt_res_mOhm;
     for (int i = ARRAY_SIZE(SCD_threshold_setting) - 1; i > 0; i--) {
         if (shunt_voltage >= SCD_threshold_setting[i]) {
             scp_threshold = i;
@@ -165,39 +165,40 @@ int bms_apply_dis_scp(BmsConfig *conf)
         }
     }
 
-    uint16_t scp_delay = conf->dis_sc_delay_us / 15.0F + 1;
+    uint16_t scp_delay = bms->conf.dis_sc_delay_us / 15.0F + 1;
     scp_delay = CLAMP(scp_delay, 1, 31);
 
     err += bq769x2_subcmd_write_u1(BQ769X2_PROT_SCD_THRESHOLD, scp_threshold);
     err += bq769x2_subcmd_write_u1(BQ769X2_PROT_SCD_DELAY, scp_delay);
 
-    conf->dis_sc_limit = SCD_threshold_setting[scp_threshold] / conf->shunt_res_mOhm;
-    conf->dis_sc_delay_us = (scp_delay - 1) * 15;
+    bms->conf.dis_sc_limit = SCD_threshold_setting[scp_threshold] / bms->conf.shunt_res_mOhm;
+    bms->conf.dis_sc_delay_us = (scp_delay - 1) * 15;
 
     return err;
 }
 
-int bms_apply_chg_ocp(BmsConfig *conf)
+int bms_apply_chg_ocp(Bms *bms)
 {
     // TODO
 
     return -1;
 }
 
-int bms_apply_dis_ocp(BmsConfig *conf)
+int bms_apply_dis_ocp(Bms *bms)
 {
     // TODO
 
     return -1;
 }
 
-int bms_apply_cell_uvp(BmsConfig *conf)
+int bms_apply_cell_uvp(Bms *bms)
 {
     int err = 0;
 
-    uint8_t cuv_threshold = lroundf(conf->cell_uv_limit * 1000.0F / 50.6F);
-    uint8_t cuv_hyst = lroundf(MAX(conf->cell_uv_reset - conf->cell_uv_limit, 0) * 1000.0F / 50.6F);
-    uint16_t cuv_delay = lroundf(conf->cell_uv_delay_ms / 3.3F);
+    uint8_t cuv_threshold = lroundf(bms->conf.cell_uv_limit * 1000.0F / 50.6F);
+    uint8_t cuv_hyst =
+        lroundf(MAX(bms->conf.cell_uv_reset - bms->conf.cell_uv_limit, 0) * 1000.0F / 50.6F);
+    uint16_t cuv_delay = lroundf(bms->conf.cell_uv_delay_ms / 3.3F);
 
     cuv_threshold = CLAMP(cuv_threshold, 20, 90);
     cuv_hyst = CLAMP(cuv_hyst, 2, 20);
@@ -207,20 +208,21 @@ int bms_apply_cell_uvp(BmsConfig *conf)
     err += bq769x2_subcmd_write_u1(BQ769X2_PROT_CUV_RECOV_HYST, cuv_hyst);
     err += bq769x2_subcmd_write_u2(BQ769X2_PROT_CUV_DELAY, cuv_delay);
 
-    conf->cell_uv_limit = cuv_threshold * 50.6F / 1000.0F;
-    conf->cell_uv_reset = (cuv_threshold + cuv_hyst) * 50.6F / 1000.0F;
-    conf->cell_uv_delay_ms = cuv_delay * 3.3F;
+    bms->conf.cell_uv_limit = cuv_threshold * 50.6F / 1000.0F;
+    bms->conf.cell_uv_reset = (cuv_threshold + cuv_hyst) * 50.6F / 1000.0F;
+    bms->conf.cell_uv_delay_ms = cuv_delay * 3.3F;
 
     return err;
 }
 
-int bms_apply_cell_ovp(BmsConfig *conf)
+int bms_apply_cell_ovp(Bms *bms)
 {
     int err = 0;
 
-    uint8_t cov_threshold = lroundf(conf->cell_ov_limit * 1000.0F / 50.6F);
-    uint8_t cov_hyst = lroundf(MAX(conf->cell_ov_limit - conf->cell_ov_reset, 0) * 1000.0F / 50.6F);
-    uint16_t cov_delay = lroundf(conf->cell_ov_delay_ms / 3.3F);
+    uint8_t cov_threshold = lroundf(bms->conf.cell_ov_limit * 1000.0F / 50.6F);
+    uint8_t cov_hyst =
+        lroundf(MAX(bms->conf.cell_ov_limit - bms->conf.cell_ov_reset, 0) * 1000.0F / 50.6F);
+    uint16_t cov_delay = lroundf(bms->conf.cell_ov_delay_ms / 3.3F);
 
     cov_threshold = CLAMP(cov_threshold, 20, 110);
     cov_hyst = CLAMP(cov_hyst, 2, 20);
@@ -230,43 +232,43 @@ int bms_apply_cell_ovp(BmsConfig *conf)
     err += bq769x2_subcmd_write_u1(BQ769X2_PROT_COV_RECOV_HYST, cov_hyst);
     err += bq769x2_subcmd_write_u2(BQ769X2_PROT_COV_DELAY, cov_delay);
 
-    conf->cell_ov_limit = cov_threshold * 50.6F / 1000.0F;
-    conf->cell_ov_reset = (cov_threshold - cov_hyst) * 50.6F / 1000.0F;
-    conf->cell_ov_delay_ms = cov_delay * 3.3F;
+    bms->conf.cell_ov_limit = cov_threshold * 50.6F / 1000.0F;
+    bms->conf.cell_ov_reset = (cov_threshold - cov_hyst) * 50.6F / 1000.0F;
+    bms->conf.cell_ov_delay_ms = cov_delay * 3.3F;
 
     return err;
 }
 
-int bms_apply_temp_limits(BmsConfig *bms)
+int bms_apply_temp_limits(Bms *bms)
 {
     // TODO
 
     return 0;
 }
 
-void bms_read_temperatures(BmsConfig *conf, BmsStatus *status)
+void bms_read_temperatures(Bms *bms)
 {
     int16_t temp = 0; // unit: 0.1 K
 
     /* by default, only TS1 is configured as cell temperature sensor */
     bq769x2_direct_read_i2(BQ769X2_CMD_TEMP_TS1, &temp);
-    status->bat_temp_avg = (temp * 0.1F) - 273.15F;
-    status->bat_temp_min = status->bat_temp_avg;
-    status->bat_temp_max = status->bat_temp_avg;
+    bms->status.bat_temp_avg = (temp * 0.1F) - 273.15F;
+    bms->status.bat_temp_min = bms->status.bat_temp_avg;
+    bms->status.bat_temp_max = bms->status.bat_temp_avg;
 
     bq769x2_direct_read_i2(BQ769X2_CMD_TEMP_INT, &temp);
-    status->ic_temp = (temp * 0.1F) - 273.15F;
+    bms->status.ic_temp = (temp * 0.1F) - 273.15F;
 }
 
-void bms_read_current(BmsConfig *conf, BmsStatus *status)
+void bms_read_current(Bms *bms)
 {
     int16_t current = 0;
 
     bq769x2_direct_read_i2(BQ769X2_CMD_CURRENT_CC2, &current);
-    status->pack_current = current * 1e-3F;
+    bms->status.pack_current = current * 1e-3F;
 }
 
-void bms_read_voltages(BmsStatus *status)
+void bms_read_voltages(Bms *bms)
 {
     int16_t voltage = 0;
     int conn_cells = 0;
@@ -275,29 +277,29 @@ void bms_read_voltages(BmsStatus *status)
 
     for (int i = 0; i < BOARD_NUM_CELLS_MAX; i++) {
         bq769x2_direct_read_i2(BQ769X2_CMD_VOLTAGE_CELL_1 + i * 2, &voltage);
-        status->cell_voltages[i] = voltage * 1e-3F; // unit: 1 mV
+        bms->status.cell_voltages[i] = voltage * 1e-3F; // unit: 1 mV
 
-        if (status->cell_voltages[i] > 0.5F) {
+        if (bms->status.cell_voltages[i] > 0.5F) {
             conn_cells++;
-            sum_voltages += status->cell_voltages[i];
+            sum_voltages += bms->status.cell_voltages[i];
         }
-        if (status->cell_voltages[i] > v_max) {
-            v_max = status->cell_voltages[i];
+        if (bms->status.cell_voltages[i] > v_max) {
+            v_max = bms->status.cell_voltages[i];
         }
-        if (status->cell_voltages[i] < v_min && status->cell_voltages[i] > 0.5F) {
-            v_min = status->cell_voltages[i];
+        if (bms->status.cell_voltages[i] < v_min && bms->status.cell_voltages[i] > 0.5F) {
+            v_min = bms->status.cell_voltages[i];
         }
     }
-    status->connected_cells = conn_cells;
-    status->cell_voltage_avg = sum_voltages / conn_cells;
-    status->cell_voltage_min = v_min;
-    status->cell_voltage_max = v_max;
+    bms->status.connected_cells = conn_cells;
+    bms->status.cell_voltage_avg = sum_voltages / conn_cells;
+    bms->status.cell_voltage_min = v_min;
+    bms->status.cell_voltage_max = v_max;
 
     bq769x2_direct_read_i2(BQ769X2_CMD_VOLTAGE_STACK, &voltage);
-    status->pack_voltage = voltage * 1e-2F; // unit: 10 mV
+    bms->status.pack_voltage = voltage * 1e-2F; // unit: 10 mV
 }
 
-void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
+void bms_update_error_flags(Bms *bms)
 {
     uint32_t error_flags = 0;
     SAFETY_STATUS_A_Type stat_a;
@@ -327,10 +329,10 @@ void bms_update_error_flags(BmsConfig *conf, BmsStatus *status)
     error_flags |= stat_b.OTF << BMS_ERR_FET_OVERTEMP;
     // error_flags |= 1U << BMS_ERR_CELL_FAILURE;
 
-    status->error_flags = error_flags;
+    bms->status.error_flags = error_flags;
 }
 
-void bms_handle_errors(BmsConfig *conf, BmsStatus *status)
+void bms_handle_errors(Bms *bms)
 {
     // TODO
 }

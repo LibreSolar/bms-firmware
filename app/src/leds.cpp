@@ -10,8 +10,7 @@
 
 #define SLEEP_TIME K_MSEC(100)
 
-extern BmsConfig bms_conf;
-extern BmsStatus bms_status;
+extern Bms bms;
 
 #ifndef UNIT_TEST
 
@@ -60,8 +59,8 @@ void leds_update()
     static uint32_t count = 0;
 
     // Charging LED control
-    if (bms_status.state == BMS_STATE_NORMAL || bms_status.state == BMS_STATE_CHG) {
-        if (bms_status.pack_current > bms_conf.bal_idle_current && ((count / 2) % 10) == 0) {
+    if (bms.status.state == BMS_STATE_NORMAL || bms.status.state == BMS_STATE_CHG) {
+        if (bms.status.pack_current > bms.conf.bal_idle_current && ((count / 2) % 10) == 0) {
             // not in idle: ____ ____ ____
             leds_chg_set(0);
         }
@@ -71,7 +70,7 @@ void leds_update()
         }
     }
     else {
-        if (bms_chg_error(bms_status.error_flags)) {
+        if (bms_chg_error(bms.status.error_flags)) {
             // quick flash
             leds_chg_set(count % 2);
         }
@@ -85,8 +84,8 @@ void leds_update()
     }
 
     // Discharging LED control
-    if (bms_status.state == BMS_STATE_NORMAL || bms_status.state == BMS_STATE_DIS) {
-        if (bms_status.pack_current < -bms_conf.bal_idle_current && ((count / 2) % 10) == 0) {
+    if (bms.status.state == BMS_STATE_NORMAL || bms.status.state == BMS_STATE_DIS) {
+        if (bms.status.pack_current < -bms.conf.bal_idle_current && ((count / 2) % 10) == 0) {
             // not in idle: ____ ____ ____
             leds_dis_set(0);
         }
@@ -96,7 +95,7 @@ void leds_update()
         }
     }
     else {
-        if (bms_dis_error(bms_status.error_flags)) {
+        if (bms_dis_error(bms.status.error_flags)) {
             // quick flash
             leds_dis_set(count % 2);
         }

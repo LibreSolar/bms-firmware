@@ -22,8 +22,7 @@
 
 #include <stdio.h>
 
-extern BmsConfig bms_conf;
-extern BmsStatus bms_status;
+extern Bms bms;
 
 const char manufacturer[] = "Libre Solar";
 const char device_type[] = DT_PROP(DT_PATH(pcb), type);
@@ -35,7 +34,7 @@ static char device_id[9];
 static char auth_password[11];
 
 // struct to define ThingSet array node
-ThingSetArrayInfo cell_voltages_arr = { bms_status.cell_voltages, BOARD_NUM_CELLS_MAX,
+ThingSetArrayInfo cell_voltages_arr = { bms.status.cell_voltages, BOARD_NUM_CELLS_MAX,
                                         BOARD_NUM_CELLS_MAX, TS_T_FLOAT32 };
 
 bool pub_serial_enable = IS_ENABLED(CONFIG_THINGSET_SERIAL_PUB_DEFAULT);
@@ -86,81 +85,81 @@ static ThingSetDataObject data_objects[] = {
 
     // general battery settings
 
-    TS_ITEM_FLOAT(0x31, "sBatNom_Ah", &bms_conf.nominal_capacity_Ah, 1,
+    TS_ITEM_FLOAT(0x31, "sBatNom_Ah", &bms.conf.nominal_capacity_Ah, 1,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
     // current limits
 
-    TS_ITEM_FLOAT(0x40, "sPcbDisSC_A", &bms_conf.dis_sc_limit, 1,
+    TS_ITEM_FLOAT(0x40, "sPcbDisSC_A", &bms.conf.dis_sc_limit, 1,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_UINT32(0x41, "sPcbDisSC_us", &bms_conf.dis_sc_delay_us,
+    TS_ITEM_UINT32(0x41, "sPcbDisSC_us", &bms.conf.dis_sc_delay_us,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_FLOAT(0x42, "sBatDisLim_A", &bms_conf.dis_oc_limit, 1,
+    TS_ITEM_FLOAT(0x42, "sBatDisLim_A", &bms.conf.dis_oc_limit, 1,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_UINT32(0x43, "sBatDisLimDelay_ms", &bms_conf.dis_oc_delay_ms,
+    TS_ITEM_UINT32(0x43, "sBatDisLimDelay_ms", &bms.conf.dis_oc_delay_ms,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_FLOAT(0x44, "sBatChgLim_A", &bms_conf.chg_oc_limit, 1,
+    TS_ITEM_FLOAT(0x44, "sBatChgLim_A", &bms.conf.chg_oc_limit, 1,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_UINT32(0x45, "sBatChgLimDelay_ms", &bms_conf.chg_oc_delay_ms,
+    TS_ITEM_UINT32(0x45, "sBatChgLimDelay_ms", &bms.conf.chg_oc_delay_ms,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
     // temperature limits
 
-    TS_ITEM_FLOAT(0x48, "sDisUpLim_degC", &bms_conf.dis_ot_limit, 1,
+    TS_ITEM_FLOAT(0x48, "sDisUpLim_degC", &bms.conf.dis_ot_limit, 1,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_FLOAT(0x49, "sDisLowLim_degC", &bms_conf.dis_ut_limit, 1,
+    TS_ITEM_FLOAT(0x49, "sDisLowLim_degC", &bms.conf.dis_ut_limit, 1,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_FLOAT(0x4A, "sChgUpLim_degC", &bms_conf.chg_ot_limit, 1,
+    TS_ITEM_FLOAT(0x4A, "sChgUpLim_degC", &bms.conf.chg_ot_limit, 1,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_FLOAT(0x4B, "sChgLowLim_degC", &bms_conf.chg_ut_limit, 1,
+    TS_ITEM_FLOAT(0x4B, "sChgLowLim_degC", &bms.conf.chg_ut_limit, 1,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_FLOAT(0x4C, "sTempLimHyst_degC", &bms_conf.t_limit_hyst, 1,
+    TS_ITEM_FLOAT(0x4C, "sTempLimHyst_degC", &bms.conf.t_limit_hyst, 1,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
     // voltage limits
 
-    TS_ITEM_FLOAT(0x50, "sCellUpLim_V", &bms_conf.cell_ov_limit, 1,
+    TS_ITEM_FLOAT(0x50, "sCellUpLim_V", &bms.conf.cell_ov_limit, 1,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_FLOAT(0x51, "sCellUpLimReset_V", &bms_conf.cell_ov_reset, 1,
+    TS_ITEM_FLOAT(0x51, "sCellUpLimReset_V", &bms.conf.cell_ov_reset, 1,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_UINT32(0x52, "sCellUpLimDelay_ms", &bms_conf.cell_ov_delay_ms,
+    TS_ITEM_UINT32(0x52, "sCellUpLimDelay_ms", &bms.conf.cell_ov_delay_ms,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_FLOAT(0x53, "sCellLowLim_V", &bms_conf.cell_uv_limit, 1,
+    TS_ITEM_FLOAT(0x53, "sCellLowLim_V", &bms.conf.cell_uv_limit, 1,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_FLOAT(0x54, "sCellLowLimReset_V", &bms_conf.cell_uv_reset, 1,
+    TS_ITEM_FLOAT(0x54, "sCellLowLimReset_V", &bms.conf.cell_uv_reset, 1,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_UINT32(0x55, "sCellLowLimDelay_ms", &bms_conf.cell_uv_delay_ms,
+    TS_ITEM_UINT32(0x55, "sCellLowLimDelay_ms", &bms.conf.cell_uv_delay_ms,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
     // balancing
 
-    TS_ITEM_BOOL(0x58, "sAutoBalEn", &bms_conf.auto_balancing_enabled,
+    TS_ITEM_BOOL(0x58, "sAutoBalEn", &bms.conf.auto_balancing_enabled,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_FLOAT(0x59, "sBalCellDiff_V", &bms_conf.bal_cell_voltage_diff, 3,
+    TS_ITEM_FLOAT(0x59, "sBalCellDiff_V", &bms.conf.bal_cell_voltage_diff, 3,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_FLOAT(0x5A, "sBalCellLowLim_V", &bms_conf.bal_cell_voltage_min, 1,
+    TS_ITEM_FLOAT(0x5A, "sBalCellLowLim_V", &bms.conf.bal_cell_voltage_min, 1,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_UINT16(0x5B, "sBalIdleDelay_s", &bms_conf.bal_idle_delay,
+    TS_ITEM_UINT16(0x5B, "sBalIdleDelay_s", &bms.conf.bal_idle_delay,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_FLOAT(0x5C, "sBalIdleTh_A", &bms_conf.bal_idle_current, 1,
+    TS_ITEM_FLOAT(0x5C, "sBalIdleTh_A", &bms.conf.bal_idle_current, 1,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
     // INPUT DATA /////////////////////////////////////////////////////////////
@@ -168,10 +167,10 @@ static ThingSetDataObject data_objects[] = {
 
     TS_GROUP(ID_INPUT, "Input", TS_NO_CALLBACK, ID_ROOT),
 
-    TS_ITEM_BOOL(0x61, "wChgEn", &bms_status.chg_enable,
+    TS_ITEM_BOOL(0x61, "wChgEn", &bms.status.chg_enable,
         ID_INPUT, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
-    TS_ITEM_BOOL(0x62, "wDisEn", &bms_status.dis_enable,
+    TS_ITEM_BOOL(0x62, "wDisEn", &bms.status.dis_enable,
         ID_INPUT, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
 
     // OUTPUT DATA ////////////////////////////////////////////////////////////
@@ -179,48 +178,48 @@ static ThingSetDataObject data_objects[] = {
 
     TS_GROUP(ID_MEAS, "Meas", TS_NO_CALLBACK, ID_ROOT),
 
-    TS_ITEM_FLOAT(0x71, "rBat_V", &bms_status.pack_voltage, 2,
+    TS_ITEM_FLOAT(0x71, "rBat_V", &bms.status.pack_voltage, 2,
         ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_ITEM_FLOAT(0x72, "rBat_A", &bms_status.pack_current, 2,
+    TS_ITEM_FLOAT(0x72, "rBat_A", &bms.status.pack_current, 2,
         ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_ITEM_FLOAT(0x73, "rBat_degC", &bms_status.bat_temp_avg, 1,
+    TS_ITEM_FLOAT(0x73, "rBat_degC", &bms.status.bat_temp_avg, 1,
         ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_ITEM_FLOAT(0x74, "rIC_degC", &bms_status.ic_temp, 1,
+    TS_ITEM_FLOAT(0x74, "rIC_degC", &bms.status.ic_temp, 1,
         ID_MEAS, TS_ANY_R, 0),
 
     //TS_ITEM_FLOAT(0x75, "rMCU_degC", &mcu_temp, 1,
     //    ID_MEAS, TS_ANY_R, 0),
 
 #ifdef CONFIG_ISL94202   // currently only implemented in ISL94202-based boards (using TS2)
-    TS_ITEM_FLOAT(0x76, "rMOSFET_degC", &bms_status.mosfet_temp, 1,
+    TS_ITEM_FLOAT(0x76, "rMOSFET_degC", &bms.status.mosfet_temp, 1,
         ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 #endif
 
-    TS_ITEM_FLOAT(0x7C, "rSOC_pct", &bms_status.soc, 1,
+    TS_ITEM_FLOAT(0x7C, "rSOC_pct", &bms.status.soc, 1,
         ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_ITEM_UINT32(0x7E, "rErrorFlags", &bms_status.error_flags,
+    TS_ITEM_UINT32(0x7E, "rErrorFlags", &bms.status.error_flags,
         ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_ITEM_UINT16(0x7F, "rBmsState", &bms_status.state,
+    TS_ITEM_UINT16(0x7F, "rBmsState", &bms.status.state,
         ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
     TS_ITEM_ARRAY(0x80, "rCells_V", &cell_voltages_arr, 3,
         ID_MEAS, TS_ANY_R, SUBSET_SER),
 
-    TS_ITEM_FLOAT(0x9A, "rCellAvg_V", &bms_status.cell_voltage_avg, 3,
+    TS_ITEM_FLOAT(0x9A, "rCellAvg_V", &bms.status.cell_voltage_avg, 3,
         ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_ITEM_FLOAT(0x9B, "rCellMin_V", &bms_status.cell_voltage_min, 3,
+    TS_ITEM_FLOAT(0x9B, "rCellMin_V", &bms.status.cell_voltage_min, 3,
         ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_ITEM_FLOAT(0x9C, "rCellMax_V", &bms_status.cell_voltage_max, 3,
+    TS_ITEM_FLOAT(0x9C, "rCellMax_V", &bms.status.cell_voltage_max, 3,
         ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_ITEM_UINT32(0x9D, "rBalancingStatus", &bms_status.balancing_status,
+    TS_ITEM_UINT32(0x9D, "rBalancingStatus", &bms.status.balancing_status,
         ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
     // RECORDED DATA ///////////////////////////////////////////////////////
@@ -275,14 +274,14 @@ void data_objects_update_conf()
 {
     // ToDo: Validate new settings before applying them
 
-    bms_apply_cell_ovp(&bms_conf);
-    bms_apply_cell_uvp(&bms_conf);
+    bms_apply_cell_ovp(&bms);
+    bms_apply_cell_uvp(&bms);
 
-    bms_apply_dis_scp(&bms_conf);
-    bms_apply_dis_ocp(&bms_conf);
-    bms_apply_chg_ocp(&bms_conf);
+    bms_apply_dis_scp(&bms);
+    bms_apply_dis_ocp(&bms);
+    bms_apply_chg_ocp(&bms);
 
-    bms_apply_temp_limits(&bms_conf);
+    bms_apply_temp_limits(&bms);
 
     eeprom_store_data();
 }

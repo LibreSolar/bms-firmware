@@ -162,48 +162,52 @@ enum BmsErrorFlag
     BMS_ERR_FET_OVERTEMP = 14,     ///< MOSFET temperature above limit
 };
 
+typedef struct
+{
+    BmsConfig conf;
+    BmsStatus status;
+} Bms;
+
 /**
  * Initialization of BmsStatus with suitable default values.
  *
- * @param status Pointer to BMS status object that should be initialized.
+ * @param bms Pointer to BMS object.
  */
-void bms_init_status(BmsStatus *status);
+void bms_init_status(Bms *bms);
 
 /**
  * Initialization of BmsConfig with typical default values for the given cell type.
  *
- * @param conf Pointer to BMS configuration that should be initialized.
+ * @param bms Pointer to BMS object.
  * @param type One of enum CellType (defined as int so that it can be set via Kconfig).
  * @param nominal_capacity Nominal capacity of the battery pack.
  */
-void bms_init_config(BmsConfig *conf, int type, float nominal_capacity);
+void bms_init_config(Bms *bms, int type, float nominal_capacity);
 
 /**
  * Initialization of BMS incl. setup of communication. This function does not yet set any config.
  *
- * @param conf Pointer to BMS configuration.
+ * @param bms Pointer to BMS object.
  *
  * @returns 0 on success, otherwise negative error code.
  */
-int bms_init_hardware(BmsConfig *conf);
+int bms_init_hardware(Bms *bms);
 
 /**
  * Main BMS state machine
  *
- * @param conf Pointer to BMS configuration.
- * @param status Pointer to BMS status object.
+ * @param bms Pointer to BMS object.
  */
-void bms_state_machine(BmsConfig *conf, BmsStatus *status);
+void bms_state_machine(Bms *bms);
 
 /**
  * Update measurements and check for errors before calling the state machine
  *
  * Should be called at least once every 250 ms to get correct coulomb counting
  *
- * @param conf Pointer to BMS configuration.
- * @param status Pointer to BMS status object.
+ * @param bms Pointer to BMS object.
  */
-void bms_update(BmsConfig *conf, BmsStatus *status);
+void bms_update(Bms *bms);
 
 /**
  * BMS IC start-up delay indicator
@@ -220,24 +224,22 @@ void bms_shutdown();
 /**
  * Enable/disable charge MOSFET
  *
- * @param conf Pointer to BMS configuration.
- * @param status Pointer to BMS status object.
+ * @param bms Pointer to BMS object.
  * @param enable Desired status of the MOSFET.
  *
  * @returns 0 on success, otherwise negative error code.
  */
-int bms_chg_switch(BmsConfig *conf, BmsStatus *status, bool enable);
+int bms_chg_switch(Bms *bms, bool enable);
 
 /**
  * Enable/disable discharge MOSFET
  *
- * @param conf Pointer to BMS configuration.
- * @param status Pointer to BMS status object.
+ * @param bms Pointer to BMS object.
  * @param enable Desired status of the MOSFET.
  *
  * @returns 0 on success, otherwise negative error code.
  */
-int bms_dis_switch(BmsConfig *conf, BmsStatus *status, bool enable);
+int bms_dis_switch(Bms *bms, bool enable);
 
 /**
  * Charging error flags check
@@ -258,35 +260,42 @@ bool bms_dis_error(uint32_t error_flags);
  *
  * @returns true if no charging error flags are set
  */
-bool bms_chg_allowed(BmsStatus *status);
+bool bms_chg_allowed(Bms *bms);
 
 /**
  * Check if discharging is allowed
  *
+ * @param bms Pointer to BMS object.
+ *
  * @returns true if no discharging error flags are set
  */
-bool bms_dis_allowed(BmsStatus *status);
+bool bms_dis_allowed(Bms *bms);
 
 /**
  * Balancing limits check
  *
+ * @param bms Pointer to BMS object.
+ *
  * @returns if balancing is allowed
  */
-bool bms_balancing_allowed(BmsConfig *conf, BmsStatus *status);
+bool bms_balancing_allowed(Bms *bms);
 
 /**
  * Reset SOC to specified value or calculate based on average cell open circuit voltage
  *
+ * @param bms Pointer to BMS object.
  * @param percent 0-100 %, -1 for calculation based on OCV
  */
-void bms_soc_reset(BmsConfig *conf, BmsStatus *status, int percent);
+void bms_soc_reset(Bms *bms, int percent);
 
 /**
  * Update SOC based on most recent current measurement
  *
  * Function should be called each time after a new current measurement was obtained.
+ *
+ * @param bms Pointer to BMS object.
  */
-void bms_soc_update(BmsConfig *conf, BmsStatus *status);
+void bms_soc_update(Bms *bms);
 
 /**
  * Apply charge/discharge temperature limits.
@@ -295,7 +304,7 @@ void bms_soc_update(BmsConfig *conf, BmsStatus *status);
  *
  * @returns 0 on success, otherwise negative error code.
  */
-int bms_apply_temp_limits(BmsConfig *conf);
+int bms_apply_temp_limits(Bms *bms);
 
 /**
  * Apply discharge short circuit protection (SCP) current threshold and delay.
@@ -307,7 +316,7 @@ int bms_apply_temp_limits(BmsConfig *conf);
  *
  * @returns 0 on success, otherwise negative error code.
  */
-int bms_apply_dis_scp(BmsConfig *conf);
+int bms_apply_dis_scp(Bms *bms);
 
 /**
  * Apply discharge overcurrent protection (OCP) threshold and delay.
@@ -315,11 +324,11 @@ int bms_apply_dis_scp(BmsConfig *conf);
  * If the setpoint does not exactly match a possible setting in the BMS IC, it is rounded to the
  * closest allowed value and this value is written back to the BMS config.
  *
- * @param conf BMS configuration containing the limit settings
+ * @param bms Pointer to BMS object.
  *
  * @returns 0 on success, otherwise negative error code.
  */
-int bms_apply_dis_ocp(BmsConfig *conf);
+int bms_apply_dis_ocp(Bms *bms);
 
 /**
  * Apply charge overcurrent protection (OCP) threshold and delay.
@@ -327,60 +336,72 @@ int bms_apply_dis_ocp(BmsConfig *conf);
  * If the setpoint does not exactly match a possible setting in the BMS IC, it is rounded to the
  * closest allowed value and this value is written back to the BMS config.
  *
- * @param conf BMS configuration containing the limit settings
+ * @param bms Pointer to BMS object.
  *
  * @returns 0 on success, otherwise negative error code.
  */
-int bms_apply_chg_ocp(BmsConfig *conf);
+int bms_apply_chg_ocp(Bms *bms);
 
 /**
  * Apply cell undervoltage protection (UVP) threshold and delay.
  *
- * @param conf BMS configuration containing the limit settings
+ * @param bms Pointer to BMS object.
  *
  * @returns 0 on success, otherwise negative error code.
  */
-int bms_apply_cell_uvp(BmsConfig *conf);
+int bms_apply_cell_uvp(Bms *bms);
 
 /**
  * Apply cell overvoltage protection (OVP) threshold and delay.
  *
- * @param conf BMS configuration containing the limit settings
+ * @param bms Pointer to BMS object.
  *
  * @returns 0 on success, otherwise negative error code.
  */
-int bms_apply_cell_ovp(BmsConfig *conf);
+int bms_apply_cell_ovp(Bms *bms);
 
 /**
  * Set balancing registers if balancing is allowed (i.e. sufficient idle time + voltage)
+ *
+ * @param bms Pointer to BMS object.
  */
-void bms_apply_balancing(BmsConfig *conf, BmsStatus *status);
+void bms_apply_balancing(Bms *bms);
 
 /**
  * Reads all cell voltages to array cell_voltages[NUM_CELLS], updates battery_voltage and updates
  * ids of cells with min/max voltage
+ *
+ * @param bms Pointer to BMS object.
  */
-void bms_read_voltages(BmsStatus *status);
+void bms_read_voltages(Bms *bms);
 
 /**
  * Reads pack current and updates coloumb counter and SOC
+ *
+ * @param bms Pointer to BMS object.
  */
-void bms_read_current(BmsConfig *conf, BmsStatus *status);
+void bms_read_current(Bms *bms);
 
 /**
  * Reads all temperature sensors
+ *
+ * @param bms Pointer to BMS object.
  */
-void bms_read_temperatures(BmsConfig *conf, BmsStatus *status);
+void bms_read_temperatures(Bms *bms);
 
 /**
  * Reads error flags from IC or updates them based on measurements
+ *
+ * @param bms Pointer to BMS object.
  */
-void bms_update_error_flags(BmsConfig *conf, BmsStatus *status);
+void bms_update_error_flags(Bms *bms);
 
 /**
  * Tries to handle / resolve errors
+ *
+ * @param bms Pointer to BMS object.
  */
-void bms_handle_errors(BmsConfig *conf, BmsStatus *status);
+void bms_handle_errors(Bms *bms);
 
 /**
  * Print BMS IC register

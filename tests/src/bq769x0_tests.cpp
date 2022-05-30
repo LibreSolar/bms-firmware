@@ -13,8 +13,7 @@
 #include <stdio.h>
 #include <time.h>
 
-extern BmsConfig bms_conf;
-extern BmsStatus bms_status;
+extern Bms bms;
 
 extern uint8_t mem_bq[0x60]; // defined in bq769x0_interface_stub
 
@@ -27,38 +26,38 @@ static void init_bq769x0_ram()
 void test_bq769x0_init()
 {
     init_bq769x0_ram();
-    bms_init_hardware(&bms_conf);
+    bms_init_hardware(&bms);
     TEST_ASSERT(0);
 }
 
 void test_bq769x0_read_cell_voltages()
 {
     init_bq769x0_ram();
-    bms_read_voltages(&bms_status);
-    TEST_ASSERT_EQUAL_FLOAT(3.0, roundf(bms_status.cell_voltages[0] * 100) / 100);
-    TEST_ASSERT_EQUAL_FLOAT(3.1, roundf(bms_status.cell_voltages[1] * 100) / 100);
-    TEST_ASSERT_EQUAL_FLOAT(3.2, roundf(bms_status.cell_voltages[2] * 100) / 100);
-    TEST_ASSERT_EQUAL_FLOAT(3.3, roundf(bms_status.cell_voltages[3] * 100) / 100);
-    TEST_ASSERT_EQUAL_FLOAT(3.4, roundf(bms_status.cell_voltages[4] * 100) / 100);
-    TEST_ASSERT_EQUAL_FLOAT(3.5, roundf(bms_status.cell_voltages[5] * 100) / 100);
-    TEST_ASSERT_EQUAL_FLOAT(3.6, roundf(bms_status.cell_voltages[6] * 100) / 100);
-    TEST_ASSERT_EQUAL_FLOAT(3.7, roundf(bms_status.cell_voltages[7] * 100) / 100);
+    bms_read_voltages(&bms);
+    TEST_ASSERT_EQUAL_FLOAT(3.0, roundf(bms.status.cell_voltages[0] * 100) / 100);
+    TEST_ASSERT_EQUAL_FLOAT(3.1, roundf(bms.status.cell_voltages[1] * 100) / 100);
+    TEST_ASSERT_EQUAL_FLOAT(3.2, roundf(bms.status.cell_voltages[2] * 100) / 100);
+    TEST_ASSERT_EQUAL_FLOAT(3.3, roundf(bms.status.cell_voltages[3] * 100) / 100);
+    TEST_ASSERT_EQUAL_FLOAT(3.4, roundf(bms.status.cell_voltages[4] * 100) / 100);
+    TEST_ASSERT_EQUAL_FLOAT(3.5, roundf(bms.status.cell_voltages[5] * 100) / 100);
+    TEST_ASSERT_EQUAL_FLOAT(3.6, roundf(bms.status.cell_voltages[6] * 100) / 100);
+    TEST_ASSERT_EQUAL_FLOAT(3.7, roundf(bms.status.cell_voltages[7] * 100) / 100);
 }
 
 void test_bq769x0_read_pack_voltage()
 {
     init_bq769x0_ram();
-    bms_read_voltages(&bms_status);
-    TEST_ASSERT_EQUAL_FLOAT(3.3 * 8, roundf(bms_status.pack_voltage * 10) / 10);
+    bms_read_voltages(&bms);
+    TEST_ASSERT_EQUAL_FLOAT(3.3 * 8, roundf(bms.status.pack_voltage * 10) / 10);
 }
 
 void test_bq769x0_read_min_max_avg_voltage()
 {
     init_bq769x0_ram();
-    bms_read_voltages(&bms_status);
-    TEST_ASSERT_EQUAL_FLOAT(3.0, roundf(bms_status.cell_voltage_min * 100) / 100);
-    TEST_ASSERT_EQUAL_FLOAT(3.7, roundf(bms_status.cell_voltage_max * 100) / 100);
-    TEST_ASSERT_EQUAL_FLOAT(3.35, roundf(bms_status.cell_voltage_avg * 100) / 100);
+    bms_read_voltages(&bms);
+    TEST_ASSERT_EQUAL_FLOAT(3.0, roundf(bms.status.cell_voltage_min * 100) / 100);
+    TEST_ASSERT_EQUAL_FLOAT(3.7, roundf(bms.status.cell_voltage_max * 100) / 100);
+    TEST_ASSERT_EQUAL_FLOAT(3.35, roundf(bms.status.cell_voltage_avg * 100) / 100);
 }
 
 void test_bq769x0_read_pack_current()
