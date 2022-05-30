@@ -205,9 +205,29 @@ int bms_apply_chg_ocp(Bms *bms)
 
 int bms_apply_dis_ocp(Bms *bms)
 {
-    // TODO
+    int err = 0;
 
-    return -1;
+    uint8_t oc_threshold = lroundf(bms->conf.dis_oc_limit * bms->conf.shunt_res_mOhm / 2.0F);
+    int16_t oc_delay = lroundf((bms->conf.dis_oc_delay_ms - 6.6F) / 3.3F);
+
+    oc_threshold = CLAMP(oc_threshold, 2, 100);
+    oc_delay = CLAMP(oc_delay, 1, 127);
+
+    err += bq769x2_subcmd_write_u1(BQ769X2_PROT_OCD1_THRESHOLD, oc_threshold);
+    err += bq769x2_subcmd_write_u1(BQ769X2_PROT_OCD1_DELAY, oc_delay);
+
+    bms->conf.dis_oc_limit = oc_threshold * 2.0F / bms->conf.shunt_res_mOhm;
+    bms->conf.dis_oc_delay_ms = lroundf(6.6F + oc_delay * 3.3F);
+
+    // OCD protection needs to be enabled, as it is not active by default
+    SAFETY_STATUS_A_Type prot_enabled_a;
+    err += bq769x2_subcmd_read_u1(BQ769X2_SET_PROT_ENABLED_A, &prot_enabled_a.byte);
+    if (!err) {
+        prot_enabled_a.OCD1 = 1;
+        err += bq769x2_subcmd_write_u1(BQ769X2_SET_PROT_ENABLED_A, prot_enabled_a.byte);
+    }
+
+    return err;
 }
 
 int bms_apply_cell_uvp(Bms *bms)
