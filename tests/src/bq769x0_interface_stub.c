@@ -12,6 +12,9 @@
 
 uint8_t mem_bq[0x60]; // Memory of bq769x0 (registers 0x00 to 0x59)
 
+extern int adc_gain;
+extern int adc_offset;
+
 void bq769x0_write_byte(uint8_t reg_addr, int data)
 {
     if (reg_addr < sizeof(mem_bq)) {
@@ -41,5 +44,7 @@ int bq769x0_read_word(uint8_t reg_addr)
 
 void bq769x0_init()
 {
-    /* nothing to do here */
+    /* initialize with reasonable defaults to avoid divide by zero */
+    adc_gain = 365;
+    adc_offset = 0;
 }

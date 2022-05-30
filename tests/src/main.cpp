@@ -41,6 +41,8 @@ float OCV[] = { // 100, 95, ..., 0 %
 
 void setup()
 {
+    bms_init_hardware(&bms_conf);
+
     bms_conf.dis_sc_limit = 35.0;
     bms_conf.dis_sc_delay_us = 200;
     bms_apply_dis_scp(&bms_conf);
@@ -96,6 +98,8 @@ void main(void)
     int err = 0;
 
     k_sleep(K_MSEC(100));
+
+    setup();
 
     err += common_tests();
 
