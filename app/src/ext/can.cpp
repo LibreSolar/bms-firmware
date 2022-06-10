@@ -129,7 +129,7 @@ K_THREAD_DEFINE(can_rx, RX_THREAD_STACK_SIZE, can_rx_thread, NULL, NULL, NULL, R
 
 #endif /* CONFIG_ISOTP */
 
-void can_pub_isr(int error, void *arg)
+void can_pub_isr(const struct device *dev, int error, void *user_data)
 {
     // Do nothing. Publication messages are fire and forget.
 }
