@@ -108,6 +108,7 @@
 				reg-names = "m_can", "message_ram";
 				interrupts = <21 0>, <22 0>;
 				interrupt-names = "LINE_0", "LINE_1";
+				clocks = <&rcc STM32_CLOCK_BUS_APB1 0x00001000>;
 				status = "disabled";
 				label = "CAN_1";
 			};
@@ -122,7 +123,7 @@
 
 &pll {
 	div-m = <1>;
-	mul-n = <8>;
+	mul-n = <16>;
 	div-p = <2>;
 	div-q = <2>;
 	div-r = <2>;
