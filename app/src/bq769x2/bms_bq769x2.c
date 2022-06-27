@@ -19,6 +19,8 @@
 
 LOG_MODULE_REGISTER(bq769x0, CONFIG_LOG_DEFAULT_LEVEL);
 
+static void bms_update_balancing(Bms *bms);
+
 static int detect_num_cells(Bms *bms)
 {
     bms_read_voltages(bms);
@@ -98,6 +100,7 @@ void bms_update(Bms *bms)
     bms_soc_update(bms);
     bms_read_temperatures(bms);
     bms_update_error_flags(bms);
+    bms_update_balancing(bms);
 }
 
 void bms_state_machine(Bms *bms)
@@ -167,9 +170,45 @@ int bms_dis_switch(Bms *bms, bool enable)
 
 int bms_apply_balancing_conf(Bms *bms)
 {
-    // TODO
+    int err = 0;
 
-    return 0;
+    /*
+     * The bq769x2 differentiates between charging and relaxed balancing. We apply the same
+     * setpoints for both mechanisms.
+     */
+    int16_t cell_voltage_min = bms->conf.bal_cell_voltage_min * 1000.0F;
+    err += bq769x2_subcmd_write_i2(BQ769X2_SET_CBAL_CHG_MIN_CELL_V, cell_voltage_min);
+    err += bq769x2_subcmd_write_i2(BQ769X2_SET_CBAL_RLX_MIN_CELL_V, cell_voltage_min);
+
+    int8_t cell_voltage_delta = bms->conf.bal_cell_voltage_diff * 1000.0F;
+    err += bq769x2_subcmd_write_u1(BQ769X2_SET_CBAL_CHG_MIN_DELTA, cell_voltage_delta);
+    err += bq769x2_subcmd_write_u1(BQ769X2_SET_CBAL_CHG_STOP_DELTA, cell_voltage_delta);
+    err += bq769x2_subcmd_write_u1(BQ769X2_SET_CBAL_RLX_MIN_DELTA, cell_voltage_delta);
+    err += bq769x2_subcmd_write_u1(BQ769X2_SET_CBAL_RLX_STOP_DELTA, cell_voltage_delta);
+
+    /* same temperature limits as for normal discharging */
+    int8_t utd_threshold = CLAMP(bms->conf.dis_ut_limit, -40, 120);
+    int8_t otd_threshold = CLAMP(bms->conf.dis_ot_limit, -40, 120);
+    err += bq769x2_subcmd_write_i1(BQ769X2_SET_CBAL_MIN_CELL_TEMP, utd_threshold);
+    err += bq769x2_subcmd_write_i1(BQ769X2_SET_CBAL_MAX_CELL_TEMP, otd_threshold);
+
+    /* relaxed status is defined based on global idle current thresholds */
+    int16_t idle_current_threshold = bms->conf.bal_idle_current * 1000.0F;
+    err += bq769x2_subcmd_write_i2(BQ769X2_SET_DSG_CURR_TH, idle_current_threshold);
+    err += bq769x2_subcmd_write_i2(BQ769X2_SET_CHG_CURR_TH, idle_current_threshold);
+
+    /* enable CB_RLX and CB_CHG */
+    err += bq769x2_subcmd_write_u1(BQ769X2_SET_CBAL_CONF, 0x03);
+
+    return err;
+}
+
+static void bms_update_balancing(Bms *bms)
+{
+    uint16_t balancing_status;
+    bq769x2_subcmd_read_u2(BQ769X2_SUBCMD_CB_ACTIVE_CELLS, &balancing_status);
+
+    bms->status.balancing_status = balancing_status;
 }
 
 int bms_apply_dis_scp(Bms *bms)
