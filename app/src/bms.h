@@ -93,7 +93,6 @@ typedef struct
     float t_limit_hyst; ///< Temperature limit hysteresis (°C)
 
     // Balancing settings
-    bool auto_balancing_enabled; ///< Enable automatic balancing
     float bal_cell_voltage_diff; ///< Balancing cell voltage target difference (V)
     float bal_cell_voltage_min;  ///< Minimum cell voltage to start balancing (V)
     float bal_idle_current;      ///< Current threshold to be considered idle (A)

@@ -22,7 +22,6 @@ void bms_init_status(Bms *bms)
 
 void bms_init_config(Bms *bms, int type, float nominal_capacity)
 {
-    bms->conf.auto_balancing_enabled = true;
     bms->conf.bal_idle_delay = 1800;         // default: 30 minutes
     bms->conf.bal_idle_current = 0.1F;       // A
     bms->conf.bal_cell_voltage_diff = 0.01F; // 10 mV

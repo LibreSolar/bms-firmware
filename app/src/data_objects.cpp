@@ -147,8 +147,7 @@ static ThingSetDataObject data_objects[] = {
 
     // balancing
 
-    TS_ITEM_BOOL(0x58, "sAutoBalEn", &bms.conf.auto_balancing_enabled,
-        ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
+    // 0x58 reserved (previously used for sAutoBalEn)
 
     TS_ITEM_FLOAT(0x59, "sBalCellDiff_V", &bms.conf.bal_cell_voltage_diff, 3,
         ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM),
