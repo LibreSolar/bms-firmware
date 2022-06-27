@@ -138,11 +138,6 @@ void bms_state_machine(Bms *bms)
     }
 }
 
-void bms_set_error_flag(Bms *bms, uint32_t flag, bool value)
-{
-    // TODO
-}
-
 bool bms_startup_inhibit()
 {
     // Datasheet: Start-up time max. 4.3 ms
@@ -489,7 +484,7 @@ void bms_update_error_flags(Bms *bms)
 
 void bms_handle_errors(Bms *bms)
 {
-    // TODO
+    // Nothing to do. bq769x2 handles errors automatically
 }
 
 void bms_print_register(uint16_t addr)
