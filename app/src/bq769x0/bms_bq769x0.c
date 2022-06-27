@@ -27,7 +27,9 @@ extern int adc_offset; // factory-calibrated, read out from chip (mV)
  *
  * This function is necessary as bq769x0 doesn't support temperature protection
  */
-void bms_check_cell_temp(Bms *bms);
+static void bms_check_cell_temp(Bms *bms);
+
+static void bms_update_balancing(Bms *bms);
 
 int bms_init_hardware(Bms *bms)
 {
@@ -42,7 +44,7 @@ void bms_update(Bms *bms)
     bms_read_temperatures(bms);
     bms_check_cell_temp(bms); // bq769x0 doesn't support temperature settings
     bms_update_error_flags(bms);
-    bms_apply_balancing(bms);
+    bms_update_balancing(bms);
 }
 
 void bms_set_error_flag(Bms *bms, uint32_t flag, bool value)
@@ -129,7 +131,17 @@ int bms_dis_switch(Bms *bms, bool enable)
     return 0;
 }
 
-void bms_apply_balancing(Bms *bms)
+int bms_apply_balancing_conf(Bms *bms)
+{
+    /*
+     * Chip does not support automatic balancing. Switches are set by software in
+     * bms_update_balancing
+     */
+
+    return 0;
+}
+
+static void bms_update_balancing(Bms *bms)
 {
     long idle_secs = uptime() - bms->status.no_idle_timestamp;
     int num_sections = BOARD_NUM_CELLS_MAX / 5;

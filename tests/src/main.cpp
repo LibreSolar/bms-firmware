@@ -84,7 +84,7 @@ void setup()
     bms.conf.bal_cell_voltage_diff = 0.01;
     bms.conf.bal_idle_current = 0.1;
     bms.conf.auto_balancing_enabled = true;
-    bms_apply_balancing(&bms);
+    bms_apply_balancing_conf(&bms);
 
     bms_update(&bms);
     bms_soc_reset(&bms, -1);

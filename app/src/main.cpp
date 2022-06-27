@@ -48,6 +48,7 @@ void main(void)
     bms_apply_chg_ocp(&bms);
 
     bms_apply_temp_limits(&bms);
+    bms_apply_balancing_conf(&bms);
 
     bms_update(&bms);
     bms_soc_reset(&bms, -1);

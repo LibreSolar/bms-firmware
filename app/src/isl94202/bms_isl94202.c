@@ -21,6 +21,8 @@
 static const float lut_temp_volt[] = { 0.153, 0.295, 0.463, 0.710, 0.755 };
 static const float lut_temp_degc[] = { 80, 50, 25, 0, -40 };
 
+static void bms_update_balancing(Bms *bms);
+
 static int set_num_cells(int num)
 {
     uint8_t cell_reg = 0;
@@ -104,7 +106,7 @@ void bms_update(Bms *bms)
     bms_soc_update(bms);
     bms_read_temperatures(bms);
     bms_update_error_flags(bms);
-    bms_apply_balancing(bms);
+    bms_update_balancing(bms);
 }
 
 bool bms_startup_inhibit()
@@ -145,7 +147,24 @@ int bms_dis_switch(Bms *bms, bool enable)
     return isl94202_write_bytes(ISL94202_CTRL1, &reg, 1);
 }
 
-void bms_apply_balancing(Bms *bms)
+int bms_apply_balancing_conf(Bms *bms)
+{
+    int err = 0;
+
+    // also apply balancing thresholds here
+    err += isl94202_write_voltage(ISL94202_CBMIN, bms->conf.bal_cell_voltage_min, 0);
+    err += isl94202_write_voltage(ISL94202_CBMAX, 4.5F, 0); // no upper limit for balancing
+    err += isl94202_write_voltage(ISL94202_CBMINDV, bms->conf.bal_cell_voltage_diff, 0);
+    err += isl94202_write_voltage(ISL94202_CBMAXDV, 1.0F, 0); // no tight limit for voltage delta
+
+    // EOC condition needs to be set to bal_cell_voltage_min instead of cell_chg_voltage to enable
+    // balancing during idle
+    err += isl94202_write_voltage(ISL94202_EOC, bms->conf.bal_cell_voltage_min, 0);
+
+    return err;
+}
+
+static void bms_update_balancing(Bms *bms)
 {
     uint8_t stat3;
     isl94202_read_bytes(ISL94202_STAT3, &stat3, 1);
@@ -235,16 +254,6 @@ int bms_apply_dis_ocp(Bms *bms)
 int bms_apply_cell_ovp(Bms *bms)
 {
     int err = 0;
-
-    // also apply balancing thresholds here
-    err += isl94202_write_voltage(ISL94202_CBMIN, bms->conf.bal_cell_voltage_min, 0);
-    err += isl94202_write_voltage(ISL94202_CBMAX, 4.5F, 0); // no upper limit for balancing
-    err += isl94202_write_voltage(ISL94202_CBMINDV, bms->conf.bal_cell_voltage_diff, 0);
-    err += isl94202_write_voltage(ISL94202_CBMAXDV, 1.0F, 0); // no tight limit for voltage delta
-
-    // EOC condition needs to be set to bal_cell_voltage_min instead of cell_chg_voltage to enable
-    // balancing during idle
-    err += isl94202_write_voltage(ISL94202_EOC, bms->conf.bal_cell_voltage_min, 0);
 
     // keeping CPW at the default value of 1 ms
     err += isl94202_write_voltage(ISL94202_OVL_CPW, bms->conf.cell_ov_limit, 1);

@@ -98,7 +98,6 @@ void bms_update(Bms *bms)
     bms_soc_update(bms);
     bms_read_temperatures(bms);
     bms_update_error_flags(bms);
-    bms_apply_balancing(bms);
 }
 
 void bms_state_machine(Bms *bms)
@@ -166,9 +165,11 @@ int bms_dis_switch(Bms *bms, bool enable)
     return 0;
 }
 
-void bms_apply_balancing(Bms *bms)
+int bms_apply_balancing_conf(Bms *bms)
 {
     // TODO
+
+    return 0;
 }
 
 int bms_apply_dis_scp(Bms *bms)

@@ -312,7 +312,7 @@ int bms_apply_temp_limits(Bms *bms);
  * If the setpoint does not exactly match a possible setting in the BMS IC, it is rounded to the
  * closest allowed value and this value is written back to the BMS config.
  *
- * @param conf BMS configuration containing the limit settings
+ * @param bms Pointer to BMS object.
  *
  * @returns 0 on success, otherwise negative error code.
  */
@@ -361,11 +361,16 @@ int bms_apply_cell_uvp(Bms *bms);
 int bms_apply_cell_ovp(Bms *bms);
 
 /**
- * Set balancing registers if balancing is allowed (i.e. sufficient idle time + voltage)
+ * Apply balancing settings
+ *
+ * Balancing is automatically enabled by the chip or by the update function as soon as if voltage,
+ * temperature and idle citerions are met.
  *
  * @param bms Pointer to BMS object.
+ *
+ * @returns 0 on success, otherwise negative error code.
  */
-void bms_apply_balancing(Bms *bms);
+int bms_apply_balancing_conf(Bms *bms);
 
 /**
  * Reads all cell voltages to array cell_voltages[NUM_CELLS], updates battery_voltage and updates
