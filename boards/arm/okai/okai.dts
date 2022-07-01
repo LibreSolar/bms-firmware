@@ -102,15 +102,12 @@
 	};
 };
 
-&clk_hse {
-	clock-frequency = <DT_FREQ_M(8)>;
+&clk_hsi {
 	status = "okay";
 };
 
 &pll {
-	clocks = <&clk_hse>;
-	prediv = <1>;
-	mul = <6>;
+	clocks = <&clk_hs1>;
 	status = "okay";
 };
 
@@ -145,48 +142,12 @@
 	pinctrl-0 = <&i2c1_scl_pb6 &i2c1_sda_pb7>;
 	status = "okay";
 
-
 	bq769x0@8 {
 		compatible = "ti,bq769x0";
 		label = "BQ76940";
 		reg = <0x08>;     // ignored (firmware will auto-detect I2C address)
 		alert-gpios = <&gpiob 12 GPIO_ACTIVE_HIGH>;
 	};
-};
-
-&i2c2 {
-	pinctrl-0 = <&i2c2_scl_pb13 &i2c2_sda_pb14>;
-	clock-frequency = <I2C_BITRATE_STANDARD>;
-	status = "okay";
-
-
-/*not for use eeh,... */
-	eeprom@51 {
-		// M24256-BW
-		compatible = "atmel,at24";
-		reg = <0x51>;	// 1 0 1 0 A2 A1 A0 = 1010001
-		label = "EEPROM_0";
-		size = <32768>;
-		pagesize = <64>;
-		address-width = <16>;
-		timeout = <7>;
-	};
-
-		//display-driver.... not for use eeh?
-	/*ssd1306@3c {
-		compatible = "solomon,ssd1306fb";
-		reg = <0x3c>;
-		label = "SSD1306";
-		width = <128>;
-		height = <64>;
-		segment-offset = <0>;
-		page-offset = <0>;
-		display-offset = <0>;
-		multiplex-ratio = <63>;
-		segment-remap;
-		com-invdir;
-		prechargep = <0x22>;
-	};*/
 };
 
 &spi1 {
@@ -204,7 +165,7 @@
 };
 
 &can1 {
-	pinctrl-0 = <&can_rx_pb8 &can_tx_pb9>;
+	pinctrl-0 = <&can_rx_pa11 &can_tx_pa12>;
 	bus-speed = <500000>;
 	status = "okay";
 };

@@ -1,0 +1,125 @@
+After reset, the Flash memory is protected against unwanted write or erase operations. The 
+FLASH_CR register is not accessible in write mode, except for the OBL_LAUNCH bit, used 
+to reload the option bits. An unlocking sequence should be written to the FLASH_KEYR 
+register to open the access to the FLASH_CR register. This sequence consists of two write 
+operations:
+• Write KEY1 = 0x45670123
+• Write KEY2 = 0xCDEF89AB
+Any wrong sequence locks up the FLASH_CR register until the next reset.
+In the case of a wrong key sequence, a bus error is detected and a Hard Fault interrupt is 
+generated. This is done after the first write cycle if KEY1 does not match, or during the 
+second write cycle if KEY1 has been correctly written but KEY2 does not match.
+The FLASH_CR register can be locked again by user software by writing the LOCK bit in the 
+FLASH_CR register to 1.
+
+
+
+Or: 
+1. Unlock flash (LOCK bit is reset) � it will only be reset by hardware itself upon writing two keys to the FLASH_KEYR.
+ 
+
+2. Unlock option bytes (OPTWRE is set) - it will only be reset by hardware itself upon writing two keys to the FLASH_OPTKEYR.
+ 
+
+� wait until flash is ready
+ 
+
+3. Erase option bytes by setting OPTER bit and after that STRT bit
+ 
+
+� wait until flash is ready
+ 
+
+4. After the erasure is complete, reset the OPTER bit
+ 
+
+5. Set the OPTPG bit to allow programming option bytes
+ 
+
+6. Write the data (half word) to the desired address
+ 
+
+� wait until flash is ready
+ 
+
+7. Reset the OPTPG bit to complete/close programming option bytes
+ 
+
+8. Launch/Apply the Option bytes (OBL_LAUNCH bit is set-system reset will be performed after this) � This step can be skipped as the option bytes will automatically load upon next reset.
+ 
+
+9. Lock option bytes (OPTWRE is reset)
+ 
+
+10. Lock the Flash (LOCK bit is set)
+ 
+
+A more or less pseudo code is as follows:
+
+1. 
+
+ if((READ_BIT(FLASH->CR, FLASH_CR_LOCK)) != RESET)
+
+  {
+
+    /* Authorize the FLASH Registers access */
+
+    WRITE_REG(FLASH->KEYR, FLASH_KEY1);
+
+    WRITE_REG(FLASH->KEYR, FLASH_KEY2);
+
+  }
+
+2.
+
+if((READ_BIT(FLASH->CR, FLASH_CR_OPTWRE)) == RESET)
+
+  {
+
+    /* Authorizes the Option Byte register programming */
+
+    WRITE_REG(FLASH->OPTKEYR, FLASH_OPTKEY1);
+
+    WRITE_REG(FLASH->OPTKEYR, FLASH_OPTKEY2);
+
+  }
+
+3.
+
+FLASH->CR |= FLASH_CR_OPTER;
+
+            FLASH->CR |= FLASH_CR_STRT;
+
+4.
+
+                FLASH->CR &= ~FLASH_CR_OPTER;
+
+5.
+
+                SET_BIT(FLASH->CR, FLASH_CR_OPTPG);
+
+6.
+
+                WRITE_REG(OB->RDP, ReadProtectLevel);
+
+                Or
+
+                *(__IO uint16_t*)Address = Data;
+
+7.
+
+                CLEAR_BIT(FLASH->CR, FLASH_CR_OPTPG);
+
+8.
+
+                SET_BIT(FLASH->CR, FLASH_CR_OBL_LAUNCH);
+
+9.
+
+                CLEAR_BIT(FLASH->CR, FLASH_CR_OPTWRE);
+
+10.
+
+                SET_BIT(FLASH->CR, FLASH_CR_LOCK);
+
+ 
