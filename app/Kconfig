@@ -165,5 +165,7 @@ config THINGSET_MAKER_PASSWORD
 
 endmenu # ThingSet interface
 
+rsource "../drivers/serial/Kconfig.esp32"
+
 # include main Zephyr menu entries from Zephyr root directory
 source "Kconfig.zephyr"

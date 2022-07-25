@@ -16,6 +16,10 @@ firmware, so we go into that directory first.
 
     cd app
 
+
+Boards with STM32 MCU
+"""""""""""""""""""""
+
 Initial board selection (see ``boards`` subfolder for correct names):
 
 .. code-block:: bash
@@ -33,3 +37,29 @@ Flash with specific debug probe (runner), e.g. J-Link:
 .. code-block:: bash
 
     west flash -r jlink
+
+
+Boards with ESP32 MCU
+"""""""""""""""""""""
+
+The ESP32 requires additional steps to set up the toolchain:
+
+.. code-block:: bash
+
+    west espressif update
+    west espressif install
+
+Afterwards you can build and flash the firmware the same way as for STM32:
+
+.. code-block:: bash
+
+    west build -b <board-name>@<revision>
+    west flash
+
+For monitoring the serial monitor built into the Espressif toolchain can be used with:
+
+.. code-block:: bash
+
+    west espressif monitor
+
+Press Ctrl+T followed by X to exit.

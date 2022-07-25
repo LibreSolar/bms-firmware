@@ -27,7 +27,7 @@ uint8_t bq769x2_checksum_add(uint8_t previous, uint8_t data);
 /**
  * Initialization of bq769x2 IC
  */
-void bq769x2_init();
+int bq769x2_init();
 
 /**
  * Writes multiple bytes to bq769x2 IC registers
@@ -70,6 +70,15 @@ int bq769x2_direct_read_u2(const uint8_t reg_addr, uint16_t *value);
  * @returns 0 if successful, negative errno otherwise
  */
 int bq769x2_direct_read_i2(const uint8_t reg_addr, int16_t *value);
+
+/**
+ * Execute subcommand without data (command-only) in bq769x2 IC
+ *
+ * @param subcmd The subcommand to execute
+ *
+ * @returns 0 if successful, negative errno otherwise
+ */
+int bq769x2_subcmd_cmd_only(const uint16_t subcmd);
 
 /**
  * Read 8-bit unsigned integer via subcommand from bq769x2 IC

@@ -8,18 +8,18 @@
 
 #ifdef CONFIG_EEPROM
 
-#include <zephyr.h>
 #include <device.h>
 #include <drivers/eeprom.h>
+#include <zephyr.h>
 
+#include "data_objects.h"
 #include "soc.h"
 #include "thingset.h"
-#include "data_objects.h"
 
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 
-#define EEPROM_HEADER_SIZE 8    // bytes
+#define EEPROM_HEADER_SIZE 8 // bytes
 
 K_MUTEX_DEFINE(eeprom_buf_lock);
 
@@ -40,14 +40,14 @@ uint32_t _calc_crc(const uint8_t *buf, size_t len)
     // and we don't care for endianness here
     CRC->CR |= CRC_CR_RESET;
     for (size_t i = 0; i < len; i += 4) {
-        //printf("CRC buf: %.8x, CRC->DR: %.8x\n", *((uint32_t*)&buf[i]), CRC->DR);
+        // printf("CRC buf: %.8x, CRC->DR: %.8x\n", *((uint32_t*)&buf[i]), CRC->DR);
         size_t remaining_bytes = len - i;
         if (remaining_bytes >= 4) {
-            CRC->DR = *((uint32_t*)&buf[i]);
+            CRC->DR = *((uint32_t *)&buf[i]);
         }
         else {
             // ignore bytes >= len if len is not a multiple of 4
-            CRC->DR = *((uint32_t*)&buf[i]) & (0xFFFFFFFFU >> (32 - remaining_bytes * 8));
+            CRC->DR = *((uint32_t *)&buf[i]) & (0xFFFFFFFFU >> (32 - remaining_bytes * 8));
         }
     }
 
@@ -70,30 +70,30 @@ void eeprom_restore_data()
 {
     int err;
 
-	const struct device *eeprom_dev = device_get_binding("EEPROM_0");
+    const struct device *eeprom_dev = device_get_binding("EEPROM_0");
 
     // EEPROM header
-    uint8_t buf_header[EEPROM_HEADER_SIZE] = {};    // initialize to avoid compiler warning
+    uint8_t buf_header[EEPROM_HEADER_SIZE] = {}; // initialize to avoid compiler warning
     err = eeprom_read(eeprom_dev, 0, buf_header, EEPROM_HEADER_SIZE);
     if (err != 0) {
         printf("EEPROM: read error: %d\n", err);
         return;
     }
-    uint16_t version = *((uint16_t*)&buf_header[0]);
-    uint16_t len     = *((uint16_t*)&buf_header[2]);
-    uint32_t crc     = *((uint32_t*)&buf_header[4]);
+    uint16_t version = *((uint16_t *)&buf_header[0]);
+    uint16_t len = *((uint16_t *)&buf_header[2]);
+    uint32_t crc = *((uint32_t *)&buf_header[4]);
 
-    //printf("EEPROM header restore: ver %d, len %d, CRC %.8x\n", version, len, (unsigned int)crc);
-    //printf("Header: %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x\n",
-    //    buf_header[0], buf_header[1], buf_header[2], buf_header[3],
-    //    buf_header[4], buf_header[5], buf_header[6], buf_header[7]);
+    // printf("EEPROM header restore: ver %d, len %d, CRC %.8x\n", version, len, (unsigned int)crc);
+    // printf("Header: %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x\n",
+    //     buf_header[0], buf_header[1], buf_header[2], buf_header[3],
+    //     buf_header[4], buf_header[5], buf_header[6], buf_header[7]);
 
     if (version == DATA_OBJECTS_VERSION && len <= sizeof(buf)) {
         k_mutex_lock(&eeprom_buf_lock, K_FOREVER);
         err = eeprom_read(eeprom_dev, EEPROM_HEADER_SIZE, buf, len);
 
-        //printf("Data (len=%d): ", len);
-        //for (int i = 0; i < len; i++) printf("%.2x ", buf[i]);
+        // printf("Data (len=%d): ", len);
+        // for (int i = 0; i < len; i++) printf("%.2x ", buf[i]);
 
         if (_calc_crc(buf, len) == crc) {
             int status = ts.bin_import(buf, sizeof(buf), TS_WRITE_MASK, SUBSET_NVM);
@@ -101,7 +101,7 @@ void eeprom_restore_data()
         }
         else {
             printf("EEPROM: CRC of data not correct, expected 0x%x (data_len = %d)\n",
-                (unsigned int)crc, len);
+                   (unsigned int)crc, len);
         }
         k_mutex_unlock(&eeprom_buf_lock);
     }
@@ -114,7 +114,7 @@ void eeprom_store_data()
 {
     int err;
 
-	const struct device *eeprom_dev = device_get_binding("EEPROM_0");
+    const struct device *eeprom_dev = device_get_binding("EEPROM_0");
 
     k_mutex_lock(&eeprom_buf_lock, K_FOREVER);
 
@@ -122,15 +122,15 @@ void eeprom_store_data()
     uint32_t crc = _calc_crc(buf + EEPROM_HEADER_SIZE, len);
 
     // store EEPROM_VERSION, number of bytes and CRC
-    *((uint16_t*)&buf[0]) = (uint16_t)DATA_OBJECTS_VERSION;
-    *((uint16_t*)&buf[2]) = (uint16_t)(len);   // length of data
-    *((uint32_t*)&buf[4]) = crc;
+    *((uint16_t *)&buf[0]) = (uint16_t)DATA_OBJECTS_VERSION;
+    *((uint16_t *)&buf[2]) = (uint16_t)(len); // length of data
+    *((uint32_t *)&buf[4]) = crc;
 
-    //printf("Data (len=%d): ", len);
-    //for (int i = 0; i < len; i++) printf("%.2x ", buf[i + EEPROM_HEADER_SIZE]);
+    // printf("Data (len=%d): ", len);
+    // for (int i = 0; i < len; i++) printf("%.2x ", buf[i + EEPROM_HEADER_SIZE]);
 
-    //printf("Header: %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x\n",
-    //    buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
+    // printf("Header: %.2x %.2x %.2x %.2x %.2x %.2x %.2x %.2x\n",
+    //     buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
 
     if (len == 0) {
         printf("EEPROM: Data could not be stored. ThingSet error (len = %d)\n", len);
@@ -157,8 +157,17 @@ void eeprom_update()
 
 #else
 
-void eeprom_store_data() {;}
-void eeprom_restore_data() {;}
-void eeprom_update() {;}
+void eeprom_store_data()
+{
+    ;
+}
+void eeprom_restore_data()
+{
+    ;
+}
+void eeprom_update()
+{
+    ;
+}
 
 #endif

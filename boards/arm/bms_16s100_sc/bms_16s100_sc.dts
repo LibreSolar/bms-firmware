@@ -6,7 +6,7 @@
 
 /dts-v1/;
 #include <st/g0/stm32g0b1Xe.dtsi>
-#include <st/g0/stm32g0b1c(c-e)tx-pinctrl.dtsi>
+#include <st/g0/stm32g0b1c(b-c-e)tx-pinctrl.dtsi>
 
 / {
 	model = "Libre Solar BMS 16S100 IC";
@@ -16,19 +16,19 @@
 		compatible = "bms";
 
 		type = "BMS 16S100 SC";
-		version-str = "v0.1";
-		version-num = <1>;
+		version-str = "v0.2";
+		version-num = <2>;
 
 		num-cells-max = <16>;
 		num-thermistors-max = <2>;
 
 		current-max = <100>;
-		shunt-res = <1000>;
+		shunt-res = <500>;
 	};
 
 	chosen {
-		zephyr,console = &usart2;
-		zephyr,shell-uart = &usart2;
+		zephyr,console = &usart1;
+		zephyr,shell-uart = &usart1;
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
 		zephyr,code-partition = &slot0_partition;
@@ -52,8 +52,8 @@
 	leds {
 		compatible = "gpio-leds";
 		led1: led_0 {
-			gpios = <&gpioa 5 GPIO_ACTIVE_HIGH>;	// Nucleo board
-			//gpios = <&gpioc 13 GPIO_ACTIVE_HIGH>;	// actual BMS board
+			//gpios = <&gpioa 5 GPIO_ACTIVE_HIGH>;	// Nucleo board
+			gpios = <&gpioc 13 GPIO_ACTIVE_HIGH>;	// actual BMS board
 			label = "LED 1";
 		};
 		led2: led_1 {
@@ -66,7 +66,7 @@
 		compatible = "gpio-keys";
 		power_button: button {
 			label = "Power Button";
-			gpios = <&gpioc 13 GPIO_ACTIVE_LOW>;
+			gpios = <&gpioa 1 GPIO_ACTIVE_HIGH>;
 		};
 	};
 
@@ -81,8 +81,8 @@
 	aliases {
 		led-red = &led1;
 		led-green = &led2;
-		uart-dbg = &usart2;
-		uart-uext = &usart1;
+		uart-dbg = &usart1;
+		uart-uext = &usart2;
 		i2c-uext = &i2c1;
 		sw-pwr = &power_button;
 	};
@@ -90,7 +90,7 @@
 	/* this should be upstreamed to Zephyr, see also PR 34963 */
 	soc {
 		can {
-			compatible = "bosch,m-can-base";
+			compatible = "bosch,m_can-base";
 			#address-cells = <1>;
 			#size-cells = <1>;
 			std-filter-elements = <28>;
@@ -108,6 +108,7 @@
 				reg-names = "m_can", "message_ram";
 				interrupts = <21 0>, <22 0>;
 				interrupt-names = "LINE_0", "LINE_1";
+				clocks = <&rcc STM32_CLOCK_BUS_APB1 0x00001000>;
 				status = "disabled";
 				label = "CAN_1";
 			};
@@ -115,17 +116,18 @@
 	};
 };
 
-&clk_hsi {
+&clk_hse {
+	clock-frequency = <DT_FREQ_M(8)>;
 	status = "okay";
 };
 
 &pll {
 	div-m = <1>;
-	mul-n = <8>;
+	mul-n = <16>;
 	div-p = <2>;
 	div-q = <2>;
 	div-r = <2>;
-	clocks = <&clk_hsi>;
+	clocks = <&clk_hse>;
 	status = "okay";
 };
 
@@ -138,19 +140,30 @@
 
 zephyr_udc0: &usb {
 	pinctrl-0 = <&usb_dm_pa11 &usb_dp_pa12>;
+	pinctrl-names = "default";
 	status = "okay";
 };
 
 &usart1 {
 	pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
+	pinctrl-names = "default";
 	current-speed = <115200>;
 	status = "okay";
 };
 
+&usart1_rx_pa10 {
+	bias-pull-up;	// avoid junk characters if pin is left floating
+};
+
 &usart2 {
 	pinctrl-0 = <&usart2_tx_pa2 &usart2_rx_pa3>;
+	pinctrl-names = "default";
 	current-speed = <115200>;
 	status = "okay";
+};
+
+&usart2_rx_pa3 {
+	bias-pull-up;	// avoid junk characters if pin is left floating
 };
 
 &iwdg {
@@ -159,12 +172,14 @@ zephyr_udc0: &usb {
 
 &i2c1 {
 	pinctrl-0 = <&i2c1_scl_pb6 &i2c1_sda_pb7>;
+	pinctrl-names = "default";
 	clock-frequency = <I2C_BITRATE_FAST>;
 	status = "okay";
 };
 
 &i2c2 {
-	pinctrl-0 = <&i2c2_scl_pb10 &i2c2_sda_pb11>;
+	pinctrl-0 = <&i2c2_scl_pb13 &i2c2_sda_pb14>;
+	pinctrl-names = "default";
 	clock-frequency = <I2C_BITRATE_STANDARD>;
 	status = "okay";
 
@@ -179,12 +194,14 @@ zephyr_udc0: &usb {
 &spi1 {
 	pinctrl-0 = <&spi1_nss_pb0 &spi1_sck_pb3
 		     &spi1_miso_pb4 &spi1_mosi_pb5>;
+	pinctrl-names = "default";
 	status = "okay";
 };
 
 &spi2 {
 	pinctrl-0 = <&spi2_nss_pb12 &spi2_sck_pb13
 		     &spi2_miso_pb14 &spi2_mosi_pb15>;
+	pinctrl-names = "default";
 	status = "okay";
 };
 
@@ -225,6 +242,7 @@ zephyr_udc0: &usb {
 
 &can1 {
 	pinctrl-0 = <&fdcan1_rx_pd0 &fdcan1_tx_pd1>;
+	pinctrl-names = "default";
 	bus-speed = <500000>;
 	bus-speed-data = <500000>;
 	sjw = <1>;

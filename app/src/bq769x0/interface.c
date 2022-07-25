@@ -12,10 +12,10 @@
 
 #include <string.h>
 
-#include <zephyr.h>
 #include <drivers/gpio.h>
 #include <drivers/i2c.h>
 #include <sys/crc.h>
+#include <zephyr.h>
 
 LOG_MODULE_REGISTER(bq769x0_if, CONFIG_LOG_DEFAULT_LEVEL);
 
@@ -26,8 +26,8 @@ LOG_MODULE_REGISTER(bq769x0_if, CONFIG_LOG_DEFAULT_LEVEL);
 #define BQ_ALERT_PORT DT_GPIO_LABEL(BQ769X0_INST, alert_gpios)
 #define BQ_ALERT_PIN  DT_GPIO_PIN(BQ769X0_INST, alert_gpios)
 
-int adc_gain;    // factory-calibrated, read out from chip (uV/LSB)
-int adc_offset;  // factory-calibrated, read out from chip (mV)
+int adc_gain;   // factory-calibrated, read out from chip (uV/LSB)
+int adc_offset; // factory-calibrated, read out from chip (mV)
 
 // indicates if a new current reading or an error is available from BMS IC
 static bool alert_interrupt_flag;
@@ -43,8 +43,8 @@ static bool crc_enabled;
 
 // The bq769x0 drives the ALERT pin high if the SYS_STAT register contains
 // a new value (either new CC reading or an error)
-static void bq769x0_alert_isr(const struct device*port, struct gpio_callback *cb,
-    gpio_port_pins_t pins)
+static void bq769x0_alert_isr(const struct device *port, struct gpio_callback *cb,
+                              gpio_port_pins_t pins)
 {
     alert_interrupt_timestamp = uptime();
     alert_interrupt_flag = true;
@@ -52,11 +52,8 @@ static void bq769x0_alert_isr(const struct device*port, struct gpio_callback *cb
 
 void bq769x0_write_byte(uint8_t reg_addr, uint8_t data)
 {
-    uint8_t buf[4] = {
-        i2c_address << 1,       // slave address incl. R/W bit required for CRC calculation
-        reg_addr,
-        data
-    };
+    uint8_t buf[4] = { i2c_address << 1, // slave address incl. R/W bit required for CRC calculation
+                       reg_addr, data };
 
     if (crc_enabled) {
         buf[3] = crc8_ccitt(0, buf, 3);
@@ -118,40 +115,40 @@ int32_t bq769x0_read_word(uint8_t reg_addr)
 }
 
 // automatically find out address and CRC setting
-static bool determine_address_and_crc(void)
+static int determine_address_and_crc(void)
 {
     i2c_address = 0x08;
     crc_enabled = true;
     bq769x0_write_byte(BQ769X0_CC_CFG, 0x19);
     if (bq769x0_read_byte(BQ769X0_CC_CFG) == 0x19) {
-        return true;
+        return 0;
     }
 
     i2c_address = 0x18;
     crc_enabled = true;
     bq769x0_write_byte(BQ769X0_CC_CFG, 0x19);
     if (bq769x0_read_byte(BQ769X0_CC_CFG) == 0x19) {
-        return true;
+        return 0;
     }
 
     i2c_address = 0x08;
     crc_enabled = false;
     bq769x0_write_byte(BQ769X0_CC_CFG, 0x19);
     if (bq769x0_read_byte(BQ769X0_CC_CFG) == 0x19) {
-        return true;
+        return 0;
     }
 
     i2c_address = 0x18;
     crc_enabled = false;
     bq769x0_write_byte(BQ769X0_CC_CFG, 0x19);
     if (bq769x0_read_byte(BQ769X0_CC_CFG) == 0x19) {
-        return true;
+        return 0;
     }
 
-    return false;
+    return -EIO;
 }
 
-void bq769x0_init()
+int bq769x0_init()
 {
     alert_pin_dev = device_get_binding(BQ_ALERT_PORT);
     gpio_pin_configure(alert_pin_dev, BQ_ALERT_PIN, GPIO_INPUT);
@@ -163,25 +160,29 @@ void bq769x0_init()
     i2c_dev = device_get_binding(I2C_DEV);
     if (!i2c_dev) {
         LOG_ERR("I2C device not found");
+        return -ENODEV;
     }
 
-    alert_interrupt_flag = true;   // init with true to check and clear errors at start-up
+    alert_interrupt_flag = true; // init with true to check and clear errors at start-up
 
-    if (determine_address_and_crc())
-    {
+    int err = determine_address_and_crc();
+    if (err) {
         // initial settings for bq769x0
-        bq769x0_write_byte(BQ769X0_SYS_CTRL1, 0b00011000);  // switch external thermistor and ADC on
-        bq769x0_write_byte(BQ769X0_SYS_CTRL2, 0b01000000);  // switch CC_EN on
+        bq769x0_write_byte(BQ769X0_SYS_CTRL1, 0b00011000); // switch external thermistor and ADC on
+        bq769x0_write_byte(BQ769X0_SYS_CTRL2, 0b01000000); // switch CC_EN on
 
         // get ADC offset and gain
-        adc_offset = (signed int) bq769x0_read_byte(BQ769X0_ADCOFFSET);  // 2's complement
-        adc_gain = 365 + (((bq769x0_read_byte(BQ769X0_ADCGAIN1) & 0b00001100) << 1) |
-            ((bq769x0_read_byte(BQ769X0_ADCGAIN2) & 0b11100000) >> 5)); // uV/LSB
+        adc_offset = (signed int)bq769x0_read_byte(BQ769X0_ADCOFFSET); // 2's complement
+        adc_gain = 365
+                   + (((bq769x0_read_byte(BQ769X0_ADCGAIN1) & 0b00001100) << 1)
+                      | ((bq769x0_read_byte(BQ769X0_ADCGAIN2) & 0b11100000) >> 5)); // uV/LSB
     }
     else {
-        // TODO: do something else... e.g. set error flag
         LOG_ERR("BMS communication error");
+        return err;
     }
+
+    return 0;
 }
 
 #endif // UNIT_TEST

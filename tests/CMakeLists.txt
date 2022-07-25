@@ -29,7 +29,8 @@ target_sources(app PRIVATE
         src/bq769x0_interface_stub.c
         src/bq769x0_tests.cpp
         src/bq769x2_interface_stub.c
-        src/bq769x2_tests.cpp
+        src/bq769x2_tests_functions.cpp
+        src/bq769x2_tests_interface.cpp
         src/common_tests.cpp
         src/helper_tests.cpp
         src/isl94202_interface_stub.c

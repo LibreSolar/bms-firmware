@@ -27,27 +27,27 @@ float interpolate(const float a[], const float b[], size_t size, float value_a)
         for (unsigned int i = 0; i < size; i++) {
             if (value_a <= a[i]) {
                 if (i == 0) {
-                    return b[0];    // value_a smaller than first element
+                    return b[0]; // value_a smaller than first element
                 }
                 else {
-                    return b[i-1] + (b[i] - b[i-1]) * (value_a - a[i-1]) / (a[i] - a[i-1]);
+                    return b[i - 1] + (b[i] - b[i - 1]) * (value_a - a[i - 1]) / (a[i] - a[i - 1]);
                 }
             }
         }
-        return b[size - 1];         // value_a larger than last element
+        return b[size - 1]; // value_a larger than last element
     }
     else {
         for (unsigned int i = 0; i < size; i++) {
             if (value_a >= a[i]) {
                 if (i == 0) {
-                    return b[0];    // value_a smaller than first element
+                    return b[0]; // value_a smaller than first element
                 }
                 else {
-                    return b[i-1] + (b[i] - b[i-1]) * (value_a - a[i-1]) / (a[i] - a[i-1]);
+                    return b[i - 1] + (b[i] - b[i - 1]) * (value_a - a[i - 1]) / (a[i] - a[i - 1]);
                 }
             }
         }
-        return b[size - 1];         // value_a larger than last element
+        return b[size - 1]; // value_a larger than last element
     }
 }
 
