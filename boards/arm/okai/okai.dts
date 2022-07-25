@@ -107,7 +107,9 @@
 };
 
 &pll {
-	clocks = <&clk_hs1>;
+	clocks = <&clk_hsi>;
+	prediv = <1>;
+	mul = <6>;
 	status = "okay";
 };
 
