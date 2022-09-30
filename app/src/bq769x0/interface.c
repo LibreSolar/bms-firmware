@@ -12,19 +12,14 @@
 
 #include <string.h>
 
-#include <drivers/gpio.h>
-#include <drivers/i2c.h>
-#include <sys/crc.h>
-#include <zephyr.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/i2c.h>
+#include <zephyr/kernel.h>
+#include <zephyr/sys/crc.h>
 
 LOG_MODULE_REGISTER(bq769x0_if, CONFIG_LOG_DEFAULT_LEVEL);
 
-#define BQ769X0_INST DT_INST(0, ti_bq769x0)
-
-#define I2C_DEV DT_LABEL(DT_PARENT(BQ769X0_INST))
-
-#define BQ_ALERT_PORT DT_GPIO_LABEL(BQ769X0_INST, alert_gpios)
-#define BQ_ALERT_PIN  DT_GPIO_PIN(BQ769X0_INST, alert_gpios)
+#define BQ769X0_NODE DT_INST(0, ti_bq769x0)
 
 int adc_gain;   // factory-calibrated, read out from chip (uV/LSB)
 int adc_offset; // factory-calibrated, read out from chip (mV)
@@ -35,11 +30,12 @@ static time_t alert_interrupt_timestamp;
 
 #ifndef UNIT_TEST
 
-static const struct device *i2c_dev;
-static const struct device *alert_pin_dev;
+static const struct device *i2c_dev = DEVICE_DT_GET(DT_PARENT(BQ769X0_NODE));
+static int i2c_address = DT_REG_ADDR(BQ769X0_NODE);
+static bool crc_enabled; // determined automatically
 
-static int i2c_address;
-static bool crc_enabled;
+static const struct gpio_dt_spec alert = GPIO_DT_SPEC_GET(BQ769X0_NODE, alert_gpios);
+static struct gpio_callback alert_cb;
 
 // The bq769x0 drives the ALERT pin high if the SYS_STAT register contains
 // a new value (either new CC reading or an error)
@@ -150,16 +146,16 @@ static int determine_address_and_crc(void)
 
 int bq769x0_init()
 {
-    alert_pin_dev = device_get_binding(BQ_ALERT_PORT);
-    gpio_pin_configure(alert_pin_dev, BQ_ALERT_PIN, GPIO_INPUT);
+    if (!device_is_ready(alert.port)) {
+        return -ENODEV;
+    }
 
-    struct gpio_callback gpio_cb;
-    gpio_init_callback(&gpio_cb, bq769x0_alert_isr, BQ_ALERT_PIN);
-    gpio_add_callback(alert_pin_dev, &gpio_cb);
+    gpio_pin_configure_dt(&alert, GPIO_INPUT);
+    gpio_init_callback(&alert_cb, bq769x0_alert_isr, BIT(alert.pin));
+    gpio_add_callback(alert.port, &alert_cb);
 
-    i2c_dev = device_get_binding(I2C_DEV);
-    if (!i2c_dev) {
-        LOG_ERR("I2C device not found");
+    if (!device_is_ready(i2c_dev)) {
+        LOG_ERR("I2C device not ready");
         return -ENODEV;
     }
 

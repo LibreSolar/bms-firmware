@@ -7,9 +7,7 @@
 /dts-v1/;
 
 #include <espressif/esp32c3.dtsi>
-#include <dt-bindings/pinctrl/esp32c3-pinctrl.h>
-#include <zephyr/dt-bindings/pinctrl/esp-pinctrl-common.h>
-#include <zephyr/dt-bindings/pinctrl/esp32c3-gpio-sigmap.h>
+#include "bms_16s100_sc_esp32c3-pinctrl.dtsi"
 
 / {
 	model = "Libre Solar BMS 16S100 IC";
@@ -41,27 +39,16 @@
 		compatible = "gpio-leds";
 		led1: led_0 {
 			gpios = <&gpio0 1 GPIO_ACTIVE_HIGH>;
-			label = "LED 1";
 		};
 		led2: led_1 {
 			gpios = <&gpio0 0 GPIO_ACTIVE_HIGH>;
-			label = "LED 2";
 		};
 	};
 
 	gpio_keys {
 		compatible = "gpio-keys";
 		power_button: button {
-			label = "Power Button";
 			gpios = <&gpio0 3 GPIO_ACTIVE_HIGH>;
-		};
-	};
-
-	switches {
-		compatible = "switch";
-		can_en {
-			gpios = <&gpio0 10 GPIO_ACTIVE_LOW>;
-			label = "CAN transceiver enable";
 		};
 	};
 
@@ -70,21 +57,6 @@
 		led-green = &led2;
 		uart-dbg = &usb_serial;
 		sw-pwr = &power_button;
-	};
-
-	/* temporary solution until USB serial driver is merged upstream */
-	soc {
-		usb_serial: uart@60043000 {
-			compatible = "espressif,esp32-usb-serial";
-			reg = <0x60043000 0x400>;
-			label = "USB_SERIAL_0";
-			status = "okay";
-			interrupts = <USB_INTR_SOURCE>;
-			interrupt-parent = <&intc>;
-			clocks = <&rtc ESP32_USB_MODULE>;
-			current-speed = <115200>;
-			peripheral = <0>;
-		};
 	};
 };
 
@@ -95,21 +67,22 @@
 &uart0 {
 	status = "okay";
 	current-speed = <115200>;
-	pinctrl-0 = <&uart0_tx_gpio21 &uart0_rx_gpio20>;
+	pinctrl-0 = <&uart0_default>;
 	pinctrl-names = "default";
+};
+
+&usb_serial {
+	status = "okay";
 };
 
 &i2c0 {
 	status = "okay";
 	clock-frequency = <I2C_BITRATE_STANDARD>;
-	sda-pin = <6>; // redundant, but doesn't compile otherwise
-	scl-pin = <7>; // redundant, but doesn't compile otherwise
-	pinctrl-0 = <&i2c0_sda_gpio6 &i2c0_scl_gpio7>;
+	pinctrl-0 = <&i2c0_default>;
 	pinctrl-names = "default";
 
 	bq769x2@8 {
 		compatible = "ti,bq769x2-i2c";
-		label = "BQ76952";
 		reg = <0x08>;	/* 0x10 >> 1 */
 		alert-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
 	};
@@ -171,30 +144,5 @@
 			label = "storage";
 			reg = <0x00250000 0x00006000>;
 		};
-	};
-};
-
-&pinctrl {
-	uart0_tx_gpio21: uart0_tx_gpio21 {
-		pinmux = <UART0_TX_GPIO21>;
-	};
-
-	uart0_rx_gpio20: uart0_rx_gpio20 {
-		pinmux = <UART0_RX_GPIO20>;
-		bias-pull-up;
-	};
-
-	i2c0_sda_gpio6: i2c0_sda_gpio6 {
-		pinmux = <I2C0_SDA_GPIO6>;
-		bias-pull-up;
-		drive-open-drain;
-		output-high;
-	};
-
-	i2c0_scl_gpio7: i2c0_scl_gpio7 {
-		pinmux = <I2C0_SCL_GPIO7>;
-		bias-pull-up;
-		drive-open-drain;
-		output-high;
 	};
 };

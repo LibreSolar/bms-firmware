@@ -7,7 +7,7 @@
 #ifndef BOARD_H_
 #define BOARD_H_
 
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 
 #define BOARD_NUM_CELLS_MAX       DT_PROP(DT_PATH(pcb), num_cells_max)
 #define BOARD_NUM_THERMISTORS_MAX DT_PROP(DT_PATH(pcb), num_thermistors_max)

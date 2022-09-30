@@ -1,4 +1,0 @@
-# Disable formatting for code copied from ESP-IDF
-
-DisableFormat: true
-SortIncludes: Never

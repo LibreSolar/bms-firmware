@@ -9,23 +9,23 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <drivers/uart.h>
-#include <sys/printk.h>
-#include <zephyr.h>
+#include <zephyr/drivers/uart.h>
+#include <zephyr/kernel.h>
+#include <zephyr/sys/printk.h>
 
 #include "data_objects.h"
 #include "thingset.h"
 
 #if CONFIG_UEXT_SERIAL_THINGSET && DT_NODE_EXISTS(DT_ALIAS(uart_uext))
-#define UART_DEVICE_NAME DT_LABEL(DT_ALIAS(uart_uext))
+#define UART_DEVICE_NODE DT_ALIAS(uart_uext)
 #elif DT_NODE_EXISTS(DT_ALIAS(uart_dbg))
-#define UART_DEVICE_NAME DT_LABEL(DT_ALIAS(uart_dbg))
+#define UART_DEVICE_NODE DT_ALIAS(uart_dbg)
 #else
 // cppcheck-suppress preprocessorErrorDirective
 #error "No UART for ThingSet serial defined."
 #endif
 
-const struct device *uart_dev = device_get_binding(UART_DEVICE_NAME);
+const struct device *uart_dev = DEVICE_DT_GET(UART_DEVICE_NODE);
 
 static char tx_buf[CONFIG_THINGSET_SERIAL_TX_BUF_SIZE];
 static char rx_buf[CONFIG_THINGSET_SERIAL_RX_BUF_SIZE];
@@ -118,7 +118,7 @@ void serial_thread()
     k_sem_init(&command_flag, 0, 1);
     k_sem_init(&rx_buf_mutex, 1, 1);
 
-    __ASSERT_NO_MSG(uart_dev != NULL);
+    __ASSERT_NO_MSG(device_is_ready(uart_dev));
 
     uart_irq_callback_user_data_set(uart_dev, serial_cb, NULL);
     uart_irq_rx_enable(uart_dev);

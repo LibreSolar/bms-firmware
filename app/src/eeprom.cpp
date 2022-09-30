@@ -8,9 +8,9 @@
 
 #ifdef CONFIG_EEPROM
 
-#include <device.h>
-#include <drivers/eeprom.h>
-#include <zephyr.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/eeprom.h>
+#include <zephyr/kernel.h>
 
 #include "data_objects.h"
 #include "soc.h"
@@ -157,17 +157,8 @@ void eeprom_update()
 
 #else
 
-void eeprom_store_data()
-{
-    ;
-}
-void eeprom_restore_data()
-{
-    ;
-}
-void eeprom_update()
-{
-    ;
-}
+void eeprom_store_data() { ; }
+void eeprom_restore_data() { ; }
+void eeprom_update() { ; }
 
 #endif

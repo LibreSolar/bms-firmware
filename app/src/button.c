@@ -8,9 +8,9 @@
 
 #ifndef UNIT_TEST
 
-#include <device.h>
-#include <drivers/gpio.h>
-#include <zephyr.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/kernel.h>
 
 #define BTN_GPIO  DT_ALIAS(sw_pwr)
 #define BTN_CTLR  DT_GPIO_CTLR(BTN_GPIO, gpios)

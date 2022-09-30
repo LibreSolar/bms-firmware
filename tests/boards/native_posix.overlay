@@ -32,18 +32,15 @@
 		compatible = "gpio-leds";
 		led1: led_0 {
 			gpios = <&gpio0 14 GPIO_ACTIVE_HIGH>;
-			label = "LED 1";
 		};
 		led2: led_1 {
 			gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
-			label = "LED 2";
 		};
 	};
 
 	gpio_keys {
 		compatible = "gpio-keys";
 		power_button: button {
-			label = "Power Button";
 			gpios = <&gpio0 8 GPIO_ACTIVE_LOW>;
 		};
 	};
@@ -60,7 +57,6 @@
 &i2c0 {
 	bq769x0: bq769x0@8 {
 		compatible = "ti,bq769x0";
-		label = "BQ76930";
 		reg = <0x08>;    	// ignored (firmware will auto-detect I2C address)
 		alert-gpios = <&gpio0 12 GPIO_ACTIVE_HIGH>;
 		status = "disabled";
@@ -68,7 +64,6 @@
 
 	bq769x2: bq769x2@8 {
 		compatible = "ti,bq769x2-i2c";
-		label = "BQ76952";
 		reg = <0x08>;	/* 0x10 >> 1 */
 		alert-gpios = <&gpio0 8 GPIO_ACTIVE_HIGH>;
 		status = "disabled";
@@ -77,7 +72,6 @@
 	/* selected by default, override via overlay */
 	isl94202: isl94202@28 {
 		compatible = "renesas,isl94202";
-		label = "ISL94202";
 		reg = <0x28>;	/* 0x50 >> 1 */
 		status = "okay";
 	};

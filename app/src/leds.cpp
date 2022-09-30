@@ -14,39 +14,38 @@ extern Bms bms;
 
 #ifndef UNIT_TEST
 
-#include <drivers/gpio.h>
-#include <zephyr.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/kernel.h>
 
-#define LED_DIS_PORT DT_GPIO_LABEL(DT_ALIAS(led_red), gpios)
-#define LED_DIS_PIN  DT_GPIO_PIN(DT_ALIAS(led_red), gpios)
+#define LED_DIS_NODE DT_ALIAS(led_red)
+#define LED_CHG_NODE DT_ALIAS(led_green)
 
-#define LED_CHG_PORT DT_GPIO_LABEL(DT_ALIAS(led_green), gpios)
-#define LED_CHG_PIN  DT_GPIO_PIN(DT_ALIAS(led_green), gpios)
-
-const struct device *led_dis_dev = NULL;
-const struct device *led_chg_dev = NULL;
+static const struct gpio_dt_spec led_dis = GPIO_DT_SPEC_GET(LED_DIS_NODE, gpios);
+static const struct gpio_dt_spec led_chg = GPIO_DT_SPEC_GET(LED_CHG_NODE, gpios);
 
 void leds_chg_set(bool on)
 {
-    if (led_chg_dev) {
-        gpio_pin_set(led_chg_dev, LED_CHG_PIN, on);
+    if (led_chg.port) {
+        gpio_pin_set_dt(&led_chg, on);
     }
 }
 
 void leds_dis_set(bool on)
 {
-    if (led_dis_dev) {
-        gpio_pin_set(led_dis_dev, LED_DIS_PIN, on);
+    if (led_dis.port) {
+        gpio_pin_set_dt(&led_dis, on);
     }
 }
 
 void leds_update_thread()
 {
-    led_dis_dev = device_get_binding(LED_DIS_PORT);
-    gpio_pin_configure(led_dis_dev, LED_DIS_PIN, GPIO_OUTPUT);
+    if (!device_is_ready(led_chg.port) || !device_is_ready(led_dis.port)) {
+        return;
+    }
 
-    led_chg_dev = device_get_binding(LED_CHG_PORT);
-    gpio_pin_configure(led_chg_dev, LED_CHG_PIN, GPIO_OUTPUT);
+    gpio_pin_configure_dt(&led_dis, GPIO_OUTPUT);
+
+    gpio_pin_configure_dt(&led_chg, GPIO_OUTPUT);
 
     while (1) {
         leds_update();
@@ -115,14 +114,8 @@ K_THREAD_DEFINE(leds, 256, leds_update_thread, NULL, NULL, NULL, 4, 0, 0);
 
 #else
 
-void leds_chg_set(bool on)
-{
-    ;
-}
+void leds_chg_set(bool on) { ; }
 
-void leds_dis_set(bool on)
-{
-    ;
-}
+void leds_dis_set(bool on) { ; }
 
 #endif // UNIT_TEST

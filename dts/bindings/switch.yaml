@@ -11,7 +11,3 @@ child-binding:
     gpios:
       type: phandle-array
       required: true
-    label:
-      type: string
-      required: true
-      description: Human readable string describing the device (used by Zephyr for API name)

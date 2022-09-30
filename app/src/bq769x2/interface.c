@@ -10,25 +10,19 @@
 #include "interface.h"
 #include "registers.h"
 
-#include <drivers/gpio.h>
-#include <drivers/i2c.h>
 #include <string.h>
-#include <zephyr.h>
+
+#include <zephyr/drivers/i2c.h>
+#include <zephyr/kernel.h>
 
 LOG_MODULE_REGISTER(bq769x2_if, CONFIG_LOG_DEFAULT_LEVEL);
 
-#define BQ769X2_INST DT_INST(0, ti_bq769x2_i2c)
-
-#define I2C_DEV     DT_LABEL(DT_PARENT(BQ769X2_INST))
-#define I2C_ADDRESS DT_REG_ADDR(BQ769X2_INST)
-
-#define BQ_ALERT_PORT DT_GPIO_LABEL(BQ769X2_INST, alert_gpios)
-#define BQ_ALERT_PIN  DT_GPIO_PIN(BQ769X2_INST, alert_gpios)
+#define BQ769X2_NODE DT_INST(0, ti_bq769x2_i2c)
 
 #ifndef UNIT_TEST
 
-static const struct device *i2c_dev;
-static const uint8_t i2c_address = I2C_ADDRESS;
+static const struct device *i2c_dev = DEVICE_DT_GET(DT_PARENT(BQ769X2_NODE));
+static const uint8_t i2c_address = DT_REG_ADDR(BQ769X2_NODE);
 
 /*
  * Currently only supporting I2C without CRC (default setting for BQ76952 part number)
@@ -47,7 +41,7 @@ int bq769x2_write_bytes(const uint8_t reg_addr, const uint8_t *data, const size_
     buf[0] = reg_addr; // first byte contains register address
     memcpy(buf + 1, data, num_bytes);
 
-    return i2c_write(i2c_dev, buf, num_bytes + 1, I2C_ADDRESS);
+    return i2c_write(i2c_dev, buf, num_bytes + 1, i2c_address);
 }
 
 int bq769x2_read_bytes(const uint8_t reg_addr, uint8_t *data, const size_t num_bytes)
@@ -57,9 +51,8 @@ int bq769x2_read_bytes(const uint8_t reg_addr, uint8_t *data, const size_t num_b
 
 int bq769x2_init()
 {
-    i2c_dev = device_get_binding(I2C_DEV);
-    if (!i2c_dev) {
-        LOG_ERR("I2C device not found");
+    if (!device_is_ready(i2c_dev)) {
+        LOG_ERR("I2C device not ready");
         return -ENODEV;
     }
     else {

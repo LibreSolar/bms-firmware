@@ -14,21 +14,19 @@
 
 #ifndef UNIT_TEST
 
-#include <drivers/gpio.h>
-#include <drivers/i2c.h>
 #include <string.h>
-#include <zephyr.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/i2c.h>
+#include <zephyr/kernel.h>
 
 LOG_MODULE_REGISTER(isl94202_if, CONFIG_LOG_DEFAULT_LEVEL);
 
-#define I2C_DEV     DT_LABEL(DT_PARENT(DT_INST(0, renesas_isl94202)))
-#define I2C_ADDRESS DT_REG_ADDR(DT_INST(0, renesas_isl94202))
+#define ISL94202_NODE   DT_INST(0, renesas_isl94202)
+#define I2C_PULLUP_NODE DT_CHILD(DT_PATH(switches), i2c_pullup)
 
-#define I2C_PULLUP_GPIO DT_CHILD(DT_PATH(switches), i2c_pullup)
-#define I2C_PULLUP_PORT DT_GPIO_LABEL(I2C_PULLUP_GPIO, gpios)
-#define I2C_PULLUP_PIN  DT_GPIO_PIN(I2C_PULLUP_GPIO, gpios)
-
-static const struct device *i2c_dev;
+static const struct device *i2c_dev = DEVICE_DT_GET(DT_PARENT(ISL94202_NODE));
+static const uint8_t i2c_address = DT_REG_ADDR(ISL94202_NODE);
+static const struct gpio_dt_spec i2c_pullup = GPIO_DT_SPEC_GET(I2C_PULLUP_NODE, gpios);
 
 int isl94202_write_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes)
 {
@@ -39,27 +37,27 @@ int isl94202_write_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes)
     buf[0] = reg_addr; // first byte contains register address
     memcpy(buf + 1, data, num_bytes);
 
-    return i2c_write(i2c_dev, buf, num_bytes + 1, I2C_ADDRESS);
+    return i2c_write(i2c_dev, buf, num_bytes + 1, i2c_address);
 }
 
 int isl94202_read_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes)
 {
-    return i2c_write_read(i2c_dev, I2C_ADDRESS, &reg_addr, 1, data, num_bytes);
+    return i2c_write_read(i2c_dev, i2c_address, &reg_addr, 1, data, num_bytes);
 }
 
 int isl94202_init()
 {
-    // activate pull-up at I2C SDA and SCL
-    const struct device *i2c_pullup;
-    i2c_pullup = device_get_binding(I2C_PULLUP_PORT);
-    gpio_pin_configure(i2c_pullup, I2C_PULLUP_PIN, GPIO_OUTPUT);
-    gpio_pin_set(i2c_pullup, I2C_PULLUP_PIN, 1);
-
-    i2c_dev = device_get_binding(I2C_DEV);
-    if (!i2c_dev) {
-        LOG_ERR("I2C device not found");
+    if (!device_is_ready(i2c_dev)) {
+        LOG_ERR("I2C device not ready");
         return -ENODEV;
     }
+
+    if (!device_is_ready(i2c_pullup.port)) {
+        return -ENODEV;
+    }
+
+    // activate pull-up at I2C SDA and SCL
+    gpio_pin_configure_dt(&i2c_pullup, GPIO_OUTPUT_ACTIVE);
 
     return 0;
 }

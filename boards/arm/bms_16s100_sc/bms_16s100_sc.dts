@@ -54,28 +54,24 @@
 		led1: led_0 {
 			//gpios = <&gpioa 5 GPIO_ACTIVE_HIGH>;	// Nucleo board
 			gpios = <&gpioc 13 GPIO_ACTIVE_HIGH>;	// actual BMS board
-			label = "LED 1";
 		};
 		led2: led_1 {
 			gpios = <&gpioc 14 GPIO_ACTIVE_HIGH>;
-			label = "LED 2";
 		};
 	};
 
 	gpio_keys {
 		compatible = "gpio-keys";
 		power_button: button {
-			label = "Power Button";
 			gpios = <&gpioa 1 GPIO_ACTIVE_HIGH>;
 		};
 	};
 
-	switches {
-		compatible = "switch";
-		can_en {
-			gpios = <&gpiod 2 GPIO_ACTIVE_LOW>;
-			label = "CAN transceiver enable";
-		};
+	transceiver0: can-phy0 {
+		compatible = "nxp,tja1042", "can-transceiver-gpio";
+		max-bitrate = <1000000>;
+		standby-gpios = <&gpiod 2 GPIO_ACTIVE_HIGH>;
+		#phy-cells = <0>;
 	};
 
 	aliases {
@@ -110,7 +106,6 @@
 				interrupt-names = "LINE_0", "LINE_1";
 				clocks = <&rcc STM32_CLOCK_BUS_APB1 0x00001000>;
 				status = "disabled";
-				label = "CAN_1";
 			};
 		};
 	};
@@ -185,7 +180,6 @@ zephyr_udc0: &usb {
 
 	bq769x2@8 {
 		compatible = "ti,bq769x2-i2c";
-		label = "BQ76952";
 		reg = <0x08>;	/* 0x10 >> 1 */
 		alert-gpios = <&gpiob 8 GPIO_ACTIVE_HIGH>;
 	};
@@ -249,5 +243,6 @@ zephyr_udc0: &usb {
 	sjw-data = <1>;
 	sample-point = <875>;
 	sample-point-data = <875>;
+	phys = <&transceiver0>;
 	status = "okay";
 };

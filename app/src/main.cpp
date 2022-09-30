@@ -6,8 +6,9 @@
 
 #ifndef UNIT_TEST
 
+#include <zephyr/kernel.h>
+
 #include <stdio.h>
-#include <zephyr.h>
 
 #include "bms.h"
 #include "button.h"
@@ -23,7 +24,7 @@ Bms bms;
 
 extern ThingSet ts;
 
-void main(void)
+int main(void)
 {
     printf("Hardware: Libre Solar %s (%s)\n", DT_PROP(DT_PATH(pcb), type),
            DT_PROP(DT_PATH(pcb), version_str));
@@ -74,6 +75,8 @@ void main(void)
         t_start += 100;
         k_sleep(K_TIMEOUT_ABS_MS(t_start));
     }
+
+    return 0;
 }
 
 #endif /* UNIT_TEST */

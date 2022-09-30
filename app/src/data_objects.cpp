@@ -6,12 +6,12 @@
 
 #include "data_objects.h"
 
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 
 #ifndef UNIT_TEST
-#include <drivers/hwinfo.h>
-#include <sys/crc.h>
-#include <sys/reboot.h>
+#include <zephyr/drivers/hwinfo.h>
+#include <zephyr/sys/crc.h>
+#include <zephyr/sys/reboot.h>
 #endif
 
 #include "board.h"
@@ -301,10 +301,7 @@ void data_objects_init()
     eeprom_restore_data();
 }
 
-void print_register()
-{
-    bms_print_register(reg_addr);
-}
+void print_register() { bms_print_register(reg_addr); }
 
 void reset_device()
 {

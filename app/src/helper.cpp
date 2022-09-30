@@ -7,7 +7,7 @@
 #include "helper.h"
 
 #ifndef UNIT_TEST
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 #endif
 
 #include <time.h>

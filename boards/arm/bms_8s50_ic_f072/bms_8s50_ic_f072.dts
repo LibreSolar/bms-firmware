@@ -50,11 +50,9 @@
 		compatible = "gpio-leds";
 		led1: led_0 {
 			gpios = <&gpiob 14 GPIO_ACTIVE_HIGH>;
-			label = "LED 1";
 		};
 		led2: led_1 {
 			gpios = <&gpiob 15 GPIO_ACTIVE_HIGH>;
-			label = "LED 2";
 		};
 	};
 
@@ -62,20 +60,21 @@
 		compatible = "switch";
 		i2c_pullup {
 			gpios = <&gpiob 2 GPIO_ACTIVE_HIGH>;
-			label = "I2C Pull-Up";
-		};
-		can_en {
-			gpios = <&gpioc 13 GPIO_ACTIVE_LOW>;
-			label = "CAN transceiver enable";
 		};
 	};
 
 	gpio_keys {
 		compatible = "gpio-keys";
 		power_button: button {
-			label = "Power Button";
 			gpios = <&gpioa 8 GPIO_ACTIVE_LOW>;
 		};
+	};
+
+	transceiver0: can-phy0 {
+		compatible = "ti,tcan334", "can-transceiver-gpio";
+		max-bitrate = <1000000>;
+		standby-gpios = <&gpioc 13 GPIO_ACTIVE_HIGH>;
+		#phy-cells = <0>;
 	};
 
 	aliases {
@@ -142,7 +141,6 @@
 
 	isl94202@28 {
 		compatible = "renesas,isl94202";
-		label = "ISL94202";
 		reg = <0x28>;	/* 0x50 >> 1 */
 	};
 
@@ -150,7 +148,6 @@
 		// Microchip 24AA32A
 		compatible = "atmel,at24";
 		reg = <0x50>;
-		label = "EEPROM_0";
 		size = <32768>;
 		pagesize = <32>;
 		address-width = <16>;
@@ -177,5 +174,6 @@
 	pinctrl-0 = <&can_rx_pb8 &can_tx_pb9>;
 	pinctrl-names = "default";
 	bus-speed = <500000>;
+	phys = <&transceiver0>;
 	status = "okay";
 };

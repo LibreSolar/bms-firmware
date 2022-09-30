@@ -13,7 +13,7 @@ manifest:
   projects:
     - name: zephyr
       remote: zephyrproject-rtos
-      revision: v3.1-branch
+      revision: v3.2-branch
       import:
         name-whitelist:
           - cmsis
@@ -22,11 +22,11 @@ manifest:
           - hal_stm32
     - name: oled-display-library
       remote: libresolar
-      revision: cc3033c0daace8cb50ab0e6406a9498cc81cdb39
+      revision: 523b26c103de56714fcda655702d600870a671bc
       path: modules/oled-display
     - name: thingset-device-library
       remote: thingset
-      revision: 5c2b562d77cd44969c822bbd8c37cd7394d5ca58
+      revision: 78c84c45c5dc5bd349385c2f7fdba16134143c1b
       path: modules/thingset
     - name: unity
       remote: throwtheswitch

@@ -6,29 +6,22 @@
 
 #if CONFIG_THINGSET_CAN
 
-#include <device.h>
-#include <drivers/can.h>
-#include <drivers/gpio.h>
-#include <zephyr.h>
-
-#ifdef CONFIG_ISOTP
-#include <canbus/isotp.h>
-#endif
-
-#include <logging/log.h>
-LOG_MODULE_REGISTER(ext_can, CONFIG_CAN_LOG_LEVEL);
+#include <zephyr/canbus/isotp.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/can.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 
 #include "data_objects.h"
 #include "thingset.h"
 
-#if DT_NODE_EXISTS(DT_CHILD(DT_PATH(switches), can_en))
-#define CAN_EN_GPIO DT_CHILD(DT_PATH(switches), can_en)
-#endif
+LOG_MODULE_REGISTER(ext_can, CONFIG_CAN_LOG_LEVEL);
 
 extern ThingSet ts;
 extern uint16_t can_node_addr;
 
-static const struct device *can_dev;
+static const struct device *can_dev = DEVICE_DT_GET(DT_NODELABEL(can1));
 
 #ifdef CONFIG_ISOTP
 
@@ -68,6 +61,10 @@ void can_rx_thread()
     struct net_buf *buf;
     static uint8_t rx_buffer[200];
     static uint8_t tx_buffer[500];
+
+    if (!device_is_ready(can_dev)) {
+        return;
+    }
 
     while (1) {
         /* re-assign address in every loop as it may have been changed via ThingSet */
@@ -139,11 +136,11 @@ void can_pub_thread()
     unsigned int can_id;
     uint8_t can_data[8];
 
-    const struct device *can_en_dev = device_get_binding(DT_GPIO_LABEL(CAN_EN_GPIO, gpios));
-    gpio_pin_configure(can_en_dev, DT_GPIO_PIN(CAN_EN_GPIO, gpios),
-                       DT_GPIO_FLAGS(CAN_EN_GPIO, gpios) | GPIO_OUTPUT_ACTIVE);
+    if (!device_is_ready(can_dev)) {
+        return;
+    }
 
-    can_dev = device_get_binding("CAN_1");
+    can_start(can_dev);
 
     int64_t t_start = k_uptime_get();
 
@@ -154,7 +151,7 @@ void can_pub_thread()
             while (
                 (data_len = ts.bin_pub_can(start_pos, SUBSET_CAN, can_node_addr, can_id, can_data))
                 != -1) {
-                struct zcan_frame frame = { 0 };
+                struct can_frame frame = { 0 };
                 frame.id_type = CAN_EXTENDED_IDENTIFIER;
                 frame.rtr = CAN_DATAFRAME;
                 frame.id = can_id;

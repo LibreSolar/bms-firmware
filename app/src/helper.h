@@ -34,7 +34,7 @@
 
 #else
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 
 #endif /* VSCODE_INTELLISENSE_HACK */
 
