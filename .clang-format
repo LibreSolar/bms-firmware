@@ -12,6 +12,7 @@ AccessModifierOffset: -4
 
 # Indentation and alignment
 AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: false
 AlignConsecutiveAssignments: false
 AlignConsecutiveMacros: true
