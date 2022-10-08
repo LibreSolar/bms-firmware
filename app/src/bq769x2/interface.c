@@ -203,7 +203,7 @@ static int bq769x2_subcmd_write(const uint16_t subcmd, const uint32_t value, con
     return 0;
 
 err:
-    LOG_ERR("I2C error for subcmd_read: %d", err);
+    LOG_ERR("I2C error for subcmd_write: %d", err);
     return err;
 }
 
