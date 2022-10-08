@@ -35,7 +35,7 @@ static char auth_password[11];
 
 // struct to define ThingSet array node
 ThingSetArrayInfo cell_voltages_arr = { bms.status.cell_voltages, BOARD_NUM_CELLS_MAX,
-                                        BOARD_NUM_CELLS_MAX, TS_T_FLOAT32 };
+                                        BOARD_NUM_CELLS_MAX, TS_T_FLOAT32, sizeof(float) };
 
 bool pub_serial_enable = IS_ENABLED(CONFIG_THINGSET_SERIAL_PUB_DEFAULT);
 
@@ -301,7 +301,10 @@ void data_objects_init()
     eeprom_restore_data();
 }
 
-void print_register() { bms_print_register(reg_addr); }
+void print_register()
+{
+    bms_print_register(reg_addr);
+}
 
 void reset_device()
 {
