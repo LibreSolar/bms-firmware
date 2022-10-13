@@ -12,7 +12,7 @@ manifest:
       url-base: https://github.com/ThrowTheSwitch
   projects:
     - name: zephyr
-      remote: zephyrproject-rtos
+      remote: libresolar
       revision: v3.2-branch
       import:
         name-whitelist:

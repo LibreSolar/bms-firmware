@@ -18,10 +18,18 @@
 
 LOG_MODULE_REGISTER(ext_can, CONFIG_CAN_LOG_LEVEL);
 
+#if DT_NODE_EXISTS(DT_CHOSEN(zephyr_canbus))
+#define CAN_DEVICE_NODE DT_CHOSEN(zephyr_canbus)
+#elif DT_NODE_EXISTS(DT_NODELABEL(can1))
+#define CAN_DEVICE_NODE DT_NODELABEL(can1)
+#else
+#error "No CAN device found"
+#endif
+
 extern ThingSet ts;
 extern uint16_t can_node_addr;
 
-static const struct device *can_dev = DEVICE_DT_GET(DT_NODELABEL(can1));
+static const struct device *can_dev = DEVICE_DT_GET(CAN_DEVICE_NODE);
 
 #ifdef CONFIG_ISOTP
 
