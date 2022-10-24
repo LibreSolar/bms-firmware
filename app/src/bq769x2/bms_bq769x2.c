@@ -103,41 +103,6 @@ void bms_update(Bms *bms)
     bms_update_balancing(bms);
 }
 
-void bms_state_machine(Bms *bms)
-{
-    bms_handle_errors(bms);
-
-    if (bms->status.state == BMS_STATE_OFF) {
-        if (bms_startup_inhibit()) {
-            return;
-        }
-
-        if (bms_dis_allowed(bms) || bms_chg_allowed(bms)) {
-            // the bq chip will automatically take care of the conditions and only enable the
-            // FETs in the allowed directions
-            bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_ALL_FETS_ON);
-        }
-    }
-
-    // FET switching is autonomously handled by the bq chip, so we just read back the status
-
-    FET_STATUS_Type fet_status;
-    bq769x2_read_bytes(BQ769X2_CMD_FET_STATUS, &fet_status.byte, 1);
-
-    if (fet_status.CHG_FET && fet_status.DSG_FET) {
-        bms->status.state = BMS_STATE_NORMAL;
-    }
-    else if (fet_status.CHG_FET) {
-        bms->status.state = BMS_STATE_CHG;
-    }
-    else if (fet_status.DSG_FET) {
-        bms->status.state = BMS_STATE_DIS;
-    }
-    else {
-        bms->status.state = BMS_STATE_OFF;
-    }
-}
-
 bool bms_startup_inhibit()
 {
     // Datasheet: Start-up time max. 4.3 ms
@@ -151,16 +116,48 @@ void bms_shutdown()
 
 int bms_chg_switch(Bms *bms, bool enable)
 {
-    // handled by bq769x2 in autonomous mode, manual disable of a FET currently not supported
+    FET_STATUS_Type fet_status;
+    int err;
 
-    return 0;
+    err = bq769x2_read_bytes(BQ769X2_CMD_FET_STATUS, &fet_status.byte, 1);
+    if (err != 0) {
+        return err;
+    }
+
+    /* only lower 4 bytes relevant for FET_CONTROL */
+    fet_status.byte &= 0x0F;
+    fet_status.CHG_FET = enable ? 1 : 0;
+
+    err = bq769x2_subcmd_write_u1(BQ769X2_SUBCMD_FET_CONTROL, fet_status.byte);
+
+    if (enable) {
+        err |= bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_ALL_FETS_ON);
+    }
+
+    return err;
 }
 
 int bms_dis_switch(Bms *bms, bool enable)
 {
-    // handled by bq769x2 in autonomous mode, manual disable of a FET currently not supported
+    FET_STATUS_Type fet_status;
+    int err;
 
-    return 0;
+    err = bq769x2_read_bytes(BQ769X2_CMD_FET_STATUS, &fet_status.byte, 1);
+    if (err != 0) {
+        return err;
+    }
+
+    /* only lower 4 bytes relevant for FET_CONTROL */
+    fet_status.byte &= 0x0F;
+    fet_status.DSG_FET = enable ? 1 : 0;
+
+    err = bq769x2_subcmd_write_u1(BQ769X2_SUBCMD_FET_CONTROL, fet_status.byte);
+
+    if (enable) {
+        err |= bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_ALL_FETS_ON);
+    }
+
+    return err;
 }
 
 int bms_apply_balancing_conf(Bms *bms)
