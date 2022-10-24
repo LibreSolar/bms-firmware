@@ -85,6 +85,19 @@ int bms_init_hardware(Bms *bms)
         return err;
     }
 
+    // enable automatic pre-discharge before switching on DSG FETs
+    err = bq769x2_subcmd_write_u1(BQ769X2_SET_FET_OPTIONS, 0x1D);
+    if (err) {
+        return err;
+    }
+
+    // disable pre-discharge timeout (DSG FETs are only turned on based on bus voltage)
+    // PDSG voltage settings in BQ769X2_SET_FET_PDSG_STOP_DV are kept at default 500 mV
+    err = bq769x2_subcmd_write_u1(BQ769X2_SET_FET_PDSG_TIMEOUT, 0);
+    if (err) {
+        return err;
+    }
+
     err = detect_num_cells(bms);
     if (err) {
         return err;
