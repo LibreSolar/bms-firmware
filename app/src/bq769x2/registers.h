@@ -283,7 +283,7 @@
 #define BQ769X2_SET_FET_PCHG_START_V      0x930A // mV
 #define BQ769X2_SET_FET_PCHG_STOP_V       0x930C // mV
 #define BQ769X2_SET_FET_PDSG_TIMEOUT      0x930E // 10 ms
-#define BQ769X2_SET_FET_PDSG_STOP_DU      0x930F // 10 mV
+#define BQ769X2_SET_FET_PDSG_STOP_DV      0x930F // 10 mV
 #define BQ769X2_SET_DSG_CURR_TH           0x9310 // userA
 #define BQ769X2_SET_CHG_CURR_TH           0x9312 // userA
 #define BQ769X2_SET_OPEN_WIRE_CHECK_TIME  0x9314 // s
