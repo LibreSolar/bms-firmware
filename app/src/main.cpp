@@ -64,7 +64,7 @@ int main(void)
 
         if (button_pressed_for_3s()) {
             printf("Button pressed for 3s: shutdown...\n");
-            bms_shutdown();
+            bms_shutdown(&bms);
             k_sleep(K_MSEC(10000));
         }
 

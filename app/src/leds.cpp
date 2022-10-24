@@ -68,6 +68,10 @@ void leds_update()
             leds_chg_set(1);
         }
     }
+    else if (bms.status.state == BMS_STATE_SHUTDOWN) {
+        // completely off
+        leds_chg_set(0);
+    }
     else {
         if (bms_chg_error(bms.status.error_flags)) {
             // quick flash
@@ -93,6 +97,10 @@ void leds_update()
             leds_dis_set(1);
         }
     }
+    else if (bms.status.state == BMS_STATE_SHUTDOWN) {
+        // completely off
+        leds_dis_set(0);
+    }
     else {
         if (bms_dis_error(bms.status.error_flags)) {
             // quick flash
@@ -114,8 +122,10 @@ K_THREAD_DEFINE(leds, 256, leds_update_thread, NULL, NULL, NULL, 4, 0, 0);
 
 #else
 
-void leds_chg_set(bool on) { ; }
+void leds_chg_set(bool on)
+{}
 
-void leds_dis_set(bool on) { ; }
+void leds_dis_set(bool on)
+{}
 
 #endif // UNIT_TEST

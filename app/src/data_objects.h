@@ -73,6 +73,11 @@ void print_register();
 void reset_device();
 
 /**
+ * Callback to invoke bms_shutdown via ThingSet
+ */
+void shutdown();
+
+/**
  * Callback to provide authentication mechanism via ThingSet
  */
 void thingset_auth();

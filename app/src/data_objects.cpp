@@ -236,7 +236,7 @@ static ThingSetDataObject data_objects[] = {
 
     TS_GROUP(ID_RPC, "RPC", TS_NO_CALLBACK, ID_ROOT),
 
-    TS_FUNCTION(0xE1, "xShutdown", &bms_shutdown, ID_RPC, TS_ANY_RW),
+    TS_FUNCTION(0xE1, "xShutdown", &shutdown, ID_RPC, TS_ANY_RW),
     TS_FUNCTION(0xE2, "xReset", &reset_device, ID_RPC, TS_ANY_RW),
     //TS_FUNCTION(0xE3, "xBootloaderSTM", &start_stm32_bootloader, ID_RPC, TS_ANY_RW),
     TS_FUNCTION(0xE4, "xSaveSettings", &eeprom_store_data, ID_RPC, TS_ANY_RW),
@@ -311,6 +311,11 @@ void reset_device()
 #ifndef UNIT_TEST
     sys_reboot(SYS_REBOOT_COLD);
 #endif
+}
+
+void shutdown()
+{
+    bms_shutdown(&bms);
 }
 
 void thingset_auth()

@@ -115,7 +115,7 @@ bool bms_startup_inhibit()
     return uptime() < 4;
 }
 
-void bms_shutdown()
+void bms_shutdown(Bms *bms)
 {
     uint8_t reg = ISL94202_CTRL3_PDWN_Msk;
     isl94202_write_bytes(ISL94202_CTRL3, &reg, 1);

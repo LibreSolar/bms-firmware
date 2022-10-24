@@ -101,7 +101,7 @@ bool bms_startup_inhibit()
     return k_uptime_get() <= 10;
 }
 
-void bms_shutdown()
+void bms_shutdown(Bms *bms)
 {
     // puts BMS IC into SHIP mode (i.e. switched off)
     bq769x0_write_byte(BQ769X0_SYS_CTRL1, 0x0);

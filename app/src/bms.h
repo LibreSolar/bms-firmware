@@ -30,10 +30,11 @@ extern "C" {
  */
 enum BmsState
 {
-    BMS_STATE_OFF,    ///< Off state (charging and discharging disabled)
-    BMS_STATE_CHG,    ///< Charging state (discharging disabled)
-    BMS_STATE_DIS,    ///< Discharging state (charging disabled)
-    BMS_STATE_NORMAL, ///< Normal operating mode (both charging and discharging enabled)
+    BMS_STATE_OFF,      ///< Off state (charging and discharging disabled)
+    BMS_STATE_CHG,      ///< Charging state (discharging disabled)
+    BMS_STATE_DIS,      ///< Discharging state (charging disabled)
+    BMS_STATE_NORMAL,   ///< Normal operating mode (both charging and discharging enabled)
+    BMS_STATE_SHUTDOWN, ///< BMS starting shutdown sequence
 };
 
 /**
@@ -218,7 +219,7 @@ bool bms_startup_inhibit();
 /**
  * Shut down BMS IC and entire PCB power supply
  */
-void bms_shutdown();
+void bms_shutdown(Bms *bms);
 
 /**
  * Enable/disable charge MOSFET

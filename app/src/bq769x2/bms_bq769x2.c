@@ -109,8 +109,17 @@ bool bms_startup_inhibit()
     return k_uptime_get() <= 5;
 }
 
-void bms_shutdown()
+void bms_shutdown(Bms *bms)
 {
+    /* make the BMS appear off */
+    bms->status.state = BMS_STATE_SHUTDOWN;
+    bms_chg_switch(bms, 0);
+    bms_dis_switch(bms, 0);
+
+    /* wait 10s for the user to relase the button again */
+    k_sleep(K_MSEC(10000));
+
+    /* actually switch off and disable MCU power supply */
     bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_SHUTDOWN);
 }
 
