@@ -105,17 +105,26 @@ static int bq769x2_subcmd_read(const uint16_t subcmd, uint32_t *value, const siz
 
     // wait until data is ready
     int num_tries = 0;
-    do {
+    while (true) {
         err = bq769x2_read_bytes(BQ769X2_CMD_SUBCMD_LOWER, buf_data, 2);
         if (err) {
             goto err;
         }
         else if (num_tries > 10) {
-            LOG_ERR("Reached maximum number of tries to read subcommand");
+            LOG_DBG("Reached maximum number of tries to read subcommand");
             return -EIO;
         }
-        num_tries++;
-    } while (buf_subcmd[0] != buf_data[0] || buf_subcmd[1] != buf_data[1]);
+        else {
+            if (buf_subcmd[0] != buf_data[0] || buf_subcmd[1] != buf_data[1]) {
+                // try again after 100 us
+                k_usleep(100);
+                num_tries++;
+            }
+            else {
+                break;
+            }
+        }
+    }
 
     // read data length
     uint8_t data_length;
