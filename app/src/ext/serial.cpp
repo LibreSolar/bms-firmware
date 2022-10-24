@@ -53,8 +53,7 @@ void serial_pub_msg()
 
 void serial_process_command()
 {
-    // commands must have 2 or more characters
-    if (rx_buf_pos > 1) {
+    if (rx_buf_pos > 0) {
         printf("Received Request (%d bytes): %s\n", strlen(rx_buf), rx_buf);
 
         int len = ts.process((uint8_t *)rx_buf, strlen(rx_buf), (uint8_t *)tx_buf, sizeof(tx_buf));
