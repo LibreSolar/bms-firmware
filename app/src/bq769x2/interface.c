@@ -327,3 +327,13 @@ int bq769x2_subcmd_write_f4(const uint16_t subcmd, float value)
     uint32_t *u32 = (uint32_t *)&value;
     return bq769x2_subcmd_write(subcmd, *u32, 4);
 }
+
+int bq769x2_config_update_mode(bool config_update)
+{
+    if (config_update) {
+        return bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_SET_CFGUPDATE);
+    }
+    else {
+        return bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_EXIT_CFGUPDATE);
+    }
+}

@@ -30,6 +30,15 @@ uint8_t bq769x2_checksum_add(uint8_t previous, uint8_t data);
 int bq769x2_init();
 
 /**
+ * Set bq769x2 config update mode
+ *
+ * @param config_update True if config update mode should be entered
+ *
+ * @returns 0 if successful, negative errno otherwise
+ */
+int bq769x2_config_update_mode(bool config_update);
+
+/**
  * Writes multiple bytes to bq769x2 IC registers
  *
  * @param reg_addr The address to write to

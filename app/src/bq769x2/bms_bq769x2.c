@@ -53,6 +53,8 @@ int bms_init_hardware(Bms *bms)
         LOG_INF("detected bq device number: 0x%x", device_number);
     }
 
+    bq769x2_config_update_mode(true);
+
     // configure shunt value based on nominal value of VREF2 (could be improved by calibration)
     err = bq769x2_subcmd_write_f4(BQ769X2_CAL_CURR_CC_GAIN, 7.4768F / bms->conf.shunt_res_mOhm);
     if (err) {
@@ -97,6 +99,8 @@ int bms_init_hardware(Bms *bms)
     if (err) {
         return err;
     }
+
+    bq769x2_config_update_mode(false);
 
     err = detect_num_cells(bms);
     if (err) {
@@ -535,6 +539,8 @@ int bms_configure(Bms *bms)
 {
     int err = 0;
 
+    bq769x2_config_update_mode(true);
+
     err += bms_apply_cell_ovp(bms);
     err += bms_apply_cell_uvp(bms);
 
@@ -544,6 +550,8 @@ int bms_configure(Bms *bms)
 
     err += bms_apply_temp_limits(bms);
     err += bms_apply_balancing_conf(bms);
+
+    bq769x2_config_update_mode(false);
 
     return err;
 }
