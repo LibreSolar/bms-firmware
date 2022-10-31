@@ -33,7 +33,7 @@ void test_bq769x2_apply_dis_scp()
     // default
     bms.conf.dis_sc_limit = 10.0F / bms.conf.shunt_res_mOhm; // reg value 0 = 10 mV
     bms.conf.dis_sc_delay_us = (2 - 1) * 15;                 // 15 us (reg value 1 = no delay)
-    err = bms_apply_dis_scp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(10.0F / bms.conf.shunt_res_mOhm, bms.conf.dis_sc_limit);
     TEST_ASSERT_EQUAL_FLOAT((2 - 1) * 15, bms.conf.dis_sc_delay_us);
@@ -42,14 +42,14 @@ void test_bq769x2_apply_dis_scp()
 
     // min
     bms.conf.dis_sc_delay_us = (1 - 1) * 15; // 15 us (reg value 1 = no delay)
-    err = bms_apply_dis_scp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT((1 - 1) * 15, bms.conf.dis_sc_delay_us);
     TEST_ASSERT_EQUAL_UINT8(1, mem_bq_subcmd[0x9287]);
 
     // too little
     bms.conf.dis_sc_limit = 5.0F / bms.conf.shunt_res_mOhm;
-    err = bms_apply_dis_scp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(10.0F / bms.conf.shunt_res_mOhm, bms.conf.dis_sc_limit);
     TEST_ASSERT_EQUAL_UINT8(0, mem_bq_subcmd[0x9286]);
@@ -57,7 +57,7 @@ void test_bq769x2_apply_dis_scp()
     // max
     bms.conf.dis_sc_limit = 500.0F / bms.conf.shunt_res_mOhm; // reg value 015 = 500 mV
     bms.conf.dis_sc_delay_us = (31 - 1) * 15;
-    err = bms_apply_dis_scp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(500.0F / bms.conf.shunt_res_mOhm, bms.conf.dis_sc_limit);
     TEST_ASSERT_EQUAL_FLOAT((31 - 1) * 15, bms.conf.dis_sc_delay_us);
@@ -67,7 +67,7 @@ void test_bq769x2_apply_dis_scp()
     // too much
     bms.conf.dis_sc_limit = 600.0F / bms.conf.shunt_res_mOhm;
     bms.conf.dis_sc_delay_us = (32 - 1) * 15;
-    err = bms_apply_dis_scp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(500.0F / bms.conf.shunt_res_mOhm, bms.conf.dis_sc_limit);
     TEST_ASSERT_EQUAL_FLOAT((31 - 1) * 15, bms.conf.dis_sc_delay_us);
@@ -85,7 +85,7 @@ void test_bq769x2_apply_chg_ocp()
     // default
     bms.conf.chg_oc_limit = 2 * 2.0F / bms.conf.shunt_res_mOhm;
     bms.conf.chg_oc_delay_ms = lroundf(6.6F + 4 * 3.3F); // 6.6 ms offset
-    err = bms_apply_chg_ocp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(4.0F / bms.conf.shunt_res_mOhm, bms.conf.chg_oc_limit);
     TEST_ASSERT_EQUAL_UINT32(lroundf(6.6F + 4 * 3.3F), bms.conf.chg_oc_delay_ms);
@@ -94,7 +94,7 @@ void test_bq769x2_apply_chg_ocp()
 
     // min
     bms.conf.chg_oc_delay_ms = 6.6F + 1 * 3.3F;
-    err = bms_apply_chg_ocp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_UINT32(10, bms.conf.chg_oc_delay_ms);
     TEST_ASSERT_EQUAL_UINT8(1, mem_bq_subcmd[0x9281]);
@@ -102,7 +102,7 @@ void test_bq769x2_apply_chg_ocp()
     // too little
     bms.conf.chg_oc_limit = 1 * 2.0F / bms.conf.shunt_res_mOhm;
     bms.conf.chg_oc_delay_ms = 3.3F;
-    err = bms_apply_chg_ocp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(4.0F / bms.conf.shunt_res_mOhm, bms.conf.chg_oc_limit);
     TEST_ASSERT_EQUAL_UINT32(10.0F, bms.conf.chg_oc_delay_ms);
@@ -112,7 +112,7 @@ void test_bq769x2_apply_chg_ocp()
     // max
     bms.conf.chg_oc_limit = 62 * 2.0F / bms.conf.shunt_res_mOhm;
     bms.conf.chg_oc_delay_ms = 6.6F + 127 * 3.3F;
-    err = bms_apply_chg_ocp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(62 * 2.0F / bms.conf.shunt_res_mOhm, bms.conf.chg_oc_limit);
     TEST_ASSERT_EQUAL_FLOAT(lroundf(6.6F + 127 * 3.3F), bms.conf.chg_oc_delay_ms);
@@ -122,7 +122,7 @@ void test_bq769x2_apply_chg_ocp()
     // too much
     bms.conf.chg_oc_limit = 100 * 2.0F / bms.conf.shunt_res_mOhm;
     bms.conf.chg_oc_delay_ms = 6.6F + 150 * 3.3F;
-    err = bms_apply_chg_ocp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(62 * 2.0F / bms.conf.shunt_res_mOhm, bms.conf.chg_oc_limit);
     TEST_ASSERT_EQUAL_FLOAT(lroundf(6.6F + 127 * 3.3F), bms.conf.chg_oc_delay_ms);
@@ -143,7 +143,7 @@ void test_bq769x2_apply_dis_ocp()
     // default
     bms.conf.dis_oc_limit = 4 * 2.0F / bms.conf.shunt_res_mOhm;
     bms.conf.dis_oc_delay_ms = 6.6F + 1 * 3.3F; // 6.6 ms offset
-    err = bms_apply_dis_ocp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(8.0F / bms.conf.shunt_res_mOhm, bms.conf.dis_oc_limit);
     TEST_ASSERT_EQUAL_FLOAT(10.0F, bms.conf.dis_oc_delay_ms);
@@ -152,7 +152,7 @@ void test_bq769x2_apply_dis_ocp()
 
     // min
     bms.conf.dis_oc_limit = 2 * 2.0F / bms.conf.shunt_res_mOhm;
-    err = bms_apply_dis_ocp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(4.0F / bms.conf.shunt_res_mOhm, bms.conf.dis_oc_limit);
     TEST_ASSERT_EQUAL_UINT8(2, mem_bq_subcmd[0x9282]);
@@ -160,7 +160,7 @@ void test_bq769x2_apply_dis_ocp()
     // too little
     bms.conf.dis_oc_limit = 1 * 2.0F / bms.conf.shunt_res_mOhm;
     bms.conf.dis_oc_delay_ms = 3.3F;
-    err = bms_apply_dis_ocp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(4.0F / bms.conf.shunt_res_mOhm, bms.conf.dis_oc_limit);
     TEST_ASSERT_EQUAL_FLOAT(10.0F, bms.conf.dis_oc_delay_ms);
@@ -170,7 +170,7 @@ void test_bq769x2_apply_dis_ocp()
     // max
     bms.conf.dis_oc_limit = 100 * 2.0F / bms.conf.shunt_res_mOhm;
     bms.conf.dis_oc_delay_ms = 6.6F + 127 * 3.3F;
-    err = bms_apply_dis_ocp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(200.0F / bms.conf.shunt_res_mOhm, bms.conf.dis_oc_limit);
     TEST_ASSERT_EQUAL_FLOAT(lroundf(6.6F + 127 * 3.3F), bms.conf.dis_oc_delay_ms);
@@ -180,7 +180,7 @@ void test_bq769x2_apply_dis_ocp()
     // too much
     bms.conf.dis_oc_limit = 120 * 2.0F / bms.conf.shunt_res_mOhm;
     bms.conf.dis_oc_delay_ms = 6.6F + 150 * 3.3F;
-    err = bms_apply_dis_ocp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(200.0F / bms.conf.shunt_res_mOhm, bms.conf.dis_oc_limit);
     TEST_ASSERT_EQUAL_FLOAT(lroundf(6.6F + 127 * 3.3F), bms.conf.dis_oc_delay_ms);
@@ -199,7 +199,7 @@ void test_bq769x2_apply_cell_uvp()
     bms.conf.cell_uv_limit = 50 * 50.6F / 1000.0F;
     bms.conf.cell_uv_reset = 52 * 50.6F / 1000.0F;
     bms.conf.cell_uv_delay_ms = 74 * 3.3F;
-    err = bms_apply_cell_uvp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(50 * 50.6F / 1000.0F, bms.conf.cell_uv_limit);
     TEST_ASSERT_EQUAL_FLOAT(52 * 50.6F / 1000.0F, bms.conf.cell_uv_reset);
@@ -213,7 +213,7 @@ void test_bq769x2_apply_cell_uvp()
     bms.conf.cell_uv_limit = 20 * 50.6F / 1000.0F;
     bms.conf.cell_uv_reset = 22 * 50.6F / 1000.0F;
     bms.conf.cell_uv_delay_ms = 1 * 3.3F;
-    err = bms_apply_cell_uvp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(20 * 50.6F / 1000.0F, bms.conf.cell_uv_limit);
     TEST_ASSERT_EQUAL_FLOAT(22 * 50.6F / 1000.0F, bms.conf.cell_uv_reset);
@@ -227,7 +227,7 @@ void test_bq769x2_apply_cell_uvp()
     bms.conf.cell_uv_limit = 19 * 50.6F / 1000.0F;
     bms.conf.cell_uv_reset = 18 * 50.6F / 1000.0F;
     bms.conf.cell_uv_delay_ms = 0.0F;
-    err = bms_apply_cell_uvp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(20 * 50.6F / 1000.0F, bms.conf.cell_uv_limit);
     TEST_ASSERT_EQUAL_FLOAT(22 * 50.6F / 1000.0F, bms.conf.cell_uv_reset);
@@ -241,7 +241,7 @@ void test_bq769x2_apply_cell_uvp()
     bms.conf.cell_uv_limit = 90 * 50.6F / 1000.0F;
     bms.conf.cell_uv_reset = 110 * 50.6F / 1000.0F;
     bms.conf.cell_uv_delay_ms = 2047 * 3.3F;
-    err = bms_apply_cell_uvp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(90 * 50.6F / 1000.0F, bms.conf.cell_uv_limit);
     TEST_ASSERT_EQUAL_FLOAT(110 * 50.6F / 1000.0F, bms.conf.cell_uv_reset);
@@ -255,7 +255,7 @@ void test_bq769x2_apply_cell_uvp()
     bms.conf.cell_uv_limit = 91 * 50.6F / 1000.0F;
     bms.conf.cell_uv_reset = 112 * 50.6F / 1000.0F;
     bms.conf.cell_uv_delay_ms = 2048 * 3.3F;
-    err = bms_apply_cell_uvp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(90 * 50.6F / 1000.0F, bms.conf.cell_uv_limit);
     TEST_ASSERT_EQUAL_FLOAT(110 * 50.6F / 1000.0F, bms.conf.cell_uv_reset);
@@ -274,7 +274,7 @@ void test_bq769x2_apply_cell_ovp()
     bms.conf.cell_ov_limit = 86 * 50.6F / 1000.0F;
     bms.conf.cell_ov_reset = 84 * 50.6F / 1000.0F;
     bms.conf.cell_ov_delay_ms = 74 * 3.3F;
-    err = bms_apply_cell_ovp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(86 * 50.6F / 1000.0F, bms.conf.cell_ov_limit);
     TEST_ASSERT_EQUAL_FLOAT(84 * 50.6F / 1000.0F, bms.conf.cell_ov_reset);
@@ -288,7 +288,7 @@ void test_bq769x2_apply_cell_ovp()
     bms.conf.cell_ov_limit = 20 * 50.6F / 1000.0F;
     bms.conf.cell_ov_reset = 18 * 50.6F / 1000.0F;
     bms.conf.cell_ov_delay_ms = 1 * 3.3F;
-    err = bms_apply_cell_ovp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(20 * 50.6F / 1000.0F, bms.conf.cell_ov_limit);
     TEST_ASSERT_EQUAL_FLOAT(18 * 50.6F / 1000.0F, bms.conf.cell_ov_reset);
@@ -302,7 +302,7 @@ void test_bq769x2_apply_cell_ovp()
     bms.conf.cell_ov_limit = 19 * 50.6F / 1000.0F;
     bms.conf.cell_ov_reset = 20 * 50.6F / 1000.0F;
     bms.conf.cell_ov_delay_ms = 0.0F;
-    err = bms_apply_cell_ovp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(20 * 50.6F / 1000.0F, bms.conf.cell_ov_limit);
     TEST_ASSERT_EQUAL_FLOAT(18 * 50.6F / 1000.0F, bms.conf.cell_ov_reset);
@@ -316,7 +316,7 @@ void test_bq769x2_apply_cell_ovp()
     bms.conf.cell_ov_limit = 110 * 50.6F / 1000.0F;
     bms.conf.cell_ov_reset = 90 * 50.6F / 1000.0F;
     bms.conf.cell_ov_delay_ms = 2047 * 3.3F;
-    err = bms_apply_cell_ovp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(110 * 50.6F / 1000.0F, bms.conf.cell_ov_limit);
     TEST_ASSERT_EQUAL_FLOAT(90 * 50.6F / 1000.0F, bms.conf.cell_ov_reset);
@@ -330,7 +330,7 @@ void test_bq769x2_apply_cell_ovp()
     bms.conf.cell_ov_limit = 111 * 50.6F / 1000.0F;
     bms.conf.cell_ov_reset = 112 * 50.6F / 1000.0F;
     bms.conf.cell_ov_delay_ms = 2048 * 3.3F;
-    err = bms_apply_cell_ovp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(110 * 50.6F / 1000.0F, bms.conf.cell_ov_limit);
     TEST_ASSERT_EQUAL_FLOAT(108 * 50.6F / 1000.0F, bms.conf.cell_ov_reset);
@@ -354,7 +354,7 @@ void test_bq769x2_apply_temp_limits()
     bms.conf.chg_ut_limit = 0;
     bms.conf.t_limit_hyst = 5;
 
-    err = bms_apply_temp_limits(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
 
     TEST_ASSERT_EQUAL_FLOAT(5, bms.conf.t_limit_hyst);
@@ -382,7 +382,7 @@ void test_bq769x2_apply_temp_limits()
     bms.conf.chg_ut_limit = -40;
     bms.conf.t_limit_hyst = 1;
 
-    err = bms_apply_temp_limits(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
 
     TEST_ASSERT_EQUAL_FLOAT(1, bms.conf.t_limit_hyst);
@@ -410,7 +410,7 @@ void test_bq769x2_apply_temp_limits()
     bms.conf.chg_ut_limit = -50;
     bms.conf.t_limit_hyst = 0;
 
-    err = bms_apply_temp_limits(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(-1, err); // should fail
 
     bms.conf.dis_ot_limit = 0;
@@ -419,7 +419,7 @@ void test_bq769x2_apply_temp_limits()
     bms.conf.chg_ut_limit = -50;
     bms.conf.t_limit_hyst = 0;
 
-    err = bms_apply_temp_limits(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
 
     TEST_ASSERT_EQUAL_FLOAT(1, bms.conf.t_limit_hyst);
@@ -447,7 +447,7 @@ void test_bq769x2_apply_temp_limits()
     bms.conf.chg_ut_limit = 100;
     bms.conf.t_limit_hyst = 20;
 
-    err = bms_apply_temp_limits(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
 
     TEST_ASSERT_EQUAL_FLOAT(20, bms.conf.t_limit_hyst);
@@ -475,7 +475,7 @@ void test_bq769x2_apply_temp_limits()
     bms.conf.chg_ut_limit = 100;
     bms.conf.t_limit_hyst = 30;
 
-    err = bms_apply_temp_limits(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
 
     TEST_ASSERT_EQUAL_FLOAT(20, bms.conf.t_limit_hyst);

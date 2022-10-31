@@ -47,48 +47,41 @@ void setup()
 
     bms.conf.dis_sc_limit = 35.0;
     bms.conf.dis_sc_delay_us = 200;
-    bms_apply_dis_scp(&bms);
 
     bms.conf.dis_oc_limit = 25.0;
     bms.conf.dis_oc_delay_ms = 320;
-    bms_apply_dis_ocp(&bms);
 
     bms.conf.chg_oc_limit = 20.0;
     bms.conf.chg_oc_delay_ms = 320;
-    bms_apply_chg_ocp(&bms);
 
     bms.conf.cell_ov_limit = 3.65;
     bms.conf.cell_ov_delay_ms = 2000;
-    bms_apply_cell_ovp(&bms);
 
     bms.conf.cell_uv_limit = 2.8;
     bms.conf.cell_uv_delay_ms = 2000;
-    bms_apply_cell_uvp(&bms);
 
     bms.conf.dis_ut_limit = -20;
     bms.conf.dis_ot_limit = 45;
     bms.conf.chg_ut_limit = 0;
     bms.conf.chg_ot_limit = 45;
     bms.conf.t_limit_hyst = 2;
-    bms_apply_temp_limits(&bms);
 
     bms.conf.shunt_res_mOhm = BOARD_SHUNT_RESISTOR;
     bms.conf.ocv = OCV;
     bms.conf.num_ocv_points = sizeof(OCV) / sizeof(float);
 
     bms.conf.nominal_capacity_Ah = 45.0;
-    bms.status.connected_cells = 4; // ToDo: Function to determine number of cells automatically
-
-    // get voltage and temperature measurements before switching on
-    bms_update(&bms);
+    bms.status.connected_cells = 4;
 
     bms.conf.bal_cell_voltage_min = 3.2;
     bms.conf.bal_idle_delay = 10 * 60;
     bms.conf.bal_cell_voltage_diff = 0.01;
     bms.conf.bal_idle_current = 0.1;
-    bms_apply_balancing_conf(&bms);
+
+    bms_configure(&bms);
 
     bms_update(&bms);
+
     bms_soc_reset(&bms, -1);
     bms_dis_switch(&bms, true);
     bms_chg_switch(&bms, true);

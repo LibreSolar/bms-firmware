@@ -182,7 +182,7 @@ int bms_dis_switch(Bms *bms, bool enable)
     return err;
 }
 
-int bms_apply_balancing_conf(Bms *bms)
+static int bms_apply_balancing_conf(Bms *bms)
 {
     int err = 0;
 
@@ -277,7 +277,7 @@ int bms_apply_chg_ocp(Bms *bms)
     return err;
 }
 
-int bms_apply_dis_ocp(Bms *bms)
+static int bms_apply_dis_ocp(Bms *bms)
 {
     int err = 0;
 
@@ -304,7 +304,7 @@ int bms_apply_dis_ocp(Bms *bms)
     return err;
 }
 
-int bms_apply_cell_uvp(Bms *bms)
+static int bms_apply_cell_uvp(Bms *bms)
 {
     int err = 0;
 
@@ -336,7 +336,7 @@ int bms_apply_cell_uvp(Bms *bms)
     return err;
 }
 
-int bms_apply_cell_ovp(Bms *bms)
+static int bms_apply_cell_ovp(Bms *bms)
 {
     int err = 0;
 
@@ -362,7 +362,7 @@ int bms_apply_cell_ovp(Bms *bms)
     return err;
 }
 
-int bms_apply_temp_limits(Bms *bms)
+static int bms_apply_temp_limits(Bms *bms)
 {
     int err = 0;
     uint8_t hyst = CLAMP(bms->conf.t_limit_hyst, 1, 20);
@@ -529,4 +529,21 @@ void bms_print_registers()
     bms_print_register(BQ769X2_CMD_ALARM_STATUS);
     bms_print_register(BQ769X2_CMD_ALARM_STATUS + 1);
     bms_print_register(BQ769X2_CMD_FET_STATUS);
+}
+
+int bms_configure(Bms *bms)
+{
+    int err = 0;
+
+    err += bms_apply_cell_ovp(bms);
+    err += bms_apply_cell_uvp(bms);
+
+    err += bms_apply_dis_scp(bms);
+    err += bms_apply_dis_ocp(bms);
+    err += bms_apply_chg_ocp(bms);
+
+    err += bms_apply_temp_limits(bms);
+    err += bms_apply_balancing_conf(bms);
+
+    return err;
 }

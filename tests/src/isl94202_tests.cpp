@@ -223,21 +223,21 @@ void test_isl94202_apply_dis_ocp_limits()
 
     // lower than minimum possible setting
     bms.conf.dis_oc_limit = 1;
-    err = bms_apply_dis_ocp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(2, bms.conf.dis_oc_limit); // take lowest possible value
     TEST_ASSERT_EQUAL_HEX16(delay | (0x0 << 12), *((uint16_t *)&mem_isl[0x16]));
 
     // something in the middle
     bms.conf.dis_oc_limit = 20;
-    err = bms_apply_dis_ocp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(16, bms.conf.dis_oc_limit); // round to next lower value
     TEST_ASSERT_EQUAL_HEX16(delay | (0x4U << 12), *((uint16_t *)&mem_isl[0x16]));
 
     // higher than maximum possible setting
     bms.conf.dis_oc_limit = 50;
-    err = bms_apply_dis_ocp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(48, bms.conf.dis_oc_limit);
     TEST_ASSERT_EQUAL_HEX16(delay | (0x7U << 12), *((uint16_t *)&mem_isl[0x16]));
@@ -254,21 +254,21 @@ void test_isl94202_apply_chg_ocp_limits()
 
     // lower than minimum possible setting
     bms.conf.chg_oc_limit = 0.4;
-    err = bms_apply_chg_ocp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(0.5, bms.conf.chg_oc_limit); // take lowest possible value
     TEST_ASSERT_EQUAL_HEX16(delay | (0x0 << 12), *((uint16_t *)&mem_isl[0x18]));
 
     // something in the middle
     bms.conf.chg_oc_limit = 5.0;
-    err = bms_apply_chg_ocp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(4.0, bms.conf.chg_oc_limit); // round to next lower value
     TEST_ASSERT_EQUAL_HEX16(delay | (0x4U << 12), *((uint16_t *)&mem_isl[0x18]));
 
     // higher than maximum possible setting
     bms.conf.chg_oc_limit = 50.0;
-    err = bms_apply_chg_ocp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(12.0, bms.conf.chg_oc_limit);
     TEST_ASSERT_EQUAL_HEX16(delay | (0x7U << 12), *((uint16_t *)&mem_isl[0x18]));
@@ -285,21 +285,21 @@ void test_isl94202_apply_dis_scp_limits()
 
     // lower than minimum possible setting
     bms.conf.dis_sc_limit = 5;
-    err = bms_apply_dis_scp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(8, bms.conf.dis_sc_limit); // take lowest possible value
     TEST_ASSERT_EQUAL_HEX16(delay | (0x0 << 12), *((uint16_t *)&mem_isl[0x1A]));
 
     // something in the middle
     bms.conf.dis_sc_limit = 40;
-    err = bms_apply_dis_scp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(32, bms.conf.dis_sc_limit); // round to next lower value
     TEST_ASSERT_EQUAL_HEX16(delay | (0x4U << 12), *((uint16_t *)&mem_isl[0x1A]));
 
     // higher than maximum possible setting
     bms.conf.dis_sc_limit = 150;
-    err = bms_apply_dis_scp(&bms);
+    err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_FLOAT(128, bms.conf.dis_sc_limit);
     TEST_ASSERT_EQUAL_HEX16(delay | (0x7U << 12), *((uint16_t *)&mem_isl[0x1A]));
@@ -311,7 +311,7 @@ void test_isl94202_apply_cell_ov_limits()
     bms.conf.cell_ov_reset = 4.15;
     bms.conf.cell_ov_delay_ms = 999;
     uint16_t delay = 999 + (1U << 10);
-    int err = bms_apply_cell_ovp(&bms);
+    int err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_HEX16(0x1E2A, *((uint16_t *)&mem_isl[0x00])); // limit voltage
     TEST_ASSERT_EQUAL_HEX16(0x0DD4, *((uint16_t *)&mem_isl[0x02])); // recovery voltage
@@ -324,7 +324,7 @@ void test_isl94202_apply_cell_uv_limits()
     bms.conf.cell_uv_reset = 3.0;
     bms.conf.cell_uv_delay_ms = 2222;
     uint16_t delay = 2222 / 1000 + (2U << 10);
-    int err = bms_apply_cell_uvp(&bms);
+    int err = bms_configure(&bms);
     TEST_ASSERT_EQUAL(0, err);
     TEST_ASSERT_EQUAL_HEX16(0x18FF, *((uint16_t *)&mem_isl[0x04]));
     TEST_ASSERT_EQUAL_HEX16(0x09FF, *((uint16_t *)&mem_isl[0x06]));
@@ -335,7 +335,7 @@ void test_isl94202_apply_chg_ot_limit()
 {
     bms.conf.chg_ot_limit = 55;
     bms.conf.t_limit_hyst = 5;
-    bms_apply_temp_limits(&bms);
+    bms_configure(&bms);
     TEST_ASSERT_EQUAL_HEX16(0x04D2, *((uint16_t *)&mem_isl[0x30])); // datasheet: 0x04B6
     TEST_ASSERT_EQUAL_HEX16(0x053E, *((uint16_t *)&mem_isl[0x32]));
 }
@@ -344,7 +344,7 @@ void test_isl94202_apply_chg_ut_limit()
 {
     bms.conf.chg_ut_limit = -10;
     bms.conf.t_limit_hyst = 15;
-    bms_apply_temp_limits(&bms);
+    bms_configure(&bms);
     TEST_ASSERT_EQUAL_HEX16(0x0CD1, *((uint16_t *)&mem_isl[0x34])); // datasheet: 0x0BF2
     TEST_ASSERT_EQUAL_HEX16(0x0BBD, *((uint16_t *)&mem_isl[0x36])); // datasheet: 0x0A93
 }
@@ -353,7 +353,7 @@ void test_isl94202_apply_dis_ot_limit()
 {
     bms.conf.dis_ot_limit = 55;
     bms.conf.t_limit_hyst = 5;
-    bms_apply_temp_limits(&bms);
+    bms_configure(&bms);
     TEST_ASSERT_EQUAL_HEX16(0x04D2, *((uint16_t *)&mem_isl[0x38])); // datasheet: 0x04B6
     TEST_ASSERT_EQUAL_HEX16(0x053E, *((uint16_t *)&mem_isl[0x3A]));
 }
@@ -362,7 +362,7 @@ void test_isl94202_apply_dis_ut_limit()
 {
     bms.conf.dis_ut_limit = -10;
     bms.conf.t_limit_hyst = 15;
-    bms_apply_temp_limits(&bms);
+    bms_configure(&bms);
     TEST_ASSERT_EQUAL_HEX16(0x0CD1, *((uint16_t *)&mem_isl[0x3C])); // datasheet: 0x0BF2
     TEST_ASSERT_EQUAL_HEX16(0x0BBD, *((uint16_t *)&mem_isl[0x3E])); // datasheet: 0x0A93
 }

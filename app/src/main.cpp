@@ -41,15 +41,7 @@ int main(void)
         k_sleep(K_MSEC(10000));
     }
 
-    bms_apply_cell_ovp(&bms);
-    bms_apply_cell_uvp(&bms);
-
-    bms_apply_dis_scp(&bms);
-    bms_apply_dis_ocp(&bms);
-    bms_apply_chg_ocp(&bms);
-
-    bms_apply_temp_limits(&bms);
-    bms_apply_balancing_conf(&bms);
+    bms_configure(&bms);
 
     bms_update(&bms);
     bms_soc_reset(&bms, -1);

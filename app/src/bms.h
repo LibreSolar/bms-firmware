@@ -298,79 +298,18 @@ void bms_soc_reset(Bms *bms, int percent);
 void bms_soc_update(Bms *bms);
 
 /**
- * Apply charge/discharge temperature limits.
+ * Apply BMS configuration
  *
- * @param conf BMS configuration containing the limit settings
+ * This includes all voltage, current and temperature thresholds as well as balancing settings.
  *
- * @returns 0 on success, otherwise negative error code.
- */
-int bms_apply_temp_limits(Bms *bms);
-
-/**
- * Apply discharge short circuit protection (SCP) current threshold and delay.
- *
- * If the setpoint does not exactly match a possible setting in the BMS IC, it is rounded to the
- * closest allowed value and this value is written back to the BMS config.
+ * If any of the setpoints does not exactly match a possible setting in the BMS IC, it is rounded
+ * to the closest allowed value and this value is written back to the BMS config.
  *
  * @param bms Pointer to BMS object.
  *
  * @returns 0 on success, otherwise negative error code.
  */
-int bms_apply_dis_scp(Bms *bms);
-
-/**
- * Apply discharge overcurrent protection (OCP) threshold and delay.
- *
- * If the setpoint does not exactly match a possible setting in the BMS IC, it is rounded to the
- * closest allowed value and this value is written back to the BMS config.
- *
- * @param bms Pointer to BMS object.
- *
- * @returns 0 on success, otherwise negative error code.
- */
-int bms_apply_dis_ocp(Bms *bms);
-
-/**
- * Apply charge overcurrent protection (OCP) threshold and delay.
- *
- * If the setpoint does not exactly match a possible setting in the BMS IC, it is rounded to the
- * closest allowed value and this value is written back to the BMS config.
- *
- * @param bms Pointer to BMS object.
- *
- * @returns 0 on success, otherwise negative error code.
- */
-int bms_apply_chg_ocp(Bms *bms);
-
-/**
- * Apply cell undervoltage protection (UVP) threshold and delay.
- *
- * @param bms Pointer to BMS object.
- *
- * @returns 0 on success, otherwise negative error code.
- */
-int bms_apply_cell_uvp(Bms *bms);
-
-/**
- * Apply cell overvoltage protection (OVP) threshold and delay.
- *
- * @param bms Pointer to BMS object.
- *
- * @returns 0 on success, otherwise negative error code.
- */
-int bms_apply_cell_ovp(Bms *bms);
-
-/**
- * Apply balancing settings
- *
- * Balancing is automatically enabled by the chip or by the update function as soon as if voltage,
- * temperature and idle citerions are met.
- *
- * @param bms Pointer to BMS object.
- *
- * @returns 0 on success, otherwise negative error code.
- */
-int bms_apply_balancing_conf(Bms *bms);
+int bms_configure(Bms *bms);
 
 /**
  * Reads all cell voltages to array cell_voltages[NUM_CELLS], updates battery_voltage and updates

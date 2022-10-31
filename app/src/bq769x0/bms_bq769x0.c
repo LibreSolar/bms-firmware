@@ -218,7 +218,7 @@ static void bms_update_balancing(Bms *bms)
     }
 }
 
-int bms_apply_dis_scp(Bms *bms)
+static int bms_apply_dis_scp(Bms *bms)
 {
     PROTECT1_Type protect1;
 
@@ -250,14 +250,14 @@ int bms_apply_dis_scp(Bms *bms)
     return 0;
 }
 
-int bms_apply_chg_ocp(Bms *bms)
+static int bms_apply_chg_ocp(Bms *bms)
 {
     // ToDo: Software protection for charge overcurrent
 
     return -1;
 }
 
-int bms_apply_dis_ocp(Bms *bms)
+static int bms_apply_dis_ocp(Bms *bms)
 {
     PROTECT2_Type protect2;
 
@@ -288,7 +288,7 @@ int bms_apply_dis_ocp(Bms *bms)
     return 0;
 }
 
-int bms_apply_cell_uvp(Bms *bms)
+static int bms_apply_cell_uvp(Bms *bms)
 {
     PROTECT3_Type protect3;
     int uv_trip = 0;
@@ -317,7 +317,7 @@ int bms_apply_cell_uvp(Bms *bms)
     return 0;
 }
 
-int bms_apply_cell_ovp(Bms *bms)
+static int bms_apply_cell_ovp(Bms *bms)
 {
     PROTECT3_Type protect3;
     int ov_trip = 0;
@@ -346,7 +346,7 @@ int bms_apply_cell_ovp(Bms *bms)
     return 0;
 }
 
-int bms_apply_temp_limits(Bms *bms)
+static int bms_apply_temp_limits(Bms *bms)
 {
     // bq769x0 don't support temperature limits --> has to be solved in software
 
@@ -639,4 +639,21 @@ void bms_print_registers()
     printf("0x51 BQ769X0_ADCOFFSET: %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_ADCOFFSET)));
     printf("0x59 BQ769X0_ADCGAIN2:  %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_ADCGAIN2)));
     */
+}
+
+int bms_configure(Bms *bms)
+{
+    int err = 0;
+
+    err += bms_apply_cell_ovp(bms);
+    err += bms_apply_cell_uvp(bms);
+
+    err += bms_apply_dis_scp(bms);
+    err += bms_apply_dis_ocp(bms);
+    err += bms_apply_chg_ocp(bms);
+
+    err += bms_apply_temp_limits(bms);
+    err += bms_apply_balancing_conf(bms);
+
+    return err;
 }

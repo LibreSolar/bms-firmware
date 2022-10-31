@@ -147,7 +147,7 @@ int bms_dis_switch(Bms *bms, bool enable)
     return isl94202_write_bytes(ISL94202_CTRL1, &reg, 1);
 }
 
-int bms_apply_balancing_conf(Bms *bms)
+static int bms_apply_balancing_conf(Bms *bms)
 {
     int err = 0;
 
@@ -203,7 +203,7 @@ static void bms_update_balancing(Bms *bms)
     bms->status.balancing_status = reg;
 }
 
-int bms_apply_dis_scp(Bms *bms)
+static int bms_apply_dis_scp(Bms *bms)
 {
     float actual_limit = isl94202_write_current_limit(
         ISL94202_SCDT_SCD, DSC_Thresholds, sizeof(DSC_Thresholds) / sizeof(uint16_t),
@@ -219,7 +219,7 @@ int bms_apply_dis_scp(Bms *bms)
     }
 }
 
-int bms_apply_chg_ocp(Bms *bms)
+static int bms_apply_chg_ocp(Bms *bms)
 {
     float actual_limit = isl94202_write_current_limit(
         ISL94202_OCCT_OCC, OCC_Thresholds, sizeof(OCC_Thresholds) / sizeof(uint16_t),
@@ -235,7 +235,7 @@ int bms_apply_chg_ocp(Bms *bms)
     }
 }
 
-int bms_apply_dis_ocp(Bms *bms)
+static int bms_apply_dis_ocp(Bms *bms)
 {
     float actual_limit = isl94202_write_current_limit(
         ISL94202_OCDT_OCD, OCD_Thresholds, sizeof(OCD_Thresholds) / sizeof(uint16_t),
@@ -251,7 +251,7 @@ int bms_apply_dis_ocp(Bms *bms)
     }
 }
 
-int bms_apply_cell_ovp(Bms *bms)
+static int bms_apply_cell_ovp(Bms *bms)
 {
     int err = 0;
 
@@ -263,7 +263,7 @@ int bms_apply_cell_ovp(Bms *bms)
     return err;
 }
 
-int bms_apply_cell_uvp(Bms *bms)
+static int bms_apply_cell_uvp(Bms *bms)
 {
     int err = 0;
 
@@ -276,7 +276,7 @@ int bms_apply_cell_uvp(Bms *bms)
 }
 
 // using default setting TGain = 0 (GAIN = 2) with 22k resistors
-int bms_apply_temp_limits(Bms *bms)
+static int bms_apply_temp_limits(Bms *bms)
 {
     float adc_voltage;
 
@@ -493,4 +493,21 @@ void bms_print_registers()
     for (int i = 0x80; i <= 0xAB; i++) {
         bms_print_register(i);
     }
+}
+
+int bms_configure(Bms *bms)
+{
+    int err = 0;
+
+    err += bms_apply_cell_ovp(bms);
+    err += bms_apply_cell_uvp(bms);
+
+    err += bms_apply_dis_scp(bms);
+    err += bms_apply_dis_ocp(bms);
+    err += bms_apply_chg_ocp(bms);
+
+    err += bms_apply_temp_limits(bms);
+    err += bms_apply_balancing_conf(bms);
+
+    return err;
 }
