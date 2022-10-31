@@ -100,6 +100,12 @@ int bms_init_hardware(Bms *bms)
         return err;
     }
 
+    // configure DCHG pin as FET thermistor input with 18k pull-up
+    err = bq769x2_subcmd_write_u1(BQ769X2_SET_CONF_DCHG, 0x0F);
+    if (err) {
+        return err;
+    }
+
     bq769x2_config_update_mode(false);
 
     err = detect_num_cells(bms);
@@ -428,6 +434,10 @@ void bms_read_temperatures(Bms *bms)
     bms->status.bat_temp_avg = (temp * 0.1F) - 273.15F;
     bms->status.bat_temp_min = bms->status.bat_temp_avg;
     bms->status.bat_temp_max = bms->status.bat_temp_avg;
+
+    /* MOSFET temperature sensor connected to DCHG pin */
+    bq769x2_direct_read_i2(BQ769X2_CMD_TEMP_DCHG, &temp);
+    bms->status.mosfet_temp = (temp * 0.1F) - 273.15F;
 
     bq769x2_direct_read_i2(BQ769X2_CMD_TEMP_INT, &temp);
     bms->status.ic_temp = (temp * 0.1F) - 273.15F;
