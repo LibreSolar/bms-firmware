@@ -21,12 +21,11 @@
 
 LOG_MODULE_REGISTER(isl94202_if, CONFIG_LOG_DEFAULT_LEVEL);
 
-#define ISL94202_NODE   DT_INST(0, renesas_isl94202)
-#define I2C_PULLUP_NODE DT_CHILD(DT_PATH(switches), i2c_pullup)
+#define ISL94202_NODE DT_INST(0, renesas_isl94202)
 
 static const struct device *i2c_dev = DEVICE_DT_GET(DT_PARENT(ISL94202_NODE));
 static const uint8_t i2c_address = DT_REG_ADDR(ISL94202_NODE);
-static const struct gpio_dt_spec i2c_pullup = GPIO_DT_SPEC_GET(I2C_PULLUP_NODE, gpios);
+static const struct gpio_dt_spec i2c_pullup = GPIO_DT_SPEC_GET(ISL94202_NODE, pull_up_gpios);
 
 int isl94202_write_bytes(uint8_t reg_addr, uint8_t *data, uint32_t num_bytes)
 {

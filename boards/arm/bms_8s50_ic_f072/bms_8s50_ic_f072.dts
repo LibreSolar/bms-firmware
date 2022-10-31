@@ -56,13 +56,6 @@
 		};
 	};
 
-	switches {
-		compatible = "switch";
-		i2c_pullup {
-			gpios = <&gpiob 2 GPIO_ACTIVE_HIGH>;
-		};
-	};
-
 	gpio_keys {
 		compatible = "gpio-keys";
 		power_button: button {
@@ -142,6 +135,7 @@
 	isl94202@28 {
 		compatible = "renesas,isl94202";
 		reg = <0x28>;	/* 0x50 >> 1 */
+		pull-up-gpios = <&gpiob 2 GPIO_ACTIVE_HIGH>;
 	};
 
 	eeprom@50 {

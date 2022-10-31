@@ -6,3 +6,10 @@ description: Intersil/Renesas ISL94202 Standalone 3 to 8 Cell Li-Ion Battery Pac
 compatible: "renesas,isl94202"
 
 include: i2c-device.yaml
+
+properties:
+  pull-up-gpios:
+    type: phandle-array
+    required: false
+    description: |
+      GPIO to enable/disable the I2C pull-up resistors.
