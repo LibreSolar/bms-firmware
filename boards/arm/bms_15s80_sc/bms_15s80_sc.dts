@@ -58,13 +58,6 @@
 		};
 	};
 
-	switches {
-		compatible = "switch";
-		pchg_en {
-			gpios = <&gpiob 2 GPIO_ACTIVE_HIGH>;
-		};
-	};
-
 	transceiver0: can-phy0 {
 		compatible = "nxp,tja1040", "can-transceiver-gpio";
 		max-bitrate = <1000000>;
@@ -170,6 +163,7 @@
 		compatible = "ti,bq769x0";
 		reg = <0x08>;     // ignored (firmware will auto-detect I2C address)
 		alert-gpios = <&gpiob 12 GPIO_ACTIVE_HIGH>;
+		pchg-gpios = <&gpiob 2 GPIO_ACTIVE_HIGH>;
 	};
 
 	eeprom@51 {

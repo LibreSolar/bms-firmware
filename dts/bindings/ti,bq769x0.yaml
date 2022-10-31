@@ -12,3 +12,9 @@ properties:
       type: phandle-array
       required: true
       description: Alert interrupt of bq769x0
+
+    pchg-gpios:
+      type: phandle-array
+      required: false
+      description: |
+        GPIO to enable/disable the bus pre-charge MOSFET.
