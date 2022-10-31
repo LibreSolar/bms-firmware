@@ -32,7 +32,7 @@ static int detect_num_cells(Bms *bms)
         }
     }
 
-    return bq769x2_subcmd_write_u2(BQ769X2_SET_CONF_VCELL_MODE, vcell_mode);
+    return bq769x2_datamem_write_u2(BQ769X2_SET_CONF_VCELL_MODE, vcell_mode);
 }
 
 int bms_init_hardware(Bms *bms)
@@ -56,7 +56,7 @@ int bms_init_hardware(Bms *bms)
     bq769x2_config_update_mode(true);
 
     // configure shunt value based on nominal value of VREF2 (could be improved by calibration)
-    err = bq769x2_subcmd_write_f4(BQ769X2_CAL_CURR_CC_GAIN, 7.4768F / bms->conf.shunt_res_mOhm);
+    err = bq769x2_datamem_write_f4(BQ769X2_CAL_CURR_CC_GAIN, 7.4768F / bms->conf.shunt_res_mOhm);
     if (err) {
         return err;
     }
@@ -88,30 +88,30 @@ int bms_init_hardware(Bms *bms)
     }
 
     // enable automatic pre-discharge before switching on DSG FETs
-    err = bq769x2_subcmd_write_u1(BQ769X2_SET_FET_OPTIONS, 0x1D);
+    err = bq769x2_datamem_write_u1(BQ769X2_SET_FET_OPTIONS, 0x1D);
     if (err) {
         return err;
     }
 
     // disable pre-discharge timeout (DSG FETs are only turned on based on bus voltage)
     // PDSG voltage settings in BQ769X2_SET_FET_PDSG_STOP_DV are kept at default 500 mV
-    err = bq769x2_subcmd_write_u1(BQ769X2_SET_FET_PDSG_TIMEOUT, 0);
+    err = bq769x2_datamem_write_u1(BQ769X2_SET_FET_PDSG_TIMEOUT, 0);
     if (err) {
         return err;
     }
 
     // configure DCHG pin as FET thermistor input with 18k pull-up
-    err = bq769x2_subcmd_write_u1(BQ769X2_SET_CONF_DCHG, 0x0F);
+    err = bq769x2_datamem_write_u1(BQ769X2_SET_CONF_DCHG, 0x0F);
     if (err) {
         return err;
     }
-
-    bq769x2_config_update_mode(false);
 
     err = detect_num_cells(bms);
     if (err) {
         return err;
     }
+
+    bq769x2_config_update_mode(false);
 
     return 0;
 }
@@ -201,28 +201,28 @@ static int bms_apply_balancing_conf(Bms *bms)
      * setpoints for both mechanisms.
      */
     int16_t cell_voltage_min = bms->conf.bal_cell_voltage_min * 1000.0F;
-    err += bq769x2_subcmd_write_i2(BQ769X2_SET_CBAL_CHG_MIN_CELL_V, cell_voltage_min);
-    err += bq769x2_subcmd_write_i2(BQ769X2_SET_CBAL_RLX_MIN_CELL_V, cell_voltage_min);
+    err += bq769x2_datamem_write_i2(BQ769X2_SET_CBAL_CHG_MIN_CELL_V, cell_voltage_min);
+    err += bq769x2_datamem_write_i2(BQ769X2_SET_CBAL_RLX_MIN_CELL_V, cell_voltage_min);
 
     int8_t cell_voltage_delta = bms->conf.bal_cell_voltage_diff * 1000.0F;
-    err += bq769x2_subcmd_write_u1(BQ769X2_SET_CBAL_CHG_MIN_DELTA, cell_voltage_delta);
-    err += bq769x2_subcmd_write_u1(BQ769X2_SET_CBAL_CHG_STOP_DELTA, cell_voltage_delta);
-    err += bq769x2_subcmd_write_u1(BQ769X2_SET_CBAL_RLX_MIN_DELTA, cell_voltage_delta);
-    err += bq769x2_subcmd_write_u1(BQ769X2_SET_CBAL_RLX_STOP_DELTA, cell_voltage_delta);
+    err += bq769x2_datamem_write_u1(BQ769X2_SET_CBAL_CHG_MIN_DELTA, cell_voltage_delta);
+    err += bq769x2_datamem_write_u1(BQ769X2_SET_CBAL_CHG_STOP_DELTA, cell_voltage_delta);
+    err += bq769x2_datamem_write_u1(BQ769X2_SET_CBAL_RLX_MIN_DELTA, cell_voltage_delta);
+    err += bq769x2_datamem_write_u1(BQ769X2_SET_CBAL_RLX_STOP_DELTA, cell_voltage_delta);
 
     /* same temperature limits as for normal discharging */
     int8_t utd_threshold = CLAMP(bms->conf.dis_ut_limit, -40, 120);
     int8_t otd_threshold = CLAMP(bms->conf.dis_ot_limit, -40, 120);
-    err += bq769x2_subcmd_write_i1(BQ769X2_SET_CBAL_MIN_CELL_TEMP, utd_threshold);
-    err += bq769x2_subcmd_write_i1(BQ769X2_SET_CBAL_MAX_CELL_TEMP, otd_threshold);
+    err += bq769x2_datamem_write_i1(BQ769X2_SET_CBAL_MIN_CELL_TEMP, utd_threshold);
+    err += bq769x2_datamem_write_i1(BQ769X2_SET_CBAL_MAX_CELL_TEMP, otd_threshold);
 
     /* relaxed status is defined based on global idle current thresholds */
     int16_t idle_current_threshold = bms->conf.bal_idle_current * 1000.0F;
-    err += bq769x2_subcmd_write_i2(BQ769X2_SET_DSG_CURR_TH, idle_current_threshold);
-    err += bq769x2_subcmd_write_i2(BQ769X2_SET_CHG_CURR_TH, idle_current_threshold);
+    err += bq769x2_datamem_write_i2(BQ769X2_SET_DSG_CURR_TH, idle_current_threshold);
+    err += bq769x2_datamem_write_i2(BQ769X2_SET_CHG_CURR_TH, idle_current_threshold);
 
     /* enable CB_RLX and CB_CHG */
-    err += bq769x2_subcmd_write_u1(BQ769X2_SET_CBAL_CONF, 0x03);
+    err += bq769x2_datamem_write_u1(BQ769X2_SET_CBAL_CONF, 0x03);
 
     return err;
 }
@@ -251,8 +251,8 @@ int bms_apply_dis_scp(Bms *bms)
     uint16_t scp_delay = bms->conf.dis_sc_delay_us / 15.0F + 1;
     scp_delay = CLAMP(scp_delay, 1, 31);
 
-    err += bq769x2_subcmd_write_u1(BQ769X2_PROT_SCD_THRESHOLD, scp_threshold);
-    err += bq769x2_subcmd_write_u1(BQ769X2_PROT_SCD_DELAY, scp_delay);
+    err += bq769x2_datamem_write_u1(BQ769X2_PROT_SCD_THRESHOLD, scp_threshold);
+    err += bq769x2_datamem_write_u1(BQ769X2_PROT_SCD_DELAY, scp_delay);
 
     bms->conf.dis_sc_limit = SCD_threshold_setting[scp_threshold] / bms->conf.shunt_res_mOhm;
     bms->conf.dis_sc_delay_us = (scp_delay - 1) * 15;
@@ -270,18 +270,18 @@ int bms_apply_chg_ocp(Bms *bms)
     oc_threshold = CLAMP(oc_threshold, 2, 62);
     oc_delay = CLAMP(oc_delay, 1, 127);
 
-    err += bq769x2_subcmd_write_u1(BQ769X2_PROT_OCC_THRESHOLD, oc_threshold);
-    err += bq769x2_subcmd_write_u1(BQ769X2_PROT_OCC_DELAY, oc_delay);
+    err += bq769x2_datamem_write_u1(BQ769X2_PROT_OCC_THRESHOLD, oc_threshold);
+    err += bq769x2_datamem_write_u1(BQ769X2_PROT_OCC_DELAY, oc_delay);
 
     bms->conf.chg_oc_limit = oc_threshold * 2.0F / bms->conf.shunt_res_mOhm;
     bms->conf.chg_oc_delay_ms = lroundf(6.6F + oc_delay * 3.3F);
 
     // OCC protection needs to be enabled, as it is not active by default
     SAFETY_STATUS_A_Type prot_enabled_a;
-    err += bq769x2_subcmd_read_u1(BQ769X2_SET_PROT_ENABLED_A, &prot_enabled_a.byte);
+    err += bq769x2_datamem_read_u1(BQ769X2_SET_PROT_ENABLED_A, &prot_enabled_a.byte);
     if (!err) {
         prot_enabled_a.OCC = 1;
-        err += bq769x2_subcmd_write_u1(BQ769X2_SET_PROT_ENABLED_A, prot_enabled_a.byte);
+        err += bq769x2_datamem_write_u1(BQ769X2_SET_PROT_ENABLED_A, prot_enabled_a.byte);
     }
 
     return err;
@@ -297,18 +297,18 @@ static int bms_apply_dis_ocp(Bms *bms)
     oc_threshold = CLAMP(oc_threshold, 2, 100);
     oc_delay = CLAMP(oc_delay, 1, 127);
 
-    err += bq769x2_subcmd_write_u1(BQ769X2_PROT_OCD1_THRESHOLD, oc_threshold);
-    err += bq769x2_subcmd_write_u1(BQ769X2_PROT_OCD1_DELAY, oc_delay);
+    err += bq769x2_datamem_write_u1(BQ769X2_PROT_OCD1_THRESHOLD, oc_threshold);
+    err += bq769x2_datamem_write_u1(BQ769X2_PROT_OCD1_DELAY, oc_delay);
 
     bms->conf.dis_oc_limit = oc_threshold * 2.0F / bms->conf.shunt_res_mOhm;
     bms->conf.dis_oc_delay_ms = lroundf(6.6F + oc_delay * 3.3F);
 
     // OCD protection needs to be enabled, as it is not active by default
     SAFETY_STATUS_A_Type prot_enabled_a;
-    err += bq769x2_subcmd_read_u1(BQ769X2_SET_PROT_ENABLED_A, &prot_enabled_a.byte);
+    err += bq769x2_datamem_read_u1(BQ769X2_SET_PROT_ENABLED_A, &prot_enabled_a.byte);
     if (!err) {
         prot_enabled_a.OCD1 = 1;
-        err += bq769x2_subcmd_write_u1(BQ769X2_SET_PROT_ENABLED_A, prot_enabled_a.byte);
+        err += bq769x2_datamem_write_u1(BQ769X2_SET_PROT_ENABLED_A, prot_enabled_a.byte);
     }
 
     return err;
@@ -327,9 +327,9 @@ static int bms_apply_cell_uvp(Bms *bms)
     cuv_hyst = CLAMP(cuv_hyst, 2, 20);
     cuv_delay = CLAMP(cuv_delay, 1, 2047);
 
-    err += bq769x2_subcmd_write_u1(BQ769X2_PROT_CUV_THRESHOLD, cuv_threshold);
-    err += bq769x2_subcmd_write_u1(BQ769X2_PROT_CUV_RECOV_HYST, cuv_hyst);
-    err += bq769x2_subcmd_write_u2(BQ769X2_PROT_CUV_DELAY, cuv_delay);
+    err += bq769x2_datamem_write_u1(BQ769X2_PROT_CUV_THRESHOLD, cuv_threshold);
+    err += bq769x2_datamem_write_u1(BQ769X2_PROT_CUV_RECOV_HYST, cuv_hyst);
+    err += bq769x2_datamem_write_u2(BQ769X2_PROT_CUV_DELAY, cuv_delay);
 
     bms->conf.cell_uv_limit = cuv_threshold * 50.6F / 1000.0F;
     bms->conf.cell_uv_reset = (cuv_threshold + cuv_hyst) * 50.6F / 1000.0F;
@@ -337,10 +337,10 @@ static int bms_apply_cell_uvp(Bms *bms)
 
     // CUV protection needs to be enabled, as it is not active by default
     SAFETY_STATUS_A_Type prot_enabled_a;
-    err += bq769x2_subcmd_read_u1(BQ769X2_SET_PROT_ENABLED_A, &prot_enabled_a.byte);
+    err += bq769x2_datamem_read_u1(BQ769X2_SET_PROT_ENABLED_A, &prot_enabled_a.byte);
     if (!err) {
         prot_enabled_a.CUV = 1;
-        err += bq769x2_subcmd_write_u1(BQ769X2_SET_PROT_ENABLED_A, prot_enabled_a.byte);
+        err += bq769x2_datamem_write_u1(BQ769X2_SET_PROT_ENABLED_A, prot_enabled_a.byte);
     }
 
     return err;
@@ -359,9 +359,9 @@ static int bms_apply_cell_ovp(Bms *bms)
     cov_hyst = CLAMP(cov_hyst, 2, 20);
     cov_delay = CLAMP(cov_delay, 1, 2047);
 
-    err += bq769x2_subcmd_write_u1(BQ769X2_PROT_COV_THRESHOLD, cov_threshold);
-    err += bq769x2_subcmd_write_u1(BQ769X2_PROT_COV_RECOV_HYST, cov_hyst);
-    err += bq769x2_subcmd_write_u2(BQ769X2_PROT_COV_DELAY, cov_delay);
+    err += bq769x2_datamem_write_u1(BQ769X2_PROT_COV_THRESHOLD, cov_threshold);
+    err += bq769x2_datamem_write_u1(BQ769X2_PROT_COV_RECOV_HYST, cov_hyst);
+    err += bq769x2_datamem_write_u2(BQ769X2_PROT_COV_DELAY, cov_delay);
 
     bms->conf.cell_ov_limit = cov_threshold * 50.6F / 1000.0F;
     bms->conf.cell_ov_reset = (cov_threshold - cov_hyst) * 50.6F / 1000.0F;
@@ -395,15 +395,15 @@ static int bms_apply_temp_limits(Bms *bms)
     int8_t utd_threshold = CLAMP(bms->conf.dis_ut_limit, -40, 120);
     int8_t utd_recovery = CLAMP(utd_threshold + hyst, -40, 120);
 
-    err += bq769x2_subcmd_write_i1(BQ769X2_PROT_OTC_THRESHOLD, otc_threshold);
-    err += bq769x2_subcmd_write_i1(BQ769X2_PROT_OTC_RECOVERY, otc_recovery);
-    err += bq769x2_subcmd_write_i1(BQ769X2_PROT_OTD_THRESHOLD, otd_threshold);
-    err += bq769x2_subcmd_write_i1(BQ769X2_PROT_OTD_RECOVERY, otd_recovery);
+    err += bq769x2_datamem_write_i1(BQ769X2_PROT_OTC_THRESHOLD, otc_threshold);
+    err += bq769x2_datamem_write_i1(BQ769X2_PROT_OTC_RECOVERY, otc_recovery);
+    err += bq769x2_datamem_write_i1(BQ769X2_PROT_OTD_THRESHOLD, otd_threshold);
+    err += bq769x2_datamem_write_i1(BQ769X2_PROT_OTD_RECOVERY, otd_recovery);
 
-    err += bq769x2_subcmd_write_i1(BQ769X2_PROT_UTC_THRESHOLD, utc_threshold);
-    err += bq769x2_subcmd_write_i1(BQ769X2_PROT_UTC_RECOVERY, utc_recovery);
-    err += bq769x2_subcmd_write_i1(BQ769X2_PROT_UTD_THRESHOLD, utd_threshold);
-    err += bq769x2_subcmd_write_i1(BQ769X2_PROT_UTD_RECOVERY, utd_recovery);
+    err += bq769x2_datamem_write_i1(BQ769X2_PROT_UTC_THRESHOLD, utc_threshold);
+    err += bq769x2_datamem_write_i1(BQ769X2_PROT_UTC_RECOVERY, utc_recovery);
+    err += bq769x2_datamem_write_i1(BQ769X2_PROT_UTD_THRESHOLD, utd_threshold);
+    err += bq769x2_datamem_write_i1(BQ769X2_PROT_UTD_RECOVERY, utd_recovery);
 
     bms->conf.chg_ot_limit = otc_threshold;
     bms->conf.dis_ot_limit = otd_threshold;
@@ -413,13 +413,13 @@ static int bms_apply_temp_limits(Bms *bms)
 
     // temperature protection has to be enabled manually
     SAFETY_STATUS_B_Type prot_enabled_b;
-    err += bq769x2_subcmd_read_u1(BQ769X2_SET_PROT_ENABLED_B, &prot_enabled_b.byte);
+    err += bq769x2_datamem_read_u1(BQ769X2_SET_PROT_ENABLED_B, &prot_enabled_b.byte);
     if (!err) {
         prot_enabled_b.OTC = 1;
         prot_enabled_b.OTD = 1;
         prot_enabled_b.UTC = 1;
         prot_enabled_b.UTD = 1;
-        err += bq769x2_subcmd_write_u1(BQ769X2_SET_PROT_ENABLED_B, prot_enabled_b.byte);
+        err += bq769x2_datamem_write_u1(BQ769X2_SET_PROT_ENABLED_B, prot_enabled_b.byte);
     }
 
     return err;
@@ -523,11 +523,16 @@ void bms_handle_errors(Bms *bms)
 void bms_print_register(uint16_t addr)
 {
     uint8_t value;
-    if (addr < 0x7F) {
+    if (BQ769X2_IS_DIRECT_COMMAND(addr)) {
         bq769x2_read_bytes(addr, &value, 1);
     }
     else {
-        bq769x2_subcmd_read_u1(addr, &value);
+        if (BQ769X2_IS_DATA_MEM_REG_ADDR(addr)) {
+            bq769x2_datamem_read_u1(addr, &value);
+        }
+        else {
+            bq769x2_subcmd_read_u1(addr, &value);
+        }
     }
     printf("0x%.2X: 0x%.2X = %s\n", addr, value, byte2bitstr(value));
 }

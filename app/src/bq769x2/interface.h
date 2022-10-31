@@ -229,6 +229,66 @@ int bq769x2_subcmd_write_i4(const uint16_t subcmd, int32_t value);
  */
 int bq769x2_subcmd_write_f4(const uint16_t subcmd, float value);
 
+/**
+ * Read 8-bit unsigned integer from bq769x2 data memory
+ *
+ * @param reg_addr The data memory register address to read the value from
+ * @param value Pointer to where the value should be stored
+ *
+ * @returns 0 if successful, negative errno otherwise
+ */
+int bq769x2_datamem_read_u1(const uint16_t reg_addr, uint8_t *value);
+
+/**
+ * Write 8-bit unsigned integer to bq769x2 data memory
+ *
+ * @param reg_addr The data memory register address to write the bytes to
+ * @param value Value that should be written
+ *
+ * @returns 0 if successful, negative errno otherwise
+ */
+int bq769x2_datamem_write_u1(const uint16_t reg_addr, uint8_t value);
+
+/**
+ * Write 16-bit unsigned integer to bq769x2 data memory
+ *
+ * @param reg_addr The data memory register address to write the bytes to
+ * @param value Value that should be written
+ *
+ * @returns 0 if successful, negative errno otherwise
+ */
+int bq769x2_datamem_write_u2(const uint16_t reg_addr, uint16_t value);
+
+/**
+ * Write 8-bit signed integer to bq769x2 data memory
+ *
+ * @param reg_addr The data memory register address to write the bytes to
+ * @param value Value that should be written
+ *
+ * @returns 0 if successful, negative errno otherwise
+ */
+int bq769x2_datamem_write_i1(const uint16_t reg_addr, int8_t value);
+
+/**
+ * Write 16-bit signed integer to bq769x2 data memory
+ *
+ * @param reg_addr The data memory register address to write the bytes to
+ * @param value Value that should be written
+ *
+ * @returns 0 if successful, negative errno otherwise
+ */
+int bq769x2_datamem_write_i2(const uint16_t reg_addr, int16_t value);
+
+/**
+ * Write 32-bit float to bq769x2 data memory
+ *
+ * @param reg_addr The data memory register address to write the bytes to
+ * @param value Value that should be written
+ *
+ * @returns 0 if successful, negative errno otherwise
+ */
+int bq769x2_datamem_write_f4(const uint16_t reg_addr, float value);
+
 #ifdef __cplusplus
 }
 #endif

@@ -19,6 +19,8 @@ LOG_MODULE_REGISTER(bq769x2_if, CONFIG_LOG_DEFAULT_LEVEL);
 
 #define BQ769X2_NODE DT_INST(0, ti_bq769x2_i2c)
 
+static bool config_update_mode_enabled;
+
 #ifndef UNIT_TEST
 
 static const struct device *i2c_dev = DEVICE_DT_GET(DT_PARENT(BQ769X2_NODE));
@@ -175,10 +177,7 @@ static int bq769x2_subcmd_write(const uint16_t subcmd, const uint32_t value, con
     uint8_t buf_data[4];
     int err;
 
-    if (num_bytes > 4) {
-        LOG_ERR("Subcmd num_bytes 0x%X invalid", num_bytes);
-        return -ENOTSUP;
-    }
+    __ASSERT(num_bytes <= 4, "Subcmd num_bytes 0x%X invalid", num_bytes);
 
     // write the subcommand we want to write data to
     uint8_t buf_subcmd[2] = { subcmd & 0x00FF, subcmd >> 8 };
@@ -218,11 +217,15 @@ err:
 
 int bq769x2_subcmd_cmd_only(const uint16_t subcmd)
 {
+    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
+
     return bq769x2_subcmd_write(subcmd, 0, 0);
 }
 
 int bq769x2_subcmd_read_u1(const uint16_t subcmd, uint8_t *value)
 {
+    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
+
     uint32_t u32;
     int err = bq769x2_subcmd_read(subcmd, &u32, 1);
     if (!err) {
@@ -233,6 +236,8 @@ int bq769x2_subcmd_read_u1(const uint16_t subcmd, uint8_t *value)
 
 int bq769x2_subcmd_read_u2(const uint16_t subcmd, uint16_t *value)
 {
+    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
+
     uint32_t u32;
     int err = bq769x2_subcmd_read(subcmd, &u32, 2);
     if (!err) {
@@ -243,6 +248,8 @@ int bq769x2_subcmd_read_u2(const uint16_t subcmd, uint16_t *value)
 
 int bq769x2_subcmd_read_u4(const uint16_t subcmd, uint32_t *value)
 {
+    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
+
     uint32_t u32;
     int err = bq769x2_subcmd_read(subcmd, &u32, 4);
     if (!err) {
@@ -253,6 +260,8 @@ int bq769x2_subcmd_read_u4(const uint16_t subcmd, uint32_t *value)
 
 int bq769x2_subcmd_read_i1(const uint16_t subcmd, int8_t *value)
 {
+    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
+
     uint32_t u32;
     int err = bq769x2_subcmd_read(subcmd, &u32, 1);
     if (!err) {
@@ -263,6 +272,8 @@ int bq769x2_subcmd_read_i1(const uint16_t subcmd, int8_t *value)
 
 int bq769x2_subcmd_read_i2(const uint16_t subcmd, int16_t *value)
 {
+    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
+
     uint32_t u32;
     int err = bq769x2_subcmd_read(subcmd, &u32, 2);
     if (!err) {
@@ -274,6 +285,8 @@ int bq769x2_subcmd_read_i2(const uint16_t subcmd, int16_t *value)
 
 int bq769x2_subcmd_read_i4(const uint16_t subcmd, int32_t *value)
 {
+    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
+
     int32_t i32;
     int err = bq769x2_subcmd_read(subcmd, (uint32_t *)&i32, 4);
     if (!err) {
@@ -284,6 +297,8 @@ int bq769x2_subcmd_read_i4(const uint16_t subcmd, int32_t *value)
 
 int bq769x2_subcmd_read_f4(const uint16_t subcmd, float *value)
 {
+    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
+
     float f32;
     int err = bq769x2_subcmd_read(subcmd, (uint32_t *)&f32, 4);
     if (!err) {
@@ -294,46 +309,123 @@ int bq769x2_subcmd_read_f4(const uint16_t subcmd, float *value)
 
 int bq769x2_subcmd_write_u1(const uint16_t subcmd, uint8_t value)
 {
+    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
+
     return bq769x2_subcmd_write(subcmd, value, 1);
 }
 
 int bq769x2_subcmd_write_u2(const uint16_t subcmd, uint16_t value)
 {
+    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
+
     return bq769x2_subcmd_write(subcmd, value, 2);
 }
 
 int bq769x2_subcmd_write_u4(const uint16_t subcmd, uint32_t value)
 {
+    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
+
     return bq769x2_subcmd_write(subcmd, value, 4);
 }
 
 int bq769x2_subcmd_write_i1(const uint16_t subcmd, int8_t value)
 {
+    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
+
     return bq769x2_subcmd_write(subcmd, value, 1);
 }
 
 int bq769x2_subcmd_write_i2(const uint16_t subcmd, int16_t value)
 {
+    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
+
     return bq769x2_subcmd_write(subcmd, value, 2);
 }
 
 int bq769x2_subcmd_write_i4(const uint16_t subcmd, int32_t value)
 {
+    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
+
     return bq769x2_subcmd_write(subcmd, value, 4);
 }
 
 int bq769x2_subcmd_write_f4(const uint16_t subcmd, float value)
 {
+    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
+
     uint32_t *u32 = (uint32_t *)&value;
+
     return bq769x2_subcmd_write(subcmd, *u32, 4);
 }
 
 int bq769x2_config_update_mode(bool config_update)
 {
+    int err;
+
     if (config_update) {
-        return bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_SET_CFGUPDATE);
+        err = bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_SET_CFGUPDATE);
     }
     else {
-        return bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_EXIT_CFGUPDATE);
+        err = bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_EXIT_CFGUPDATE);
     }
+
+    if (!err) {
+        config_update_mode_enabled = config_update;
+    }
+
+    return err;
+}
+
+int bq769x2_datamem_read_u1(const uint16_t reg_addr, uint8_t *value)
+{
+    __ASSERT(BQ769X2_IS_DATA_MEM_REG_ADDR(reg_addr), "invalid data memory register");
+
+    uint32_t u32;
+    int err = bq769x2_subcmd_read(reg_addr, &u32, 1);
+    if (!err) {
+        *value = (uint8_t)u32;
+    }
+    return err;
+}
+
+int bq769x2_datamem_write_u1(const uint16_t reg_addr, uint8_t value)
+{
+    __ASSERT(config_update_mode_enabled, "bq769x2 config update mode not enabled");
+    __ASSERT(BQ769X2_IS_DATA_MEM_REG_ADDR(reg_addr), "invalid data memory register");
+
+    return bq769x2_subcmd_write(reg_addr, value, 1);
+}
+
+int bq769x2_datamem_write_u2(const uint16_t reg_addr, uint16_t value)
+{
+    __ASSERT(config_update_mode_enabled, "bq769x2 config update mode not enabled");
+    __ASSERT(BQ769X2_IS_DATA_MEM_REG_ADDR(reg_addr), "invalid data memory register");
+
+    return bq769x2_subcmd_write(reg_addr, value, 2);
+}
+
+int bq769x2_datamem_write_i1(const uint16_t reg_addr, int8_t value)
+{
+    __ASSERT(config_update_mode_enabled, "bq769x2 config update mode not enabled");
+    __ASSERT(BQ769X2_IS_DATA_MEM_REG_ADDR(reg_addr), "invalid data memory register");
+
+    return bq769x2_subcmd_write(reg_addr, value, 1);
+}
+
+int bq769x2_datamem_write_i2(const uint16_t reg_addr, int16_t value)
+{
+    __ASSERT(config_update_mode_enabled, "bq769x2 config update mode not enabled");
+    __ASSERT(BQ769X2_IS_DATA_MEM_REG_ADDR(reg_addr), "invalid data memory register");
+
+    return bq769x2_subcmd_write(reg_addr, value, 2);
+}
+
+int bq769x2_datamem_write_f4(const uint16_t reg_addr, float value)
+{
+    __ASSERT(config_update_mode_enabled, "bq769x2 config update mode not enabled");
+    __ASSERT(BQ769X2_IS_DATA_MEM_REG_ADDR(reg_addr), "invalid data memory register");
+
+    uint32_t *u32 = (uint32_t *)&value;
+
+    return bq769x2_subcmd_write(reg_addr, *u32, 4);
 }

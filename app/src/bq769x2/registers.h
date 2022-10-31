@@ -11,6 +11,8 @@
 
 // Direct commands
 
+#define BQ769X2_IS_DIRECT_COMMAND(addr) (addr < 0x7F)
+
 #define BQ769X2_CMD_CONTROL_STATUS   0x00
 #define BQ769X2_CMD_SAFETY_ALERT_A   0x02
 #define BQ769X2_CMD_SAFETY_STATUS_A  0x03
@@ -153,6 +155,8 @@
 #define BQ769X2_SUBCMD_CAL_COV         0xf091
 
 // Data Memory
+
+#define BQ769X2_IS_DATA_MEM_REG_ADDR(addr) (addr >= 0x9180 && addr < 0x9400)
 
 // Calibration (manual section 13.2)
 
