@@ -61,10 +61,10 @@ static ThingSetDataObject data_objects[] = {
     // DEVICE INFORMATION /////////////////////////////////////////////////////
     // using IDs >= 0x18
 
-    TS_GROUP(ID_INFO, "Device", TS_NO_CALLBACK, ID_ROOT),
+    TS_ITEM_STRING(0x1D, "cNodeID", device_id, sizeof(device_id),
+        ID_ROOT, TS_ANY_R | TS_MKR_W, SUBSET_NVM),
 
-    TS_ITEM_STRING(0x19, "cNodeID", device_id, sizeof(device_id),
-        ID_INFO, TS_ANY_R | TS_MKR_W, SUBSET_NVM),
+    TS_GROUP(ID_INFO, "Device", TS_NO_CALLBACK, ID_ROOT),
 
     TS_ITEM_STRING(0x1A, "cManufacturer", manufacturer, 0,
         ID_INFO, TS_ANY_R, 0),
@@ -75,7 +75,7 @@ static ThingSetDataObject data_objects[] = {
     TS_ITEM_STRING(0x1C, "cHardwareVersion", hardware_version, 0,
         ID_INFO, TS_ANY_R, 0),
 
-    TS_ITEM_STRING(0x1D, "cFirmwareVersion", firmware_version, 0,
+    TS_ITEM_STRING(0x1F, "cFirmwareVersion", firmware_version, 0,
         ID_INFO, TS_ANY_R, 0),
 
     // CONFIGURATION //////////////////////////////////////////////////////////
