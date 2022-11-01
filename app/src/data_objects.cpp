@@ -177,23 +177,28 @@ static ThingSetDataObject data_objects[] = {
 
     TS_GROUP(ID_MEAS, "Meas", TS_NO_CALLBACK, ID_ROOT),
 
-    TS_ITEM_FLOAT(0x71, "rBat_V", &bms.status.pack_voltage, 2,
+    TS_ITEM_FLOAT(0x71, "rPack_V", &bms.status.pack_voltage, 2,
         ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_ITEM_FLOAT(0x72, "rBat_A", &bms.status.pack_current, 2,
+#if defined(CONFIG_BQ769X2)
+    TS_ITEM_FLOAT(0x72, "rStack_V", &bms.status.stack_voltage, 2,
+        ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
+#endif
+
+    TS_ITEM_FLOAT(0x73, "rPack_A", &bms.status.pack_current, 2,
         ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_ITEM_FLOAT(0x73, "rBat_degC", &bms.status.bat_temp_avg, 1,
+    TS_ITEM_FLOAT(0x74, "rBat_degC", &bms.status.bat_temp_avg, 1,
         ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    TS_ITEM_FLOAT(0x74, "rIC_degC", &bms.status.ic_temp, 1,
+    TS_ITEM_FLOAT(0x75, "rIC_degC", &bms.status.ic_temp, 1,
         ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
-    //TS_ITEM_FLOAT(0x75, "rMCU_degC", &mcu_temp, 1,
+    //TS_ITEM_FLOAT(0x76, "rMCU_degC", &mcu_temp, 1,
     //    ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 
 #if defined(CONFIG_ISL94202) || defined(CONFIG_BQ769X2)
-    TS_ITEM_FLOAT(0x76, "rMOSFET_degC", &bms.status.mosfet_temp, 1,
+    TS_ITEM_FLOAT(0x77, "rMOSFET_degC", &bms.status.mosfet_temp, 1,
         ID_MEAS, TS_ANY_R, SUBSET_SER | SUBSET_CAN),
 #endif
 

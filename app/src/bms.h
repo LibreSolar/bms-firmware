@@ -116,7 +116,8 @@ typedef struct
     float cell_voltage_max;                   ///< Maximum cell voltage (V)
     float cell_voltage_min;                   ///< Minimum cell voltage (V)
     float cell_voltage_avg;                   ///< Average cell voltage (V)
-    float pack_voltage;                       ///< Battery pack voltage (V)
+    float pack_voltage;                       ///< Battery external pack voltage (V)
+    float stack_voltage;                      ///< Battery internal stack voltage (V)
 
     float pack_current; ///< \brief Battery pack current, charging direction
                         ///< has positive sign (A)

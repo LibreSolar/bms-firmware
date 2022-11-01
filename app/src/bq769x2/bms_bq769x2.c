@@ -481,8 +481,11 @@ void bms_read_voltages(Bms *bms)
     bms->status.cell_voltage_min = v_min;
     bms->status.cell_voltage_max = v_max;
 
-    bq769x2_direct_read_i2(BQ769X2_CMD_VOLTAGE_STACK, &voltage);
+    bq769x2_direct_read_i2(BQ769X2_CMD_VOLTAGE_PACK, &voltage);
     bms->status.pack_voltage = voltage * 1e-2F; // unit: 10 mV
+
+    bq769x2_direct_read_i2(BQ769X2_CMD_VOLTAGE_STACK, &voltage);
+    bms->status.stack_voltage = voltage * 1e-2F; // unit: 10 mV
 }
 
 void bms_update_error_flags(Bms *bms)
