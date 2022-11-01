@@ -221,6 +221,9 @@ static int bms_apply_balancing_conf(Bms *bms)
     err += bq769x2_datamem_write_i2(BQ769X2_SET_DSG_CURR_TH, idle_current_threshold);
     err += bq769x2_datamem_write_i2(BQ769X2_SET_CHG_CURR_TH, idle_current_threshold);
 
+    /* allow balancing of up to 4 cells (instead of only 1 by default) */
+    err += bq769x2_datamem_write_u1(BQ769X2_SET_CBAL_MAX_CELLS, 4);
+
     /* enable CB_RLX and CB_CHG */
     err += bq769x2_datamem_write_u1(BQ769X2_SET_CBAL_CONF, 0x03);
 
