@@ -162,7 +162,7 @@ int bq769x0_init()
     alert_interrupt_flag = true; // init with true to check and clear errors at start-up
 
     int err = determine_address_and_crc();
-    if (err) {
+    if (!err) {
         // initial settings for bq769x0
         bq769x0_write_byte(BQ769X0_SYS_CTRL1, 0b00011000); // switch external thermistor and ADC on
         bq769x0_write_byte(BQ769X0_SYS_CTRL2, 0b01000000); // switch CC_EN on
