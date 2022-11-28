@@ -32,6 +32,7 @@
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
 		zephyr,code-partition = &slot0_partition;
+		thingset,serial = &usart2;
 	};
 
 	power-states {

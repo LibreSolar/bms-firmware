@@ -10,6 +10,9 @@ project(libre_solar_bms)
 
 add_subdirectory(src)
 
+# hack required for ESP32-C3 to keep USB serial enabled when WiFi is used
+zephyr_compile_definitions(CONFIG_ESP_PHY_ENABLE_USB)
+
 # determine git tag and commit hash for automatic firmware versioning
 find_package(Git)
 if(GIT_FOUND)

@@ -106,64 +106,8 @@ config UEXT_OLED_BRIGHTNESS
     range 1 255
     default 1
 
-config UEXT_SERIAL_THINGSET
-    depends on THINGSET_SERIAL
-    bool "Use UEXT serial for ThingSet interface"
-    default y
-    help
-      If the ThingSet interface is not attached to the serial port in the UEXT connector, the
-      serial in the LS.one port or the debug connector is used (if existing).
-
 endmenu # UEXT port
 
-menu "ThingSet interfaces"
-
-config THINGSET_SERIAL
-    bool "ThingSet serial interface"
-
-config THINGSET_SERIAL_RX_BUF_SIZE
-    depends on THINGSET_SERIAL
-    int "ThingSet serial RX buffer size"
-    range 64 2048
-    default 512
-
-config THINGSET_SERIAL_TX_BUF_SIZE
-    depends on THINGSET_SERIAL
-    int "ThingSet serial TX buffer size"
-    range 256 2048
-    default 1024
-
-config THINGSET_SERIAL_PUB_DEFAULT
-    bool "Enable serial publication messages at startup"
-    depends on THINGSET_SERIAL
-    default y
-
-config THINGSET_CAN
-    depends on CAN
-    bool "ThingSet CAN interface"
-
-config THINGSET_CAN_PUB_DEFAULT
-    bool "Enable CAN publication messages at startup"
-    depends on THINGSET_CAN
-    default y
-
-config THINGSET_CAN_DEFAULT_NODE_ID
-    depends on THINGSET_CAN
-    int "ThingSet CAN default node ID"
-    range 0 255
-    default 10
-
-config THINGSET_EXPERT_PASSWORD
-    depends on THINGSET_SERIAL || THINGSET_CAN
-    string "ThingSet expert user password"
-    default "expert123"
-
-config THINGSET_MAKER_PASSWORD
-    depends on THINGSET_SERIAL || THINGSET_CAN
-    string "ThingSet maker password"
-    default "maker456"
-
-endmenu # ThingSet interface
 
 # include main Zephyr menu entries from Zephyr root directory
 source "Kconfig.zephyr"

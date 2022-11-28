@@ -7,14 +7,12 @@ target_sources(app PRIVATE
         bms_soc.c
         button.c
         data_objects.cpp
-        eeprom.cpp
         helper.cpp
         leds.cpp
         main.cpp
+        oled.cpp
 )
 
 add_subdirectory_ifdef(CONFIG_BQ769X0   bq769x0)
 add_subdirectory_ifdef(CONFIG_BQ769X2   bq769x2)
 add_subdirectory_ifdef(CONFIG_ISL94202  isl94202)
-
-add_subdirectory(ext)

@@ -33,6 +33,7 @@
 		zephyr,shell-uart = &usb_serial;
 		zephyr,flash = &flash0;
 		zephyr,code-partition = &slot0_partition;
+		thingset,serial = &usb_serial;
 	};
 
 	leds {
@@ -55,7 +56,6 @@
 	aliases {
 		led-red = &led1;
 		led-green = &led2;
-		uart-dbg = &usb_serial;
 		sw-pwr = &power_button;
 	};
 };

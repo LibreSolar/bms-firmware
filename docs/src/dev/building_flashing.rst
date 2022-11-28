@@ -42,12 +42,11 @@ Flash with specific debug probe (runner), e.g. J-Link:
 Boards with ESP32 MCU
 """""""""""""""""""""
 
-The ESP32 requires additional steps to set up the toolchain:
+The ESP32 requires additional steps to get required binary blobs:
 
 .. code-block:: bash
 
-    west espressif update
-    west espressif install
+    west blobs fetch hal_espressif
 
 Afterwards you can build and flash the firmware the same way as for STM32:
 

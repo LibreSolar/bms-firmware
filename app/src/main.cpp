@@ -6,6 +6,7 @@
 
 #ifndef UNIT_TEST
 
+#include <zephyr/device.h>
 #include <zephyr/kernel.h>
 
 #include <stdio.h>
@@ -13,7 +14,6 @@
 #include "bms.h"
 #include "button.h"
 #include "data_objects.h"
-#include "eeprom.h"
 #include "helper.h"
 #include "leds.h"
 #include "thingset.h"
@@ -22,19 +22,11 @@ LOG_MODULE_REGISTER(bms_main, CONFIG_LOG_DEFAULT_LEVEL);
 
 Bms bms;
 
-extern ThingSet ts;
-
 int main(void)
 {
     printf("Hardware: Libre Solar %s (%s)\n", DT_PROP(DT_PATH(pcb), type),
            DT_PROP(DT_PATH(pcb), version_str));
     printf("Firmware: %s\n", FIRMWARE_VERSION_ID);
-
-    bms_init_status(&bms);
-    bms_init_config(&bms, CONFIG_CELL_TYPE, CONFIG_BAT_CAPACITY_AH);
-
-    // read custom configuration from EEPROM
-    data_objects_init();
 
     while (bms_init_hardware(&bms) != 0) {
         LOG_ERR("BMS hardware initialization failed, retrying in 10s");
@@ -62,13 +54,25 @@ int main(void)
 
         // bms_print_registers();
 
-        eeprom_update();
-
         t_start += 100;
         k_sleep(K_TIMEOUT_ABS_MS(t_start));
     }
 
     return 0;
 }
+
+static int init_config(const struct device *dev)
+{
+    bms_init_status(&bms);
+    bms_init_config(&bms, CONFIG_CELL_TYPE, CONFIG_BAT_CAPACITY_AH);
+
+    return 0;
+}
+
+/*
+ * The default configuration must be initialized before the ThingSet storage backend reads data
+ * from EEPROM or flash (with THINGSET_INIT_PRIORITY_STORAGE = 30).
+ */
+SYS_INIT(init_config, APPLICATION, 0);
 
 #endif /* UNIT_TEST */
