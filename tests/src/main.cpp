@@ -68,7 +68,6 @@ void setup()
 
     bms.conf.shunt_res_mOhm = BOARD_SHUNT_RESISTOR;
     bms.conf.ocv = OCV;
-    bms.conf.num_ocv_points = sizeof(OCV) / sizeof(float);
 
     bms.conf.nominal_capacity_Ah = 45.0;
     bms.status.connected_cells = 4;

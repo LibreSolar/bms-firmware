@@ -10,9 +10,13 @@
 
 #include <stdio.h>
 
-static float ocv_lfp[] = { 3.392F, 3.314F, 3.309F, 3.308F, 3.304F, 3.296F, 3.283F,
-                           3.275F, 3.271F, 3.268F, 3.265F, 3.264F, 3.262F, 3.252F,
-                           3.240F, 3.226F, 3.213F, 3.190F, 3.177F, 3.132F, 2.833F };
+static float ocv_lfp[OCV_POINTS] = { 3.392F, 3.314F, 3.309F, 3.308F, 3.304F, 3.296F, 3.283F,
+                                     3.275F, 3.271F, 3.268F, 3.265F, 3.264F, 3.262F, 3.252F,
+                                     3.240F, 3.226F, 3.213F, 3.190F, 3.177F, 3.132F, 2.833F };
+
+static float ocv_nmc[OCV_POINTS] = { 4.198F, 4.135F, 4.089F, 4.056F, 4.026F, 3.993F, 3.962F,
+                                     3.924F, 3.883F, 3.858F, 3.838F, 3.819F, 3.803F, 3.787F,
+                                     3.764F, 3.745F, 3.726F, 3.702F, 3.684F, 3.588F, 2.800F };
 
 void bms_init_status(Bms *bms)
 {
@@ -67,7 +71,6 @@ void bms_init_config(Bms *bms, int type, float nominal_capacity)
             bms->conf.cell_uv_limit = 2.50F; // most cells survive even 2.0V, but we should
                                              // keep some margin for further self-discharge
             bms->conf.ocv = ocv_lfp;
-            bms->conf.num_ocv_points = sizeof(ocv_lfp) / sizeof(float);
             break;
         case CELL_TYPE_NMC:
             bms->conf.cell_ov_limit = 4.25F;
@@ -77,9 +80,7 @@ void bms_init_config(Bms *bms, int type, float nominal_capacity)
             bms->conf.cell_uv_reset = 3.50F;
             bms->conf.cell_dis_voltage = 3.20F;
             bms->conf.cell_uv_limit = 3.00F;
-            // ToDo: Use typical OCV curve for NMC cells
-            bms->conf.ocv = NULL;
-            bms->conf.num_ocv_points = 0;
+            bms->conf.ocv = ocv_nmc;
             break;
         case CELL_TYPE_NMC_HV:
             bms->conf.cell_ov_limit = 4.35F;
@@ -91,7 +92,6 @@ void bms_init_config(Bms *bms, int type, float nominal_capacity)
             bms->conf.cell_uv_limit = 3.00F;
             // ToDo: Use typical OCV curve for NMC_HV cells
             bms->conf.ocv = NULL;
-            bms->conf.num_ocv_points = 0;
             break;
         case CELL_TYPE_LTO:
             bms->conf.cell_ov_limit = 2.85F;
@@ -103,7 +103,6 @@ void bms_init_config(Bms *bms, int type, float nominal_capacity)
             bms->conf.cell_uv_limit = 1.90F;
             // ToDo: Use typical OCV curve for LTO cells
             bms->conf.ocv = NULL;
-            bms->conf.num_ocv_points = 0;
             break;
         case CELL_TYPE_CUSTOM:
             break;

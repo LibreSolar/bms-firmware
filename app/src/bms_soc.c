@@ -8,18 +8,14 @@
 #include "board.h"
 #include "helper.h"
 
-static const float soc_pct[] = { 100.0F, 95.0F, 90.0F, 85.0F, 80.0F, 85.0F, 70.0F,
-                                 65.0F,  60.0F, 55.0F, 50.0F, 45.0F, 40.0F, 35.0F,
-                                 30.0F,  25.0F, 20.0F, 15.0F, 10.0F, 5.0F,  0.0F };
-
 void bms_soc_reset(Bms *bms, int percent)
 {
     if (percent <= 100 && percent >= 0) {
         bms->status.soc = percent;
     }
     else if (bms->conf.ocv != NULL) {
-        bms->status.soc = interpolate(bms->conf.ocv, soc_pct, bms->conf.num_ocv_points,
-                                      bms->status.cell_voltage_avg);
+        bms->status.soc =
+            interpolate(bms->conf.ocv, soc_pct, ARRAY_SIZE(soc_pct), bms->status.cell_voltage_avg);
     }
     else {
         // no OCV curve specified, use simplified estimation instead
