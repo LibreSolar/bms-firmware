@@ -20,6 +20,7 @@ manifest:
           - edtt
           - hal_espressif
           - hal_stm32
+          - tinycrypt
     - name: oled-display-library
       remote: libresolar
       revision: 523b26c103de56714fcda655702d600870a671bc
