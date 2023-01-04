@@ -1,35 +1,34 @@
-name: Build with Zephyr toolchain
+name: Code check and build tests
 
 on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: zephyrprojectrtos/ci:v0.24.3
+    container: zephyrprojectrtos/ci:latest
     env:
       CMAKE_PREFIX_PATH: /opt/toolchains
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: bms-firmware
-
-      - name: Set up Python
-        uses: actions/setup-python@v1
+          fetch-depth: 0
 
       - name: Initialize
         working-directory: bms-firmware
         run: |
-          pip3 install -U west
           west init -l .
           west update --narrow
           west blobs fetch hal_espressif
-          pip3 install -r ../zephyr/scripts/requirements-base.txt
 
-      - name: Trailing whitespace check
+      - name: Coding style check
         working-directory: bms-firmware
         run: |
-          git diff --check `git rev-list HEAD | tail -n 1`..
+          apt-get update
+          apt-get install -y clang-format-12 colordiff
+          git status
+          bash scripts/check-style.sh
 
       - name: Build firmware
         working-directory: bms-firmware
