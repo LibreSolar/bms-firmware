@@ -37,6 +37,9 @@ struct ts_array cell_voltages_arr = { bms.status.cell_voltages, BOARD_NUM_CELLS_
 // used for print_register callback
 static uint16_t reg_addr = 0;
 
+// used for xInitConf functions
+static float new_capacity = 0;
+
 /**
  * ThingSet data objects (see https://github.com/ThingSet)
  */
@@ -147,6 +150,12 @@ TS_ADD_ITEM_UINT16(0x6A, "sBalIdleDelay_s", &bms.conf.bal_idle_delay,
 TS_ADD_ITEM_FLOAT(0x6B, "sBalIdleCurrent_A", &bms.conf.bal_idle_current, 1,
     ID_CONF, TS_ANY_R | TS_ANY_W, SUBSET_NVM);
 
+TS_ADD_FN_INT32(0xA0, "xPresetNMC", &bat_preset_nmc, ID_CONF, TS_ANY_RW);
+TS_ADD_ITEM_FLOAT(0xA1, "fCapacity_Ah", &new_capacity, 1, 0xA0, TS_ANY_RW, 0);
+
+TS_ADD_FN_INT32(0xA2, "xPresetLFP", &bat_preset_lfp, ID_CONF, TS_ANY_RW);
+TS_ADD_ITEM_FLOAT(0xA3, "fCapacity_Ah", &new_capacity, 1, 0xA2, TS_ANY_RW, 0);
+
 // MEAS DATA ////////////////////////////////////////////////////////////
 
 TS_ADD_GROUP(ID_MEAS, "Meas", TS_NO_CALLBACK, ID_ROOT);
@@ -221,6 +230,33 @@ void data_objects_update_conf()
 #ifdef CONFIG_THINGSET_STORAGE
     thingset_storage_save();
 #endif
+}
+
+int32_t bat_preset(enum CellType type)
+{
+    int err;
+
+    bms_init_config(&bms, type, new_capacity);
+    err = bms_configure(&bms);
+    bms_update(&bms);
+
+#ifdef CONFIG_THINGSET_STORAGE
+    if (err == 0) {
+        thingset_storage_save();
+    }
+#endif
+
+    return err;
+}
+
+int32_t bat_preset_nmc()
+{
+    return bat_preset(CELL_TYPE_NMC);
+}
+
+int32_t bat_preset_lfp()
+{
+    return bat_preset(CELL_TYPE_LFP);
 }
 
 void print_register()

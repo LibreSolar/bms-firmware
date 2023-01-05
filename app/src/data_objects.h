@@ -34,6 +34,16 @@
 void data_objects_update_conf();
 
 /**
+ * Callback function to apply preset parameters for NMC type via ThingSet
+ */
+int32_t bat_preset_nmc();
+
+/**
+ * Callback function to apply preset parameters for LFP type via ThingSet
+ */
+int32_t bat_preset_lfp();
+
+/**
  * Callback to read and print BMS register via ThingSet
  */
 void print_register();
