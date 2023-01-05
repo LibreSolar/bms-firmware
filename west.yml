@@ -27,7 +27,7 @@ manifest:
       path: modules/oled-display
     - name: thingset-zephyr-sdk
       remote: thingset
-      revision: 83d6d239a6f848ec9bbf813bb6ddec6bcf9b8f58
+      revision: adb1accd280ef91668bd592233dde3e42195e9b9
       path: thingset-zephyr-sdk
       import:
         name-whitelist:
