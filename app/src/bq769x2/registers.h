@@ -11,7 +11,7 @@
 
 // Direct commands
 
-#define BQ769X2_IS_DIRECT_COMMAND(addr) (addr < 0x7F)
+#define BQ769X2_IS_DIRECT_COMMAND(addr) (addr <= 0x7F)
 
 #define BQ769X2_CMD_CONTROL_STATUS   0x00
 #define BQ769X2_CMD_SAFETY_ALERT_A   0x02
