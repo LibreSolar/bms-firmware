@@ -222,7 +222,7 @@ bool bms_chg_allowed(Bms *bms)
 
 bool bms_dis_allowed(Bms *bms)
 {
-    return !bms_dis_error(bms->status.error_flags & ~BMS_ERR_CHG_OFF) && !bms->status.empty
+    return !bms_dis_error(bms->status.error_flags & ~BMS_ERR_DIS_OFF) && !bms->status.empty
            && bms->status.dis_enable;
 }
 
