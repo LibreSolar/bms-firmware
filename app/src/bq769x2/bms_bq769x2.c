@@ -82,7 +82,7 @@ int bms_init_hardware(Bms *bms)
     }
 
     // disable sleep mode to avoid switching off the CHG MOSFET automatically
-    err = bq769x2_subcmd_cmd_only(BQ769X2_SUBCMD_SLEEP_DISABLE);
+    err |= bq769x2_datamem_write_u2(BQ769X2_SET_CONF_POWER, 0x2882);
     if (err) {
         return err;
     }
