@@ -106,6 +106,12 @@ int bms_init_hardware(Bms *bms)
         return err;
     }
 
+    // set resolution for CC2 current to 10 mA and stack/pack voltage to 10 mV
+    err = bq769x2_datamem_write_u1(BQ769X2_SET_CONF_DA, 0x06);
+    if (err) {
+        return err;
+    }
+
     err = detect_num_cells(bms);
     if (err) {
         return err;
@@ -451,7 +457,7 @@ void bms_read_current(Bms *bms)
     int16_t current = 0;
 
     bq769x2_direct_read_i2(BQ769X2_CMD_CURRENT_CC2, &current);
-    bms->status.pack_current = current * 1e-3F;
+    bms->status.pack_current = current * 1e-2F;
 }
 
 void bms_read_voltages(Bms *bms)
