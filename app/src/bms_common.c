@@ -10,6 +10,8 @@
 
 #include <stdio.h>
 
+LOG_MODULE_REGISTER(bms, CONFIG_LOG_DEFAULT_LEVEL);
+
 static float ocv_lfp[OCV_POINTS] = { 3.392F, 3.314F, 3.309F, 3.308F, 3.304F, 3.296F, 3.283F,
                                      3.275F, 3.271F, 3.268F, 3.265F, 3.264F, 3.262F, 3.252F,
                                      3.240F, 3.226F, 3.213F, 3.190F, 3.177F, 3.132F, 2.833F };
@@ -122,12 +124,12 @@ __weak void bms_state_machine(Bms *bms)
             if (bms_dis_allowed(bms)) {
                 bms_dis_switch(bms, true);
                 bms->status.state = BMS_STATE_DIS;
-                printf("Going to state DIS\n");
+                LOG_INF("OFF -> DIS (error flags: 0x%08x)\n", bms->status.error_flags);
             }
             else if (bms_chg_allowed(bms)) {
                 bms_chg_switch(bms, true);
                 bms->status.state = BMS_STATE_CHG;
-                printf("Going to state CHG\n");
+                LOG_INF("OFF -> CHG (error flags: 0x%08x)\n", bms->status.error_flags);
             }
             break;
         case BMS_STATE_CHG:
@@ -135,12 +137,12 @@ __weak void bms_state_machine(Bms *bms)
                 bms_chg_switch(bms, false);
                 bms_dis_switch(bms, false); // if on because of ideal diode control
                 bms->status.state = BMS_STATE_OFF;
-                printf("Going back to state OFF\n");
+                LOG_INF("CHG -> OFF (error flags: 0x%08x)\n", bms->status.error_flags);
             }
             else if (bms_dis_allowed(bms)) {
                 bms_dis_switch(bms, true);
                 bms->status.state = BMS_STATE_NORMAL;
-                printf("Going to state NORMAL\n");
+                LOG_INF("CHG -> NORMAL (error flags: 0x%08x)\n", bms->status.error_flags);
             }
             else {
                 // ideal diode control for discharge MOSFET (with hysteresis)
@@ -157,12 +159,12 @@ __weak void bms_state_machine(Bms *bms)
                 bms_dis_switch(bms, false);
                 bms_chg_switch(bms, false); // if on because of ideal diode control
                 bms->status.state = BMS_STATE_OFF;
-                printf("Going back to state OFF\n");
+                LOG_INF("DIS -> OFF (error flags: 0x%08x)\n", bms->status.error_flags);
             }
             else if (bms_chg_allowed(bms)) {
                 bms_chg_switch(bms, true);
                 bms->status.state = BMS_STATE_NORMAL;
-                printf("Going to state NORMAL\n");
+                LOG_INF("DIS -> NORMAL (error flags: 0x%08x)\n", bms->status.error_flags);
             }
             else {
                 // ideal diode control for charge MOSFET (with hysteresis)
@@ -178,12 +180,12 @@ __weak void bms_state_machine(Bms *bms)
             if (!bms_dis_allowed(bms)) {
                 bms_dis_switch(bms, false);
                 bms->status.state = BMS_STATE_CHG;
-                printf("Going back to state CHG\n");
+                LOG_INF("NORMAL -> CHG (error flags: 0x%08x)\n", bms->status.error_flags);
             }
             else if (!bms_chg_allowed(bms)) {
                 bms_chg_switch(bms, false);
                 bms->status.state = BMS_STATE_DIS;
-                printf("Going back to state DIS\n");
+                LOG_INF("NORMAL -> DIS (error flags: 0x%08x)\n", bms->status.error_flags);
             }
             break;
     }
@@ -216,13 +218,13 @@ bool bms_dis_error(uint32_t error_flags)
 
 bool bms_chg_allowed(Bms *bms)
 {
-    return !bms_chg_error(bms->status.error_flags & ~BMS_ERR_CHG_OFF) && !bms->status.full
+    return !bms_chg_error(bms->status.error_flags & ~(1U << BMS_ERR_CHG_OFF)) && !bms->status.full
            && bms->status.chg_enable;
 }
 
 bool bms_dis_allowed(Bms *bms)
 {
-    return !bms_dis_error(bms->status.error_flags & ~BMS_ERR_DIS_OFF) && !bms->status.empty
+    return !bms_dis_error(bms->status.error_flags & ~(1U << BMS_ERR_DIS_OFF)) && !bms->status.empty
            && bms->status.dis_enable;
 }
 
