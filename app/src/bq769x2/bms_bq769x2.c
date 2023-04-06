@@ -56,7 +56,7 @@ int bms_init_hardware(Bms *bms)
     bq769x2_config_update_mode(true);
 
     // configure shunt value based on nominal value of VREF2 (could be improved by calibration)
-    err = bq769x2_datamem_write_f4(BQ769X2_CAL_CURR_CC_GAIN, 7.4768F / bms->conf.shunt_res_mOhm);
+    err = bq769x2_datamem_write_f4(BQ769X2_CAL_CURR_CC_GAIN, 7.5684F / bms->conf.shunt_res_mOhm);
     if (err) {
         return err;
     }
