@@ -87,6 +87,12 @@ int bms_init_hardware(Bms *bms)
         return err;
     }
 
+    // set ideal diode threshold to 500 mA (default was 50 mA)
+    err = bq769x2_datamem_write_i2(BQ769X2_SET_PROT_BODY_DIODE_TH, 500);
+    if (err) {
+        return err;
+    }
+
     // enable automatic pre-discharge before switching on DSG FETs
     err = bq769x2_datamem_write_u1(BQ769X2_SET_FET_OPTIONS, 0x1D);
     if (err) {

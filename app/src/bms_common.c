@@ -144,6 +144,7 @@ __weak void bms_state_machine(Bms *bms)
                 bms->status.state = BMS_STATE_NORMAL;
                 LOG_INF("CHG -> NORMAL (error flags: 0x%08x)\n", bms->status.error_flags);
             }
+#ifndef CONFIG_BQ769X2 // bq769x2 has built-in ideal diode control
             else {
                 // ideal diode control for discharge MOSFET (with hysteresis)
                 if (bms->status.pack_current > 0.5F) {
@@ -153,6 +154,7 @@ __weak void bms_state_machine(Bms *bms)
                     bms_dis_switch(bms, false);
                 }
             }
+#endif
             break;
         case BMS_STATE_DIS:
             if (!bms_dis_allowed(bms)) {
@@ -166,6 +168,7 @@ __weak void bms_state_machine(Bms *bms)
                 bms->status.state = BMS_STATE_NORMAL;
                 LOG_INF("DIS -> NORMAL (error flags: 0x%08x)\n", bms->status.error_flags);
             }
+#ifndef CONFIG_BQ769X2 // bq769x2 has built-in ideal diode control
             else {
                 // ideal diode control for charge MOSFET (with hysteresis)
                 if (bms->status.pack_current < -0.5F) {
@@ -175,6 +178,7 @@ __weak void bms_state_machine(Bms *bms)
                     bms_chg_switch(bms, false);
                 }
             }
+#endif
             break;
         case BMS_STATE_NORMAL:
             if (!bms_dis_allowed(bms)) {
