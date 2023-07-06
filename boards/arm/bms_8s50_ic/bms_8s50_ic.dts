@@ -38,6 +38,7 @@
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
 		thingset,can = &can1;
+		thingset,eeprom = &eeprom0;
 		thingset,serial = &usart2;
 	};
 
@@ -137,7 +138,7 @@
 		pull-up-gpios = <&gpiob 2 GPIO_ACTIVE_HIGH>;
 	};
 
-	eeprom@50 {
+	eeprom0: eeprom@50 {
 		// Microchip 24AA32A
 		compatible = "atmel,at24";
 		reg = <0x50>;

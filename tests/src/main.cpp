@@ -86,7 +86,7 @@ void setup()
     bms_chg_switch(&bms, true);
 }
 
-void main(void)
+int main(void)
 {
     int err = 0;
 
@@ -110,4 +110,6 @@ void main(void)
 #ifdef CONFIG_ARCH_POSIX
     posix_exit(err);
 #endif
+
+    return 0;
 }

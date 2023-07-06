@@ -16,7 +16,9 @@ config ENTROPY_ESP32_RNG
 if BT
 
 config HEAP_MEM_POOL_SIZE
-	default 16384
+	default 98304 if WIFI
+	default 40960 if BT
+	default 4096
 
 choice BT_HCI_BUS_TYPE
 	default BT_ESP32

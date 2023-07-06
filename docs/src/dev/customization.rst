@@ -73,10 +73,10 @@ board-specific ``.conf`` file:
 
 .. code-block:: bash
 
-    CONFIG_THINGSET_PUB_LIVE_DATA_DEFAULT=n
+    CONFIG_THINGSET_REPORTING_LIVE_ENABLE_PRESET=n
 
 The default period for data publication can be changed with the following Kconfig option:
 
 .. code-block:: bash
 
-    CONFIG_THINGSET_PUB_LIVE_DATA_PERIOD_DEFAULT=10
+    CONFIG_THINGSET_REPORTING_LIVE_PERIOD_PRESET=10

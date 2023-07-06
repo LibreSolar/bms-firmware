@@ -61,7 +61,7 @@ int main(void)
     return 0;
 }
 
-static int init_config(const struct device *dev)
+static int init_config(void)
 {
     bms_init_status(&bms);
     bms_init_config(&bms, CONFIG_CELL_TYPE, CONFIG_BAT_CAPACITY_AH);
