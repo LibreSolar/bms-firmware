@@ -17,6 +17,8 @@
 #include <string.h>
 #include <time.h>
 
+LOG_MODULE_REGISTER(isl94202, CONFIG_LOG_DEFAULT_LEVEL);
+
 // Lookup-table for temperatures according to datasheet
 static const float lut_temp_volt[] = { 0.153, 0.295, 0.463, 0.710, 0.755 };
 static const float lut_temp_degc[] = { 80, 50, 25, 0, -40 };
@@ -480,16 +482,16 @@ void bms_print_register(uint16_t addr)
 {
     uint8_t reg;
     isl94202_read_bytes((uint8_t)addr, &reg, 1);
-    printf("0x%.2X: 0x%.2X = %s\n", addr, reg, byte2bitstr(reg));
+    LOG_INF("0x%.2X: 0x%.2X = %s", addr, reg, byte2bitstr(reg));
 }
 
 void bms_print_registers()
 {
-    printf("EEPROM content: ------------------\n");
+    LOG_INF("EEPROM content: ------------------");
     for (int i = 0; i < 0x4C; i++) {
         bms_print_register(i);
     }
-    printf("RAM content: ------------------\n");
+    LOG_INF("RAM content: ------------------");
     for (int i = 0x80; i <= 0xAB; i++) {
         bms_print_register(i);
     }

@@ -552,12 +552,12 @@ void bms_print_register(uint16_t addr)
             bq769x2_subcmd_read_u1(addr, &value);
         }
     }
-    printf("0x%.2X: 0x%.2X = %s\n", addr, value, byte2bitstr(value));
+    LOG_INF("0x%.2X: 0x%.2X = %s", addr, value, byte2bitstr(value));
 }
 
 void bms_print_registers()
 {
-    printf("Status: ------------------\n");
+    LOG_INF("Status: ------------------");
     bms_print_register(BQ769X2_CMD_SAFETY_STATUS_A);
     bms_print_register(BQ769X2_CMD_SAFETY_STATUS_B);
     bms_print_register(BQ769X2_CMD_SAFETY_STATUS_C);

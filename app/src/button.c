@@ -12,6 +12,10 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/kernel.h>
 
+#include "helper.h"
+
+LOG_MODULE_REGISTER(button, CONFIG_LOG_DEFAULT_LEVEL);
+
 #define BTN_GPIO  DT_ALIAS(sw_pwr)
 #define BTN_CTLR  DT_GPIO_CTLR(BTN_GPIO, gpios)
 #define BTN_PIN   DT_GPIO_PIN(BTN_GPIO, gpios)
@@ -29,7 +33,7 @@ static void button_pressed_cb(const struct device *dev, struct gpio_callback *cb
 void button_init()
 {
     if (!device_is_ready(btn_dev)) {
-        printk("Button device not found\n");
+        LOG_ERR("Button device not found");
         return;
     }
 

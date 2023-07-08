@@ -124,12 +124,12 @@ __weak void bms_state_machine(Bms *bms)
             if (bms_dis_allowed(bms)) {
                 bms_dis_switch(bms, true);
                 bms->status.state = BMS_STATE_DIS;
-                LOG_INF("OFF -> DIS (error flags: 0x%08x)\n", bms->status.error_flags);
+                LOG_INF("OFF -> DIS (error flags: 0x%08x)", bms->status.error_flags);
             }
             else if (bms_chg_allowed(bms)) {
                 bms_chg_switch(bms, true);
                 bms->status.state = BMS_STATE_CHG;
-                LOG_INF("OFF -> CHG (error flags: 0x%08x)\n", bms->status.error_flags);
+                LOG_INF("OFF -> CHG (error flags: 0x%08x)", bms->status.error_flags);
             }
             break;
         case BMS_STATE_CHG:
@@ -137,12 +137,12 @@ __weak void bms_state_machine(Bms *bms)
                 bms_chg_switch(bms, false);
                 bms_dis_switch(bms, false); // if on because of ideal diode control
                 bms->status.state = BMS_STATE_OFF;
-                LOG_INF("CHG -> OFF (error flags: 0x%08x)\n", bms->status.error_flags);
+                LOG_INF("CHG -> OFF (error flags: 0x%08x)", bms->status.error_flags);
             }
             else if (bms_dis_allowed(bms)) {
                 bms_dis_switch(bms, true);
                 bms->status.state = BMS_STATE_NORMAL;
-                LOG_INF("CHG -> NORMAL (error flags: 0x%08x)\n", bms->status.error_flags);
+                LOG_INF("CHG -> NORMAL (error flags: 0x%08x)", bms->status.error_flags);
             }
 #ifndef CONFIG_BQ769X2 // bq769x2 has built-in ideal diode control
             else {
@@ -161,12 +161,12 @@ __weak void bms_state_machine(Bms *bms)
                 bms_dis_switch(bms, false);
                 bms_chg_switch(bms, false); // if on because of ideal diode control
                 bms->status.state = BMS_STATE_OFF;
-                LOG_INF("DIS -> OFF (error flags: 0x%08x)\n", bms->status.error_flags);
+                LOG_INF("DIS -> OFF (error flags: 0x%08x)", bms->status.error_flags);
             }
             else if (bms_chg_allowed(bms)) {
                 bms_chg_switch(bms, true);
                 bms->status.state = BMS_STATE_NORMAL;
-                LOG_INF("DIS -> NORMAL (error flags: 0x%08x)\n", bms->status.error_flags);
+                LOG_INF("DIS -> NORMAL (error flags: 0x%08x)", bms->status.error_flags);
             }
 #ifndef CONFIG_BQ769X2 // bq769x2 has built-in ideal diode control
             else {
@@ -184,12 +184,12 @@ __weak void bms_state_machine(Bms *bms)
             if (!bms_dis_allowed(bms)) {
                 bms_dis_switch(bms, false);
                 bms->status.state = BMS_STATE_CHG;
-                LOG_INF("NORMAL -> CHG (error flags: 0x%08x)\n", bms->status.error_flags);
+                LOG_INF("NORMAL -> CHG (error flags: 0x%08x)", bms->status.error_flags);
             }
             else if (!bms_chg_allowed(bms)) {
                 bms_chg_switch(bms, false);
                 bms->status.state = BMS_STATE_DIS;
-                LOG_INF("NORMAL -> DIS (error flags: 0x%08x)\n", bms->status.error_flags);
+                LOG_INF("NORMAL -> DIS (error flags: 0x%08x)", bms->status.error_flags);
             }
             break;
     }

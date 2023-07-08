@@ -24,9 +24,9 @@ Bms bms;
 
 int main(void)
 {
-    printf("Hardware: Libre Solar %s (%s)\n", DT_PROP(DT_PATH(pcb), type),
-           DT_PROP(DT_PATH(pcb), version_str));
-    printf("Firmware: %s\n", FIRMWARE_VERSION_ID);
+    LOG_INF("Hardware: Libre Solar %s (%s)", DT_PROP(DT_PATH(pcb), type),
+            DT_PROP(DT_PATH(pcb), version_str));
+    LOG_INF("Firmware: %s", FIRMWARE_VERSION_ID);
 
     while (bms_init_hardware(&bms) != 0) {
         LOG_ERR("BMS hardware initialization failed, retrying in 10s");
@@ -47,7 +47,7 @@ int main(void)
         bms_state_machine(&bms);
 
         if (button_pressed_for_3s()) {
-            printf("Button pressed for 3s: shutdown...\n");
+            LOG_WRN("Button pressed for 3s: shutdown...");
             bms_shutdown(&bms);
             k_sleep(K_MSEC(10000));
         }

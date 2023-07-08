@@ -210,7 +210,7 @@ static void bms_update_balancing(Bms *bms)
     else if (bms->status.balancing_status > 0) {
         // clear all CELLBAL registers
         for (int section = 0; section < num_sections; section++) {
-            LOG_DBG("Clearing Register CELLBAL%d\n", section + 1);
+            LOG_DBG("Clearing Register CELLBAL%d", section + 1);
             bq769x0_write_byte(BQ769X0_CELLBAL1 + section, 0x0);
         }
 
@@ -617,27 +617,27 @@ void bms_handle_errors(Bms *bms)
 void bms_print_register(uint16_t addr)
 {
     uint8_t reg = bq769x0_read_byte((uint8_t)addr);
-    printf("0x%.2X: 0x%.2X = %s\n", addr, reg, byte2bitstr(reg));
+    LOG_INF("0x%.2X: 0x%.2X = %s", addr, reg, byte2bitstr(reg));
 }
 
 void bms_print_registers()
 {
-    printf("0x00 SYS_STAT:  %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_SYS_STAT)));
-    printf("0x01 CELLBAL1:  %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_CELLBAL1)));
-    printf("0x04 SYS_CTRL1: %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_SYS_CTRL1)));
-    printf("0x05 SYS_CTRL2: %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_SYS_CTRL2)));
-    printf("0x06 PROTECT1:  %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_PROTECT1)));
-    printf("0x07 PROTECT2:  %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_PROTECT2)));
-    printf("0x08 PROTECT3:  %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_PROTECT3)));
-    printf("0x09 OV_TRIP:   %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_OV_TRIP)));
-    printf("0x0A UV_TRIP:   %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_UV_TRIP)));
-    printf("0x0B CC_CFG:    %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_CC_CFG)));
-    printf("0x32 CC_HI:     %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_CC_HI_BYTE)));
-    printf("0x33 CC_LO:     %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_CC_LO_BYTE)));
+    LOG_INF("0x00 SYS_STAT:  %s", byte2bitstr(bq769x0_read_byte(BQ769X0_SYS_STAT)));
+    LOG_INF("0x01 CELLBAL1:  %s", byte2bitstr(bq769x0_read_byte(BQ769X0_CELLBAL1)));
+    LOG_INF("0x04 SYS_CTRL1: %s", byte2bitstr(bq769x0_read_byte(BQ769X0_SYS_CTRL1)));
+    LOG_INF("0x05 SYS_CTRL2: %s", byte2bitstr(bq769x0_read_byte(BQ769X0_SYS_CTRL2)));
+    LOG_INF("0x06 PROTECT1:  %s", byte2bitstr(bq769x0_read_byte(BQ769X0_PROTECT1)));
+    LOG_INF("0x07 PROTECT2:  %s", byte2bitstr(bq769x0_read_byte(BQ769X0_PROTECT2)));
+    LOG_INF("0x08 PROTECT3:  %s", byte2bitstr(bq769x0_read_byte(BQ769X0_PROTECT3)));
+    LOG_INF("0x09 OV_TRIP:   %s", byte2bitstr(bq769x0_read_byte(BQ769X0_OV_TRIP)));
+    LOG_INF("0x0A UV_TRIP:   %s", byte2bitstr(bq769x0_read_byte(BQ769X0_UV_TRIP)));
+    LOG_INF("0x0B CC_CFG:    %s", byte2bitstr(bq769x0_read_byte(BQ769X0_CC_CFG)));
+    LOG_INF("0x32 CC_HI:     %s", byte2bitstr(bq769x0_read_byte(BQ769X0_CC_HI_BYTE)));
+    LOG_INF("0x33 CC_LO:     %s", byte2bitstr(bq769x0_read_byte(BQ769X0_CC_LO_BYTE)));
     /*
-    printf("0x50 BQ769X0_ADCGAIN1:  %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_ADCGAIN1)));
-    printf("0x51 BQ769X0_ADCOFFSET: %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_ADCOFFSET)));
-    printf("0x59 BQ769X0_ADCGAIN2:  %s\n", byte2bitstr(bq769x0_read_byte(BQ769X0_ADCGAIN2)));
+    LOG_INF("0x50 BQ769X0_ADCGAIN1:  %s", byte2bitstr(bq769x0_read_byte(BQ769X0_ADCGAIN1)));
+    LOG_INF("0x51 BQ769X0_ADCOFFSET: %s", byte2bitstr(bq769x0_read_byte(BQ769X0_ADCOFFSET)));
+    LOG_INF("0x59 BQ769X0_ADCGAIN2:  %s", byte2bitstr(bq769x0_read_byte(BQ769X0_ADCGAIN2)));
     */
 }
 
