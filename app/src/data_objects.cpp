@@ -256,7 +256,7 @@ int32_t bat_preset(enum CellType type)
 
 #ifdef CONFIG_THINGSET_STORAGE
     if (err == 0) {
-        thingset_storage_save();
+        thingset_storage_save_queued();
     }
 #endif
 
