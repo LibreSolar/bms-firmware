@@ -12,7 +12,7 @@ manifest:
       url-base: https://github.com/ThrowTheSwitch
   projects:
     - name: zephyr
-      remote: zephyrproject
+      remote: libresolar
       revision: v3.4-branch
       import:
         name-allowlist:
@@ -27,7 +27,7 @@ manifest:
       path: modules/oled-display
     - name: thingset-zephyr-sdk
       remote: thingset
-      revision: a85cec42835d05e75125fd723f1d7cb273eacec0
+      revision: ab2f3c978a5c410b2b95b8cf2a2db601fecab859
       path: thingset-zephyr-sdk
       import:
         name-allowlist:
