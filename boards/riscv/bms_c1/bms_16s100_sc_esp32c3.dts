@@ -33,7 +33,7 @@
 		zephyr,shell-uart = &usb_serial;
 		zephyr,flash = &flash0;
 		zephyr,code-partition = &slot0_partition;
-		thingset,serial = &usb_serial;
+		thingset,serial = &uart0;
 	};
 
 	leds {
