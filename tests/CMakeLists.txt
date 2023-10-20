@@ -11,11 +11,8 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
 project(libre_solar_bms_tests)
 
-add_definitions(-DUNIT_TEST=1)
 add_definitions(-DUNITY_OUTPUT_COLOR)
 add_definitions(-DUNITY_EXCLUDE_SETJMP)
-
-add_subdirectory(../app/src build/app)
 
 zephyr_include_directories(./src)
 zephyr_include_directories(../app/src)
@@ -25,16 +22,21 @@ zephyr_include_directories(../../modules/unity/src)
 
 target_sources(app PRIVATE
         ../../modules/unity/src/unity.c
+        ../app/src/bms_common.c
+        ../app/src/bms_soc.c
+        ../app/src/helper.cpp
         src/main.c
-        src/bq769x0_interface_stub.c
-        src/bq769x0_tests.c
-        src/bq769x2_interface_stub.c
-        src/bq769x2_tests_functions.c
-        src/bq769x2_tests_interface.c
         src/common_tests.c
         src/helper_tests.c
-        src/isl94202_interface_stub.c
-        src/isl94202_tests.c
+)
+
+zephyr_library_sources_ifdef(CONFIG_BMS_IC_BQ769X2
+    src/bq769x2_tests_functions.c
+    src/bq769x2_tests_interface.c
+)
+
+zephyr_library_sources_ifdef(CONFIG_BMS_IC_ISL94202
+    src/isl94202_tests.c
 )
 
 # determine git tag and commit hash for automatic firmware versioning

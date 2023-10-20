@@ -19,12 +19,6 @@
 		version-str = "v0.1";
 		version-num = <1>;
 
-		num-cells-max = <5>;
-		num-thermistors-max = <1>;
-
-		current-max = <50>;
-		shunt-res = <1000>;
-
 		/*
 		 * Additional information:
 		 * - GAIN_PACK_VOLTAGE (110/10)
@@ -74,6 +68,7 @@
 		led-red = &led1;
 		led-green = &led2;
 		sw-pwr = &power_button;
+		bms-ic = &bq76920;
 	};
 };
 
@@ -130,11 +125,14 @@ uext_i2c: &i2c1 {
 	clock-frequency = <I2C_BITRATE_STANDARD>;
 	status = "okay";
 
-	bq769x0@8 {
+	bq76920: bq769x0@8 {
 		compatible = "ti,bq769x0";
-		reg = <0x08>;	// ignored (firmware will auto-detect I2C address)
+		reg = <0x08>;
 		alert-gpios = <&gpiob 12 GPIO_ACTIVE_HIGH>;
-		pchg-gpios = <&gpiob 2 GPIO_ACTIVE_HIGH>;
+		bus-pchg-gpios = <&gpiob 2 GPIO_ACTIVE_HIGH>;
+		board-max-current = <50>;
+		shunt-resistor-uohm = <1000>;
+		used-cell-channels = <0x001F>;
 	};
 
 	eeprom0: eeprom@50 {

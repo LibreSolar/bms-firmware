@@ -10,6 +10,8 @@
 
 #include "bms_16s100_sc_esp32c3-pinctrl.dtsi"
 
+#include <dt-bindings/bms_ic/bq769x2.h>
+
 / {
 	model = "Libre Solar BMS 16S100 IC";
 	compatible = "espressif,esp32c3";
@@ -20,12 +22,6 @@
 		type = "BMS 16S100 SC ESP32C3";
 		version-str = "v0.2";
 		version-num = <2>;
-
-		num-cells-max = <16>;
-		num-thermistors-max = <2>;
-
-		current-max = <100>;
-		shunt-res = <500>;
 	};
 
 	chosen {
@@ -58,6 +54,7 @@
 		led-red = &led1;
 		led-green = &led2;
 		sw-pwr = &power_button;
+		bms-ic = &bq76952;
 	};
 };
 
@@ -82,10 +79,20 @@
 	pinctrl-0 = <&i2c0_default>;
 	pinctrl-names = "default";
 
-	bq769x2@8 {
+	bq76952: bq769x2@8 {
 		compatible = "ti,bq769x2-i2c";
-		reg = <0x08>;	/* 0x10 >> 1 */
+		reg = <0x08>;
 		alert-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+		used-cell-channels = <0xFFFF>;
+		/* all NTCs configured with 18k pull-up */
+		ts1-pin-config = <0x07>;
+		ts3-pin-config = <0x07>;
+		dchg-pin-config = <0x07>;
+		cell-temp-pins = <BQ769X2_PIN_TS1 BQ769X2_PIN_TS3>;
+		fet-temp-pin = <BQ769X2_PIN_DCHG>;
+		board-max-current = <100>;
+		shunt-resistor-uohm = <500>;
+		status = "okay";
 	};
 };
 

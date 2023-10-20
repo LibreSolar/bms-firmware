@@ -18,19 +18,3 @@ properties:
       type: int
       required: true
       description: Hardware version number (usable in preprocessor defines)
-
-    num-cells-max:
-      type: int
-      required: true
-      description: "Maximum number of cells supported by this board"
-    num-thermistors-max:
-      type: int
-      required: true
-      description: "Maximum number of thermistors supported by this board"
-
-    current-max:
-      type: int
-      description: Maximum charge/discharge current in amps
-    shunt-res:
-      type: int
-      description: Resistance of shunt in micro-Ohms

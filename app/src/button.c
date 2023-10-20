@@ -6,8 +6,6 @@
 
 #include "button.h"
 
-#ifndef UNIT_TEST
-
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/kernel.h>
@@ -47,5 +45,3 @@ bool button_pressed_for_3s()
 {
     return gpio_pin_get(btn_dev, BTN_PIN) == 1 && (k_uptime_get() - time_pressed) > 3000;
 }
-
-#endif /* UNIT_TEST */

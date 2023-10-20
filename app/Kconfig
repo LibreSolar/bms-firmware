@@ -7,30 +7,6 @@ mainmenu "Libre Solar Battery Management System Firmware"
 # Invisible (board-specific) Kconfig symbols
 #
 
-DT_COMPAT_TI_BQ769X0 := ti,bq769x0
-DT_COMPAT_TI_BQ769X2_I2C := ti,bq769x2-i2c
-DT_COMPAT_TI_BQ769X2_SPI := ti,bq769x2-spi
-DT_COMPAT_RENESAS_ISL94202 := renesas,isl94202
-
-config BQ769X0
-    bool
-    default $(dt_compat_enabled,$(DT_COMPAT_TI_BQ769X0))
-    help
-      Texas Instruments bq769x0 series used as BMS IC
-
-config BQ769X2
-    bool
-    default $(dt_compat_enabled,$(DT_COMPAT_TI_BQ769X2_I2C)) || \
-            $(dt_compat_enabled,$(DT_COMPAT_TI_BQ769X2_SPI))
-    help
-      Texas Instruments bq769x2 series used as BMS IC
-
-config ISL94202
-    bool
-    default $(dt_compat_enabled,$(DT_COMPAT_RENESAS_ISL94202))
-    help
-      Intersil/Renesas ISL94202 used as BMS IC
-
 config LIBRE_SOLAR_TYPE_ID
     int
     help

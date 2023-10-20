@@ -4,22 +4,29 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "native_posix.overlay"
+#include <dt-bindings/bms_ic/bq769x2.h>
 
 / {
-        pcb {
-                num-cells-max = <16>;
+	aliases {
+                bms-ic = &bq769x2;
         };
 };
 
-&bq769x0 {
-        status = "disabled";
-};
+&i2c0 {
+	status = "okay";
 
-&bq769x2 {
-        status = "okay";
-};
-
-&isl94202 {
-        status = "disabled";
+	bq769x2: bq76952@8 {
+		compatible = "ti,bq769x2-i2c";
+		reg = <0x08>;
+		alert-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+		used-cell-channels = <0xFFFF>;
+		/* all NTCs configured with 18k pull-up */
+		ts1-pin-config = <0x07>;
+		dchg-pin-config = <0x07>;
+		cell-temp-pins = <BQ769X2_PIN_TS1>;
+		fet-temp-pin = <BQ769X2_PIN_DCHG>;
+		board-max-current = <200>;
+		shunt-resistor-uohm = <1500>;
+		status = "okay";
+	};
 };

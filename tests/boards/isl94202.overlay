@@ -6,14 +6,22 @@
 
 #include "native_posix.overlay"
 
-&bq769x0 {
-        status = "disabled";
+/ {
+	aliases {
+                bms-ic = &isl94202;
+        };
 };
 
-&bq769x2 {
-        status = "disabled";
-};
+&i2c0 {
+	status = "okay";
 
-&isl94202 {
-        status = "okay";
+	isl94202: isl94202@28 {
+		compatible = "renesas,isl94202";
+		reg = <0x28>;	/* 0x50 >> 1 */
+		pull-up-gpios = <&gpio0 0 GPIO_ACTIVE_HIGH>;
+		shunt-resistor-uohm = <2000>;
+		board-max-current = <50>;
+		used-cell-channels = <0xFF>;
+		status = "okay";
+	};
 };

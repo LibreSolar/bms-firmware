@@ -1,0 +1,23 @@
+# Copyright (c) The Libre Solar Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+description: Intersil/Renesas ISL94202 Standalone 3 to 8 Cell Li-Ion Battery Pack Monitor
+
+compatible: "renesas,isl94202"
+
+include: [ bms-ic-common.yaml, i2c-device.yaml ]
+
+properties:
+  pull-up-gpios:
+    type: phandle-array
+    required: false
+    description: |
+      GPIO to enable/disable the I2C pull-up resistors.
+
+  used-cell-channels:
+    type: int
+    required: true
+    description: |
+      Bitset of cell channels used by the board.
+
+      Example for 5s configuration: 0x1F

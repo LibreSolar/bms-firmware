@@ -8,37 +8,31 @@
 
 #include <zephyr/kernel.h>
 
-#ifndef UNIT_TEST
 #include <zephyr/drivers/hwinfo.h>
 #include <zephyr/sys/crc.h>
 #include <zephyr/sys/reboot.h>
-#endif
 
 #include <thingset/sdk.h>
 #include <thingset/storage.h>
 
-#include "board.h"
-
-#include "bms.h"
+#include <bms/bms.h>
 
 #include <stdio.h>
 
-extern Bms bms;
+extern const struct device *bms_ic;
+extern struct bms_context bms;
 
-char manufacturer[] = "Libre Solar";
-char device_type[] = DT_PROP(DT_PATH(pcb), type);
-char hardware_version[] = DT_PROP(DT_PATH(pcb), version_str);
-char firmware_version[] = FIRMWARE_VERSION_ID;
+static char manufacturer[] = "Libre Solar";
+static char device_type[] = DT_PROP(DT_PATH(pcb), type);
+static char hardware_version[] = DT_PROP(DT_PATH(pcb), version_str);
+static char firmware_version[] = FIRMWARE_VERSION_ID;
 
 // struct to define ThingSet array node
-static THINGSET_DEFINE_FLOAT_ARRAY(cell_voltages_arr, 3, bms.status.cell_voltages,
-                                   ARRAY_SIZE(bms.status.cell_voltages));
+static THINGSET_DEFINE_FLOAT_ARRAY(cell_voltages_arr, 3, bms.ic_data.cell_voltages,
+                                   ARRAY_SIZE(bms.ic_data.cell_voltages));
 
-static THINGSET_DEFINE_FLOAT_ARRAY(cell_temps_arr, 1, bms.status.bat_temps,
-                                   ARRAY_SIZE(bms.status.bat_temps));
-
-// used for print_register callback
-static uint16_t reg_addr = 0;
+static THINGSET_DEFINE_FLOAT_ARRAY(cell_temps_arr, 1, bms.ic_data.cell_temps,
+                                   ARRAY_SIZE(bms.ic_data.cell_temps));
 
 // used for xInitConf functions
 static float new_capacity = 0;
@@ -68,13 +62,8 @@ THINGSET_ADD_FN_VOID(APP_ID_DEVICE, APP_ID_DEVICE_SHUTDOWN, "xShutdown", &shutdo
 
 THINGSET_ADD_FN_VOID(APP_ID_DEVICE, APP_ID_DEVICE_RESET, "xReset", &reset_device, THINGSET_ANY_RW);
 
-THINGSET_ADD_FN_VOID(APP_ID_DEVICE, APP_ID_DEVICE_PRINT_REG, "xPrintRegister", &print_register,
-                     THINGSET_ANY_RW);
-THINGSET_ADD_ITEM_UINT16(APP_ID_DEVICE_PRINT_REG, APP_ID_DEVICE_PRINT_REG_ADDR, "nRegAddr",
-                         &reg_addr, THINGSET_ANY_RW, 0);
-
-THINGSET_ADD_FN_VOID(APP_ID_DEVICE, APP_ID_DEVICE_PRINT_REGS, "xPrintRegisters",
-                     &bms_print_registers, THINGSET_ANY_RW);
+THINGSET_ADD_FN_VOID(APP_ID_DEVICE, APP_ID_DEVICE_PRINT_REGS, "xDebugPrintRegisters",
+                     &print_registers, THINGSET_ANY_RW);
 
 // CONFIGURATION //////////////////////////////////////////////////////////
 
@@ -83,84 +72,99 @@ THINGSET_ADD_GROUP(TS_ID_ROOT, APP_ID_CONF, "Conf", &data_objects_update_conf);
 // general battery settings
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF, APP_ID_CONF_NOMINAL_CAPACITY, "sNominalCapacity_Ah",
-                        &bms.conf.nominal_capacity_Ah, 1, THINGSET_ANY_R | THINGSET_ANY_W,
+                        &bms.nominal_capacity_Ah, 1, THINGSET_ANY_R | THINGSET_ANY_W,
                         TS_SUBSET_NVM);
 
 // current limits
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF, APP_ID_CONF_SHORT_CIRCUIT_CURRENT, "sShortCircuitLimit_A",
-                        &bms.conf.dis_sc_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
+                        &bms.ic_conf.dis_sc_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W,
+                        TS_SUBSET_NVM);
 
 THINGSET_ADD_ITEM_UINT32(APP_ID_CONF, APP_ID_CONF_SHORT_CIRCUIT_DELAY, "sShortCircuitDelay_us",
-                         &bms.conf.dis_sc_delay_us, THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
+                         &bms.ic_conf.dis_sc_delay_us, THINGSET_ANY_R | THINGSET_ANY_W,
+                         TS_SUBSET_NVM);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF, APP_ID_CONF_DIS_OVERCURRENT, "sDisOvercurrent_A",
-                        &bms.conf.dis_oc_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
+                        &bms.ic_conf.dis_oc_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W,
+                        TS_SUBSET_NVM);
 
 THINGSET_ADD_ITEM_UINT32(APP_ID_CONF, APP_ID_CONF_DIS_OVERCURRENT_DELAY, "sDisOvercurrentDelay_ms",
-                         &bms.conf.dis_oc_delay_ms, THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
+                         &bms.ic_conf.dis_oc_delay_ms, THINGSET_ANY_R | THINGSET_ANY_W,
+                         TS_SUBSET_NVM);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF, APP_ID_CONF_CHG_OVERCURRENT, "sChgOvercurrent_A",
-                        &bms.conf.chg_oc_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
+                        &bms.ic_conf.chg_oc_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W,
+                        TS_SUBSET_NVM);
 
 THINGSET_ADD_ITEM_UINT32(APP_ID_CONF, APP_ID_CONF_CHG_OVERCURRENT_DELAY, "sChgOvercurrentDelay_ms",
-                         &bms.conf.chg_oc_delay_ms, THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
+                         &bms.ic_conf.chg_oc_delay_ms, THINGSET_ANY_R | THINGSET_ANY_W,
+                         TS_SUBSET_NVM);
 
 // temperature limits
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF, APP_ID_CONF_DIS_MAX_TEMP, "sDisMaxTemp_degC",
-                        &bms.conf.dis_ot_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
+                        &bms.ic_conf.dis_ot_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W,
+                        TS_SUBSET_NVM);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF, APP_ID_CONF_DIS_MIN_TEMP, "sDisMinTemp_degC",
-                        &bms.conf.dis_ut_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
+                        &bms.ic_conf.dis_ut_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W,
+                        TS_SUBSET_NVM);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF, APP_ID_CONF_CHG_MAX_TEMP, "sChgMaxTemp_degC",
-                        &bms.conf.chg_ot_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
+                        &bms.ic_conf.chg_ot_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W,
+                        TS_SUBSET_NVM);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF, APP_ID_CONF_CHG_MIN_TEMP, "sChgMinTemp_degC",
-                        &bms.conf.chg_ut_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
+                        &bms.ic_conf.chg_ut_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W,
+                        TS_SUBSET_NVM);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF, APP_ID_CONF_TEMP_HYST, "sTempLimitHysteresis_degC",
-                        &bms.conf.t_limit_hyst, 1, THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
+                        &bms.ic_conf.temp_limit_hyst, 1, THINGSET_ANY_R | THINGSET_ANY_W,
+                        TS_SUBSET_NVM);
 
 // voltage limits
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF, APP_ID_CONF_CELL_OVERVOLTAGE, "sCellOvervoltage_V",
-                        &bms.conf.cell_ov_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
+                        &bms.ic_conf.cell_ov_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W,
+                        TS_SUBSET_NVM);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF, APP_ID_CONF_CELL_OVERVOLTAGE_RESET, "sCellOvervoltageReset_V",
-                        &bms.conf.cell_ov_reset, 1, THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
+                        &bms.ic_conf.cell_ov_reset, 1, THINGSET_ANY_R | THINGSET_ANY_W,
+                        TS_SUBSET_NVM);
 
 THINGSET_ADD_ITEM_UINT32(APP_ID_CONF, APP_ID_CONF_CELL_OVERVOLTAGE_DELAY,
-                         "sCellOvervoltageDelay_ms", &bms.conf.cell_ov_delay_ms,
+                         "sCellOvervoltageDelay_ms", &bms.ic_conf.cell_ov_delay_ms,
                          THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF, APP_ID_CONF_CELL_UNDERVOLTAGE, "sCellUndervoltage_V",
-                        &bms.conf.cell_uv_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
+                        &bms.ic_conf.cell_uv_limit, 1, THINGSET_ANY_R | THINGSET_ANY_W,
+                        TS_SUBSET_NVM);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF, APP_ID_CONF_CELL_UNDERVOLTAGE_RESET,
-                        "sCellUndervoltageReset_V", &bms.conf.cell_uv_reset, 1,
+                        "sCellUndervoltageReset_V", &bms.ic_conf.cell_uv_reset, 1,
                         THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
 
 THINGSET_ADD_ITEM_UINT32(APP_ID_CONF, APP_ID_CONF_CELL_UNDERVOLTAGE_DELAY,
-                         "sCellUndervoltageDelay_ms", &bms.conf.cell_uv_delay_ms,
+                         "sCellUndervoltageDelay_ms", &bms.ic_conf.cell_uv_delay_ms,
                          THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
 
 // balancing
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF, APP_ID_CONF_BAL_TARGET_DIFF, "sBalTargetVoltageDiff_V",
-                        &bms.conf.bal_cell_voltage_diff, 3, THINGSET_ANY_R | THINGSET_ANY_W,
+                        &bms.ic_conf.bal_cell_voltage_diff, 3, THINGSET_ANY_R | THINGSET_ANY_W,
                         TS_SUBSET_NVM);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF, APP_ID_CONF_BAL_MIN_VOLTAGE, "sBalMinVoltage_V",
-                        &bms.conf.bal_cell_voltage_min, 1, THINGSET_ANY_R | THINGSET_ANY_W,
+                        &bms.ic_conf.bal_cell_voltage_min, 1, THINGSET_ANY_R | THINGSET_ANY_W,
                         TS_SUBSET_NVM);
 
 THINGSET_ADD_ITEM_UINT16(APP_ID_CONF, APP_ID_CONF_BAL_IDLE_DELAY, "sBalIdleDelay_s",
-                         &bms.conf.bal_idle_delay, THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
+                         &bms.ic_conf.bal_idle_delay, THINGSET_ANY_R | THINGSET_ANY_W,
+                         TS_SUBSET_NVM);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF, APP_ID_CONF_BAL_IDLE_CURRENT, "sBalIdleCurrent_A",
-                        &bms.conf.bal_idle_current, 1, THINGSET_ANY_R | THINGSET_ANY_W,
+                        &bms.ic_conf.bal_idle_current, 1, THINGSET_ANY_R | THINGSET_ANY_W,
                         TS_SUBSET_NVM);
 
 THINGSET_ADD_FN_INT32(APP_ID_CONF, APP_ID_CONF_PRESET_NMC, "xPresetNMC", &bat_preset_nmc,
@@ -178,62 +182,64 @@ THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF_PRESET_LFP, APP_ID_CONF_PRESET_LFP_CAPACITY,
 THINGSET_ADD_GROUP(TS_ID_ROOT, APP_ID_MEAS, "Meas", THINGSET_NO_CALLBACK);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_PACK_VOLTAGE, "rPackVoltage_V",
-                        &bms.status.pack_voltage, 2, THINGSET_ANY_R, TS_SUBSET_LIVE);
+                        &bms.ic_data.total_voltage, 2, THINGSET_ANY_R, TS_SUBSET_LIVE);
 
-#if defined(CONFIG_BQ769X2)
+#ifdef CONFIG_BMS_IC_SWITCHES
 THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_STACK_VOLTAGE, "rStackVoltage_V",
-                        &bms.status.stack_voltage, 2, THINGSET_ANY_R, TS_SUBSET_LIVE);
+                        &bms.ic_data.external_voltage, 2, THINGSET_ANY_R, TS_SUBSET_LIVE);
 #endif
 
+#ifdef CONFIG_BMS_IC_SWITCHES
 THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_PACK_CURRENT, "rPackCurrent_A",
-                        &bms.status.pack_current, 2, THINGSET_ANY_R, TS_SUBSET_LIVE);
+                        &bms.ic_data.current, 2, THINGSET_ANY_R, TS_SUBSET_LIVE);
+#endif
 
 THINGSET_ADD_ITEM_ARRAY(APP_ID_MEAS, APP_ID_MEAS_CELL_TEMPS, "rCellTemps_degC", &cell_temps_arr,
                         THINGSET_ANY_R, TS_SUBSET_LIVE);
 
-THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_IC_TEMP, "rICTemp_degC", &bms.status.ic_temp, 1,
+THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_IC_TEMP, "rICTemp_degC", &bms.ic_data.ic_temp, 1,
                         THINGSET_ANY_R, TS_SUBSET_LIVE);
 
 // THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_MCU_TEMP, "rMCUTemp_degC", &mcu_temp, 1,
 //      THINGSET_ANY_R, TS_SUBSET_LIVE);
 
-#if defined(CONFIG_ISL94202) || defined(CONFIG_BQ769X2)
+#ifdef CONFIG_BMS_IC_SWITCHES
 THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_MOSFET_TEMP, "rMOSFETTemp_degC",
-                        &bms.status.mosfet_temp, 1, THINGSET_ANY_R, TS_SUBSET_LIVE);
+                        &bms.ic_data.mosfet_temp, 1, THINGSET_ANY_R, TS_SUBSET_LIVE);
 #endif
 
-THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_SOC, "rSOC_pct", &bms.status.soc, 1,
-                        THINGSET_ANY_R, TS_SUBSET_LIVE);
+THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_SOC, "rSOC_pct", &bms.soc, 1, THINGSET_ANY_R,
+                        TS_SUBSET_LIVE);
 
 THINGSET_ADD_ITEM_UINT32(APP_ID_MEAS, APP_ID_MEAS_ERROR_FLAGS, "rErrorFlags",
-                         &bms.status.error_flags, THINGSET_ANY_R, TS_SUBSET_LIVE);
+                         &bms.ic_data.error_flags, THINGSET_ANY_R, TS_SUBSET_LIVE);
 
-THINGSET_ADD_ITEM_UINT16(APP_ID_MEAS, APP_ID_MEAS_BMS_STATE, "rBmsState", &bms.status.state,
-                         THINGSET_ANY_R, TS_SUBSET_LIVE);
+THINGSET_ADD_ITEM_UINT8(APP_ID_MEAS, APP_ID_MEAS_BMS_STATE, "rBmsState", (uint8_t *)&bms.state,
+                        THINGSET_ANY_R, TS_SUBSET_LIVE);
 
 THINGSET_ADD_ITEM_ARRAY(APP_ID_MEAS, APP_ID_MEAS_CELL_VOLTAGES, "rCellVoltages_V",
                         &cell_voltages_arr, THINGSET_ANY_R, TS_SUBSET_LIVE);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_CELL_AVG_VOLTAGE, "rCellAvgVoltage_V",
-                        &bms.status.cell_voltage_avg, 3, THINGSET_ANY_R, TS_SUBSET_LIVE);
+                        &bms.ic_data.cell_voltage_avg, 3, THINGSET_ANY_R, TS_SUBSET_LIVE);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_CELL_MIN_VOLTAGE, "rCellMinVoltage_V",
-                        &bms.status.cell_voltage_min, 3, THINGSET_ANY_R, TS_SUBSET_LIVE);
+                        &bms.ic_data.cell_voltage_min, 3, THINGSET_ANY_R, TS_SUBSET_LIVE);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_CELL_MAX_VOLTAGE, "rCellMaxVoltage_V",
-                        &bms.status.cell_voltage_max, 3, THINGSET_ANY_R, TS_SUBSET_LIVE);
+                        &bms.ic_data.cell_voltage_max, 3, THINGSET_ANY_R, TS_SUBSET_LIVE);
 
 THINGSET_ADD_ITEM_UINT32(APP_ID_MEAS, APP_ID_MEAS_BALANCING_STATUS, "rBalancingStatus",
-                         &bms.status.balancing_status, THINGSET_ANY_R, TS_SUBSET_LIVE);
+                         &bms.ic_data.balancing_status, THINGSET_ANY_R, TS_SUBSET_LIVE);
 
 // INPUT DATA /////////////////////////////////////////////////////////////
 
 THINGSET_ADD_GROUP(TS_ID_ROOT, APP_ID_INPUT, "Input", THINGSET_NO_CALLBACK);
 
-THINGSET_ADD_ITEM_BOOL(APP_ID_INPUT, APP_ID_INPUT_CHG_ENABLE, "wChgEnable", &bms.status.chg_enable,
+THINGSET_ADD_ITEM_BOOL(APP_ID_INPUT, APP_ID_INPUT_CHG_ENABLE, "wChgEnable", &bms.chg_enable,
                        THINGSET_ANY_R | THINGSET_ANY_W, 0);
 
-THINGSET_ADD_ITEM_BOOL(APP_ID_INPUT, APP_ID_INPUT_DIS_ENABLE, "wDisEnable", &bms.status.dis_enable,
+THINGSET_ADD_ITEM_BOOL(APP_ID_INPUT, APP_ID_INPUT_DIS_ENABLE, "wDisEnable", &bms.dis_enable,
                        THINGSET_ANY_R | THINGSET_ANY_W, 0);
 
 void data_objects_update_conf(enum thingset_callback_reason reason)
@@ -241,7 +247,7 @@ void data_objects_update_conf(enum thingset_callback_reason reason)
     if (reason == THINGSET_CALLBACK_POST_WRITE) {
         // ToDo: Validate new settings before applying them
 
-        bms_configure(&bms);
+        bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_ALL);
 
 #ifdef CONFIG_THINGSET_STORAGE
         thingset_storage_save_queued();
@@ -249,13 +255,13 @@ void data_objects_update_conf(enum thingset_callback_reason reason)
     }
 }
 
-int32_t bat_preset(enum CellType type)
+int32_t bat_preset(enum bms_cell_type type)
 {
     int err;
 
     bms_init_config(&bms, type, new_capacity);
-    err = bms_configure(&bms);
-    bms_update(&bms);
+
+    err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_ALL);
 
 #ifdef CONFIG_THINGSET_STORAGE
     if (err == 0) {
@@ -276,19 +282,17 @@ int32_t bat_preset_lfp()
     return bat_preset(CELL_TYPE_LFP);
 }
 
-void print_register()
+void print_registers()
 {
-    bms_print_register(reg_addr);
+    bms_ic_debug_print_mem(bms_ic);
 }
 
 void reset_device()
 {
-#ifndef UNIT_TEST
     sys_reboot(SYS_REBOOT_COLD);
-#endif
 }
 
 void shutdown()
 {
-    bms_shutdown(&bms);
+    bms_ic_set_mode(bms_ic, BMS_IC_MODE_OFF);
 }

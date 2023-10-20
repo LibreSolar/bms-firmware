@@ -8,7 +8,9 @@
 	pcb {
 		version-str = "v0.1";
 		version-num = <1>;
-
-		shunt-res = <1000>;
 	};
+};
+
+&isl94202 {
+	shunt-resistor-uohm = <1000>;
 };

@@ -18,11 +18,6 @@
 
 		type = "BMS 8S50 IC";
 
-		num-cells-max = <8>;
-		num-thermistors-max = <2>;
-
-		current-max = <50>;
-
 		/*
 		 * Additional information:
 		 * - Has MOSFET temperature sensor
@@ -70,6 +65,7 @@
 		led-red = &led1;
 		led-green = &led2;
 		sw-pwr = &power_button;
+		bms-ic = &isl94202;
 	};
 };
 
@@ -129,10 +125,13 @@ uext_i2c: &i2c1 {
 	clock-frequency = <I2C_BITRATE_STANDARD>;
 	status = "okay";
 
-	isl94202@28 {
+	isl94202: isl94202@28 {
 		compatible = "renesas,isl94202";
 		reg = <0x28>;	/* 0x50 >> 1 */
 		pull-up-gpios = <&gpiob 2 GPIO_ACTIVE_HIGH>;
+		board-max-current = <50>;
+		used-cell-channels = <0xFF>;
+		status = "okay";
 	};
 
 	eeprom0: eeprom@50 {

@@ -6,20 +6,9 @@
 
 #include "helper.h"
 
-#ifndef UNIT_TEST
 #include <zephyr/kernel.h>
-#endif
 
 #include <time.h>
-
-uint32_t uptime()
-{
-#ifndef UNIT_TEST
-    return k_uptime_get() / 1000;
-#else
-    return time(NULL);
-#endif
-}
 
 float interpolate(const float a[], const float b[], size_t size, float value_a)
 {

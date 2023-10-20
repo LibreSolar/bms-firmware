@@ -6,13 +6,11 @@
 
 #include "leds.h"
 
-#include "bms.h"
+#include <bms/bms.h>
 
 #define SLEEP_TIME K_MSEC(100)
 
-extern Bms bms;
-
-#ifndef UNIT_TEST
+extern struct bms_context bms;
 
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/kernel.h>
@@ -58,8 +56,8 @@ void leds_update()
     static uint32_t count = 0;
 
     // Charging LED control
-    if (bms.status.state == BMS_STATE_NORMAL || bms.status.state == BMS_STATE_CHG) {
-        if (bms.status.pack_current > bms.conf.bal_idle_current && ((count / 2) % 10) == 0) {
+    if (bms.state == BMS_STATE_NORMAL || bms.state == BMS_STATE_CHG) {
+        if (bms.ic_data.current > bms.ic_conf.bal_idle_current && ((count / 2) % 10) == 0) {
             // not in idle: ____ ____ ____
             leds_chg_set(0);
         }
@@ -68,12 +66,12 @@ void leds_update()
             leds_chg_set(1);
         }
     }
-    else if (bms.status.state == BMS_STATE_SHUTDOWN) {
+    else if (bms.state == BMS_STATE_SHUTDOWN) {
         // completely off
         leds_chg_set(0);
     }
     else {
-        if (bms_chg_error(bms.status.error_flags)) {
+        if (bms_chg_error(bms.ic_data.error_flags)) {
             // quick flash
             leds_chg_set(count % 2);
         }
@@ -87,8 +85,8 @@ void leds_update()
     }
 
     // Discharging LED control
-    if (bms.status.state == BMS_STATE_NORMAL || bms.status.state == BMS_STATE_DIS) {
-        if (bms.status.pack_current < -bms.conf.bal_idle_current && ((count / 2) % 10) == 0) {
+    if (bms.state == BMS_STATE_NORMAL || bms.state == BMS_STATE_DIS) {
+        if (bms.ic_data.current < -bms.ic_conf.bal_idle_current && ((count / 2) % 10) == 0) {
             // not in idle: ____ ____ ____
             leds_dis_set(0);
         }
@@ -97,12 +95,12 @@ void leds_update()
             leds_dis_set(1);
         }
     }
-    else if (bms.status.state == BMS_STATE_SHUTDOWN) {
+    else if (bms.state == BMS_STATE_SHUTDOWN) {
         // completely off
         leds_dis_set(0);
     }
     else {
-        if (bms_dis_error(bms.status.error_flags)) {
+        if (bms_dis_error(bms.ic_data.error_flags)) {
             // quick flash
             leds_dis_set(count % 2);
         }
@@ -119,13 +117,3 @@ void leds_update()
 }
 
 K_THREAD_DEFINE(leds, 256, leds_update_thread, NULL, NULL, NULL, 4, 0, 0);
-
-#else
-
-void leds_chg_set(bool on)
-{}
-
-void leds_dis_set(bool on)
-{}
-
-#endif // UNIT_TEST

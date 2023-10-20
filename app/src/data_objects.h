@@ -103,9 +103,9 @@ int32_t bat_preset_nmc();
 int32_t bat_preset_lfp();
 
 /**
- * Callback to read and print BMS register via ThingSet
+ * Callback to read and print common BMS registers via ThingSet
  */
-void print_register();
+void print_registers();
 
 /**
  * Callback to reset device (obviously...)
