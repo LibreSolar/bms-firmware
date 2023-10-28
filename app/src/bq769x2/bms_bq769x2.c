@@ -19,6 +19,10 @@
 
 LOG_MODULE_REGISTER(bq769x0, CONFIG_LOG_DEFAULT_LEVEL);
 
+static const uint8_t temperature_registers[] = { BQ769X2_CMD_TEMP_TS1, BQ769X2_CMD_TEMP_TS3 };
+BUILD_ASSERT(ARRAY_SIZE(temperature_registers) >= BOARD_NUM_THERMISTORS_MAX,
+             "Temperature array size is smaller than configured temperature sensors!");
+
 static void bms_update_balancing(Bms *bms);
 
 static int detect_num_cells(Bms *bms)
@@ -110,6 +114,19 @@ int bms_init_hardware(Bms *bms)
     err = bq769x2_datamem_write_u1(BQ769X2_SET_CONF_DCHG, 0x0F);
     if (err) {
         return err;
+    }
+
+    // configure all temperature sensors specified in temperature_registers
+    for (size_t i = 0; i < BOARD_NUM_THERMISTORS_MAX; i++) {
+        // skip BQ769X2_CMD_TEMP_TS1, because standard config is already set to 0x7
+        if (temperature_registers[i] == BQ769X2_CMD_TEMP_TS1) {
+            continue;
+        }
+
+        err = bq769x2_datamem_write_u1(temperature_registers[i], 0x7);
+        if (err) {
+            return err;
+        }
     }
 
     // set resolution for CC2 current to 10 mA and stack/pack voltage to 10 mV
@@ -442,13 +459,25 @@ static int bms_apply_temp_limits(Bms *bms)
 
 void bms_read_temperatures(Bms *bms)
 {
+    int num_temps = 0;
+    float sum_temps = 0;
     int16_t temp = 0; // unit: 0.1 K
 
-    /* by default, only TS1 is configured as cell temperature sensor */
-    bq769x2_direct_read_i2(BQ769X2_CMD_TEMP_TS1, &temp);
-    bms->status.bat_temp_avg = (temp * 0.1F) - 273.15F;
-    bms->status.bat_temp_min = bms->status.bat_temp_avg;
-    bms->status.bat_temp_max = bms->status.bat_temp_avg;
+    for (size_t i = 0; i < BOARD_NUM_THERMISTORS_MAX; i++) {
+        bq769x2_direct_read_i2(temperature_registers[i], &temp);
+        bms->status.bat_temps[i] = (temp * 0.1F) - 273.15F;
+
+        if (bms->status.bat_temps[i] < bms->status.bat_temp_min) {
+            bms->status.bat_temp_min = bms->status.bat_temps[i];
+        }
+        if (bms->status.bat_temps[i] > bms->status.bat_temp_max) {
+            bms->status.bat_temp_max = bms->status.bat_temps[i];
+        }
+        num_temps++;
+        sum_temps += bms->status.bat_temps[i];
+    }
+
+    bms->status.bat_temp_avg = sum_temps / num_temps;
 
     /* MOSFET temperature sensor connected to DCHG pin */
     bq769x2_direct_read_i2(BQ769X2_CMD_TEMP_DCHG, &temp);
