@@ -19,8 +19,14 @@
 
 LOG_MODULE_REGISTER(bq769x0, CONFIG_LOG_DEFAULT_LEVEL);
 
-static const uint8_t temperature_registers[] = { BQ769X2_CMD_TEMP_TS1, BQ769X2_CMD_TEMP_TS3 };
-BUILD_ASSERT(ARRAY_SIZE(temperature_registers) >= BOARD_NUM_THERMISTORS_MAX,
+static const struct
+{
+    uint8_t read_register;
+    uint16_t set_register;
+} cell_temperature_config[] = { { BQ769X2_CMD_TEMP_TS1, BQ769X2_SET_CONF_TS1 },
+                                { BQ769X2_CMD_TEMP_TS3, BQ769X2_SET_CONF_TS3 } };
+
+BUILD_ASSERT(ARRAY_SIZE(cell_temperature_config) >= BOARD_NUM_THERMISTORS_MAX,
              "Temperature array size is smaller than configured temperature sensors!");
 
 static void bms_update_balancing(Bms *bms);
@@ -119,11 +125,11 @@ int bms_init_hardware(Bms *bms)
     // configure all temperature sensors specified in temperature_registers
     for (size_t i = 0; i < BOARD_NUM_THERMISTORS_MAX; i++) {
         // skip BQ769X2_CMD_TEMP_TS1, because standard config is already set to 0x7
-        if (temperature_registers[i] == BQ769X2_CMD_TEMP_TS1) {
+        if (cell_temperature_config[i].set_register == BQ769X2_SET_CONF_TS1) {
             continue;
         }
 
-        err = bq769x2_datamem_write_u1(temperature_registers[i], 0x7);
+        err = bq769x2_datamem_write_u1(cell_temperature_config[i].set_register, 0x7);
         if (err) {
             return err;
         }
@@ -464,7 +470,7 @@ void bms_read_temperatures(Bms *bms)
     int16_t temp = 0; // unit: 0.1 K
 
     for (size_t i = 0; i < BOARD_NUM_THERMISTORS_MAX; i++) {
-        bq769x2_direct_read_i2(temperature_registers[i], &temp);
+        bq769x2_direct_read_i2(cell_temperature_config[i].read_register, &temp);
         bms->status.bat_temps[i] = (temp * 0.1F) - 273.15F;
 
         if (bms->status.bat_temps[i] < bms->status.bat_temp_min) {
