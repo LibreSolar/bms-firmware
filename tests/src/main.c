@@ -24,15 +24,11 @@
 #include "posix_board_if.h"
 #endif
 
-extern "C" {
-
 void setUp(void)
 {}
 
 void tearDown(void)
 {}
-
-} /* extern "C" */
 
 Bms bms;
 

@@ -25,16 +25,16 @@ zephyr_include_directories(../../modules/unity/src)
 
 target_sources(app PRIVATE
         ../../modules/unity/src/unity.c
-        src/main.cpp
+        src/main.c
         src/bq769x0_interface_stub.c
-        src/bq769x0_tests.cpp
+        src/bq769x0_tests.c
         src/bq769x2_interface_stub.c
-        src/bq769x2_tests_functions.cpp
-        src/bq769x2_tests_interface.cpp
-        src/common_tests.cpp
-        src/helper_tests.cpp
+        src/bq769x2_tests_functions.c
+        src/bq769x2_tests_interface.c
+        src/common_tests.c
+        src/helper_tests.c
         src/isl94202_interface_stub.c
-        src/isl94202_tests.cpp
+        src/isl94202_tests.c
 )
 
 # determine git tag and commit hash for automatic firmware versioning
