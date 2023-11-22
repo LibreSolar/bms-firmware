@@ -7,7 +7,10 @@
 /dts-v1/;
 
 #include <espressif/esp32c3.dtsi>
-#include "bms_c1-pinctrl.dtsi"
+
+#include <dt-bindings/pinctrl/esp32c3-pinctrl.h>
+#include <zephyr/dt-bindings/pinctrl/esp-pinctrl-common.h>
+#include <zephyr/dt-bindings/pinctrl/esp32c3-gpio-sigmap.h>
 
 / {
 	model = "Libre Solar BMS C1";
@@ -178,4 +181,25 @@
 			reg = <0x00250000 0x00006000>;
 		};
 	};
+};
+
+&pinctrl {
+	uart0_default: uart0_default {
+		group1 {
+			pinmux = <UART0_TX_GPIO21>;
+		};
+		group2 {
+			pinmux = <UART0_RX_GPIO20>;
+			bias-pull-up;
+		};
+	};
+
+	twai_default: twai_default {
+		group1 {
+			pinmux = <TWAI_TX_GPIO5>,
+				 <TWAI_RX_GPIO4>;
+		};
+	};
+
+	/* see version-specific overlays for I2C */
 };
