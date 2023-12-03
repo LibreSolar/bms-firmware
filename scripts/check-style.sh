@@ -7,8 +7,8 @@ DEFAULT_BRANCH="origin/main"
 
 if [ -x "$(command -v clang-format-diff)" ]; then
 CLANG_FORMAT_DIFF="clang-format-diff"
-elif [ -x "$(command -v clang-format-diff-12)" ]; then
-CLANG_FORMAT_DIFF="clang-format-diff-12"
+elif [ -x "$(command -v clang-format-diff-15)" ]; then
+CLANG_FORMAT_DIFF="clang-format-diff-15"
 elif [ -x "$(command -v /usr/share/clang/clang-format-diff.py)" ]; then
 CLANG_FORMAT_DIFF="/usr/share/clang/clang-format-diff.py -v"
 fi
