@@ -34,6 +34,9 @@ char firmware_version[] = FIRMWARE_VERSION_ID;
 static THINGSET_DEFINE_FLOAT_ARRAY(cell_voltages_arr, 3, bms.status.cell_voltages,
                                    ARRAY_SIZE(bms.status.cell_voltages));
 
+static THINGSET_DEFINE_FLOAT_ARRAY(cell_temps_arr, 1, bms.status.bat_temps,
+                                   ARRAY_SIZE(bms.status.bat_temps));
+
 // used for print_register callback
 static uint16_t reg_addr = 0;
 
@@ -185,8 +188,8 @@ THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_STACK_VOLTAGE, "rStackVoltage_V
 THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_PACK_CURRENT, "rPackCurrent_A",
                         &bms.status.pack_current, 2, THINGSET_ANY_R, TS_SUBSET_LIVE);
 
-THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_BAT_TEMP, "rBatTemp_degC",
-                        &bms.status.bat_temp_avg, 1, THINGSET_ANY_R, TS_SUBSET_LIVE);
+THINGSET_ADD_ITEM_ARRAY(APP_ID_MEAS, APP_ID_MEAS_CELL_TEMPS, "rCellTemps_degC", &cell_temps_arr,
+                        THINGSET_ANY_R, TS_SUBSET_LIVE);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_IC_TEMP, "rICTemp_degC", &bms.status.ic_temp, 1,
                         THINGSET_ANY_R, TS_SUBSET_LIVE);

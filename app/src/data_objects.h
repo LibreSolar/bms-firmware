@@ -69,7 +69,7 @@
 #define APP_ID_MEAS_PACK_VOLTAGE     0x71
 #define APP_ID_MEAS_STACK_VOLTAGE    0x72
 #define APP_ID_MEAS_PACK_CURRENT     0x73
-#define APP_ID_MEAS_BAT_TEMP         0x74
+#define APP_ID_MEAS_CELL_TEMPS       0x74
 #define APP_ID_MEAS_IC_TEMP          0x75
 #define APP_ID_MEAS_MCU_TEMP         0x76
 #define APP_ID_MEAS_MOSFET_TEMP      0x77
