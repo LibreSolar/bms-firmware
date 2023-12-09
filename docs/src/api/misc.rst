@@ -1,12 +1,6 @@
 Misc
 ====
 
-EEPROM
-------
-
-.. doxygenfile:: eeprom.h
-   :project: app
-
 Button
 ------
 
