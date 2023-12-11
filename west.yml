@@ -21,10 +21,6 @@ manifest:
           - hal_espressif
           - hal_stm32
           - tinycrypt
-    - name: oled-display-library
-      remote: libresolar
-      revision: 523b26c103de56714fcda655702d600870a671bc
-      path: modules/oled-display
     - name: thingset-zephyr-sdk
       remote: thingset
       revision: ab2f3c978a5c410b2b95b8cf2a2db601fecab859

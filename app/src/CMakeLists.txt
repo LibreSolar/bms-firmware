@@ -10,7 +10,6 @@ target_sources(app PRIVATE
         helper.cpp
         leds.cpp
         main.cpp
-        oled.cpp
 )
 
 add_subdirectory_ifdef(CONFIG_BQ769X0   bq769x0)

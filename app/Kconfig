@@ -93,21 +93,5 @@ config NUM_CELLS_IN_SERIES
 
 endmenu
 
-
-menu "UEXT port"
-
-config UEXT_OLED_DISPLAY
-    select I2C
-    bool "OLED display"
-
-config UEXT_OLED_BRIGHTNESS
-    depends on UEXT_OLED_DISPLAY
-    int "OLED display brightness"
-    range 1 255
-    default 1
-
-endmenu # UEXT port
-
-
 # include main Zephyr menu entries from Zephyr root directory
 source "Kconfig.zephyr"
