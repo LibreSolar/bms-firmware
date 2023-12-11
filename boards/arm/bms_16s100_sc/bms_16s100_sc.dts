@@ -32,23 +32,8 @@
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
 		zephyr,code-partition = &slot0_partition;
-		thingset,can = &can1;
+		thingset,can = &fdcan1;
 		thingset,serial = &usart2;
-	};
-
-	power-states {
-		stop0: state0 {
-			compatible = "zephyr,power-state";
-			power-state-name = "suspend-to-idle";
-			substate-id = <1>;
-			min-residency-us = <20>;
-		};
-		stop1: state1 {
-			compatible = "zephyr,power-state";
-			power-state-name = "suspend-to-idle";
-			substate-id = <2>;
-			min-residency-us = <100>;
-		};
 	};
 
 	leds {
@@ -201,21 +186,17 @@ zephyr_udc0: &usb {
 	};
 };
 
-&cpu0 {
-	cpu-power-states = <&stop0 &stop1>;
-};
-
 &lptim1 {
 	status = "okay";
 };
 
-&can1 {
+&fdcan1 {
+	clocks = <&rcc STM32_CLOCK_BUS_APB1 0x00001000>,
+		 <&rcc STM32_SRC_PLL_Q FDCAN_SEL(1)>;
 	pinctrl-0 = <&fdcan1_rx_pd0 &fdcan1_tx_pd1>;
 	pinctrl-names = "default";
 	bus-speed = <500000>;
 	bus-speed-data = <500000>;
-	sjw = <1>;
-	sjw-data = <1>;
 	sample-point = <875>;
 	sample-point-data = <875>;
 	phys = <&transceiver0>;

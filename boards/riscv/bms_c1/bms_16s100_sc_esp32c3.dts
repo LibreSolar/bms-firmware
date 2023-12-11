@@ -6,7 +6,8 @@
 
 /dts-v1/;
 
-#include <espressif/esp32c3.dtsi>
+#include <espressif/esp32c3/esp32c3_mini_n4.dtsi>
+
 #include "bms_16s100_sc_esp32c3-pinctrl.dtsi"
 
 / {
@@ -46,22 +47,6 @@
 		};
 	};
 
-	power-states {
-		light_sleep: light_sleep {
-			compatible = "zephyr,power-state";
-			power-state-name = "standby";
-			min-residency-us = <200>;
-			exit-latency-us = <60>;
-		};
-
-		deep_sleep: deep_sleep {
-			compatible = "zephyr,power-state";
-			power-state-name = "soft-off";
-			min-residency-us = <660>;
-			exit-latency-us = <105>;
-		};
-	};
-
 	gpio_keys {
 		compatible = "gpio-keys";
 		power_button: button {
@@ -78,7 +63,6 @@
 
 &cpu0 {
 	clock-frequency = <ESP32_CLK_CPU_160M>;
-	cpu-power-states = <&deep_sleep &light_sleep>;
 };
 
 &uart0 {

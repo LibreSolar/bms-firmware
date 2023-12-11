@@ -12,8 +12,8 @@ manifest:
       url-base: https://github.com/ThrowTheSwitch
   projects:
     - name: zephyr
-      remote: libresolar
-      revision: v3.4-branch
+      remote: zephyrproject
+      revision: v3.5-branch
       import:
         name-allowlist:
           - cmsis
@@ -23,7 +23,7 @@ manifest:
           - tinycrypt
     - name: thingset-zephyr-sdk
       remote: thingset
-      revision: ab2f3c978a5c410b2b95b8cf2a2db601fecab859
+      revision: 631ffe524a5aeba34019715bbbd3c9185f7902d1
       path: thingset-zephyr-sdk
       import:
         name-allowlist:
