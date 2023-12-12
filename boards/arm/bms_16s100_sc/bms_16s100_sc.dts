@@ -33,7 +33,7 @@
 		zephyr,flash = &flash0;
 		zephyr,code-partition = &slot0_partition;
 		thingset,can = &fdcan1;
-		thingset,serial = &usart2;
+		thingset,serial = &uext_uart;
 	};
 
 	leds {
@@ -64,9 +64,6 @@
 	aliases {
 		led-red = &led1;
 		led-green = &led2;
-		uart-dbg = &usart1;
-		uart-uext = &usart2;
-		i2c-uext = &i2c1;
 		sw-pwr = &power_button;
 	};
 };
@@ -110,7 +107,7 @@ zephyr_udc0: &usb {
 	bias-pull-up;	// avoid junk characters if pin is left floating
 };
 
-&usart2 {
+uext_uart: &usart2 {
 	pinctrl-0 = <&usart2_tx_pa2 &usart2_rx_pa3>;
 	pinctrl-names = "default";
 	current-speed = <115200>;
@@ -125,7 +122,7 @@ zephyr_udc0: &usb {
 	status = "okay";
 };
 
-&i2c1 {
+uext_i2c: &i2c1 {
 	pinctrl-0 = <&i2c1_scl_pb6 &i2c1_sda_pb7>;
 	pinctrl-names = "default";
 	clock-frequency = <I2C_BITRATE_FAST>;

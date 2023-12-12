@@ -1,0 +1,5 @@
+# Copyright (c) The Libre Solar Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+config SHIELD_UEXT_OLED
+	def_bool $(shields_list_contains,uext_oled)

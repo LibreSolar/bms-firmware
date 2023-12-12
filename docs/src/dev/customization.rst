@@ -80,3 +80,16 @@ The default period for data publication can be changed with the following Kconfi
 .. code-block:: bash
 
     CONFIG_THINGSET_REPORTING_LIVE_PERIOD_PRESET=10
+
+Shields for UEXT connector
+--------------------------
+
+There are some shields like an OLED display which can be connected to the UEXT connector.
+
+See the full list of shields in the ``boards/shields`` folder.
+
+The below example compiles the firmware with the OLED shield enabled.
+
+.. code-block:: bash
+
+    west build -b bms_8s50_ic@0.2 app -- -DEXTRA_CONF_FILE=oled.conf -DSHIELD=uext_oled
