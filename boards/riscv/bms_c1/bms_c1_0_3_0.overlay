@@ -4,6 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/ {
+	pcb {
+		version-str = "v0.4";
+		version-num = <4>;
+	};
+};
+
 &pinctrl {
 	i2c0_default: i2c0_default {
 		group1 {

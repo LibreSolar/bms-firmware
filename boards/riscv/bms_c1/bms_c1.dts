@@ -20,8 +20,6 @@
 		compatible = "bms";
 
 		type = "BMS C1";
-		version-str = "v0.3";
-		version-num = <3>;
 
 		num-cells-max = <16>;
 		num-thermistors-max = <2>;
