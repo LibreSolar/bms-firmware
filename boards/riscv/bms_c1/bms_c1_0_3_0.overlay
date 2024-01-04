@@ -6,8 +6,8 @@
 
 / {
 	pcb {
-		version-str = "v0.4";
-		version-num = <4>;
+		version-str = "v0.3";
+		version-num = <3>;
 	};
 };
 
