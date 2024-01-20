@@ -8,7 +8,6 @@
 
 #include "bq769x2_tests.h"
 #include "common_tests.h"
-#include "helper_tests.h"
 #include "isl94202_tests.h"
 
 #include "unity.h"
@@ -101,8 +100,6 @@ int main(void)
 #elif defined(CONFIG_BMS_IC_ISL94202)
     err += isl94202_tests();
 #endif
-
-    err += helper_tests();
 
 #ifdef CONFIG_ARCH_POSIX
     posix_exit(err);

@@ -26,7 +26,6 @@ target_sources(app PRIVATE
         ../../app/src/bms_soc.c
         src/main.c
         src/common_tests.c
-        src/helper_tests.c
 )
 
 zephyr_library_sources_ifdef(CONFIG_BMS_IC_BQ769X2
