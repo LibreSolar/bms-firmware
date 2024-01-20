@@ -63,6 +63,8 @@ int main(void)
             LOG_ERR("Failed to read data from BMS IC: %d", err);
         }
 
+        bms_soc_update(&bms);
+
         bms_state_machine(&bms);
 
         if (button_pressed_for_3s()) {
