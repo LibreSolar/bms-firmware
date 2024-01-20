@@ -6,7 +6,4 @@ if BOARD_BMS_16S100_SC
 config BOARD
 	default "bms_16s100_sc"
 
-config LIBRE_SOLAR_TYPE_ID
-	default 10
-
 endif # BOARD_BMS_16S100_SC

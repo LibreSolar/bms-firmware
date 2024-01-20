@@ -3,19 +3,6 @@
 
 mainmenu "Libre Solar Battery Management System Firmware"
 
-#
-# Invisible (board-specific) Kconfig symbols
-#
-
-config LIBRE_SOLAR_TYPE_ID
-    int
-    help
-      Numeric Libre Solar hardware type ID
-
-#
-# Visible (user-configurable) Kconfig symbols
-#
-
 menu "Battery default settings"
 
 config BAT_CAPACITY_AH

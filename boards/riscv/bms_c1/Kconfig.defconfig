@@ -7,9 +7,6 @@ config BOARD
 	default "bms_16s100_sc_esp32c3" if BOARD_BMS_16S100_SC_ESP32C3
 	default "bms_c1" if BOARD_BMS_C1
 
-config LIBRE_SOLAR_TYPE_ID
-	default 10
-
 config ENTROPY_ESP32_RNG
 	default y if ENTROPY_GENERATOR
 
