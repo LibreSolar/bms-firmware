@@ -7,7 +7,6 @@ target_sources(app PRIVATE
         bms_soc.c
         button.c
         data_objects.c
-        helper.c
         leds.c
         main.c
 )

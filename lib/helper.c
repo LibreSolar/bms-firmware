@@ -6,10 +6,6 @@
 
 #include "helper.h"
 
-#include <zephyr/kernel.h>
-
-#include <time.h>
-
 float interpolate(const float a[], const float b[], size_t size, float value_a)
 {
     if (a[0] < a[size - 1]) {
