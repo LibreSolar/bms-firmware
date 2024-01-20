@@ -51,6 +51,19 @@ config BMS_IC_ISL94202
 	help
 	  Driver for Intersil/Renesas ISL94202.
 
+config BMS_IC_ISL94202_NUM_CELLS
+    int "Exact number of cells in series"
+    range 3 8
+    default 8
+    help
+      The exact number of cells used by the application is needed for configuration of the chip.
+
+      Typical choices:
+      - 3 for 12V NMC Li-Ion battery
+      - 4 for 12V LiFePO4 battery
+      - 5 for 12V Titanate battery
+      - 8 for 24V LiFePO4 battery
+
 config BMS_IC_CURRENT_MONITORING
 	bool "Use BMS IC current monitoring"
 	depends on BMS_IC_HAS_CURRENT_MONITORING
