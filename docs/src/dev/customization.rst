@@ -38,8 +38,8 @@ By default, the BMS is configured for LiFePO4 cells (``CONFIG_CELL_TYPE_LFP``).
 Possible other pre-defined options are ``CONFIG_BAT_TYPE_NMC``, ``CONFIG_BAT_TYPE_NMC_HV`` and
 ``CONFIG_BAT_TYPE_LTO``.
 
-The number of cells only has to be specified via ``CONFIG_NUM_CELLS_IN_SERIES`` for boards with the
-ISL94202 chip. For all other chips it is detected automatically and the setting is ignored.
+The number of cells only has to be specified via ``CONFIG_BMS_IC_ISL94202_NUM_CELLS`` for boards
+with the ISL94202 chip. For all other chips it is detected automatically.
 
 To compile the firmware with default settings e.g. for a 24V LiFePO4 battery with a nominal capacity
 of 100Ah, add the following to ``prj.conf`` or the board-specific ``.conf`` file:
@@ -48,7 +48,6 @@ of 100Ah, add the following to ``prj.conf`` or the board-specific ``.conf`` file
 
     CONFIG_BAT_CAPACITY_AH=100
     CONFIG_CELL_TYPE_LFP=y
-    CONFIG_NUM_CELLS_IN_SERIES=8
 
 Configure serial interface
 """"""""""""""""""""""""""

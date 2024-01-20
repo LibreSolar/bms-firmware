@@ -42,18 +42,6 @@ config CELL_TYPE
     default 3 if CELL_TYPE_NMC_HV
     default 4 if CELL_TYPE_LTO
 
-config NUM_CELLS_IN_SERIES
-    int "Number of cells for single battery"
-    default 3 if CELL_TYPE_NMC || CELL_TYPE_NMC_HV
-    default 4 if CELL_TYPE_LFP
-    default 5 if CELL_TYPE_LTO
-    range 3 16
-    help
-      Typical choices:
-      - 3 for 12V NMC Li-Ion battery
-      - 4 for 12V LiFePO4 battery
-      - 5 for 12V Titanate battery
-
 endmenu
 
 # include main Zephyr menu entries from Zephyr root directory

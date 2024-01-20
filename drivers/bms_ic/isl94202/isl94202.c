@@ -625,7 +625,7 @@ static int isl94202_init(const struct device *dev)
     /* activate pull-up at I2C SDA and SCL */
     gpio_pin_configure_dt(&dev_config->i2c_pullup, GPIO_OUTPUT_ACTIVE);
 
-    err = set_num_cells(dev, CONFIG_NUM_CELLS_IN_SERIES);
+    err = set_num_cells(dev, CONFIG_BMS_IC_ISL94202_NUM_CELLS);
     if (err) {
         return err;
     }
