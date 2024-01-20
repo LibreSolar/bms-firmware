@@ -41,6 +41,8 @@ void setup()
 {
     bms_ic_assign_data(bms_ic, &bms.ic_data);
 
+    bms_ic_set_mode(bms_ic, BMS_IC_MODE_ACTIVE);
+
     bms.ic_conf.dis_sc_limit = 35.0;
     bms.ic_conf.dis_sc_delay_us = 200;
 
