@@ -24,7 +24,7 @@ target_sources(app PRIVATE
         ../../modules/unity/src/unity.c
         ../app/src/bms_common.c
         ../app/src/bms_soc.c
-        ../app/src/helper.cpp
+        ../app/src/helper.c
         src/main.c
         src/common_tests.c
         src/helper_tests.c
