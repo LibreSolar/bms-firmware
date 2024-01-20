@@ -45,6 +45,6 @@ jobs:
       - name: Run unit-tests
         working-directory: bms-firmware
         run: |
-          cd tests
+          cd tests/common
           west build -p -b native_posix -t run -- -DDTC_OVERLAY_FILE="boards/native_posix.overlay;boards/bq769x2.overlay"
           west build -p -b native_posix -t run -- -DDTC_OVERLAY_FILE="boards/native_posix.overlay;boards/isl94202.overlay"
