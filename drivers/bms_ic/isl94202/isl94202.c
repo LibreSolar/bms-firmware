@@ -590,11 +590,63 @@ static int bms_ic_isl94202_balance(const struct device *dev, uint32_t cells)
     return err;
 }
 
+static int isl94202_activate(const struct device *dev)
+{
+    const struct bms_ic_isl94202_config *dev_config = dev->config;
+    uint8_t reg;
+    int err;
+
+    /* Datasheet: 3 seconds wake-up delay from shutdown or initial power-up */
+    k_sleep(K_TIMEOUT_ABS_MS(3000));
+
+    /* activate pull-up at I2C SDA and SCL */
+    gpio_pin_configure_dt(&dev_config->i2c_pullup, GPIO_OUTPUT_ACTIVE);
+
+    err = set_num_cells(dev, CONFIG_BMS_IC_ISL94202_NUM_CELLS);
+    if (err) {
+        LOG_ERR("Failed to set number of cells: %d", err);
+        return err;
+    }
+
+    // xTemp2 monitoring MOSFETs and not cells
+    reg = ISL94202_SETUP0_XT2M_Msk;
+    err = isl94202_write_bytes(dev, ISL94202_SETUP0, &reg, 1);
+    if (err) {
+        LOG_ERR("Failed to set xTemp2 MOSFET monitoring: %d", err);
+        return err;
+    }
+
+    // Enable balancing during charging and EOC conditions
+    reg = ISL94202_SETUP1_CBDC_Msk | ISL94202_SETUP1_CB_EOC_Msk;
+    err = isl94202_write_bytes(dev, ISL94202_SETUP1, &reg, 1);
+    if (err) {
+        LOG_ERR("Failed to set balancing setup: %d", err);
+        return err;
+    }
+
+    // Enable FET control via microcontroller
+    reg = ISL94202_CTRL2_UCFET_Msk;
+    err = isl94202_write_bytes(dev, ISL94202_CTRL2, &reg, 1);
+    if (err) {
+        LOG_ERR("Failed to enable MCU FET control: %d", err);
+        return err;
+    }
+
+    // Remark: Ideal diode control via DFODOV and DFODUV bits of SETUP1 register doesn't have any
+    // effect because of FET control via microcontroller.
+
+    LOG_INF("Activated ISL94202");
+
+    return 0;
+}
+
 static int bms_ic_isl94202_set_mode(const struct device *dev, enum bms_ic_mode mode)
 {
     uint8_t reg;
 
     switch (mode) {
+        case BMS_IC_MODE_ACTIVE:
+            return isl94202_activate(dev);
         case BMS_IC_MODE_OFF:
             reg = ISL94202_CTRL3_PDWN_Msk;
             isl94202_write_bytes(dev, ISL94202_CTRL3, &reg, 1);
@@ -607,8 +659,6 @@ static int bms_ic_isl94202_set_mode(const struct device *dev, enum bms_ic_mode m
 static int isl94202_init(const struct device *dev)
 {
     const struct bms_ic_isl94202_config *dev_config = dev->config;
-    uint8_t reg;
-    int err;
 
     if (!i2c_is_ready_dt(&dev_config->i2c)) {
         LOG_ERR("I2C device not ready");
@@ -618,41 +668,6 @@ static int isl94202_init(const struct device *dev)
         LOG_ERR("I2C pull-up GPIO not ready");
         return -ENODEV;
     }
-
-    /* Datasheet: 3 seconds wake-up delay from shutdown or initial power-up */
-    k_sleep(K_SECONDS(3));
-
-    /* activate pull-up at I2C SDA and SCL */
-    gpio_pin_configure_dt(&dev_config->i2c_pullup, GPIO_OUTPUT_ACTIVE);
-
-    err = set_num_cells(dev, CONFIG_BMS_IC_ISL94202_NUM_CELLS);
-    if (err) {
-        return err;
-    }
-
-    // xTemp2 monitoring MOSFETs and not cells
-    reg = ISL94202_SETUP0_XT2M_Msk;
-    err = isl94202_write_bytes(dev, ISL94202_SETUP0, &reg, 1);
-    if (err) {
-        return err;
-    }
-
-    // Enable balancing during charging and EOC conditions
-    reg = ISL94202_SETUP1_CBDC_Msk | ISL94202_SETUP1_CB_EOC_Msk;
-    err = isl94202_write_bytes(dev, ISL94202_SETUP1, &reg, 1);
-    if (err) {
-        return err;
-    }
-
-    // Enable FET control via microcontroller
-    reg = ISL94202_CTRL2_UCFET_Msk;
-    err = isl94202_write_bytes(dev, ISL94202_CTRL2, &reg, 1);
-    if (err) {
-        return err;
-    }
-
-    // Remark: Ideal diode control via DFODOV and DFODUV bits of SETUP1 register doesn't have any
-    // effect because of FET control via microcontroller.
 
     return 0;
 }
