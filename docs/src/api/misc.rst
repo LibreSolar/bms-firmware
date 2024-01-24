@@ -10,5 +10,5 @@ Button
 Helper
 ------
 
-.. doxygenfile:: helper.h
+.. doxygenfile:: include/helper.h
    :project: app
