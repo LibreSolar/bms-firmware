@@ -1,5 +1,5 @@
 BMS
 ===
 
-.. doxygenfile:: bms.h
+.. doxygenfile:: include/bms/bms.h
    :project: app
