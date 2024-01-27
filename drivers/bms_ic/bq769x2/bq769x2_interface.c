@@ -63,16 +63,16 @@ int bq769x2_direct_read_i2(const struct device *dev, const uint8_t reg_addr, int
     return err;
 }
 
-static int bq769x2_subcmd_read(const struct device *dev, const uint16_t subcmd, uint8_t *bytes,
-                               const size_t num_bytes)
+static int bq769x2_data_read(const struct device *dev, const uint16_t addr, uint8_t *bytes,
+                             const size_t num_bytes)
 {
     const struct bms_ic_bq769x2_config *config = dev->config;
     static uint8_t buf_data[0x20];
     int err;
 
     /* write the subcommand we want to read data from */
-    uint8_t buf_subcmd[2] = { subcmd & 0x00FF, subcmd >> 8 };
-    err = config->write_bytes(dev, BQ769X2_CMD_SUBCMD_LOWER, buf_subcmd, 2);
+    uint8_t buf_addr[2] = { addr & 0x00FF, addr >> 8 };
+    err = config->write_bytes(dev, BQ769X2_CMD_SUBCMD_LOWER, buf_addr, 2);
     if (err) {
         goto err;
     }
@@ -85,12 +85,12 @@ static int bq769x2_subcmd_read(const struct device *dev, const uint16_t subcmd, 
         if (err) {
             goto err;
         }
-        else if (buf_subcmd[0] == buf_data[0] && buf_subcmd[1] == buf_data[1]) {
+        else if (buf_addr[0] == buf_data[0] && buf_addr[1] == buf_data[1]) {
             /* processing inside chip finished */
             break;
         }
         else if (attempts >= BQ769X2_READ_MAX_ATTEMPTS) {
-            LOG_ERR("Failed to read subcmd 0x%04X after %d attempts", subcmd,
+            LOG_ERR("Failed to read data at 0x%04X after %d attempts", addr,
                     BQ769X2_READ_MAX_ATTEMPTS);
             return -EIO;
         }
@@ -114,7 +114,7 @@ static int bq769x2_subcmd_read(const struct device *dev, const uint16_t subcmd, 
     }
 
     /* read all available data (needed for checksum calculation, may be more than num_bytes) */
-    uint8_t checksum = buf_subcmd[0] + buf_subcmd[1];
+    uint8_t checksum = buf_addr[0] + buf_addr[1];
     err = config->read_bytes(dev, BQ769X2_SUBCMD_DATA_START, buf_data, data_length);
     if (err) {
         goto err;
@@ -140,29 +140,29 @@ static int bq769x2_subcmd_read(const struct device *dev, const uint16_t subcmd, 
     return 0;
 
 err:
-    LOG_ERR("I2C error for subcmd_read: %d", err);
+    LOG_ERR("I2C error for data_read: %d", err);
     return err;
 }
 
-static int bq769x2_subcmd_write(const struct device *dev, const uint16_t subcmd,
-                                const uint32_t value, const size_t num_bytes)
+static int bq769x2_data_write(const struct device *dev, const uint16_t addr, const uint32_t value,
+                              const size_t num_bytes)
 {
     const struct bms_ic_bq769x2_config *config = dev->config;
     uint8_t buf_data[4];
     int err;
 
-    __ASSERT(num_bytes <= 4, "Subcmd num_bytes 0x%X invalid", num_bytes);
+    __ASSERT(num_bytes <= 4, "num_bytes 0x%X invalid", num_bytes);
 
-    /* write the subcommand we want to write data to */
-    uint8_t buf_subcmd[2] = { subcmd & 0x00FF, subcmd >> 8 };
-    err = config->write_bytes(dev, BQ769X2_CMD_SUBCMD_LOWER, buf_subcmd, 2);
+    /* write the subcommand / data mem register address we want to write data to */
+    uint8_t buf_addr[2] = { addr & 0x00FF, addr >> 8 };
+    err = config->write_bytes(dev, BQ769X2_CMD_SUBCMD_LOWER, buf_addr, 2);
     if (err) {
         goto err;
     }
 
     if (num_bytes > 0) {
         /* write actual data and calculate checksum */
-        uint8_t checksum = buf_subcmd[0] + buf_subcmd[1];
+        uint8_t checksum = buf_addr[0] + buf_addr[1];
         for (int i = 0; i < num_bytes; i++) {
             buf_data[i] = (value >> (i * 8)) & 0x000000FF;
             checksum += buf_data[i];
@@ -191,7 +191,7 @@ static int bq769x2_subcmd_write(const struct device *dev, const uint16_t subcmd,
     return 0;
 
 err:
-    LOG_ERR("I2C error for subcmd_write: %d", err);
+    LOG_ERR("I2C error for data_write: %d", err);
     return err;
 }
 
@@ -199,7 +199,7 @@ int bq769x2_subcmd_cmd_only(const struct device *dev, const uint16_t subcmd)
 {
     __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
 
-    return bq769x2_subcmd_write(dev, subcmd, 0, 0);
+    return bq769x2_data_write(dev, subcmd, 0, 0);
 }
 
 int bq769x2_subcmd_read_u1(const struct device *dev, const uint16_t subcmd, uint8_t *value)
@@ -208,7 +208,7 @@ int bq769x2_subcmd_read_u1(const struct device *dev, const uint16_t subcmd, uint
 
     uint8_t buf[1];
 
-    int err = bq769x2_subcmd_read(dev, subcmd, buf, sizeof(buf));
+    int err = bq769x2_data_read(dev, subcmd, buf, sizeof(buf));
     if (!err) {
         *value = buf[0];
     }
@@ -222,7 +222,7 @@ int bq769x2_subcmd_read_u2(const struct device *dev, const uint16_t subcmd, uint
 
     uint8_t buf[2];
 
-    int err = bq769x2_subcmd_read(dev, subcmd, buf, sizeof(buf));
+    int err = bq769x2_data_read(dev, subcmd, buf, sizeof(buf));
     if (!err) {
         *value = buf[0] | buf[1] << 8;
     }
@@ -236,7 +236,7 @@ int bq769x2_subcmd_read_u4(const struct device *dev, const uint16_t subcmd, uint
 
     uint8_t buf[4];
 
-    int err = bq769x2_subcmd_read(dev, subcmd, buf, sizeof(buf));
+    int err = bq769x2_data_read(dev, subcmd, buf, sizeof(buf));
     if (!err) {
         *value = buf[0] | buf[1] << 8 | buf[2] << 16 | buf[3] << 24;
     }
@@ -248,21 +248,21 @@ int bq769x2_subcmd_write_u1(const struct device *dev, const uint16_t subcmd, uin
 {
     __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
 
-    return bq769x2_subcmd_write(dev, subcmd, value, 1);
+    return bq769x2_data_write(dev, subcmd, value, 1);
 }
 
 int bq769x2_subcmd_write_u2(const struct device *dev, const uint16_t subcmd, uint16_t value)
 {
     __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
 
-    return bq769x2_subcmd_write(dev, subcmd, value, 2);
+    return bq769x2_data_write(dev, subcmd, value, 2);
 }
 
 int bq769x2_subcmd_write_i2(const struct device *dev, const uint16_t subcmd, int16_t value)
 {
     __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
 
-    return bq769x2_subcmd_write(dev, subcmd, value, 2);
+    return bq769x2_data_write(dev, subcmd, value, 2);
 }
 
 int bq769x2_config_update_mode(const struct device *dev, bool config_update)
@@ -292,7 +292,7 @@ int bq769x2_datamem_read_u1(const struct device *dev, const uint16_t reg_addr, u
 
     uint8_t buf[1];
 
-    int err = bq769x2_subcmd_read(dev, reg_addr, buf, sizeof(buf));
+    int err = bq769x2_data_read(dev, reg_addr, buf, sizeof(buf));
     if (!err) {
         *value = buf[0];
     }
@@ -306,7 +306,7 @@ int bq769x2_datamem_read_u2(const struct device *dev, const uint16_t reg_addr, u
 
     uint8_t buf[2];
 
-    int err = bq769x2_subcmd_read(dev, reg_addr, buf, sizeof(buf));
+    int err = bq769x2_data_read(dev, reg_addr, buf, sizeof(buf));
     if (!err) {
         *value = buf[0] | buf[1] << 8;
     }
@@ -320,7 +320,7 @@ int bq769x2_datamem_read_f4(const struct device *dev, const uint16_t reg_addr, f
 
     uint8_t buf[4];
 
-    int err = bq769x2_subcmd_read(dev, reg_addr, buf, sizeof(buf));
+    int err = bq769x2_data_read(dev, reg_addr, buf, sizeof(buf));
     if (!err) {
         *(uint32_t *)value = buf[0] | buf[1] << 8 | buf[2] << 16 | buf[3] << 24;
     }
@@ -335,7 +335,7 @@ int bq769x2_datamem_write_u1(const struct device *dev, const uint16_t reg_addr, 
     __ASSERT(data->config_update_mode_enabled, "bq769x2 config update mode not enabled");
     __ASSERT(BQ769X2_IS_DATA_MEM_REG_ADDR(reg_addr), "invalid data memory register");
 
-    return bq769x2_subcmd_write(dev, reg_addr, value, 1);
+    return bq769x2_data_write(dev, reg_addr, value, 1);
 }
 
 int bq769x2_datamem_write_u2(const struct device *dev, const uint16_t reg_addr, uint16_t value)
@@ -345,7 +345,7 @@ int bq769x2_datamem_write_u2(const struct device *dev, const uint16_t reg_addr, 
     __ASSERT(data->config_update_mode_enabled, "bq769x2 config update mode not enabled");
     __ASSERT(BQ769X2_IS_DATA_MEM_REG_ADDR(reg_addr), "invalid data memory register");
 
-    return bq769x2_subcmd_write(dev, reg_addr, value, 2);
+    return bq769x2_data_write(dev, reg_addr, value, 2);
 }
 
 int bq769x2_datamem_write_i1(const struct device *dev, const uint16_t reg_addr, int8_t value)
@@ -355,7 +355,7 @@ int bq769x2_datamem_write_i1(const struct device *dev, const uint16_t reg_addr, 
     __ASSERT(data->config_update_mode_enabled, "bq769x2 config update mode not enabled");
     __ASSERT(BQ769X2_IS_DATA_MEM_REG_ADDR(reg_addr), "invalid data memory register");
 
-    return bq769x2_subcmd_write(dev, reg_addr, value, 1);
+    return bq769x2_data_write(dev, reg_addr, value, 1);
 }
 
 int bq769x2_datamem_write_i2(const struct device *dev, const uint16_t reg_addr, int16_t value)
@@ -365,7 +365,7 @@ int bq769x2_datamem_write_i2(const struct device *dev, const uint16_t reg_addr, 
     __ASSERT(data->config_update_mode_enabled, "bq769x2 config update mode not enabled");
     __ASSERT(BQ769X2_IS_DATA_MEM_REG_ADDR(reg_addr), "invalid data memory register");
 
-    return bq769x2_subcmd_write(dev, reg_addr, value, 2);
+    return bq769x2_data_write(dev, reg_addr, value, 2);
 }
 
 int bq769x2_datamem_write_f4(const struct device *dev, const uint16_t reg_addr, float value)
@@ -377,5 +377,5 @@ int bq769x2_datamem_write_f4(const struct device *dev, const uint16_t reg_addr, 
 
     uint32_t *u32 = (uint32_t *)&value;
 
-    return bq769x2_subcmd_write(dev, reg_addr, *u32, 4);
+    return bq769x2_data_write(dev, reg_addr, *u32, 4);
 }
