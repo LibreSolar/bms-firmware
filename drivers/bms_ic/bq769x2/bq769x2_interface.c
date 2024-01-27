@@ -258,41 +258,11 @@ int bq769x2_subcmd_write_u2(const struct device *dev, const uint16_t subcmd, uin
     return bq769x2_subcmd_write(dev, subcmd, value, 2);
 }
 
-int bq769x2_subcmd_write_u4(const struct device *dev, const uint16_t subcmd, uint32_t value)
-{
-    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
-
-    return bq769x2_subcmd_write(dev, subcmd, value, 4);
-}
-
-int bq769x2_subcmd_write_i1(const struct device *dev, const uint16_t subcmd, int8_t value)
-{
-    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
-
-    return bq769x2_subcmd_write(dev, subcmd, value, 1);
-}
-
 int bq769x2_subcmd_write_i2(const struct device *dev, const uint16_t subcmd, int16_t value)
 {
     __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
 
     return bq769x2_subcmd_write(dev, subcmd, value, 2);
-}
-
-int bq769x2_subcmd_write_i4(const struct device *dev, const uint16_t subcmd, int32_t value)
-{
-    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
-
-    return bq769x2_subcmd_write(dev, subcmd, value, 4);
-}
-
-int bq769x2_subcmd_write_f4(const struct device *dev, const uint16_t subcmd, float value)
-{
-    __ASSERT(!BQ769X2_IS_DATA_MEM_REG_ADDR(subcmd), "invalid subcmd: 0x%x", subcmd);
-
-    uint32_t *u32 = (uint32_t *)&value;
-
-    return bq769x2_subcmd_write(dev, subcmd, *u32, 4);
 }
 
 int bq769x2_config_update_mode(const struct device *dev, bool config_update)
@@ -339,6 +309,20 @@ int bq769x2_datamem_read_u2(const struct device *dev, const uint16_t reg_addr, u
     int err = bq769x2_subcmd_read(dev, reg_addr, buf, sizeof(buf));
     if (!err) {
         *value = buf[0] | buf[1] << 8;
+    }
+
+    return err;
+}
+
+int bq769x2_datamem_read_f4(const struct device *dev, const uint16_t reg_addr, float *value)
+{
+    __ASSERT(BQ769X2_IS_DATA_MEM_REG_ADDR(reg_addr), "invalid data memory register");
+
+    uint8_t buf[4];
+
+    int err = bq769x2_subcmd_read(dev, reg_addr, buf, sizeof(buf));
+    if (!err) {
+        *(uint32_t *)value = buf[0] | buf[1] << 8 | buf[2] << 16 | buf[3] << 24;
     }
 
     return err;
