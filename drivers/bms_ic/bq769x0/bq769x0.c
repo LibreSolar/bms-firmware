@@ -416,7 +416,7 @@ static int bms_ic_bq769x0_configure(const struct device *dev, struct bms_ic_conf
         return -EIO;
     }
 
-    return (flags == actual_flags) ? 0 : -EINVAL;
+    return actual_flags;
 }
 
 static int bq769x0_read_cell_voltages(const struct device *dev, struct bms_ic_data *ic_data)

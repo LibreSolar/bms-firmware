@@ -24,6 +24,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
+/* Caution: Maximum number of flags is 31 (BIT(30)) because the flags must fit to an int32_t */
 #define BMS_IC_CONF_VOLTAGE_LIMITS BIT(0)
 #define BMS_IC_CONF_TEMP_LIMITS    BIT(1)
 #define BMS_IC_CONF_CURRENT_LIMITS BIT(2)
@@ -240,8 +241,7 @@ __subsystem struct bms_ic_driver_api
  * @param flags Flags to specify which parts of the configuration should be applied. See
  *              BMS_IC_CONF_* defines for valid flags.
  *
- * @retval 0 for success
- * @retval -EINVAL if not all requested configuration is supported by the IC
+ * @retval flags The applied configuration flags supported by this IC
  * @retval -EIO for communication error
  */
 static inline int bms_ic_configure(const struct device *dev, struct bms_ic_conf *ic_conf,

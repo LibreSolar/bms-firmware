@@ -43,7 +43,7 @@ int main(void)
     }
 
     err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_ALL);
-    if (err != 0) {
+    if (err <= 0) {
         LOG_ERR("Failed to configure BMS IC: %d", err);
     }
 
