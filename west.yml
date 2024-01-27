@@ -29,7 +29,3 @@ manifest:
         name-allowlist:
           - thingset-node-c
           - zcbor
-    - name: unity
-      remote: throwtheswitch
-      revision: 74cde089e65c3435ce9aa87d5c69f4f16b7f6ade
-      path: modules/unity

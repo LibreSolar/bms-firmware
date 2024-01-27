@@ -6,37 +6,19 @@
 
 #include <bms/bms.h>
 
-#include "bq769x2_tests.h"
-#include "common_tests.h"
-#include "isl94202_tests.h"
-
-#include "unity.h"
-
-#include <stdio.h>
-
 #include <zephyr/device.h>
 #include <zephyr/kernel.h>
 
-#ifdef CONFIG_ARCH_POSIX
-#include "posix_board_if.h"
-#endif
-
-static const struct device *bms_ic = DEVICE_DT_GET(DT_ALIAS(bms_ic));
-
 struct bms_context bms;
+
+const struct device *bms_ic = DEVICE_DT_GET(DT_ALIAS(bms_ic));
 
 float OCV[] = { // 100, 95, ..., 0 %
     3.392, 3.314, 3.309, 3.308, 3.304, 3.296, 3.283, 3.275, 3.271, 3.268, 3.265,
     3.264, 3.262, 3.252, 3.240, 3.226, 3.213, 3.190, 3.177, 3.132, 2.833
 };
 
-void setUp(void)
-{}
-
-void tearDown(void)
-{}
-
-void setup()
+void common_setup_bms_defaults()
 {
     bms_ic_assign_data(bms_ic, &bms.ic_data);
 
@@ -80,30 +62,4 @@ void setup()
     bms_soc_reset(&bms, -1);
     bms_ic_set_switches(bms_ic, BMS_SWITCH_DIS, true);
     bms_ic_set_switches(bms_ic, BMS_SWITCH_CHG, true);
-}
-
-int main(void)
-{
-    int err = 0;
-
-    k_sleep(K_MSEC(100));
-
-    setup();
-
-    err += common_tests();
-
-#ifdef CONFIG_BMS_IC_BQ769X0
-    err += bq769x0_tests();
-#elif defined(CONFIG_BMS_IC_BQ769X2)
-    err += bq769x2_tests_functions();
-    err += bq769x2_tests_interface();
-#elif defined(CONFIG_BMS_IC_ISL94202)
-    err += isl94202_tests();
-#endif
-
-#ifdef CONFIG_ARCH_POSIX
-    posix_exit(err);
-#endif
-
-    return 0;
 }

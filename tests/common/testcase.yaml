@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: Apache-2.0
+
+tests:
+  common.bq769x2:
+    integration_platforms:
+      - native_posix
+    extra_args:
+      - DTC_OVERLAY_FILE="boards/bq769x2.overlay"
+  common.isl94202:
+    integration_platforms:
+      - native_posix
+    extra_args:
+      - DTC_OVERLAY_FILE="boards/isl94202.overlay"
