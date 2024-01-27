@@ -575,9 +575,9 @@ static int bq769x0_read_error_flags(const struct device *dev, struct bms_ic_data
         error_flags |= BMS_ERR_DIS_OVERTEMP;
     }
 
-    hyst = (ic_data->error_flags & BMS_ERR_DIS_OVERTEMP) ? dev_data->ic_conf.temp_limit_hyst : 0;
+    hyst = (ic_data->error_flags & BMS_ERR_DIS_UNDERTEMP) ? dev_data->ic_conf.temp_limit_hyst : 0;
     if (ic_data->cell_temp_min < dev_data->ic_conf.dis_ut_limit + hyst) {
-        error_flags |= BMS_ERR_DIS_OVERTEMP;
+        error_flags |= BMS_ERR_DIS_UNDERTEMP;
     }
 
     ic_data->error_flags = error_flags;
