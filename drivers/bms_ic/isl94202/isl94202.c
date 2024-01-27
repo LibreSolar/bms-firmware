@@ -254,7 +254,7 @@ static int bms_ic_isl94202_configure(const struct device *dev, struct bms_ic_con
         return -EIO;
     }
 
-    return (flags == actual_flags) ? 0 : -EINVAL;
+    return (actual_flags != 0) ? actual_flags : -ENOTSUP;
 }
 
 static int isl94202_read_voltages(const struct device *dev, struct bms_ic_data *ic_data)

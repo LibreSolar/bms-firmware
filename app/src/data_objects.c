@@ -269,19 +269,19 @@ void data_objects_update_conf(enum thingset_callback_reason reason)
 
 int32_t bat_preset(enum bms_cell_type type)
 {
-    int err;
+    int ret;
 
     bms_init_config(&bms, type, new_capacity);
 
-    err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_ALL);
+    ret = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_ALL);
 
 #ifdef CONFIG_THINGSET_STORAGE
-    if (err == 0) {
+    if (ret > 0) {
         thingset_storage_save_queued();
     }
 #endif
 
-    return err;
+    return ret;
 }
 
 int32_t bat_preset_nmc()

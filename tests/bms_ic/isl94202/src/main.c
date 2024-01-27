@@ -213,21 +213,21 @@ ZTEST(isl94202, test_isl94202_apply_dis_ocp)
     // lower than minimum possible setting
     bms.ic_conf.dis_oc_limit = 1;
     err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_CURRENT_LIMITS);
-    zassert_equal(0, err);
+    zassert_equal(BMS_IC_CONF_CURRENT_LIMITS, err);
     zassert_equal(2, bms.ic_conf.dis_oc_limit); // take lowest possible value
     zassert_equal(delay | (0x0 << 12), isl94202_emul_get_word(bms_ic_emul, 0x16));
 
     // something in the middle
     bms.ic_conf.dis_oc_limit = 20;
     err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_CURRENT_LIMITS);
-    zassert_equal(0, err);
+    zassert_equal(BMS_IC_CONF_CURRENT_LIMITS, err);
     zassert_equal(16, bms.ic_conf.dis_oc_limit); // round to next lower value
     zassert_equal(delay | (0x4U << 12), isl94202_emul_get_word(bms_ic_emul, 0x16));
 
     // higher than maximum possible setting
     bms.ic_conf.dis_oc_limit = 50;
     err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_CURRENT_LIMITS);
-    zassert_equal(0, err);
+    zassert_equal(BMS_IC_CONF_CURRENT_LIMITS, err);
     zassert_equal(48, bms.ic_conf.dis_oc_limit);
     zassert_equal(delay | (0x7U << 12), isl94202_emul_get_word(bms_ic_emul, 0x16));
 }
@@ -243,21 +243,21 @@ ZTEST(isl94202, test_isl94202_apply_chg_ocp)
     // lower than minimum possible setting
     bms.ic_conf.chg_oc_limit = 0.4;
     err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_CURRENT_LIMITS);
-    zassert_equal(0, err);
+    zassert_equal(BMS_IC_CONF_CURRENT_LIMITS, err);
     zassert_equal(0.5, bms.ic_conf.chg_oc_limit); // take lowest possible value
     zassert_equal(delay | (0x0 << 12), isl94202_emul_get_word(bms_ic_emul, 0x18));
 
     // something in the middle
     bms.ic_conf.chg_oc_limit = 5.0;
     err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_CURRENT_LIMITS);
-    zassert_equal(0, err);
+    zassert_equal(BMS_IC_CONF_CURRENT_LIMITS, err);
     zassert_equal(4.0, bms.ic_conf.chg_oc_limit); // round to next lower value
     zassert_equal(delay | (0x4U << 12), isl94202_emul_get_word(bms_ic_emul, 0x18));
 
     // higher than maximum possible setting
     bms.ic_conf.chg_oc_limit = 50.0;
     err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_CURRENT_LIMITS);
-    zassert_equal(0, err);
+    zassert_equal(BMS_IC_CONF_CURRENT_LIMITS, err);
     zassert_equal(12.0, bms.ic_conf.chg_oc_limit);
     zassert_equal(delay | (0x7U << 12), isl94202_emul_get_word(bms_ic_emul, 0x18));
 }
@@ -273,21 +273,21 @@ ZTEST(isl94202, test_isl94202_apply_dis_scp)
     // lower than minimum possible setting
     bms.ic_conf.dis_sc_limit = 5;
     err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_CURRENT_LIMITS);
-    zassert_equal(0, err);
+    zassert_equal(BMS_IC_CONF_CURRENT_LIMITS, err);
     zassert_equal(8, bms.ic_conf.dis_sc_limit); // take lowest possible value
     zassert_equal(delay | (0x0 << 12), isl94202_emul_get_word(bms_ic_emul, 0x1A));
 
     // something in the middle
     bms.ic_conf.dis_sc_limit = 40;
     err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_CURRENT_LIMITS);
-    zassert_equal(0, err);
+    zassert_equal(BMS_IC_CONF_CURRENT_LIMITS, err);
     zassert_equal(32, bms.ic_conf.dis_sc_limit); // round to next lower value
     zassert_equal(delay | (0x4U << 12), isl94202_emul_get_word(bms_ic_emul, 0x1A));
 
     // higher than maximum possible setting
     bms.ic_conf.dis_sc_limit = 150;
     err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_CURRENT_LIMITS);
-    zassert_equal(0, err);
+    zassert_equal(BMS_IC_CONF_CURRENT_LIMITS, err);
     zassert_equal(128, bms.ic_conf.dis_sc_limit);
     zassert_equal(delay | (0x7U << 12), isl94202_emul_get_word(bms_ic_emul, 0x1A));
 }
@@ -299,7 +299,7 @@ ZTEST(isl94202, test_isl94202_apply_cell_ovp)
     bms.ic_conf.cell_ov_delay_ms = 999;
     uint16_t delay = 999 + (1U << 10);
     int err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_VOLTAGE_LIMITS);
-    zassert_equal(0, err);
+    zassert_equal(BMS_IC_CONF_VOLTAGE_LIMITS, err);
     zassert_equal(0x1E2A, isl94202_emul_get_word(bms_ic_emul, 0x00)); // limit voltage
     zassert_equal(0x0DD4, isl94202_emul_get_word(bms_ic_emul, 0x02)); // recovery voltage
     zassert_equal(delay, isl94202_emul_get_word(bms_ic_emul, 0x10));  // delay
@@ -312,7 +312,7 @@ ZTEST(isl94202, test_isl94202_apply_cell_uvp)
     bms.ic_conf.cell_uv_delay_ms = 2222;
     uint16_t delay = 2222 / 1000 + (2U << 10);
     int err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_VOLTAGE_LIMITS);
-    zassert_equal(0, err);
+    zassert_equal(BMS_IC_CONF_VOLTAGE_LIMITS, err);
     zassert_equal(0x18FF, isl94202_emul_get_word(bms_ic_emul, 0x04));
     zassert_equal(0x09FF, isl94202_emul_get_word(bms_ic_emul, 0x06));
     zassert_equal(delay, isl94202_emul_get_word(bms_ic_emul, 0x12));
@@ -322,7 +322,8 @@ ZTEST(isl94202, test_isl94202_apply_chg_ot_limit)
 {
     bms.ic_conf.chg_ot_limit = 55;
     bms.ic_conf.temp_limit_hyst = 5;
-    bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_TEMP_LIMITS);
+    int err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_TEMP_LIMITS);
+    zassert_equal(BMS_IC_CONF_TEMP_LIMITS, err);
     zassert_equal(0x04D2, isl94202_emul_get_word(bms_ic_emul, 0x30)); // datasheet: 0x04B6
     zassert_equal(0x053E, isl94202_emul_get_word(bms_ic_emul, 0x32));
 }
@@ -331,7 +332,8 @@ ZTEST(isl94202, test_isl94202_apply_chg_ut_limit)
 {
     bms.ic_conf.chg_ut_limit = -10;
     bms.ic_conf.temp_limit_hyst = 15;
-    bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_TEMP_LIMITS);
+    int err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_TEMP_LIMITS);
+    zassert_equal(BMS_IC_CONF_TEMP_LIMITS, err);
     zassert_equal(0x0CD1, isl94202_emul_get_word(bms_ic_emul, 0x34)); // datasheet: 0x0BF2
     zassert_equal(0x0BBD, isl94202_emul_get_word(bms_ic_emul, 0x36)); // datasheet: 0x0A93
 }
@@ -340,7 +342,8 @@ ZTEST(isl94202, test_isl94202_apply_dis_ot_limit)
 {
     bms.ic_conf.dis_ot_limit = 55;
     bms.ic_conf.temp_limit_hyst = 5;
-    bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_TEMP_LIMITS);
+    int err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_TEMP_LIMITS);
+    zassert_equal(BMS_IC_CONF_TEMP_LIMITS, err);
     zassert_equal(0x04D2, isl94202_emul_get_word(bms_ic_emul, 0x38)); // datasheet: 0x04B6
     zassert_equal(0x053E, isl94202_emul_get_word(bms_ic_emul, 0x3A));
 }
@@ -349,7 +352,8 @@ ZTEST(isl94202, test_isl94202_apply_dis_ut_limit)
 {
     bms.ic_conf.dis_ut_limit = -10;
     bms.ic_conf.temp_limit_hyst = 15;
-    bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_TEMP_LIMITS);
+    int err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_TEMP_LIMITS);
+    zassert_equal(BMS_IC_CONF_TEMP_LIMITS, err);
     zassert_equal(0x0CD1, isl94202_emul_get_word(bms_ic_emul, 0x3C)); // datasheet: 0x0BF2
     zassert_equal(0x0BBD, isl94202_emul_get_word(bms_ic_emul, 0x3E)); // datasheet: 0x0A93
 }
