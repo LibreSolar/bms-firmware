@@ -26,6 +26,8 @@
 
 LOG_MODULE_REGISTER(bms_ic_bq769x0, CONFIG_BMS_IC_LOG_LEVEL);
 
+#define BQ769X0_READ_MAX_ATTEMPTS (10)
+
 /* read-only driver configuration */
 struct bms_ic_bq769x0_config
 {
@@ -98,7 +100,7 @@ static void bq769x0_alert_isr(const struct device *port, struct gpio_callback *c
     k_work_schedule(&data->alert_work, K_NO_WAIT);
 }
 
-void bq769x0_write_byte(const struct device *dev, uint8_t reg_addr, uint8_t data)
+int bq769x0_write_byte(const struct device *dev, uint8_t reg_addr, uint8_t data)
 {
     const struct bms_ic_bq769x0_config *dev_config = dev->config;
     const struct bms_ic_bq769x0_data *dev_data = dev->data;
@@ -111,42 +113,68 @@ void bq769x0_write_byte(const struct device *dev, uint8_t reg_addr, uint8_t data
 
     if (dev_data->crc_enabled) {
         buf[3] = crc8_ccitt(0, buf, 3);
-        i2c_write_dt(&dev_config->i2c, buf + 1, 3);
+        return i2c_write_dt(&dev_config->i2c, buf + 1, 3);
     }
     else {
-        i2c_write_dt(&dev_config->i2c, buf + 1, 2);
+        return i2c_write_dt(&dev_config->i2c, buf + 1, 2);
     }
 }
 
-uint8_t bq769x0_read_byte(const struct device *dev, uint8_t reg_addr)
+int bq769x0_read_byte(const struct device *dev, uint8_t reg_addr, uint8_t *byte)
 {
     const struct bms_ic_bq769x0_config *dev_config = dev->config;
     const struct bms_ic_bq769x0_data *dev_data = dev->data;
     uint8_t buf[3];
+    int err;
 
-    i2c_write_dt(&dev_config->i2c, &reg_addr, 1);
+    err = i2c_write_dt(&dev_config->i2c, &reg_addr, 1);
+    if (err != 0) {
+        return err;
+    }
 
     if (dev_data->crc_enabled) {
         /* CRC is calculated over the slave address (incl. R/W bit) and data */
         buf[0] = (dev_config->i2c.addr << 1) | 1U;
-        do {
-            i2c_read_dt(&dev_config->i2c, buf + 1, 2);
-        } while (crc8_ccitt(0, buf, 2) != buf[2]);
+        int attempts = 1;
+        while (true) {
+            err = i2c_read_dt(&dev_config->i2c, buf + 1, 2);
+            if (err != 0) {
+                return err;
+            }
+            else if (crc8_ccitt(0, buf, 2) == buf[2]) {
+                break;
+            }
+            else if (attempts >= BQ769X0_READ_MAX_ATTEMPTS) {
+                LOG_ERR("Failed to read data at 0x%02X after %d attempts", reg_addr,
+                        BQ769X0_READ_MAX_ATTEMPTS);
+                return -EIO;
+            }
+            else {
+                /* try again */
+                attempts++;
+            }
+        }
 
-        return buf[1];
+        *byte = buf[1];
     }
     else {
-        i2c_read_dt(&dev_config->i2c, buf, 1);
+        err = i2c_read_dt(&dev_config->i2c, buf, 1);
+        if (err != 0) {
+            return err;
+        }
 
-        return buf[0];
+        *byte = buf[0];
     }
+
+    return 0;
 }
 
-int32_t bq769x0_read_word(const struct device *dev, uint8_t reg_addr)
+int bq769x0_read_word(const struct device *dev, uint8_t reg_addr, uint16_t *word)
 {
     const struct bms_ic_bq769x0_config *dev_config = dev->config;
     const struct bms_ic_bq769x0_data *dev_data = dev->data;
     uint8_t buf[5];
+    int err;
 
     /* write starting register */
     i2c_write_dt(&dev_config->i2c, &reg_addr, 1);
@@ -154,38 +182,51 @@ int32_t bq769x0_read_word(const struct device *dev, uint8_t reg_addr)
     if (dev_data->crc_enabled) {
         /* CRC is calculated over the slave address (incl. R/W bit) and data */
         buf[0] = (dev_config->i2c.addr << 1) | 1U;
-        i2c_read_dt(&dev_config->i2c, buf + 1, 4);
+        err = i2c_read_dt(&dev_config->i2c, buf + 1, 4);
+        if (err != 0) {
+            return err;
+        }
 
         if (crc8_ccitt(0, buf, 2) != buf[2]) {
-            return -1;
+            return -EIO;
         }
 
         /* CRC of subsequent bytes only considering data */
         if (crc8_ccitt(0, buf + 3, 1) != buf[4]) {
-            return -1;
+            return -EIO;
         }
 
-        return buf[1] << 8 | buf[3];
+        *word = buf[1] << 8 | buf[3];
     }
     else {
-        i2c_read_dt(&dev_config->i2c, buf, 2);
-        return buf[0] << 8 | buf[1];
+        err = i2c_read_dt(&dev_config->i2c, buf, 2);
+        if (err != 0) {
+            return err;
+        }
+
+        *word = buf[0] << 8 | buf[1];
     }
+
+    return 0;
 }
 
 static int bq769x0_detect_crc(const struct device *dev)
 {
     struct bms_ic_bq769x0_data *dev_data = dev->data;
+    uint8_t cc_cfg = 0;
+    int err = 0;
 
     dev_data->crc_enabled = true;
-    bq769x0_write_byte(dev, BQ769X0_CC_CFG, 0x19);
-    if (bq769x0_read_byte(dev, BQ769X0_CC_CFG) == 0x19) {
+    err |= bq769x0_write_byte(dev, BQ769X0_CC_CFG, 0x19);
+    err |= bq769x0_read_byte(dev, BQ769X0_CC_CFG, &cc_cfg);
+    if (err == 0 && cc_cfg == 0x19) {
         return 0;
     }
 
     dev_data->crc_enabled = false;
-    bq769x0_write_byte(dev, BQ769X0_CC_CFG, 0x19);
-    if (bq769x0_read_byte(dev, BQ769X0_CC_CFG) == 0x19) {
+    err |= bq769x0_write_byte(dev, BQ769X0_CC_CFG, 0x19);
+    err |= bq769x0_read_byte(dev, BQ769X0_CC_CFG, &cc_cfg);
+    if (err == 0 && cc_cfg == 0x19) {
         return 0;
     }
 
@@ -197,14 +238,21 @@ static int bq769x0_configure_cell_ovp(const struct device *dev, struct bms_ic_co
     struct bms_ic_bq769x0_data *dev_data = dev->data;
     union bq769x0_protect3 protect3;
     int ov_trip = 0;
+    int err;
 
-    protect3.byte = bq769x0_read_byte(dev, BQ769X0_PROTECT3);
+    err = bq769x0_read_byte(dev, BQ769X0_PROTECT3, &protect3.byte);
+    if (err != 0) {
+        return err;
+    }
 
     ov_trip = ((((long)(ic_conf->cell_ov_limit * 1000) - dev_data->adc_offset) * 1000
                 / dev_data->adc_gain)
                >> 4)
               & 0x00FF;
-    bq769x0_write_byte(dev, BQ769X0_OV_TRIP, ov_trip);
+    err = bq769x0_write_byte(dev, BQ769X0_OV_TRIP, ov_trip);
+    if (err != 0) {
+        return err;
+    }
 
     protect3.OV_DELAY = 0;
     for (int i = ARRAY_SIZE(bq769x0_ov_delays) - 1; i > 0; i--) {
@@ -214,7 +262,10 @@ static int bq769x0_configure_cell_ovp(const struct device *dev, struct bms_ic_co
         }
     }
 
-    bq769x0_write_byte(dev, BQ769X0_PROTECT3, protect3.byte);
+    err = bq769x0_write_byte(dev, BQ769X0_PROTECT3, protect3.byte);
+    if (err != 0) {
+        return err;
+    }
 
     /* store actually configured values */
     ic_conf->cell_ov_limit =
@@ -229,15 +280,22 @@ static int bq769x0_configure_cell_uvp(const struct device *dev, struct bms_ic_co
     struct bms_ic_bq769x0_data *dev_data = dev->data;
     union bq769x0_protect3 protect3;
     int uv_trip = 0;
+    int err;
 
-    protect3.byte = bq769x0_read_byte(dev, BQ769X0_PROTECT3);
+    err = bq769x0_read_byte(dev, BQ769X0_PROTECT3, &protect3.byte);
+    if (err != 0) {
+        return err;
+    }
 
     uv_trip = ((((long)(ic_conf->cell_uv_limit * 1000) - dev_data->adc_offset) * 1000
                 / dev_data->adc_gain)
                >> 4)
               & 0x00FF;
     uv_trip += 1; /* always round up for lower cell voltage */
-    bq769x0_write_byte(dev, BQ769X0_UV_TRIP, uv_trip);
+    err = bq769x0_write_byte(dev, BQ769X0_UV_TRIP, uv_trip);
+    if (err != 0) {
+        return err;
+    }
 
     protect3.UV_DELAY = 0;
     for (int i = ARRAY_SIZE(bq769x0_uv_delays) - 1; i > 0; i--) {
@@ -247,7 +305,10 @@ static int bq769x0_configure_cell_uvp(const struct device *dev, struct bms_ic_co
         }
     }
 
-    bq769x0_write_byte(dev, BQ769X0_PROTECT3, protect3.byte);
+    err = bq769x0_write_byte(dev, BQ769X0_PROTECT3, protect3.byte);
+    if (err != 0) {
+        return err;
+    }
 
     /* store actually configured values */
     ic_conf->cell_uv_limit =
@@ -286,6 +347,7 @@ static int bq769x0_configure_dis_ocp(const struct device *dev, struct bms_ic_con
 {
     const struct bms_ic_bq769x0_config *dev_config = dev->config;
     union bq769x0_protect2 protect2;
+    int err;
 
     /* Remark: RSNS must be set to 1 in PROTECT1 register */
 
@@ -307,7 +369,10 @@ static int bq769x0_configure_dis_ocp(const struct device *dev, struct bms_ic_con
         }
     }
 
-    bq769x0_write_byte(dev, BQ769X0_PROTECT2, protect2.byte);
+    err = bq769x0_write_byte(dev, BQ769X0_PROTECT2, protect2.byte);
+    if (err != 0) {
+        return err;
+    }
 
     /* store actually configured values */
     ic_conf->dis_oc_limit =
@@ -321,6 +386,7 @@ static int bq769x0_configure_dis_scp(const struct device *dev, struct bms_ic_con
 {
     const struct bms_ic_bq769x0_config *dev_config = dev->config;
     union bq769x0_protect1 protect1;
+    int err;
 
     /* only RSNS = 1 considered */
     protect1.RSNS = 1;
@@ -343,7 +409,10 @@ static int bq769x0_configure_dis_scp(const struct device *dev, struct bms_ic_con
         }
     }
 
-    bq769x0_write_byte(dev, BQ769X0_PROTECT1, protect1.byte);
+    err = bq769x0_write_byte(dev, BQ769X0_PROTECT1, protect1.byte);
+    if (err != 0) {
+        return err;
+    }
 
     /* store actually configured values */
     ic_conf->dis_sc_limit =
@@ -423,13 +492,19 @@ static int bq769x0_read_cell_voltages(const struct device *dev, struct bms_ic_da
 {
     const struct bms_ic_bq769x0_config *dev_config = dev->config;
     struct bms_ic_bq769x0_data *dev_data = dev->data;
-    int adc_raw = 0;
+    uint16_t adc_raw;
     int conn_cells = 0;
     float sum_voltages = 0;
     float v_max = 0, v_min = 10;
+    int err;
 
     for (int i = 0; i < dev_config->num_sections * 5; i++) {
-        adc_raw = bq769x0_read_word(dev, BQ769X0_VC1_HI_BYTE + i * 2) & 0x3FFF;
+        err = bq769x0_read_word(dev, BQ769X0_VC1_HI_BYTE + i * 2, &adc_raw);
+        if (err != 0) {
+            return err;
+        }
+
+        adc_raw &= 0x3FFF;
         ic_data->cell_voltages[i] =
             (adc_raw * dev_data->adc_gain * 1e-3F + dev_data->adc_offset) * 1e-3F;
 
@@ -455,8 +530,14 @@ static int bq769x0_read_cell_voltages(const struct device *dev, struct bms_ic_da
 static int bq769x0_read_total_voltages(const struct device *dev, struct bms_ic_data *ic_data)
 {
     struct bms_ic_bq769x0_data *dev_data = dev->data;
+    uint16_t adc_raw;
+    int err;
 
-    int adc_raw = bq769x0_read_word(dev, BQ769X0_BAT_HI_BYTE);
+    err = bq769x0_read_word(dev, BQ769X0_BAT_HI_BYTE, &adc_raw);
+    if (err != 0) {
+        return err;
+    }
+
     ic_data->total_voltage = (4.0F * dev_data->adc_gain * adc_raw * 1e-3F
                               + ic_data->connected_cells * dev_data->adc_offset)
                              * 1e-3F;
@@ -468,16 +549,21 @@ static int bq769x0_read_temperatures(const struct device *dev, struct bms_ic_dat
 {
     const struct bms_ic_bq769x0_config *dev_config = dev->config;
     float tmp = 0;
-    int adc_raw = 0;
+    uint16_t adc_raw = 0;
     int vtsx = 0;
     unsigned long rts = 0;
     float sum_temps = 0;
     int num_temps = 0;
+    int err;
 
     for (int i = 0; i < dev_config->num_sections && i < CONFIG_BMS_IC_MAX_THERMISTORS; i++) {
         /* calculate R_thermistor according to bq769x0 datasheet */
-        adc_raw = (bq769x0_read_byte(dev, BQ769X0_TS1_HI_BYTE + i * 2) & 0b00111111) << 8
-                  | bq769x0_read_byte(dev, BQ769X0_TS1_LO_BYTE + i * 2);
+        err = bq769x0_read_word(dev, BQ769X0_TS1_HI_BYTE + i * 2, &adc_raw);
+        if (err != 0) {
+            return err;
+        }
+
+        adc_raw &= 0x3FFF;
         vtsx = adc_raw * 0.382F;                 /* mV */
         rts = 10000.0F * vtsx / (3300.0 - vtsx); /* Ohm */
 
@@ -515,11 +601,12 @@ static int bq769x0_read_current(const struct device *dev, struct bms_ic_data *ic
 {
     const struct bms_ic_bq769x0_config *dev_config = dev->config;
     struct bms_ic_bq769x0_data *dev_data = dev->data;
+    uint16_t adc_raw;
 
-    int adc_raw = bq769x0_read_word(dev, BQ769X0_CC_HI_BYTE);
-    if (adc_raw < 0) {
+    int err = bq769x0_read_word(dev, BQ769X0_CC_HI_BYTE, &adc_raw);
+    if (err != 0) {
         LOG_ERR("Error reading current measurement");
-        return -EIO;
+        return err;
     }
 
     int32_t current_mA = (int16_t)adc_raw * 8.44F / (dev_config->shunt_resistor_uohm / 1000.0F);
@@ -548,7 +635,10 @@ static int bq769x0_read_error_flags(const struct device *dev, struct bms_ic_data
     uint32_t error_flags = 0;
     float hyst;
 
-    sys_stat.byte = bq769x0_read_byte(dev, BQ769X0_SYS_STAT);
+    int err = bq769x0_read_byte(dev, BQ769X0_SYS_STAT, &sys_stat.byte);
+    if (err != 0) {
+        return err;
+    }
 
     error_flags |= (sys_stat.UV * UINT32_MAX) & BMS_ERR_CELL_UNDERVOLTAGE;
     error_flags |= (sys_stat.OV * UINT32_MAX) & BMS_ERR_CELL_OVERVOLTAGE;
@@ -592,16 +682,23 @@ static void bq769x0_alert_handler(struct k_work *work)
         CONTAINER_OF(dwork, struct bms_ic_bq769x0_data, alert_work);
     const struct device *dev = dev_data->dev;
     struct bms_ic_data *ic_data = dev_data->ic_data;
+    int err;
 
     /* ToDo: Handle also temperature and chg errors (incl. temp hysteresis) */
 
     union bq769x0_sys_stat sys_stat;
-    sys_stat.byte = bq769x0_read_byte(dev, BQ769X0_SYS_STAT);
+    err = bq769x0_read_byte(dev, BQ769X0_SYS_STAT, &sys_stat.byte);
+    if (err != 0) {
+        return;
+    }
 
     /* get new current reading if available */
     if (sys_stat.CC_READY == 1) {
         bq769x0_read_current(dev, ic_data);
-        bq769x0_write_byte(dev, BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_CC_READY);
+        err = bq769x0_write_byte(dev, BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_CC_READY);
+        if (err != 0) {
+            LOG_ERR("Failed to clear CC_READY flag");
+        }
     }
 
     /* handle potential errors */
@@ -610,44 +707,50 @@ static void bq769x0_alert_handler(struct k_work *work)
             dev_data->error_seconds_counter = 0;
         }
 
+        err = 0;
+
         if (sys_stat.DEVICE_XREADY) {
             /* datasheet recommendation: try to clear after waiting a few seconds */
             if (dev_data->error_seconds_counter % 3 == 0) {
                 LOG_DBG("Attempting to clear XR error");
-                bq769x0_write_byte(dev, BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_DEVICE_XREADY);
+                err |= bq769x0_write_byte(dev, BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_DEVICE_XREADY);
             }
         }
         if (sys_stat.OVRD_ALERT) {
             if (dev_data->error_seconds_counter % 10 == 0) {
                 LOG_DBG("Attempting to clear Alert error");
-                bq769x0_write_byte(dev, BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_OVRD_ALERT);
+                err |= bq769x0_write_byte(dev, BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_OVRD_ALERT);
             }
         }
         if (sys_stat.UV) {
             bms_ic_read_data(dev, BMS_IC_DATA_CELL_VOLTAGES);
             if (ic_data->cell_voltage_min > dev_data->ic_conf.cell_uv_reset) {
                 LOG_DBG("Attempting to clear UV error");
-                bq769x0_write_byte(dev, BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_UV);
+                err |= bq769x0_write_byte(dev, BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_UV);
             }
         }
         if (sys_stat.OV) {
             bms_ic_read_data(dev, BMS_IC_DATA_CELL_VOLTAGES);
             if (ic_data->cell_voltage_max < dev_data->ic_conf.cell_ov_reset) {
                 LOG_DBG("Attempting to clear OV error");
-                bq769x0_write_byte(dev, BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_OV);
+                err |= bq769x0_write_byte(dev, BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_OV);
             }
         }
         if (sys_stat.SCD) {
             if (dev_data->error_seconds_counter % 60 == 0) {
                 LOG_DBG("Attempting to clear SCD error");
-                bq769x0_write_byte(dev, BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_SCD);
+                err |= bq769x0_write_byte(dev, BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_SCD);
             }
         }
         if (sys_stat.OCD) {
             if (dev_data->error_seconds_counter % 60 == 0) {
                 LOG_DBG("Attempting to clear OCD error");
-                bq769x0_write_byte(dev, BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_OCD);
+                err |= bq769x0_write_byte(dev, BQ769X0_SYS_STAT, BQ769X0_SYS_STAT_OCD);
             }
+        }
+
+        if (err != 0) {
+            LOG_ERR("Attempts to clear error flags failed");
         }
 
         dev_data->error_seconds_counter++;
@@ -661,7 +764,8 @@ static void bq769x0_alert_handler(struct k_work *work)
 /*
 void bms_print_register(uint16_t addr)
 {
-    uint8_t reg = bq769x0_read_byte(dev, (uint8_t)addr);
+    uint8_t reg;
+    bq769x0_read_byte(dev, (uint8_t)addr, &reg);
     LOG_INF("0x%.2X: 0x%.2X = %s", addr, reg, byte2bitstr(reg));
 }
 
@@ -743,12 +847,16 @@ static void bms_ic_bq769x0_assign_data(const struct device *dev, struct bms_ic_d
 static int bms_ic_bq769x0_set_switches(const struct device *dev, uint8_t switches, bool enabled)
 {
     union bq769x0_sys_ctrl2 sys_ctrl2;
+    int err;
 
     if ((switches & (BMS_SWITCH_CHG | BMS_SWITCH_DIS)) != switches) {
         return -EINVAL;
     }
 
-    sys_ctrl2.byte = bq769x0_read_byte(dev, BQ769X0_SYS_CTRL2);
+    err = bq769x0_read_byte(dev, BQ769X0_SYS_CTRL2, &sys_ctrl2.byte);
+    if (err != 0) {
+        return err;
+    }
 
     if (switches & BMS_SWITCH_CHG) {
         sys_ctrl2.CHG_ON = enabled ? 1 : 0;
@@ -757,7 +865,10 @@ static int bms_ic_bq769x0_set_switches(const struct device *dev, uint8_t switche
         sys_ctrl2.DSG_ON = enabled ? 1 : 0;
     }
 
-    bq769x0_write_byte(dev, BQ769X0_SYS_CTRL2, sys_ctrl2.byte);
+    err = bq769x0_write_byte(dev, BQ769X0_SYS_CTRL2, sys_ctrl2.byte);
+    if (err != 0) {
+        return err;
+    }
 
     return 0;
 }
@@ -767,6 +878,7 @@ static int bms_ic_bq769x0_set_switches(const struct device *dev, uint8_t switche
 static int bq769x0_set_balancing_switches(const struct device *dev, uint32_t cells)
 {
     const struct bms_ic_bq769x0_config *dev_config = dev->config;
+    int err;
 
     for (int section = 0; section < dev_config->num_sections; section++) {
         uint8_t cells_section = (cells >> section * 5) & 0x1F;
@@ -775,7 +887,10 @@ static int bq769x0_set_balancing_switches(const struct device *dev, uint32_t cel
             return -EINVAL;
         }
 
-        bq769x0_write_byte(dev, BQ769X0_CELLBAL1 + section, cells_section);
+        err = bq769x0_write_byte(dev, BQ769X0_CELLBAL1 + section, cells_section);
+        if (err != 0) {
+            return err;
+        }
     }
 
     return 0;
@@ -789,6 +904,7 @@ static void bq769x0_balancing_work_handler(struct k_work *work)
     const struct device *dev = dev_data->dev;
     const struct bms_ic_bq769x0_config *dev_config = dev->config;
     struct bms_ic_data *ic_data = dev_data->ic_data;
+    int err;
 
     if (k_uptime_get() - dev_data->active_timestamp >= dev_data->ic_conf.bal_idle_delay
         && ic_data->cell_voltage_max > dev_data->ic_conf.bal_cell_voltage_min
@@ -835,19 +951,28 @@ static void bq769x0_balancing_work_handler(struct k_work *work)
                 }
             }
 
-            LOG_DBG("Setting CELLBAL%d register to 0x%02X", section + 1, balancing_flags);
-
             ic_data->balancing_status |= balancing_flags << section * 5;
 
             /* set balancing register for this section */
-            bq769x0_write_byte(dev, BQ769X0_CELLBAL1 + section, balancing_flags);
+            err = bq769x0_write_byte(dev, BQ769X0_CELLBAL1 + section, balancing_flags);
+            if (err == 0) {
+                LOG_DBG("Set CELLBAL%d register to 0x%02X", section + 1, balancing_flags);
+            }
+            else {
+                LOG_ERR("Failed to set CELBAL%d register: %d", section + 1, err);
+            }
         }
     }
     else if (ic_data->balancing_status > 0) {
         /* clear all CELLBAL registers */
         for (int section = 0; section < dev_config->num_sections; section++) {
-            LOG_DBG("Clearing CELLBAL%d register", section + 1);
-            bq769x0_write_byte(dev, BQ769X0_CELLBAL1 + section, 0x0);
+            err = bq769x0_write_byte(dev, BQ769X0_CELLBAL1 + section, 0x0);
+            if (err == 0) {
+                LOG_DBG("Cleared CELLBAL%d register", section + 1);
+            }
+            else {
+                LOG_ERR("Clearing CELBAL%d register failed: %d", section + 1, err);
+            }
         }
 
         ic_data->balancing_status = 0;
@@ -885,23 +1010,37 @@ static int bms_ic_bq769x0_balance(const struct device *dev, uint32_t cells)
 
 static int bq769x0_activate(const struct device *dev)
 {
+    const struct bms_ic_bq769x0_config *dev_config = dev->config;
     struct bms_ic_bq769x0_data *dev_data = dev->data;
+    int err;
 
     /* Datasheet: 10 ms delay (t_BOOTREADY) */
     k_sleep(K_TIMEOUT_ABS_MS(10));
 
-    int err = bq769x0_detect_crc(dev);
-    if (!err) {
+    err = bq769x0_detect_crc(dev);
+    if (err != 0) {
+        uint8_t adcoffset;
+        uint8_t adcgain1;
+        uint8_t adcgain2;
+
         /* switch external thermistor and ADC on */
-        bq769x0_write_byte(dev, BQ769X0_SYS_CTRL1, 0b00011000);
+        err |= bq769x0_write_byte(dev, BQ769X0_SYS_CTRL1, 0b00011000);
         /* switch CC_EN on */
-        bq769x0_write_byte(dev, BQ769X0_SYS_CTRL2, 0b01000000);
+        err |= bq769x0_write_byte(dev, BQ769X0_SYS_CTRL2, 0b01000000);
 
         /* get ADC offset (2's complement) and gain */
-        dev_data->adc_offset = (signed int)bq769x0_read_byte(dev, BQ769X0_ADCOFFSET);
-        dev_data->adc_gain = 365
-                             + (((bq769x0_read_byte(dev, BQ769X0_ADCGAIN1) & 0b00001100) << 1)
-                                | ((bq769x0_read_byte(dev, BQ769X0_ADCGAIN2) & 0b11100000) >> 5));
+        err |= bq769x0_read_byte(dev, BQ769X0_ADCOFFSET, &adcoffset);
+        dev_data->adc_offset = (signed int)adcoffset;
+
+        err |= bq769x0_read_byte(dev, BQ769X0_ADCGAIN1, &adcgain1);
+        err |= bq769x0_read_byte(dev, BQ769X0_ADCGAIN2, &adcgain2);
+
+        dev_data->adc_gain =
+            365 + (((adcgain1 & 0b00001100) << 1) | ((adcgain2 & 0b11100000) >> 5));
+
+        if (err != 0) {
+            return -EIO;
+        }
     }
     else {
         LOG_ERR("BMS communication error");
@@ -920,15 +1059,17 @@ static int bq769x0_activate(const struct device *dev)
 
 static int bms_ic_bq769x0_set_mode(const struct device *dev, enum bms_ic_mode mode)
 {
+    int err = 0;
+
     switch (mode) {
         case BMS_IC_MODE_ACTIVE:
             return bq769x0_activate(dev);
         case BMS_IC_MODE_OFF:
             /* put IC into SHIP mode (i.e. switched off) */
-            bq769x0_write_byte(dev, BQ769X0_SYS_CTRL1, 0x0);
-            bq769x0_write_byte(dev, BQ769X0_SYS_CTRL1, 0x1);
-            bq769x0_write_byte(dev, BQ769X0_SYS_CTRL1, 0x2);
-            return 0;
+            err |= bq769x0_write_byte(dev, BQ769X0_SYS_CTRL1, 0x0);
+            err |= bq769x0_write_byte(dev, BQ769X0_SYS_CTRL1, 0x1);
+            err |= bq769x0_write_byte(dev, BQ769X0_SYS_CTRL1, 0x2);
+            return err == 0 ? 0 : -EIO;
         default:
             return -ENOTSUP;
     }
