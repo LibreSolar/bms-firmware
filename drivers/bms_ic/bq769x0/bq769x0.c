@@ -883,9 +883,46 @@ static int bms_ic_bq769x0_balance(const struct device *dev, uint32_t cells)
     return err;
 }
 
+static int bq769x0_activate(const struct device *dev)
+{
+    struct bms_ic_bq769x0_data *dev_data = dev->data;
+
+    /* Datasheet: 10 ms delay (t_BOOTREADY) */
+    k_sleep(K_TIMEOUT_ABS_MS(10));
+
+    int err = bq769x0_detect_crc(dev);
+    if (!err) {
+        /* switch external thermistor and ADC on */
+        bq769x0_write_byte(dev, BQ769X0_SYS_CTRL1, 0b00011000);
+        /* switch CC_EN on */
+        bq769x0_write_byte(dev, BQ769X0_SYS_CTRL2, 0b01000000);
+
+        /* get ADC offset (2's complement) and gain */
+        dev_data->adc_offset = (signed int)bq769x0_read_byte(dev, BQ769X0_ADCOFFSET);
+        dev_data->adc_gain = 365
+                             + (((bq769x0_read_byte(dev, BQ769X0_ADCGAIN1) & 0b00001100) << 1)
+                                | ((bq769x0_read_byte(dev, BQ769X0_ADCGAIN2) & 0b11100000) >> 5));
+    }
+    else {
+        LOG_ERR("BMS communication error");
+        return err;
+    }
+
+    gpio_pin_configure_dt(&dev_config->alert_gpio, GPIO_INPUT);
+    gpio_init_callback(&dev_data->alert_cb, bq769x0_alert_isr, BIT(dev_config->alert_gpio.pin));
+    gpio_add_callback_dt(&dev_config->alert_gpio, &dev_data->alert_cb);
+
+    /* run processing once at start-up to check and clear errors */
+    k_work_schedule(&dev_data->alert_work, K_NO_WAIT);
+
+    return 0;
+}
+
 static int bms_ic_bq769x0_set_mode(const struct device *dev, enum bms_ic_mode mode)
 {
     switch (mode) {
+        case BMS_IC_MODE_ACTIVE:
+            return bq769x0_activate(dev);
         case BMS_IC_MODE_OFF:
             /* put IC into SHIP mode (i.e. switched off) */
             bq769x0_write_byte(dev, BQ769X0_SYS_CTRL1, 0x0);
@@ -915,34 +952,6 @@ static int bq769x0_init(const struct device *dev)
 
     k_work_init_delayable(&dev_data->alert_work, bq769x0_alert_handler);
     k_work_init_delayable(&dev_data->balancing_work, bq769x0_balancing_work_handler);
-
-    /* Datasheet: 10 ms delay (t_BOOTREADY) */
-    k_sleep(K_TIMEOUT_ABS_MS(10));
-
-    gpio_pin_configure_dt(&dev_config->alert_gpio, GPIO_INPUT);
-    gpio_init_callback(&dev_data->alert_cb, bq769x0_alert_isr, BIT(dev_config->alert_gpio.pin));
-    gpio_add_callback_dt(&dev_config->alert_gpio, &dev_data->alert_cb);
-
-    /* run processing once at start-up to check and clear errors */
-    k_work_schedule(&dev_data->alert_work, K_NO_WAIT);
-
-    int err = bq769x0_detect_crc(dev);
-    if (!err) {
-        /* switch external thermistor and ADC on */
-        bq769x0_write_byte(dev, BQ769X0_SYS_CTRL1, 0b00011000);
-        /* switch CC_EN on */
-        bq769x0_write_byte(dev, BQ769X0_SYS_CTRL2, 0b01000000);
-
-        /* get ADC offset (2's complement) and gain */
-        dev_data->adc_offset = (signed int)bq769x0_read_byte(dev, BQ769X0_ADCOFFSET);
-        dev_data->adc_gain = 365
-                             + (((bq769x0_read_byte(dev, BQ769X0_ADCGAIN1) & 0b00001100) << 1)
-                                | ((bq769x0_read_byte(dev, BQ769X0_ADCGAIN2) & 0b11100000) >> 5));
-    }
-    else {
-        LOG_ERR("BMS communication error");
-        return err;
-    }
 
     return 0;
 }
