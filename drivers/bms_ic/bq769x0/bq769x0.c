@@ -761,34 +761,6 @@ static void bq769x0_alert_handler(struct k_work *work)
     }
 }
 
-/*
-void bms_print_register(uint16_t addr)
-{
-    uint8_t reg;
-    bq769x0_read_byte(dev, (uint8_t)addr, &reg);
-    LOG_INF("0x%.2X: 0x%.2X = %s", addr, reg, byte2bitstr(reg));
-}
-
-void bms_print_registers()
-{
-    LOG_INF("0x00 SYS_STAT:  %s", byte2bitstr(bq769x0_read_byte(dev, BQ769X0_SYS_STAT)));
-    LOG_INF("0x01 CELLBAL1:  %s", byte2bitstr(bq769x0_read_byte(dev, BQ769X0_CELLBAL1)));
-    LOG_INF("0x04 SYS_CTRL1: %s", byte2bitstr(bq769x0_read_byte(dev, BQ769X0_SYS_CTRL1)));
-    LOG_INF("0x05 SYS_CTRL2: %s", byte2bitstr(bq769x0_read_byte(dev, BQ769X0_SYS_CTRL2)));
-    LOG_INF("0x06 PROTECT1:  %s", byte2bitstr(bq769x0_read_byte(dev, BQ769X0_PROTECT1)));
-    LOG_INF("0x07 PROTECT2:  %s", byte2bitstr(bq769x0_read_byte(dev, BQ769X0_PROTECT2)));
-    LOG_INF("0x08 PROTECT3:  %s", byte2bitstr(bq769x0_read_byte(dev, BQ769X0_PROTECT3)));
-    LOG_INF("0x09 OV_TRIP:   %s", byte2bitstr(bq769x0_read_byte(dev, BQ769X0_OV_TRIP)));
-    LOG_INF("0x0A UV_TRIP:   %s", byte2bitstr(bq769x0_read_byte(dev, BQ769X0_UV_TRIP)));
-    LOG_INF("0x0B CC_CFG:    %s", byte2bitstr(bq769x0_read_byte(dev, BQ769X0_CC_CFG)));
-    LOG_INF("0x32 CC_HI:     %s", byte2bitstr(bq769x0_read_byte(dev, BQ769X0_CC_HI_BYTE)));
-    LOG_INF("0x33 CC_LO:     %s", byte2bitstr(bq769x0_read_byte(dev, BQ769X0_CC_LO_BYTE)));
-    LOG_INF("0x50 BQ769X0_ADCGAIN1:  %s", byte2bitstr(bq769x0_read_byte(dev, BQ769X0_ADCGAIN1)));
-    LOG_INF("0x51 BQ769X0_ADCOFFSET: %s", byte2bitstr(bq769x0_read_byte(dev, BQ769X0_ADCOFFSET)));
-    LOG_INF("0x59 BQ769X0_ADCGAIN2:  %s", byte2bitstr(bq769x0_read_byte(dev, BQ769X0_ADCGAIN2)));
-}
-*/
-
 static int bms_ic_bq769x0_read_data(const struct device *dev, uint32_t flags)
 {
     struct bms_ic_bq769x0_data *dev_data = dev->data;
