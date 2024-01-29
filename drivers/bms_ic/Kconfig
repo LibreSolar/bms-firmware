@@ -53,6 +53,7 @@ config BMS_IC_ISL94202
 
 config BMS_IC_ISL94202_NUM_CELLS
     int "Exact number of cells in series"
+    depends on BMS_IC_ISL94202
     range 3 8
     default 8
     help
