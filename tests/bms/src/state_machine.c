@@ -11,7 +11,9 @@
 #include <stdio.h>
 #include <time.h>
 
-extern struct bms_context bms;
+struct bms_context bms;
+
+const struct device *bms_ic = DEVICE_DT_GET(DT_ALIAS(bms_ic));
 
 void init_conf()
 {
@@ -55,7 +57,7 @@ void init_conf()
     bms.dis_enable = true;
 }
 
-ZTEST(common, test_no_off2dis_if_dis_nok)
+ZTEST(state_machine, test_no_off2dis_if_dis_nok)
 {
     init_conf();
     bms.empty = true;
@@ -68,7 +70,7 @@ ZTEST(common, test_no_off2dis_if_dis_nok)
     zassert_not_equal(BMS_STATE_DIS, bms.state);
 }
 
-ZTEST(common, test_off2dis_if_dis_ok)
+ZTEST(state_machine, test_off2dis_if_dis_ok)
 {
     init_conf();
     bms.full = true;
@@ -76,14 +78,14 @@ ZTEST(common, test_off2dis_if_dis_ok)
     zassert_equal(BMS_STATE_DIS, bms.state);
 }
 
-ZTEST(common, test_no_off2chg_if_chg_ok)
+ZTEST(state_machine, test_no_off2chg_if_chg_ok)
 {
     init_conf();
     bms_state_machine(&bms);
     zassert_not_equal(BMS_STATE_CHG, bms.state);
 }
 
-ZTEST(common, test_off2chg_if_chg_ok_and_dis_nok)
+ZTEST(state_machine, test_off2chg_if_chg_ok_and_dis_nok)
 {
     init_conf();
     bms.empty = true;
@@ -96,7 +98,7 @@ ZTEST(common, test_off2chg_if_chg_ok_and_dis_nok)
     zassert_equal(BMS_STATE_CHG, bms.state);
 }
 
-ZTEST(common, test_chg2off_if_chg_nok)
+ZTEST(state_machine, test_chg2off_if_chg_nok)
 {
     init_conf();
     bms.state = BMS_STATE_CHG;
@@ -111,7 +113,7 @@ ZTEST(common, test_chg2off_if_chg_nok)
     zassert_equal(BMS_STATE_OFF, bms.state);
 }
 
-ZTEST(common, test_chg2normal_if_dis_ok)
+ZTEST(state_machine, test_chg2normal_if_dis_ok)
 {
     init_conf();
     bms.state = BMS_STATE_CHG;
@@ -119,7 +121,7 @@ ZTEST(common, test_chg2normal_if_dis_ok)
     zassert_equal(BMS_STATE_NORMAL, bms.state);
 }
 
-ZTEST(common, test_dis2off_if_dis_nok)
+ZTEST(state_machine, test_dis2off_if_dis_nok)
 {
     init_conf();
     bms.state = BMS_STATE_DIS;
@@ -134,7 +136,7 @@ ZTEST(common, test_dis2off_if_dis_nok)
     zassert_equal(BMS_STATE_OFF, bms.state);
 }
 
-ZTEST(common, test_dis2normal_if_chg_ok)
+ZTEST(state_machine, test_dis2normal_if_chg_ok)
 {
     init_conf();
     bms.state = BMS_STATE_DIS;
@@ -142,7 +144,7 @@ ZTEST(common, test_dis2normal_if_chg_ok)
     zassert_equal(BMS_STATE_NORMAL, bms.state);
 }
 
-ZTEST(common, test_normal2dis_if_chg_nok)
+ZTEST(state_machine, test_normal2dis_if_chg_nok)
 {
     init_conf();
     bms.state = BMS_STATE_NORMAL;
@@ -157,7 +159,7 @@ ZTEST(common, test_normal2dis_if_chg_nok)
     zassert_equal(BMS_STATE_DIS, bms.state);
 }
 
-ZTEST(common, test_normal2chg_if_dis_nok)
+ZTEST(state_machine, test_normal2chg_if_dis_nok)
 {
     init_conf();
     bms.state = BMS_STATE_NORMAL;
@@ -173,7 +175,7 @@ ZTEST(common, test_normal2chg_if_dis_nok)
 }
 
 /*
-ZTEST(common, test_no_normal2balancing_if_nok)
+ZTEST(state_machine, test_no_normal2balancing_if_nok)
 {
     init_conf();
     bms.state = BMS_STATE_NORMAL;
@@ -194,7 +196,7 @@ ZTEST(common, test_no_normal2balancing_if_nok)
     zassert_equal(BMS_STATE_NORMAL, bms.state);
 }
 
-ZTEST(common, test_normal2balancing_if_ok)
+ZTEST(state_machine, test_normal2balancing_if_ok)
 {
     init_conf();
     bms.state = BMS_STATE_NORMAL;
@@ -206,7 +208,7 @@ ZTEST(common, test_normal2balancing_if_ok)
     zassert_equal(BMS_STATE_BALANCING, bms.state);
 }
 
-ZTEST(common, test_normal2balancing_if_ok)
+ZTEST(state_machine, test_normal2balancing_if_ok)
 {
     init_conf();
     bms.state = BMS_STATE_BALANCING;
@@ -215,7 +217,7 @@ ZTEST(common, test_normal2balancing_if_ok)
     zassert_equal(BMS_STATE_NORMAL, bms.state);
 }
 
-ZTEST(common, test_balancing2normal_if_done)
+ZTEST(state_machine, test_balancing2normal_if_done)
 {
     init_conf();
     bms.state = BMS_STATE_BALANCING;
@@ -229,4 +231,4 @@ ZTEST(common, test_balancing2normal_if_done)
 }
 */
 
-ZTEST_SUITE(common, NULL, NULL, NULL, NULL, NULL);
+ZTEST_SUITE(state_machine, NULL, NULL, NULL, NULL, NULL);

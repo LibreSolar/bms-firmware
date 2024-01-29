@@ -10,7 +10,7 @@
 
 #include "isl94202_emul.h"
 
-#include "common.h"
+#include "bms_setup.h"
 
 #include <math.h>
 #include <stdio.h>

@@ -11,7 +11,7 @@
 #include "bq769x2_interface.h"
 #include <bms/bms.h>
 
-#include "common.h"
+#include "bms_setup.h"
 
 #include <stdio.h>
 #include <time.h>

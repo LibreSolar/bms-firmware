@@ -59,7 +59,6 @@ void common_setup_bms_defaults()
 
     bms_ic_read_data(bms_ic, BMS_IC_DATA_CELL_VOLTAGES);
 
-    bms_soc_reset(&bms, -1);
     bms_ic_set_switches(bms_ic, BMS_SWITCH_DIS, true);
     bms_ic_set_switches(bms_ic, BMS_SWITCH_CHG, true);
 }
