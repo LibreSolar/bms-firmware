@@ -58,6 +58,15 @@ float interpolate(const float a[], const float b[], size_t size, float value_a);
  */
 const char *byte2bitstr(uint8_t b);
 
+/**
+ * @brief Check if a buffer is entirely zeroed.
+ *
+ * @param buf A pointer to the buffer (uint8_t*) to be checked.
+ * @param size The size of the buffer in bytes.
+ * @returns true if the buffer is entirely zeroed, false if not.
+ */
+bool is_empty(uint8_t *buf, size_t size);
+
 #ifdef __cplusplus
 }
 #endif

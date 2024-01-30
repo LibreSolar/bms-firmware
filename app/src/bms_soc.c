@@ -13,7 +13,11 @@ void bms_soc_reset(struct bms_context *bms, int percent)
     if (percent <= 100 && percent >= 0) {
         bms->soc = percent;
     }
-    else if (bms->ocv_points != NULL && bms->soc_points != NULL) {
+    else if (bms->ocv_points != NULL && bms->soc_points != NULL
+             && !is_empty((uint8_t *)bms->ocv_points, OCV_POINTS)
+             && !is_empty((uint8_t *)bms->soc_points, OCV_POINTS))
+    {
+        // Executes if both OCV and SOC points are valid pointers and arrays contain non-zero data.
         bms->soc = interpolate(bms->ocv_points, bms->soc_points, OCV_POINTS,
                                bms->ic_data.cell_voltage_avg);
     }
