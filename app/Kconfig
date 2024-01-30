@@ -31,6 +31,9 @@ choice
 
     config CELL_TYPE_LTO
         bool "NMC/Titanate, 2.4 V nominal"
+
+    config CELL_TYPE_CUSTOM
+        bool "Enable manual configuration for all customizable parameters"
 endchoice
 
 # values must match enum CellType in bms.h
