@@ -21,6 +21,8 @@
 
 extern const struct device *bms_ic;
 extern struct bms_context bms;
+extern float ocv_custom[OCV_POINTS];
+extern float soc_custom[OCV_POINTS];
 
 static char manufacturer[] = "Libre Solar";
 static char device_type[] = DT_PROP(DT_PATH(pcb), type);
@@ -33,6 +35,10 @@ static THINGSET_DEFINE_FLOAT_ARRAY(cell_voltages_arr, 3, bms.ic_data.cell_voltag
 
 static THINGSET_DEFINE_FLOAT_ARRAY(cell_temps_arr, 1, bms.ic_data.cell_temps,
                                    ARRAY_SIZE(bms.ic_data.cell_temps));
+
+static THINGSET_DEFINE_FLOAT_ARRAY(ocv_points_arr, 3, ocv_custom, ARRAY_SIZE(ocv_custom));
+
+static THINGSET_DEFINE_FLOAT_ARRAY(soc_points_arr, 1, soc_custom, ARRAY_SIZE(soc_custom));
 
 // used for xInitConf functions
 static float new_capacity = 0;
@@ -74,6 +80,12 @@ THINGSET_ADD_GROUP(TS_ID_ROOT, APP_ID_CONF, "Conf", &data_objects_update_conf);
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF, APP_ID_CONF_NOMINAL_CAPACITY, "sNominalCapacity_Ah",
                         &bms.nominal_capacity_Ah, 1, THINGSET_ANY_R | THINGSET_ANY_W,
                         TS_SUBSET_NVM);
+
+THINGSET_ADD_ITEM_ARRAY(APP_ID_CONF, APP_ID_CONF_OCV_POINTS, "sOcvPoints_V", &ocv_points_arr,
+                        THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
+
+THINGSET_ADD_ITEM_ARRAY(APP_ID_CONF, APP_ID_CONF_SOC_POINTS, "sSocPoints_pct", &soc_points_arr,
+                        THINGSET_ANY_R | THINGSET_ANY_W, TS_SUBSET_NVM);
 
 // current limits
 

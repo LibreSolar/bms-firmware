@@ -23,9 +23,13 @@ static float ocv_nmc[OCV_POINTS] = { 4.198F, 4.135F, 4.089F, 4.056F, 4.026F, 3.9
                                      3.924F, 3.883F, 3.858F, 3.838F, 3.819F, 3.803F, 3.787F,
                                      3.764F, 3.745F, 3.726F, 3.702F, 3.684F, 3.588F, 2.800F };
 
+float ocv_custom[OCV_POINTS] = { 0 };
+
 static float soc_pct[OCV_POINTS] = { 100.0F, 95.0F, 90.0F, 85.0F, 80.0F, 85.0F, 70.0F,
                                      65.0F,  60.0F, 55.0F, 50.0F, 45.0F, 40.0F, 35.0F,
                                      30.0F,  25.0F, 20.0F, 15.0F, 10.0F, 5.0F,  0.0F };
+
+float soc_custom[OCV_POINTS] = { 0 };
 
 void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float nominal_capacity_Ah)
 {
@@ -99,6 +103,8 @@ void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float nom
             bms->soc_points = NULL;
             break;
         case CELL_TYPE_CUSTOM:
+            bms->ocv_points = ocv_custom;
+            bms->soc_points = soc_custom;
             break;
     }
 
