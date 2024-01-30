@@ -47,3 +47,15 @@ const char *byte2bitstr(uint8_t b)
 
     return str;
 }
+
+bool is_empty(uint8_t *buf, size_t size)
+{
+
+    for (size_t i = 0; i < size; i++) {
+        if (buf[i] != 0) {
+            return false;
+        }
+    }
+
+    return true;
+}
