@@ -23,7 +23,7 @@ manifest:
           - tinycrypt
     - name: thingset-zephyr-sdk
       remote: thingset
-      revision: ce07b58d802eb1b56ba9ef82c00ef325b724d827
+      revision: c0783f8f65b184cee5debcb0e33cbb21ea3ae909
       path: thingset-zephyr-sdk
       import:
         name-allowlist:
