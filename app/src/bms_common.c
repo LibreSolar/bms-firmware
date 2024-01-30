@@ -23,6 +23,10 @@ static float ocv_nmc[OCV_POINTS] = { 4.198F, 4.135F, 4.089F, 4.056F, 4.026F, 3.9
                                      3.924F, 3.883F, 3.858F, 3.838F, 3.819F, 3.803F, 3.787F,
                                      3.764F, 3.745F, 3.726F, 3.702F, 3.684F, 3.588F, 2.800F };
 
+static float soc_pct[OCV_POINTS] = { 100.0F, 95.0F, 90.0F, 85.0F, 80.0F, 85.0F, 70.0F,
+                                     65.0F,  60.0F, 55.0F, 50.0F, 45.0F, 40.0F, 35.0F,
+                                     30.0F,  25.0F, 20.0F, 15.0F, 10.0F, 5.0F,  0.0F };
+
 void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float nominal_capacity_Ah)
 {
     bms->nominal_capacity_Ah = nominal_capacity_Ah;
@@ -69,6 +73,7 @@ void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float nom
              */
             bms->ic_conf.cell_uv_limit = 2.50F;
             bms->ocv_points = ocv_lfp;
+            bms->soc_points = soc_pct;
             break;
         case CELL_TYPE_NMC:
             bms->ic_conf.cell_ov_limit = 4.25F;
@@ -79,6 +84,7 @@ void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float nom
             bms->ic_conf.cell_dis_voltage_limit = 3.20F;
             bms->ic_conf.cell_uv_limit = 3.00F;
             bms->ocv_points = ocv_nmc;
+            bms->soc_points = soc_pct;
             break;
         case CELL_TYPE_LTO:
             bms->ic_conf.cell_ov_limit = 2.85F;
@@ -90,6 +96,7 @@ void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float nom
             bms->ic_conf.cell_uv_limit = 1.90F;
             // ToDo: Use typical OCV curve for LTO cells
             bms->ocv_points = NULL;
+            bms->soc_points = NULL;
             break;
         case CELL_TYPE_CUSTOM:
             break;
