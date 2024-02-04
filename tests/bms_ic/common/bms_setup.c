@@ -9,9 +9,9 @@
 #include <zephyr/device.h>
 #include <zephyr/kernel.h>
 
-struct bms_context bms;
-
-const struct device *bms_ic = DEVICE_DT_GET(DT_ALIAS(bms_ic));
+struct bms_context bms = {
+    .ic_dev = DEVICE_DT_GET(DT_ALIAS(bms_ic)),
+};
 
 float OCV[] = { // 100, 95, ..., 0 %
     3.392, 3.314, 3.309, 3.308, 3.304, 3.296, 3.283, 3.275, 3.271, 3.268, 3.265,
@@ -20,9 +20,9 @@ float OCV[] = { // 100, 95, ..., 0 %
 
 void common_setup_bms_defaults()
 {
-    bms_ic_assign_data(bms_ic, &bms.ic_data);
+    bms_ic_assign_data(bms.ic_dev, &bms.ic_data);
 
-    bms_ic_set_mode(bms_ic, BMS_IC_MODE_ACTIVE);
+    bms_ic_set_mode(bms.ic_dev, BMS_IC_MODE_ACTIVE);
 
     bms.ic_conf.dis_sc_limit = 35.0;
     bms.ic_conf.dis_sc_delay_us = 200;
@@ -55,10 +55,10 @@ void common_setup_bms_defaults()
     bms.ic_conf.bal_cell_voltage_diff = 0.01;
     bms.ic_conf.bal_idle_current = 0.1;
 
-    bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_ALL);
+    bms_ic_configure(bms.ic_dev, &bms.ic_conf, BMS_IC_CONF_ALL);
 
-    bms_ic_read_data(bms_ic, BMS_IC_DATA_CELL_VOLTAGES);
+    bms_ic_read_data(bms.ic_dev, BMS_IC_DATA_CELL_VOLTAGES);
 
-    bms_ic_set_switches(bms_ic, BMS_SWITCH_DIS, true);
-    bms_ic_set_switches(bms_ic, BMS_SWITCH_CHG, true);
+    bms_ic_set_switches(bms.ic_dev, BMS_SWITCH_DIS, true);
+    bms_ic_set_switches(bms.ic_dev, BMS_SWITCH_CHG, true);
 }

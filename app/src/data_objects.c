@@ -19,7 +19,6 @@
 
 #include <stdio.h>
 
-extern const struct device *bms_ic;
 extern struct bms_context bms;
 extern float ocv_custom[OCV_POINTS];
 extern float soc_custom[OCV_POINTS];
@@ -259,7 +258,7 @@ void data_objects_update_conf(enum thingset_callback_reason reason)
     if (reason == THINGSET_CALLBACK_POST_WRITE) {
         // ToDo: Validate new settings before applying them
 
-        bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_ALL);
+        bms_ic_configure(bms.ic_dev, &bms.ic_conf, BMS_IC_CONF_ALL);
 
 #ifdef CONFIG_THINGSET_STORAGE
         thingset_storage_save_queued();
@@ -273,7 +272,7 @@ int32_t bat_preset(enum bms_cell_type type)
 
     bms_init_config(&bms, type, new_capacity);
 
-    ret = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_ALL);
+    ret = bms_ic_configure(bms.ic_dev, &bms.ic_conf, BMS_IC_CONF_ALL);
 
 #ifdef CONFIG_THINGSET_STORAGE
     if (ret > 0) {
@@ -296,7 +295,7 @@ int32_t bat_preset_lfp()
 
 void print_registers()
 {
-    bms_ic_debug_print_mem(bms_ic);
+    bms_ic_debug_print_mem(bms.ic_dev);
 }
 
 void reset_device()
@@ -306,5 +305,5 @@ void reset_device()
 
 void shutdown()
 {
-    bms_ic_set_mode(bms_ic, BMS_IC_MODE_OFF);
+    bms_ic_set_mode(bms.ic_dev, BMS_IC_MODE_OFF);
 }

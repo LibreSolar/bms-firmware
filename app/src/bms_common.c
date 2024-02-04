@@ -13,8 +13,6 @@
 
 LOG_MODULE_REGISTER(bms, CONFIG_LOG_DEFAULT_LEVEL);
 
-extern const struct device *bms_ic;
-
 static float ocv_lfp[OCV_POINTS] = { 3.392F, 3.314F, 3.309F, 3.308F, 3.304F, 3.296F, 3.283F,
                                      3.275F, 3.271F, 3.268F, 3.265F, 3.264F, 3.262F, 3.252F,
                                      3.240F, 3.226F, 3.213F, 3.190F, 3.177F, 3.132F, 2.833F };
@@ -117,26 +115,26 @@ __weak void bms_state_machine(struct bms_context *bms)
     switch (bms->state) {
         case BMS_STATE_OFF:
             if (bms_dis_allowed(bms)) {
-                bms_ic_set_switches(bms_ic, BMS_SWITCH_DIS, true);
+                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS, true);
                 bms->state = BMS_STATE_DIS;
                 LOG_INF("OFF -> DIS (error flags: 0x%08x)", bms->ic_data.error_flags);
             }
             else if (bms_chg_allowed(bms)) {
-                bms_ic_set_switches(bms_ic, BMS_SWITCH_CHG, true);
+                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, true);
                 bms->state = BMS_STATE_CHG;
                 LOG_INF("OFF -> CHG (error flags: 0x%08x)", bms->ic_data.error_flags);
             }
             break;
         case BMS_STATE_CHG:
             if (!bms_chg_allowed(bms)) {
-                bms_ic_set_switches(bms_ic, BMS_SWITCH_CHG, false);
+                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, false);
                 /* DIS switch may be on on because of ideal diode control */
-                bms_ic_set_switches(bms_ic, BMS_SWITCH_DIS, false);
+                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS, false);
                 bms->state = BMS_STATE_OFF;
                 LOG_INF("CHG -> OFF (error flags: 0x%08x)", bms->ic_data.error_flags);
             }
             else if (bms_dis_allowed(bms)) {
-                bms_ic_set_switches(bms_ic, BMS_SWITCH_DIS, true);
+                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS, true);
                 bms->state = BMS_STATE_NORMAL;
                 LOG_INF("CHG -> NORMAL (error flags: 0x%08x)", bms->ic_data.error_flags);
             }
@@ -144,24 +142,24 @@ __weak void bms_state_machine(struct bms_context *bms)
             else {
                 /* ideal diode control for discharge MOSFET (with hysteresis) */
                 if (bms->ic_data.current > 0.5F) {
-                    bms_ic_set_switches(bms_ic, BMS_SWITCH_DIS, true);
+                    bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS, true);
                 }
                 else if (bms->ic_data.current < 0.1F) {
-                    bms_ic_set_switches(bms_ic, BMS_SWITCH_DIS, false);
+                    bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS, false);
                 }
             }
 #endif
             break;
         case BMS_STATE_DIS:
             if (!bms_dis_allowed(bms)) {
-                bms_ic_set_switches(bms_ic, BMS_SWITCH_DIS, false);
+                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS, false);
                 /* CHG_FET may be on because of ideal diode control */
-                bms_ic_set_switches(bms_ic, BMS_SWITCH_CHG, false);
+                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, false);
                 bms->state = BMS_STATE_OFF;
                 LOG_INF("DIS -> OFF (error flags: 0x%08x)", bms->ic_data.error_flags);
             }
             else if (bms_chg_allowed(bms)) {
-                bms_ic_set_switches(bms_ic, BMS_SWITCH_CHG, true);
+                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, true);
                 bms->state = BMS_STATE_NORMAL;
                 LOG_INF("DIS -> NORMAL (error flags: 0x%08x)", bms->ic_data.error_flags);
             }
@@ -169,22 +167,22 @@ __weak void bms_state_machine(struct bms_context *bms)
             else {
                 /* ideal diode control for charge MOSFET (with hysteresis) */
                 if (bms->ic_data.current < -0.5F) {
-                    bms_ic_set_switches(bms_ic, BMS_SWITCH_CHG, true);
+                    bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, true);
                 }
                 else if (bms->ic_data.current > -0.1F) {
-                    bms_ic_set_switches(bms_ic, BMS_SWITCH_CHG, false);
+                    bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, false);
                 }
             }
 #endif
             break;
         case BMS_STATE_NORMAL:
             if (!bms_dis_allowed(bms)) {
-                bms_ic_set_switches(bms_ic, BMS_SWITCH_DIS, false);
+                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS, false);
                 bms->state = BMS_STATE_CHG;
                 LOG_INF("NORMAL -> CHG (error flags: 0x%08x)", bms->ic_data.error_flags);
             }
             else if (!bms_chg_allowed(bms)) {
-                bms_ic_set_switches(bms_ic, BMS_SWITCH_CHG, false);
+                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, false);
                 bms->state = BMS_STATE_DIS;
                 LOG_INF("NORMAL -> DIS (error flags: 0x%08x)", bms->ic_data.error_flags);
             }

@@ -82,6 +82,9 @@ struct bms_context
     /** Pointer to an array containing the State of Charge points for the OCV. */
     float *soc_points;
 
+    /** BMS IC device pointer */
+    const struct device *ic_dev;
+
     /** BMS IC configuration applied during start-up. */
     struct bms_ic_conf ic_conf;
 

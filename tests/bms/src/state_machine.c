@@ -11,9 +11,9 @@
 #include <stdio.h>
 #include <time.h>
 
-struct bms_context bms;
-
-const struct device *bms_ic = DEVICE_DT_GET(DT_ALIAS(bms_ic));
+struct bms_context bms = {
+    .ic_dev = DEVICE_DT_GET(DT_ALIAS(bms_ic)),
+};
 
 void init_conf()
 {

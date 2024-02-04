@@ -18,9 +18,9 @@
 
 LOG_MODULE_REGISTER(bms_main, CONFIG_LOG_DEFAULT_LEVEL);
 
-const struct device *bms_ic = DEVICE_DT_GET(DT_ALIAS(bms_ic));
-
-struct bms_context bms;
+struct bms_context bms = {
+    .ic_dev = DEVICE_DT_GET(DT_ALIAS(bms_ic)),
+};
 
 int main(void)
 {
@@ -30,24 +30,24 @@ int main(void)
             DT_PROP(DT_PATH(pcb), version_str));
     LOG_INF("Firmware: %s", FIRMWARE_VERSION_ID);
 
-    if (!device_is_ready(bms_ic)) {
+    if (!device_is_ready(bms.ic_dev)) {
         LOG_ERR("BMS IC not ready");
         return -ENODEV;
     }
 
-    bms_ic_assign_data(bms_ic, &bms.ic_data);
+    bms_ic_assign_data(bms.ic_dev, &bms.ic_data);
 
-    err = bms_ic_set_mode(bms_ic, BMS_IC_MODE_ACTIVE);
+    err = bms_ic_set_mode(bms.ic_dev, BMS_IC_MODE_ACTIVE);
     if (err != 0) {
         LOG_ERR("Failed to activate BMS IC: %d", err);
     }
 
-    err = bms_ic_configure(bms_ic, &bms.ic_conf, BMS_IC_CONF_ALL);
+    err = bms_ic_configure(bms.ic_dev, &bms.ic_conf, BMS_IC_CONF_ALL);
     if (err < 0) {
         LOG_ERR("Failed to configure BMS IC: %d", err);
     }
 
-    err = bms_ic_read_data(bms_ic, BMS_IC_DATA_CELL_VOLTAGES);
+    err = bms_ic_read_data(bms.ic_dev, BMS_IC_DATA_CELL_VOLTAGES);
     if (err != 0) {
         LOG_ERR("Failed to read data from BMS IC: %d", err);
     }
@@ -58,7 +58,7 @@ int main(void)
 
     int64_t t_start = k_uptime_get();
     while (true) {
-        err = bms_ic_read_data(bms_ic, BMS_IC_DATA_ALL);
+        err = bms_ic_read_data(bms.ic_dev, BMS_IC_DATA_ALL);
         if (err != 0) {
             LOG_ERR("Failed to read data from BMS IC: %d", err);
         }
@@ -69,7 +69,7 @@ int main(void)
 
         if (button_pressed_for_3s()) {
             LOG_WRN("Button pressed for 3s: shutdown...");
-            bms_ic_set_mode(bms_ic, BMS_IC_MODE_OFF);
+            bms_ic_set_mode(bms.ic_dev, BMS_IC_MODE_OFF);
             k_sleep(K_MSEC(10000));
         }
 
