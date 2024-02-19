@@ -4,3 +4,7 @@
 config BOARD_OKAI
 	bool "OKAI"
 	depends on SOC_STM32F072XB
+
+config OKAI_PB2_POWER
+    bool "OKAI_PB2_POWER to enable HW"
+	depends on BOARD_OKAI

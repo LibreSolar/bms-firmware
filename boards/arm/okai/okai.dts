@@ -64,13 +64,13 @@
 	switches {
 		compatible = "switch";
 		can_en {
-			gpios = <&gpioa 15 GPIO_ACTIVE_LOW>;
+			gpios = <&gpiob 15 GPIO_ACTIVE_LOW>;
 			label = "CAN transceiver enable";
 		};
-		pchg_en {
+		/*pchg_en {
 			gpios = <&gpiob 2 GPIO_ACTIVE_HIGH>;
 			label = "PCHG enable pin";
-		};
+		};*/
 	};
 
 	aliases {
@@ -80,6 +80,15 @@
 		uart-uext = &usart2;
 		i2c-uext = &i2c1;
 		sw-pwr = &power_button;
+	};
+
+	io-pwr-ctrl {
+		compatible = "regulator-fixed-sync";
+		label = "io-pwr-ctrl";
+		regulator-name = "io-pwr-ctrl";
+		enable-gpios = <&gpiob 2 GPIO_ACTIVE_HIGH>;
+		regulator-boot-on;
+		status = "okay";
 	};
 
 	soc {
@@ -122,6 +131,7 @@
 
 &usart2 {
 	pinctrl-0 = <&usart2_tx_pa2 &usart2_rx_pa3>;
+	pinctrl-names = "default";
 	current-speed = <115200>;
 	status = "okay";
 };
@@ -132,6 +142,7 @@
 
 &usart3 {
 	pinctrl-0 = <&usart3_tx_pb10 &usart3_rx_pb11>;
+	pinctrl-names = "default";
 	current-speed = <115200>;
 	status = "okay";
 };
@@ -142,6 +153,7 @@
 
 &i2c1 {
 	pinctrl-0 = <&i2c1_scl_pb6 &i2c1_sda_pb7>;
+	pinctrl-names = "default";
 	status = "okay";
 
 	bq769x0@8 {
@@ -154,20 +166,47 @@
 
 &spi1 {
 	pinctrl-0 = <&spi1_sck_pb3 &spi1_miso_pb4 &spi1_mosi_pb5>;
-	cs-gpios = <&gpioa 1 GPIO_ACTIVE_LOW>;
+	pinctrl-names = "default";
+	cs-gpios = <&gpioa 15 GPIO_ACTIVE_LOW>;
 	status = "okay";
+
+	/*eeprom@0 {
+		// M25Q 16A
+		compatible = "atmel,at25";
+		reg = <0x0>;	// 1 0 1 0 A2 A1 A0 = 1010001
+		label = "EEPROM_0";
+		size = <32768>;
+		pagesize = <64>;
+		address-width = <16>;
+		timeout = <7>;
+		spi-max-frequency = <DT_FREQ_M(1)>;
+	};*/
 };
 
 &iwdg {
 	status = "okay";
 };
 
-&adc1 {
-	status = "okay";
-};
+//&adc1 {
+//	pinctrl-names = "default";
+//status = "okay";
+	//vin-supply ="io-pwr-ctrl";
+//};
 
 &can1 {
 	pinctrl-0 = <&can_rx_pa11 &can_tx_pa12>;
+	pinctrl-names = "default";
 	bus-speed = <500000>;
 	status = "okay";
+	//supply-gpios = <&gpiob 15 GPIO_ACTIVE_HIGH>;
 };
+
+/*
+display_power {
+	compatible="regulator-fixed-syn";
+	label = "display-pwr-ctrl";
+	regulator-name = "display-pwr-ctrl";
+	enable-gpios = <&gpioc 14 GPIO_ACTIVE_HIGH>;
+	regulator-boot-on;
+	status = "okay";
+};*/
