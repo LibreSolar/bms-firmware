@@ -1,0 +1,108 @@
+# Copyright (c) The Libre Solar Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig BMS_IC
+	bool "BMS IC drivers"
+	help
+	  Enable drivers for Battery Management System (BMS) front-end ICs.
+
+if BMS_IC
+
+config BMS_IC_HAS_SWITCHES
+	bool
+	help
+	  Select to indicate that the IC supports controlling MOSFETs.
+
+config BMS_IC_HAS_CURRENT_MONITORING
+	bool
+	help
+	  Select to indicate that the IC supports current monitoring.
+
+module = BMS_IC
+module-str = bms_ic
+source "subsys/logging/Kconfig.template.log_config"
+
+config BMS_IC_BQ769X0
+	bool "Texas Instruments bq769x0 series"
+	depends on DT_HAS_TI_BQ769X0_ENABLED
+	select BMS_IC_HAS_CURRENT_MONITORING
+	select BMS_IC_HAS_SWITCHES
+	select CRC
+	default y
+	help
+	  Driver for TI bq769x0.
+
+config BMS_IC_BQ769X2
+	bool "Texas Instruments bq769x2 series"
+	depends on DT_HAS_TI_BQ769X2_I2C_ENABLED || DT_HAS_TI_BQ769X2_SPI_ENABLED
+	select BMS_IC_HAS_CURRENT_MONITORING
+	select BMS_IC_HAS_SWITCHES
+	select CRC
+	default y
+	help
+	  Driver for TI bq76942, bq76952 and bq769142.
+
+config BMS_IC_ISL94202
+	bool "Intersil/Renesas ISL94202"
+	depends on DT_HAS_RENESAS_ISL94202_ENABLED
+	select BMS_IC_HAS_CURRENT_MONITORING
+	select BMS_IC_HAS_SWITCHES
+	default y
+	help
+	  Driver for Intersil/Renesas ISL94202.
+
+config BMS_IC_ISL94202_NUM_CELLS
+    int "Exact number of cells in series"
+    depends on BMS_IC_ISL94202
+    range 3 8
+    default 8
+    help
+      The exact number of cells used by the application is needed for configuration of the chip.
+
+      Typical choices:
+      - 3 for 12V NMC Li-Ion battery
+      - 4 for 12V LiFePO4 battery
+      - 5 for 12V Titanate battery
+      - 8 for 24V LiFePO4 battery
+
+config BMS_IC_CURRENT_MONITORING
+	bool "Use BMS IC current monitoring"
+	depends on BMS_IC_HAS_CURRENT_MONITORING
+	default y
+	help
+	  Use the current monitoring features if available in the IC. Can be disabled to reduce
+	  code size.
+
+config BMS_IC_SWITCHES
+	bool "Control switches via BMS IC"
+	depends on BMS_IC_HAS_SWITCHES
+	default y
+	help
+	  If available in the BMS IC, this config allows to manually control the MOSFETs for
+	  charging, discharging or pre-charging.
+
+config BMS_IC_MAX_CELLS
+	int "Max. number of cells used"
+	range 1 31
+	default 16 if BMS_IC_BQ769X2
+	default 15 if BMS_IC_BQ769X0
+	default 8 if BMS_IC_ISL94202
+
+config BMS_IC_MAX_THERMISTORS
+	int "Max. number of thermistors used"
+	range 1 255
+	default 3
+
+config BMS_IC_INIT_PRIORITY
+	int "BMS IC driver initialization priority"
+	range 0 99
+	default 70
+	help
+	  System initialization priority for BMS IC driver.
+
+config BMS_IC_POLLING_INTERVAL_MS
+	int "BMS IC polling interval"
+	range 100 10000
+	default 500
+
+endif

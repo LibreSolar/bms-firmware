@@ -6,7 +6,4 @@ if BOARD_BMS_8S50_IC
 config BOARD
 	default "bms_8s50_ic"
 
-config LIBRE_SOLAR_TYPE_ID
-	default 6
-
 endif # BOARD_BMS_8S50_IC

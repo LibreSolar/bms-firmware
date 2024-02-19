@@ -1,0 +1,12 @@
+# Copyright (c) The Libre Solar Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD_BMS_16S100_SC_ESP32C3
+	bool "Libre Solar BMS 16S100 SC"
+	depends on SOC_ESP32C3
+	select CONSOLE_HAS_DRIVER
+
+config BOARD_BMS_C1
+	bool "Libre Solar BMS C1"
+	depends on SOC_ESP32C3
+	select CONSOLE_HAS_DRIVER

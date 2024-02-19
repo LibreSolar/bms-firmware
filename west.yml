@@ -2,7 +2,7 @@
 
 manifest:
   remotes:
-    - name: zephyrproject-rtos
+    - name: zephyrproject
       url-base: https://github.com/zephyrproject-rtos
     - name: libresolar
       url-base: https://github.com/LibreSolar
@@ -14,22 +14,31 @@ manifest:
       url-base: git@github.com:bjorniuppsala
   projects:
     - name: zephyr
-      remote: zephyrproject-rtos
-      revision: v3.1-branch
+      remote: zephyrproject
+      revision: v3.5-branch
       import:
-        name-whitelist:
+        name-allowlist:
           - cmsis
           - edtt
           - hal_espressif
           - hal_stm32
+          - tinycrypt
+    - name: thingset-zephyr-sdk
+      remote: thingset
+      revision: c0783f8f65b184cee5debcb0e33cbb21ea3ae909
+      path: thingset-zephyr-sdk
+      import:
+        name-allowlist:
+          - thingset-node-c
+          - zcbor
     - name: oled-display-library
       remote: libresolar
       revision: cc3033c0daace8cb50ab0e6406a9498cc81cdb39
       path: modules/oled-display
-    - name: thingset-device-library
-      remote: bjorniuppsala
-      revision: subsets
-      path: modules/thingset
+#    - name: thingset-device-library
+#      remote: bjorniuppsala
+#      revision: subsets
+#      path: modules/thingset
     - name: unity
       remote: throwtheswitch
       revision: 74cde089e65c3435ce9aa87d5c69f4f16b7f6ade

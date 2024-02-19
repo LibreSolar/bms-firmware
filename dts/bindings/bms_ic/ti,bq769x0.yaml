@@ -1,0 +1,39 @@
+# Copyright (c) The Libre Solar Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+description: Texas Instruments bq769x0 li-ion and li-phosphate battery monitor
+
+compatible: "ti,bq769x0"
+
+include: [ bms-ic-common.yaml, i2c-device.yaml ]
+
+properties:
+  alert-gpios:
+    type: phandle-array
+    required: true
+    description: Alert interrupt of bq769x0
+
+  used-cell-channels:
+    type: int
+    required: true
+    description: |
+      Bitset of cell channels used by the board. See below examples for the maximum number of
+      cells supported by the different chips:
+
+      bq76920 (3-5s):  0b0000_0000_0001_1111 = 0x001F
+      bq76930 (6-10s): 0b0000_0011_1111_1111 = 0x03FF
+      bq76940 (9-15s): 0b0111_1111_1111_1111 = 0x7FFF
+
+  bus-pchg-gpios:
+    type: phandle-array
+    required: false
+    description: |
+      GPIO to enable/disable the bus pre-charge MOSFET.
+
+  thermistor-beta:
+    type: int
+    default: 3435
+    description: |
+      Thermistor beta value.
+
+      Default is typical value for Semitec 103AT-5 thermistor.

@@ -3,43 +3,6 @@
 
 mainmenu "Libre Solar Battery Management System Firmware"
 
-#
-# Invisible (board-specific) Kconfig symbols
-#
-
-DT_COMPAT_TI_BQ769X0 := ti,bq769x0
-DT_COMPAT_TI_BQ769X2_I2C := ti,bq769x2-i2c
-DT_COMPAT_TI_BQ769X2_SPI := ti,bq769x2-spi
-DT_COMPAT_RENESAS_ISL94202 := renesas,isl94202
-
-config BQ769X0
-    bool
-    default $(dt_compat_enabled,$(DT_COMPAT_TI_BQ769X0))
-    help
-      Texas Instruments bq769x0 series used as BMS IC
-
-config BQ769X2
-    bool
-    default $(dt_compat_enabled,$(DT_COMPAT_TI_BQ769X2_I2C)) || \
-            $(dt_compat_enabled,$(DT_COMPAT_TI_BQ769X2_SPI))
-    help
-      Texas Instruments bq769x2 series used as BMS IC
-
-config ISL94202
-    bool
-    default $(dt_compat_enabled,$(DT_COMPAT_RENESAS_ISL94202))
-    help
-      Intersil/Renesas ISL94202 used as BMS IC
-
-config LIBRE_SOLAR_TYPE_ID
-    int
-    help
-      Numeric Libre Solar hardware type ID
-
-#
-# Visible (user-configurable) Kconfig symbols
-#
-
 menu "Battery default settings"
 
 config BAT_CAPACITY_AH
@@ -68,6 +31,9 @@ choice
 
     config CELL_TYPE_LTO
         bool "NMC/Titanate, 2.4 V nominal"
+
+    config CELL_TYPE_CUSTOM
+        bool "Enable manual configuration for all customizable parameters"
 endchoice
 
 # values must match enum CellType in bms.h
@@ -79,93 +45,7 @@ config CELL_TYPE
     default 3 if CELL_TYPE_NMC_HV
     default 4 if CELL_TYPE_LTO
 
-config NUM_CELLS_IN_SERIES
-    int "Number of cells for single battery"
-    default 3 if CELL_TYPE_NMC || CELL_TYPE_NMC_HV
-    default 4 if CELL_TYPE_LFP
-    default 5 if CELL_TYPE_LTO
-    range 3 16
-    help
-      Typical choices:
-      - 3 for 12V NMC Li-Ion battery
-      - 4 for 12V LiFePO4 battery
-      - 5 for 12V Titanate battery
-
 endmenu
-
-
-menu "UEXT port"
-
-config UEXT_OLED_DISPLAY
-    select I2C
-    bool "OLED display"
-
-config UEXT_OLED_BRIGHTNESS
-    depends on UEXT_OLED_DISPLAY
-    int "OLED display brightness"
-    range 1 255
-    default 1
-
-config UEXT_SERIAL_THINGSET
-    depends on THINGSET_SERIAL
-    bool "Use UEXT serial for ThingSet interface"
-    default y
-    help
-      If the ThingSet interface is not attached to the serial port in the UEXT connector, the
-      serial in the LS.one port or the debug connector is used (if existing).
-
-endmenu # UEXT port
-
-menu "ThingSet interfaces"
-
-config THINGSET_SERIAL
-    bool "ThingSet serial interface"
-
-config THINGSET_SERIAL_RX_BUF_SIZE
-    depends on THINGSET_SERIAL
-    int "ThingSet serial RX buffer size"
-    range 64 2048
-    default 512
-
-config THINGSET_SERIAL_TX_BUF_SIZE
-    depends on THINGSET_SERIAL
-    int "ThingSet serial TX buffer size"
-    range 256 2048
-    default 1024
-
-config THINGSET_SERIAL_PUB_DEFAULT
-    bool "Enable serial publication messages at startup"
-    depends on THINGSET_SERIAL
-    default y
-
-config THINGSET_CAN
-    depends on CAN
-    bool "ThingSet CAN interface"
-
-config THINGSET_CAN_PUB_DEFAULT
-    bool "Enable CAN publication messages at startup"
-    depends on THINGSET_CAN
-    default y
-
-config THINGSET_CAN_DEFAULT_NODE_ID
-    depends on THINGSET_CAN
-    int "ThingSet CAN default node ID"
-    range 0 255
-    default 10
-
-config THINGSET_EXPERT_PASSWORD
-    depends on THINGSET_SERIAL || THINGSET_CAN
-    string "ThingSet expert user password"
-    default "expert123"
-
-config THINGSET_MAKER_PASSWORD
-    depends on THINGSET_SERIAL || THINGSET_CAN
-    string "ThingSet maker password"
-    default "maker456"
-
-endmenu # ThingSet interface
-
-rsource "../drivers/serial/Kconfig.esp32"
 
 # include main Zephyr menu entries from Zephyr root directory
 source "Kconfig.zephyr"

@@ -1,12 +1,6 @@
 Misc
 ====
 
-EEPROM
-------
-
-.. doxygenfile:: eeprom.h
-   :project: app
-
 Button
 ------
 
@@ -16,5 +10,5 @@ Button
 Helper
 ------
 
-.. doxygenfile:: helper.h
+.. doxygenfile:: include/helper.h
    :project: app

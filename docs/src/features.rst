@@ -8,8 +8,9 @@ Amongst all features inherited from underlying Zephyr, the BMS has the following
 
   - Serial interface
   - CAN bus
+  - Bluetooth (not available on all boards)
 
-- Extensions via `UEXT connector`_ possible
+- Extensions via `UEXT connector`_ possible (depending on hardware)
 
   - I2C
   - SPI

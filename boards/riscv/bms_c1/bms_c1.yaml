@@ -1,0 +1,6 @@
+identifier: bms_c1
+name: BMS-C1
+type: mcu
+arch: riscv
+toolchain:
+  - zephyr

@@ -1,48 +1,48 @@
-name: Build with Zephyr toolchain
+name: Code check and build tests
 
 on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: zephyrprojectrtos/ci:v0.21.0
+    container: zephyrprojectrtos/ci:latest
     env:
       CMAKE_PREFIX_PATH: /opt/toolchains
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: bms-firmware
-
-      - name: Set up Python
-        uses: actions/setup-python@v1
+          fetch-depth: 0
 
       - name: Initialize
         working-directory: bms-firmware
         run: |
-          pip3 install -U west
           west init -l .
           west update --narrow
-          pip3 install -r ../zephyr/scripts/requirements-base.txt
+          west blobs fetch hal_espressif
 
-      - name: Trailing whitespace check
+      - name: Coding style check
         working-directory: bms-firmware
         run: |
-          git diff --check `git rev-list HEAD | tail -n 1`..
+          apt-get update
+          apt-get install -y clang-format-15 colordiff
+          git status
+          bash scripts/check-style.sh
 
       - name: Build firmware
         working-directory: bms-firmware
         run: |
           cd app
           west build -p -b bms_5s50_sc
-          west build -p -b bms_8s50_ic@0.2
+          west build -p -b bms_8s50_ic@0.2 -- -DEXTRA_CONF_FILE=oled.conf -DSHIELD=uext_oled
+          west build -p -b bms_8s50_ic_f072
           west build -p -b bms_15s80_sc
           west build -p -b bms_16s100_sc
+          west build -p -b bms_16s100_sc_esp32c3@0.2
+          west build -p -b bms_c1@0.4
 
       - name: Run unit-tests
         working-directory: bms-firmware
         run: |
-          cd tests
-          west build -p -b native_posix -t run -- -DDTC_OVERLAY_FILE="boards/bq769x0.overlay"
-          west build -p -b native_posix -t run -- -DDTC_OVERLAY_FILE="boards/bq769x2.overlay"
-          west build -p -b native_posix -t run -- -DDTC_OVERLAY_FILE="boards/isl94202.overlay"
+          ../zephyr/scripts/twister -T ./tests --integration --inline-logs -n

@@ -1,0 +1,114 @@
+# Copyright (c) The Libre Solar Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+include: bms-ic-common.yaml
+
+properties:
+  crc-enabled:
+    type: boolean
+    description: |
+      Enable CRC for communication. This option depends on the exact part number used.
+
+  alert-gpios:
+    type: phandle-array
+    required: true
+    description: Alert interrupt of bq769x2
+
+  used-cell-channels:
+    type: int
+    required: true
+    description: |
+      Bitset of cell channels used by the board. The supported channels for a particular chip
+      correspond to the Settings:Configuration:Vcell Mode register. See below examples for the
+      maximum number of cells supported by the different chips:
+
+      bq76952 (3-16s):  0b1111_1111_1111_1111 = 0xFFFF
+      bq769142 (3-14s): 0b1010_1111_1111_1111 = 0xAFFF
+      bq76942 (3-10s):  0b0000_0011_1111_1111 = 0x03FF
+
+  cfetoff-pin-config:
+    type: int
+    description: |
+      Configuration of the CFETOFF pin. See Reference manual for details.
+
+  dfetoff-pin-config:
+    type: int
+    description: |
+      Configuration of the DFETOFF pin. See Reference manual for details.
+
+  alert-pin-config:
+    type: int
+    description: |
+      Configuration of the ALERT pin. See Reference manual for details.
+
+  ts1-pin-config:
+    type: int
+    description: |
+      Configuration of the TS1 pin. See Reference manual for details.
+
+  ts2-pin-config:
+    type: int
+    description: |
+      Configuration of the TS2 pin. See Reference manual for details.
+
+  ts3-pin-config:
+    type: int
+    description: |
+      Configuration of the TS3 pin. See Reference manual for details.
+
+  hdq-pin-config:
+    type: int
+    description: |
+      Configuration of the HDQ pin. See Reference manual for details.
+
+  dchg-pin-config:
+    type: int
+    description: |
+      Configuration of the DCHG pin. See Reference manual for details.
+
+  ddsg-pin-config:
+    type: int
+    description: |
+      Configuration of the DDSG pin. See Reference manual for details.
+
+  cell-temp-pins:
+    type: array
+    required: true
+    description: |
+      Pins used for cell temperature sensing. The *-pin-config property of that pin has to be
+      configured accordingly.
+
+      Up to CONFIG_BMS_IC_MAX_THERMISTORS pins can be configured.
+
+      See include/zephyr/dt-bindings/bms_ic/bq769x2.h for allowed values.
+
+  fet-temp-pin:
+    type: int
+    enum:
+      - 0 # CFETOFF
+      - 1 # DFETOFF
+      - 2 # ALERT
+      - 3 # TS1
+      - 4 # TS2
+      - 5 # TS3
+      - 6 # HDQ
+      - 7 # DCHG
+      - 8 # DDSG
+    description: |
+      Pin used for MOSFET temperature sensing. The *-pin-config property of that pin has to be
+      configured accordingly.
+
+      See include/zephyr/dt-bindings/bms_ic/bq769x2.h for allowed values.
+
+  auto-pdsg:
+    type: boolean
+    description: |
+      Enable automatic pre-discharge (bus precharge) before switching on DSG FETs.
+
+  reg12-config:
+    type: int
+    default: 0
+    description: |
+      Configuration of the REG12 Config Register. REG2 is configured in the higher nibble and REG1
+      in the lower nibble of this U1 register.
+      Example: 0xDC to set both regulators to 3.3V and enable REG2 by default.

@@ -6,11 +6,13 @@
 
 #include "button.h"
 
-#ifndef UNIT_TEST
+#include <zephyr/device.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/kernel.h>
 
-#include <device.h>
-#include <drivers/gpio.h>
-#include <zephyr.h>
+#include "helper.h"
+
+LOG_MODULE_REGISTER(button, CONFIG_LOG_DEFAULT_LEVEL);
 
 #define BTN_GPIO  DT_ALIAS(sw_pwr)
 #define BTN_CTLR  DT_GPIO_CTLR(BTN_GPIO, gpios)
@@ -29,7 +31,7 @@ static void button_pressed_cb(const struct device *dev, struct gpio_callback *cb
 void button_init()
 {
     if (!device_is_ready(btn_dev)) {
-        printk("Button device not found\n");
+        LOG_ERR("Button device not found");
         return;
     }
 
@@ -43,5 +45,3 @@ bool button_pressed_for_3s()
 {
     return gpio_pin_get(btn_dev, BTN_PIN) == 1 && (k_uptime_get() - time_pressed) > 3000;
 }
-
-#endif /* UNIT_TEST */

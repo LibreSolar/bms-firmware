@@ -1,0 +1,15 @@
+# Copyright (c) The Libre Solar Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+description: Intersil/Renesas ISL94202 Standalone 3 to 8 Cell Li-Ion Battery Pack Monitor
+
+properties:
+  shunt-resistor-uohm:
+    type: int
+    description: |
+      Shunt resistor value in micro-Ohm.
+
+  board-max-current:
+    type: int
+    description: |
+      Maximum current allowed by the board design in Amperes.

@@ -8,6 +8,8 @@
 #include <st/g0/stm32g0b1Xe.dtsi>
 #include <st/g0/stm32g0b1c(b-c-e)tx-pinctrl.dtsi>
 
+#include <dt-bindings/bms_ic/bq769x2.h>
+
 / {
 	model = "Libre Solar BMS 16S100 IC";
 	compatible = "st,stm32g0b1";
@@ -18,12 +20,6 @@
 		type = "BMS 16S100 SC";
 		version-str = "v0.2";
 		version-num = <2>;
-
-		num-cells-max = <16>;
-		num-thermistors-max = <2>;
-
-		current-max = <100>;
-		shunt-res = <500>;
 	};
 
 	chosen {
@@ -32,21 +28,8 @@
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
 		zephyr,code-partition = &slot0_partition;
-	};
-
-	power-states {
-		stop0: state0 {
-			compatible = "zephyr,power-state";
-			power-state-name = "suspend-to-idle";
-			substate-id = <1>;
-			min-residency-us = <20>;
-		};
-		stop1: state1 {
-			compatible = "zephyr,power-state";
-			power-state-name = "suspend-to-idle";
-			substate-id = <2>;
-			min-residency-us = <100>;
-		};
+		thingset,can = &fdcan1;
+		thingset,serial = &uext_uart;
 	};
 
 	leds {
@@ -54,65 +37,31 @@
 		led1: led_0 {
 			//gpios = <&gpioa 5 GPIO_ACTIVE_HIGH>;	// Nucleo board
 			gpios = <&gpioc 13 GPIO_ACTIVE_HIGH>;	// actual BMS board
-			label = "LED 1";
 		};
 		led2: led_1 {
 			gpios = <&gpioc 14 GPIO_ACTIVE_HIGH>;
-			label = "LED 2";
 		};
 	};
 
 	gpio_keys {
 		compatible = "gpio-keys";
 		power_button: button {
-			label = "Power Button";
 			gpios = <&gpioa 1 GPIO_ACTIVE_HIGH>;
 		};
 	};
 
-	switches {
-		compatible = "switch";
-		can_en {
-			gpios = <&gpiod 2 GPIO_ACTIVE_LOW>;
-			label = "CAN transceiver enable";
-		};
+	transceiver0: can-phy0 {
+		compatible = "nxp,tja1042", "can-transceiver-gpio";
+		max-bitrate = <1000000>;
+		standby-gpios = <&gpiod 2 GPIO_ACTIVE_HIGH>;
+		#phy-cells = <0>;
 	};
 
 	aliases {
 		led-red = &led1;
 		led-green = &led2;
-		uart-dbg = &usart1;
-		uart-uext = &usart2;
-		i2c-uext = &i2c1;
 		sw-pwr = &power_button;
-	};
-
-	/* this should be upstreamed to Zephyr, see also PR 34963 */
-	soc {
-		can {
-			compatible = "bosch,m_can-base";
-			#address-cells = <1>;
-			#size-cells = <1>;
-			std-filter-elements = <28>;
-			ext-filter-elements = <8>;
-			rx-fifo0-elements = <3>;
-			rx-fifo1-elements = <3>;
-			rx-buffer-elements = <0>;
-			tx-buffer-elements = <3>;
-
-			can1: can@40006400 {
-				compatible = "st,stm32-fdcan";
-				#address-cells = <1>;
-				#size-cells = <0>;
-				reg = <0x40006400 0x400>, <0x4000A400 0x350>;
-				reg-names = "m_can", "message_ram";
-				interrupts = <21 0>, <22 0>;
-				interrupt-names = "LINE_0", "LINE_1";
-				clocks = <&rcc STM32_CLOCK_BUS_APB1 0x00001000>;
-				status = "disabled";
-				label = "CAN_1";
-			};
-		};
+		bms-ic = &bq76952;
 	};
 };
 
@@ -155,7 +104,7 @@ zephyr_udc0: &usb {
 	bias-pull-up;	// avoid junk characters if pin is left floating
 };
 
-&usart2 {
+uext_uart: &usart2 {
 	pinctrl-0 = <&usart2_tx_pa2 &usart2_rx_pa3>;
 	pinctrl-names = "default";
 	current-speed = <115200>;
@@ -170,7 +119,7 @@ zephyr_udc0: &usb {
 	status = "okay";
 };
 
-&i2c1 {
+uext_i2c: &i2c1 {
 	pinctrl-0 = <&i2c1_scl_pb6 &i2c1_sda_pb7>;
 	pinctrl-names = "default";
 	clock-frequency = <I2C_BITRATE_FAST>;
@@ -183,11 +132,20 @@ zephyr_udc0: &usb {
 	clock-frequency = <I2C_BITRATE_STANDARD>;
 	status = "okay";
 
-	bq769x2@8 {
+	bq76952: bq769x2@8 {
 		compatible = "ti,bq769x2-i2c";
-		label = "BQ76952";
-		reg = <0x08>;	/* 0x10 >> 1 */
+		reg = <0x08>;
 		alert-gpios = <&gpiob 8 GPIO_ACTIVE_HIGH>;
+		used-cell-channels = <0xFFFF>;
+		/* all NTCs configured with 18k pull-up */
+		ts1-pin-config = <0x07>;
+		ts3-pin-config = <0x07>;
+		dchg-pin-config = <0x07>;
+		cell-temp-pins = <BQ769X2_PIN_TS1 BQ769X2_PIN_TS3>;
+		fet-temp-pin = <BQ769X2_PIN_DCHG>;
+		board-max-current = <100>;
+		shunt-resistor-uohm = <300>;
+		status = "okay";
 	};
 };
 
@@ -232,22 +190,19 @@ zephyr_udc0: &usb {
 	};
 };
 
-&cpu0 {
-	cpu-power-states = <&stop0 &stop1>;
-};
-
 &lptim1 {
 	status = "okay";
 };
 
-&can1 {
+&fdcan1 {
+	clocks = <&rcc STM32_CLOCK_BUS_APB1 0x00001000>,
+		 <&rcc STM32_SRC_PLL_Q FDCAN_SEL(1)>;
 	pinctrl-0 = <&fdcan1_rx_pd0 &fdcan1_tx_pd1>;
 	pinctrl-names = "default";
 	bus-speed = <500000>;
 	bus-speed-data = <500000>;
-	sjw = <1>;
-	sjw-data = <1>;
 	sample-point = <875>;
 	sample-point-data = <875>;
+	phys = <&transceiver0>;
 	status = "okay";
 };

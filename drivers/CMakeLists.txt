@@ -1,5 +1,4 @@
+# Copyright (c) The Libre Solar Project Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-zephyr_include_directories(ext_espressif)
-
-add_subdirectory(serial)
+add_subdirectory_ifdef(CONFIG_BMS_IC bms_ic)

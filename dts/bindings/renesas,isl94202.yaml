@@ -1,8 +1,0 @@
-# Copyright (c) The Libre Solar Project Contributors
-# SPDX-License-Identifier: Apache-2.0
-
-description: Intersil/Renesas ISL94202 Standalone 3 to 8 Cell Li-Ion Battery Pack Monitor
-
-compatible: "renesas,isl94202"
-
-include: i2c-device.yaml

@@ -18,11 +18,6 @@
 
 		type = "BMS 8S50 IC";
 
-		num-cells-max = <8>;
-		num-thermistors-max = <2>;
-
-		current-max = <50>;
-
 		/*
 		 * Additional information:
 		 * - Has MOSFET temperature sensor
@@ -37,47 +32,40 @@
 		zephyr,shell-uart = &usart1;
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
+		thingset,can = &can1;
+		thingset,eeprom = &eeprom0;
+		thingset,serial = &uext_uart;
 	};
 
 	leds {
 		compatible = "gpio-leds";
 		led1: led_0 {
 			gpios = <&gpiob 14 GPIO_ACTIVE_HIGH>;
-			label = "LED 1";
 		};
 		led2: led_1 {
 			gpios = <&gpiob 15 GPIO_ACTIVE_HIGH>;
-			label = "LED 2";
-		};
-	};
-
-	switches {
-		compatible = "switch";
-		i2c_pullup {
-			gpios = <&gpiob 2 GPIO_ACTIVE_HIGH>;
-			label = "I2C Pull-Up";
-		};
-		can_en {
-			gpios = <&gpioc 13 GPIO_ACTIVE_LOW>;
-			label = "CAN transceiver enable";
 		};
 	};
 
 	gpio_keys {
 		compatible = "gpio-keys";
 		power_button: button {
-			label = "Power Button";
 			gpios = <&gpioa 8 GPIO_ACTIVE_LOW>;
 		};
+	};
+
+	transceiver0: can-phy0 {
+		compatible = "ti,tcan334", "can-transceiver-gpio";
+		max-bitrate = <1000000>;
+		standby-gpios = <&gpioc 13 GPIO_ACTIVE_HIGH>;
+		#phy-cells = <0>;
 	};
 
 	aliases {
 		led-red = &led1;
 		led-green = &led2;
 		sw-pwr = &power_button;
-		uart-dbg = &usart1;
-		uart-uext = &usart2;
-		i2c-uext = &i2c1;
+		bms-ic = &isl94202;
 	};
 };
 
@@ -114,7 +102,7 @@
 	bias-pull-up;	// avoid junk characters if pin is left floating
 };
 
-&usart2 {
+uext_uart: &usart2 {
 	pinctrl-0 = <&usart2_tx_pa2 &usart2_rx_pa3>;
 	pinctrl-names = "default";
 	current-speed = <115200>;
@@ -125,7 +113,7 @@
 	bias-pull-up;	// avoid junk characters if pin is left floating
 };
 
-&i2c1 {
+uext_i2c: &i2c1 {
 	pinctrl-0 = <&i2c1_scl_pb6 &i2c1_sda_pb7>;
 	pinctrl-names = "default";
 	status = "okay";
@@ -137,17 +125,19 @@
 	clock-frequency = <I2C_BITRATE_STANDARD>;
 	status = "okay";
 
-	isl94202@28 {
+	isl94202: isl94202@28 {
 		compatible = "renesas,isl94202";
-		label = "ISL94202";
 		reg = <0x28>;	/* 0x50 >> 1 */
+		pull-up-gpios = <&gpiob 2 GPIO_ACTIVE_HIGH>;
+		board-max-current = <50>;
+		used-cell-channels = <0xFF>;
+		status = "okay";
 	};
 
-	eeprom@50 {
+	eeprom0: eeprom@50 {
 		// Microchip 24AA32A
 		compatible = "atmel,at24";
 		reg = <0x50>;
-		label = "EEPROM_0";
 		size = <32768>;
 		pagesize = <32>;
 		address-width = <16>;
@@ -170,6 +160,11 @@
 	pinctrl-0 = <&can1_rx_pb8 &can1_tx_pb9>;
 	pinctrl-names = "default";
 	bus-speed = <500000>;
+	phys = <&transceiver0>;
+	status = "okay";
+};
+
+&rng {
 	status = "okay";
 };
 
