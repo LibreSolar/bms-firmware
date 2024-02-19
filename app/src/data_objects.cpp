@@ -3,6 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+#ifdef CONFIG_THINGSET
 
 #include "data_objects.h"
 
@@ -56,7 +57,10 @@ static uint16_t reg_addr = 0;
  * Normal priority data objects (consuming 2 or more bytes) start from IDs > 23 = 0x17
  */
 /* clang-format off */
-static ThingSetDataObject data_objects[] = {
+
+//This generates a warning:  Warning: setting incorrect section attributes for .rodata
+// but works.
+static const struct ts_data_object data_objects[] __attribute__ ((section(".rodata"))) = {
 
     // DEVICE INFORMATION /////////////////////////////////////////////////////
     // using IDs >= 0x18
@@ -354,3 +358,10 @@ void uint64_to_base32(uint64_t in, char *out, size_t size, const char *alphabet)
     }
     out[len] = '\0';
 }
+
+#else
+
+void data_objects_init()
+{}
+
+#endif //CONFIG_THINGSET

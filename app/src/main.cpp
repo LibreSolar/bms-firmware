@@ -15,13 +15,14 @@
 #include "eeprom.h"
 #include "helper.h"
 #include "leds.h"
+
+#ifdef CONFIG_THINGSET
 #include "thingset.h"
+#endif
 
 LOG_MODULE_REGISTER(bms_main, CONFIG_LOG_DEFAULT_LEVEL);
 
 Bms bms;
-
-extern ThingSet ts;
 
 void main(void)
 {
