@@ -10,6 +10,8 @@ manifest:
       url-base: https://github.com/ThingSet
     - name: throwtheswitch
       url-base: https://github.com/ThrowTheSwitch
+    - name: bjorniuppsala
+      url-base: git@github.com:bjorniuppsala
   projects:
     - name: zephyr
       remote: zephyrproject-rtos
@@ -25,8 +27,8 @@ manifest:
       revision: cc3033c0daace8cb50ab0e6406a9498cc81cdb39
       path: modules/oled-display
     - name: thingset-device-library
-      remote: thingset
-      revision: 5c2b562d77cd44969c822bbd8c37cd7394d5ca58
+      remote: bjorniuppsala
+      revision: subsets
       path: modules/thingset
     - name: unity
       remote: throwtheswitch
