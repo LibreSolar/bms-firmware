@@ -119,7 +119,9 @@ static int determine_address_and_crc(void)
 {
     i2c_address = 0x08;
     crc_enabled = true;
-    bq769x0_write_byte(BQ769X0_CC_CFG, 0x19);
+    while(1) 
+        bq769x0_write_byte(BQ769X0_CC_CFG, 0x19);
+        
     if (bq769x0_read_byte(BQ769X0_CC_CFG) == 0x19) {
         return 0;
     }

@@ -129,7 +129,7 @@ K_THREAD_DEFINE(can_rx, RX_THREAD_STACK_SIZE, can_rx_thread, NULL, NULL, NULL,
 
 #endif /* CONFIG_ISOTP */
 
-void can_pub_isr(int err_flags, void *arg)
+void can_pub_isr(const struct device *dev, int err_flags, void *arg)
 {
 	// Do nothing. Publication messages are fire and forget.
 }
@@ -163,7 +163,7 @@ void can_pub_thread()
                 if (data_len >= 0) {
                     frame.dlc = data_len;
 
-                    if (can_send(can_dev, &frame, K_MSEC(10), can_pub_isr, NULL) != CAN_TX_OK) {
+                    if (can_send(can_dev, &frame, K_MSEC(10), can_pub_isr, NULL) != 0) {
                         LOG_DBG("Error sending CAN frame");
                     }
                 }
