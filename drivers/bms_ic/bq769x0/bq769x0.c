@@ -100,7 +100,7 @@ static void bq769x0_alert_isr(const struct device *port, struct gpio_callback *c
     k_work_schedule(&data->alert_work, K_NO_WAIT);
 }
 
-int bq769x0_write_byte(const struct device *dev, uint8_t reg_addr, uint8_t data)
+static int bq769x0_write_byte(const struct device *dev, uint8_t reg_addr, uint8_t data)
 {
     const struct bms_ic_bq769x0_config *dev_config = dev->config;
     const struct bms_ic_bq769x0_data *dev_data = dev->data;
@@ -120,94 +120,67 @@ int bq769x0_write_byte(const struct device *dev, uint8_t reg_addr, uint8_t data)
     }
 }
 
-int bq769x0_read_byte(const struct device *dev, uint8_t reg_addr, uint8_t *byte)
+static int bq769x0_read_bytes(const struct device *dev, uint8_t reg_addr, uint8_t *data,
+                              size_t num_bytes)
 {
     const struct bms_ic_bq769x0_config *dev_config = dev->config;
     const struct bms_ic_bq769x0_data *dev_data = dev->data;
-    uint8_t buf[3];
+    uint8_t buf[5] = {
+        (dev_config->i2c.addr << 1) | 1U, /* target address for CRC calculation */
+    };
     int err;
 
-    err = i2c_write_dt(&dev_config->i2c, &reg_addr, 1);
-    if (err != 0) {
-        return err;
+    if (num_bytes < 1 || num_bytes > 2) {
+        return -EINVAL;
     }
 
     if (dev_data->crc_enabled) {
-        /* CRC is calculated over the slave address (incl. R/W bit) and data */
-        buf[0] = (dev_config->i2c.addr << 1) | 1U;
-        int attempts = 1;
-        while (true) {
-            err = i2c_read_dt(&dev_config->i2c, buf + 1, 2);
+        for (int attempts = 1; attempts <= BQ769X0_READ_MAX_ATTEMPTS; attempts++) {
+            err = i2c_write_read_dt(&dev_config->i2c, &reg_addr, 1, buf + 1, num_bytes * 2);
             if (err != 0) {
                 return err;
             }
-            else if (crc8_ccitt(0, buf, 2) == buf[2]) {
-                break;
-            }
-            else if (attempts >= BQ769X0_READ_MAX_ATTEMPTS) {
-                LOG_ERR("Failed to read data at 0x%02X after %d attempts", reg_addr,
-                        BQ769X0_READ_MAX_ATTEMPTS);
-                return -EIO;
-            }
-            else {
-                /* try again */
-                attempts++;
+
+            /*
+             * First CRC includes target address (incl. R/W bit) and data byte, subsequent CRCs
+             * only consider data.
+             */
+            if (crc8_ccitt(0, buf, 2) == buf[2]) {
+                data[0] = buf[1];
+                if (num_bytes == 1) {
+                    return 0;
+                }
+                else if (crc8_ccitt(0, buf + 3, 1) == buf[4]) {
+                    data[1] = buf[3];
+                    return 0;
+                }
             }
         }
 
-        *byte = buf[1];
+        LOG_ERR("Failed to read 0x%02X after %d attempts", reg_addr, BQ769X0_READ_MAX_ATTEMPTS);
+        return -EIO;
     }
     else {
-        err = i2c_read_dt(&dev_config->i2c, buf, 1);
-        if (err != 0) {
-            return err;
-        }
-
-        *byte = buf[0];
+        return i2c_write_read_dt(&dev_config->i2c, &reg_addr, 1, data, num_bytes);
     }
-
-    return 0;
 }
 
-int bq769x0_read_word(const struct device *dev, uint8_t reg_addr, uint16_t *word)
+static inline int bq769x0_read_byte(const struct device *dev, uint8_t reg_addr, uint8_t *byte)
 {
-    const struct bms_ic_bq769x0_config *dev_config = dev->config;
-    const struct bms_ic_bq769x0_data *dev_data = dev->data;
-    uint8_t buf[5];
+    return bq769x0_read_bytes(dev, reg_addr, byte, sizeof(uint8_t));
+}
+
+static inline int bq769x0_read_word(const struct device *dev, uint8_t reg_addr, uint16_t *word)
+{
+    uint8_t buf[2];
     int err;
 
-    /* write starting register */
-    i2c_write_dt(&dev_config->i2c, &reg_addr, 1);
-
-    if (dev_data->crc_enabled) {
-        /* CRC is calculated over the slave address (incl. R/W bit) and data */
-        buf[0] = (dev_config->i2c.addr << 1) | 1U;
-        err = i2c_read_dt(&dev_config->i2c, buf + 1, 4);
-        if (err != 0) {
-            return err;
-        }
-
-        if (crc8_ccitt(0, buf, 2) != buf[2]) {
-            return -EIO;
-        }
-
-        /* CRC of subsequent bytes only considering data */
-        if (crc8_ccitt(0, buf + 3, 1) != buf[4]) {
-            return -EIO;
-        }
-
-        *word = buf[1] << 8 | buf[3];
-    }
-    else {
-        err = i2c_read_dt(&dev_config->i2c, buf, 2);
-        if (err != 0) {
-            return err;
-        }
-
+    err = bq769x0_read_bytes(dev, reg_addr, buf, sizeof(buf));
+    if (err == 0) {
         *word = buf[0] << 8 | buf[1];
     }
 
-    return 0;
+    return err;
 }
 
 static int bq769x0_detect_crc(const struct device *dev)
