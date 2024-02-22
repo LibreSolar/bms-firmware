@@ -487,15 +487,15 @@ union bq769x2_reg_fet_status {
 union bq769x2_reg_mfg_status {
     struct
     {
-        uint8_t PCHG_TEST : 1;
-        uint8_t CHG_TEST : 1;
-        uint8_t DSG_TEST : 1;
-        uint8_t RSVD_0 : 1;
-        uint8_t FET_EN : 1;
-        uint8_t PDSG_TEST : 1;
-        uint8_t PF_EN : 1;
-        uint8_t OTPW_EN : 1;
-        uint8_t RSVD_1 : 8;
+        uint16_t PCHG_TEST : 1;
+        uint16_t CHG_TEST : 1;
+        uint16_t DSG_TEST : 1;
+        uint16_t RSVD_0 : 1;
+        uint16_t FET_EN : 1;
+        uint16_t PDSG_TEST : 1;
+        uint16_t PF_EN : 1;
+        uint16_t OTPW_EN : 1;
+        uint16_t RSVD_1 : 8;
     };
     uint16_t u16;
 };
