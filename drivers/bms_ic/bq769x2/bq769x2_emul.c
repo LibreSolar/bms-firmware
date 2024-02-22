@@ -66,6 +66,28 @@ void bq769x2_emul_set_data_mem(const struct emul *em, uint16_t addr, uint8_t byt
     em_data->subcmd_mem[addr] = byte;
 }
 
+/*
+ * This function emulates the actual behavior of the chip for some subcmds, if required for the unit
+ * tests.
+ *
+ * Currently only command-only subcmds are supported (without data).
+ */
+static void bq769x0_emul_process_subcmd(const struct emul *em, const uint16_t subcmd_addr)
+{
+    struct bq769x0_emul_data *em_data = em->data;
+
+    switch (subcmd_addr) {
+        case BQ769X2_SUBCMD_SET_CFGUPDATE:
+            k_usleep(2000);
+            em_data->direct_mem[BQ769X2_CMD_BATTERY_STATUS] = 0x01;
+            break;
+        case BQ769X2_SUBCMD_EXIT_CFGUPDATE:
+            k_usleep(1000);
+            em_data->direct_mem[BQ769X2_CMD_BATTERY_STATUS] = 0x00;
+            break;
+    };
+}
+
 static int bq769x0_emul_write_bytes(const struct emul *em, const uint8_t reg_addr,
                                     const uint8_t *data, const size_t num_bytes)
 {
@@ -101,6 +123,8 @@ static int bq769x0_emul_write_bytes(const struct emul *em, const uint8_t reg_add
         if (subcmd_addr >= sizeof(em_data->subcmd_mem)) {
             return -EINVAL;
         }
+
+        bq769x0_emul_process_subcmd(em, subcmd_addr);
 
         memcpy(&em_data->direct_mem[BQ769X2_SUBCMD_DATA_START], &em_data->subcmd_mem[subcmd_addr],
                4);

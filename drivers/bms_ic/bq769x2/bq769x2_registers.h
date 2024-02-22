@@ -500,6 +500,28 @@ union bq769x2_reg_mfg_status {
     uint16_t u16;
 };
 
+union bq769x2_reg_bat_status {
+    struct
+    {
+        uint16_t CFGUPDATE : 1;
+        uint16_t PCHG_MODE : 1;
+        uint16_t SLEEP_EN : 1;
+        uint16_t POR : 1;
+        uint16_t WD : 1;
+        uint16_t COW_CHK : 1;
+        uint16_t OTPW : 1;
+        uint16_t OTPB : 1;
+        uint16_t SEC : 2;
+        uint16_t FUSE : 1;
+        uint16_t SS : 1;
+        uint16_t PF : 1;
+        uint16_t SD_CMD : 1;
+        uint16_t RSVD_0 : 1;
+        uint16_t SLEEP : 1;
+    };
+    uint16_t u16;
+};
+
 #define bq769x2_reg_alarm_sf_alert_mask_a bq769x2_reg_safety_a
 
 #define bq769x2_reg_alarm_sf_alert_mask_b bq769x2_reg_safety_b

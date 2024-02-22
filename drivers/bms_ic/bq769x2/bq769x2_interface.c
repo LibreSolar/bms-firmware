@@ -272,18 +272,29 @@ int bq769x2_config_update_mode(const struct device *dev, bool config_update)
 
     if (config_update) {
         err = bq769x2_subcmd_cmd_only(dev, BQ769X2_SUBCMD_SET_CFGUPDATE);
-        k_usleep(2000);
+        k_usleep(2000); /* Datasheet: Table 9-2 */
     }
     else {
         err = bq769x2_subcmd_cmd_only(dev, BQ769X2_SUBCMD_EXIT_CFGUPDATE);
-        k_usleep(1000);
+        k_usleep(1000); /* Datasheet: Table 9-2 */
     }
 
-    if (!err) {
-        data->config_update_mode_enabled = config_update;
+    if (err != 0) {
+        return err;
     }
 
-    return err;
+    /* Check mode change and wait for up to 2 more ms for change to take effect. */
+    for (int attempt = 0; attempt < 5; attempt++) {
+        union bq769x2_reg_bat_status bat_status;
+        err = bq769x2_direct_read_u2(dev, BQ769X2_CMD_BATTERY_STATUS, &bat_status.u16);
+        if (err == 0 && !!bat_status.CFGUPDATE == config_update) {
+            data->config_update_mode_enabled = config_update;
+            return 0;
+        }
+        k_usleep(500);
+    }
+
+    return -EIO;
 }
 
 int bq769x2_datamem_read_u1(const struct device *dev, const uint16_t reg_addr, uint8_t *value)
