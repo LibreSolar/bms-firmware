@@ -45,6 +45,7 @@ void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float nom
     bms->chg_enable = true;
     bms->dis_enable = true;
 
+    bms->ic_conf.auto_balancing = true;
     bms->ic_conf.bal_idle_delay = 1800;         // default: 30 minutes
     bms->ic_conf.bal_idle_current = 0.1F;       // A
     bms->ic_conf.bal_cell_voltage_diff = 0.01F; // 10 mV

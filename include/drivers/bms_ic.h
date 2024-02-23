@@ -41,9 +41,6 @@ extern "C" {
 #define BMS_IC_DATA_ERROR_FLAGS   BIT(5)
 #define BMS_IC_DATA_ALL           GENMASK(5, 0)
 
-#define BMS_IC_BALANCING_OFF  (0)
-#define BMS_IC_BALANCING_AUTO (UINT32_MAX)
-
 /**
  * BMS IC operation modes
  */
@@ -119,6 +116,8 @@ struct bms_ic_conf
     float bal_idle_current;
     /** Minimum idle duration before balancing (s) */
     uint16_t bal_idle_delay;
+    /** Enable/disable automatic balancing (controlled by the IC or driver) */
+    bool auto_balancing;
 
     /* Built-in voltage regulator settings */
     /**
@@ -318,13 +317,14 @@ static inline int bms_ic_set_switches(const struct device *dev, uint8_t switches
 #endif
 
 /**
- * @brief Update the balancing operation of the IC.
+ * @brief Manually set balancing switches of the IC.
  *
  * @param dev Pointer to the device structure for the driver instance.
- * @param cells Bitset defining the cell(s) to be balanced. Set to BMS_IC_BALANCING_OFF to disable
- *              balancing and BMS_IC_BALANCING_AUTO to enable automatic balancing.
+ * @param cells Bitset defining the cell(s) to be balanced. Set to 0 to disable balancing.
  *
- * @return 0 for success or negative error code otherwise.
+ * @retval 0 for success
+ * @retval -EBUSY if automatic balancing was enabled through bms_ic_configure
+ * @return -EINVAL if an invalid set of cells is requested to be balanced
  */
 static inline int bms_ic_balance(const struct device *dev, uint32_t cells)
 {
