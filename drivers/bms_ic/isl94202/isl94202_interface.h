@@ -82,20 +82,22 @@ int isl94202_write_delay(const struct device *dev, uint8_t reg_addr, uint8_t del
 /**
  * Write a current limit (threshold + delay) to specified register
  *
+ * The actual current limit is written back to the current_limit parameter.
+ *
  * @param reg_addr Register address
  * @param voltage_thresholds Array of threshold values as defined in datasheet (mV)
  * @param num_thresholds Number of elements in array voltage_thresholds
- * @param current_limit Current limit (A)
+ * @param current_limit Pointer to current limit threshold (A)
  * @param shunt_res_mOhm Resistance of the current measurement shunt (mOhm)
  * @param delay_unit Unit (us, ms, s or min) of the threshold value
  * @param delay_value Value of the delay in the given unit
  *
- * @returns Actual threshold current in A or 0 in case of error
+ * @returns 0 on success, otherwise negative error code.
  */
-float isl94202_write_current_limit(const struct device *dev, uint8_t reg_addr,
-                                   const uint16_t *voltage_thresholds_mV, int num_thresholds,
-                                   float current_limit, float shunt_res_mOhm, uint8_t delay_unit,
-                                   uint16_t delay_value);
+int isl94202_write_current_limit(const struct device *dev, uint8_t reg_addr,
+                                 const uint16_t *voltage_thresholds_mV, int num_thresholds,
+                                 float *current_limit, float shunt_res_mOhm, uint8_t delay_unit,
+                                 uint16_t delay_value);
 
 /**
  * Write a voltage setting to specified register

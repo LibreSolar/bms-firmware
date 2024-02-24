@@ -99,54 +99,30 @@ static int isl94202_configure_chg_ocp(const struct device *dev, struct bms_ic_co
 {
     const struct bms_ic_isl94202_config *dev_config = dev->config;
 
-    float actual_limit = isl94202_write_current_limit(
-        dev, ISL94202_OCCT_OCC, isl94202_occ_thresholds, ARRAY_SIZE(isl94202_occ_thresholds),
-        ic_conf->chg_oc_limit, dev_config->shunt_resistor_uohm / 1000.0F, ISL94202_DELAY_MS,
-        ic_conf->chg_oc_delay_ms);
-
-    if (actual_limit > 0) {
-        ic_conf->chg_oc_limit = actual_limit;
-        return 0;
-    }
-    else {
-        return -1;
-    }
+    return isl94202_write_current_limit(dev, ISL94202_OCCT_OCC, isl94202_occ_thresholds,
+                                        ARRAY_SIZE(isl94202_occ_thresholds), &ic_conf->chg_oc_limit,
+                                        dev_config->shunt_resistor_uohm / 1000.0F,
+                                        ISL94202_DELAY_MS, ic_conf->chg_oc_delay_ms);
 }
 
 static int isl94202_configure_dis_ocp(const struct device *dev, struct bms_ic_conf *ic_conf)
 {
     const struct bms_ic_isl94202_config *dev_config = dev->config;
 
-    float actual_limit = isl94202_write_current_limit(
-        dev, ISL94202_OCDT_OCD, isl94202_ocd_thresholds, ARRAY_SIZE(isl94202_ocd_thresholds),
-        ic_conf->dis_oc_limit, dev_config->shunt_resistor_uohm / 1000.0F, ISL94202_DELAY_MS,
-        ic_conf->dis_oc_delay_ms);
-
-    if (actual_limit > 0) {
-        ic_conf->dis_oc_limit = actual_limit;
-        return 0;
-    }
-    else {
-        return -1;
-    }
+    return isl94202_write_current_limit(dev, ISL94202_OCDT_OCD, isl94202_ocd_thresholds,
+                                        ARRAY_SIZE(isl94202_ocd_thresholds), &ic_conf->dis_oc_limit,
+                                        dev_config->shunt_resistor_uohm / 1000.0F,
+                                        ISL94202_DELAY_MS, ic_conf->dis_oc_delay_ms);
 }
 
 static int isl94202_configure_dis_scp(const struct device *dev, struct bms_ic_conf *ic_conf)
 {
     const struct bms_ic_isl94202_config *dev_config = dev->config;
 
-    float actual_limit = isl94202_write_current_limit(
-        dev, ISL94202_SCDT_SCD, isl94202_dsc_thresholds, ARRAY_SIZE(isl94202_dsc_thresholds),
-        ic_conf->dis_sc_limit, dev_config->shunt_resistor_uohm / 1000.0F, ISL94202_DELAY_US,
-        ic_conf->dis_sc_delay_us);
-
-    if (actual_limit > 0) {
-        ic_conf->dis_sc_limit = actual_limit;
-        return 0;
-    }
-    else {
-        return -1;
-    }
+    return isl94202_write_current_limit(dev, ISL94202_SCDT_SCD, isl94202_dsc_thresholds,
+                                        ARRAY_SIZE(isl94202_dsc_thresholds), &ic_conf->dis_sc_limit,
+                                        dev_config->shunt_resistor_uohm / 1000.0F,
+                                        ISL94202_DELAY_US, ic_conf->dis_sc_delay_us);
 }
 
 // using default setting TGain = 0 (GAIN = 2) with 22k resistors

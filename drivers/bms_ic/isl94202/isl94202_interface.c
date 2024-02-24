@@ -74,28 +74,37 @@ int isl94202_write_delay(const struct device *dev, uint8_t reg_addr, uint8_t del
     return isl94202_write_word(dev, reg_addr, reg);
 }
 
-float isl94202_write_current_limit(const struct device *dev, uint8_t reg_addr,
-                                   const uint16_t *voltage_thresholds_mv, int num_thresholds,
-                                   float current_limit, float shunt_res_mohm, uint8_t delay_unit,
-                                   uint16_t delay_value)
+int isl94202_write_current_limit(const struct device *dev, uint8_t reg_addr,
+                                 const uint16_t *voltage_thresholds_mv, int num_thresholds,
+                                 float *current_limit, float shunt_res_mohm, uint8_t delay_unit,
+                                 uint16_t delay_value)
 {
     uint8_t threshold_raw = 0;
     float actual_current_limit;
+    int err;
+
+    if (current_limit == NULL) {
+        return -EINVAL;
+    }
 
     /* initialize with lowest value */
     actual_current_limit = voltage_thresholds_mv[0] / shunt_res_mohm;
 
     /* choose lower current limit if target setting not exactly possible */
     for (int i = num_thresholds - 1; i >= 0; i--) {
-        if ((uint16_t)(current_limit * shunt_res_mohm) >= voltage_thresholds_mv[i]) {
+        if ((uint16_t)(*current_limit * shunt_res_mohm) >= voltage_thresholds_mv[i]) {
             threshold_raw = (uint8_t)i;
             actual_current_limit = voltage_thresholds_mv[i] / shunt_res_mohm;
             break;
         }
     }
-    isl94202_write_delay(dev, reg_addr, delay_unit, delay_value, threshold_raw);
 
-    return actual_current_limit;
+    err = isl94202_write_delay(dev, reg_addr, delay_unit, delay_value, threshold_raw);
+    if (err == 0) {
+        *current_limit = actual_current_limit;
+    }
+
+    return err;
 }
 
 int isl94202_write_voltage(const struct device *dev, uint8_t reg_addr, float voltage,
