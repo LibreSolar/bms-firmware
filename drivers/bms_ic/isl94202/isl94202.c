@@ -74,12 +74,12 @@ static int isl94202_configure_cell_ovp(const struct device *dev, struct bms_ic_c
     int err = 0;
 
     // keeping CPW at the default value of 1 ms
-    err += isl94202_write_voltage(dev, ISL94202_OVL_CPW, ic_conf->cell_ov_limit, 1);
-    err += isl94202_write_voltage(dev, ISL94202_OVR, ic_conf->cell_ov_reset, 0);
-    err +=
+    err |= isl94202_write_voltage(dev, ISL94202_OVL_CPW, ic_conf->cell_ov_limit, 1);
+    err |= isl94202_write_voltage(dev, ISL94202_OVR, ic_conf->cell_ov_reset, 0);
+    err |=
         isl94202_write_delay(dev, ISL94202_OVDT, ISL94202_DELAY_MS, ic_conf->cell_ov_delay_ms, 0);
 
-    return err;
+    return err == 0 ? 0 : -EIO;
 }
 
 static int isl94202_configure_cell_uvp(const struct device *dev, struct bms_ic_conf *ic_conf)
@@ -87,12 +87,12 @@ static int isl94202_configure_cell_uvp(const struct device *dev, struct bms_ic_c
     int err = 0;
 
     // keeping LPW at the default value of 1 ms
-    err += isl94202_write_voltage(dev, ISL94202_UVL_LPW, ic_conf->cell_uv_limit, 1);
-    err += isl94202_write_voltage(dev, ISL94202_UVR, ic_conf->cell_uv_reset, 0);
-    err +=
+    err |= isl94202_write_voltage(dev, ISL94202_UVL_LPW, ic_conf->cell_uv_limit, 1);
+    err |= isl94202_write_voltage(dev, ISL94202_UVR, ic_conf->cell_uv_reset, 0);
+    err |=
         isl94202_write_delay(dev, ISL94202_UVDT, ISL94202_DELAY_MS, ic_conf->cell_uv_delay_ms, 0);
 
-    return err;
+    return err == 0 ? 0 : -EIO;
 }
 
 static int isl94202_configure_chg_ocp(const struct device *dev, struct bms_ic_conf *ic_conf)
@@ -129,52 +129,53 @@ static int isl94202_configure_dis_scp(const struct device *dev, struct bms_ic_co
 static int isl94202_configure_temp_limits(const struct device *dev, struct bms_ic_conf *ic_conf)
 {
     float adc_voltage;
+    int err = 0;
 
     // Charge over-temperature
     adc_voltage =
         interpolate(lut_temp_degc, lut_temp_volt, ARRAY_SIZE(lut_temp_degc), ic_conf->chg_ot_limit);
-    isl94202_write_word(dev, ISL94202_COTS,
-                        (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_COTS_Msk);
+    err |= isl94202_write_word(dev, ISL94202_COTS,
+                               (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_COTS_Msk);
 
     adc_voltage = interpolate(lut_temp_degc, lut_temp_volt, ARRAY_SIZE(lut_temp_degc),
                               ic_conf->chg_ot_limit - ic_conf->temp_limit_hyst);
-    isl94202_write_word(dev, ISL94202_COTR,
-                        (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_COTR_Msk);
+    err |= isl94202_write_word(dev, ISL94202_COTR,
+                               (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_COTR_Msk);
 
     // Charge under-temperature
     adc_voltage =
         interpolate(lut_temp_degc, lut_temp_volt, ARRAY_SIZE(lut_temp_degc), ic_conf->chg_ut_limit);
-    isl94202_write_word(dev, ISL94202_CUTS,
-                        (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_CUTS_Msk);
+    err |= isl94202_write_word(dev, ISL94202_CUTS,
+                               (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_CUTS_Msk);
 
     adc_voltage = interpolate(lut_temp_degc, lut_temp_volt, ARRAY_SIZE(lut_temp_degc),
                               ic_conf->chg_ut_limit + ic_conf->temp_limit_hyst);
-    isl94202_write_word(dev, ISL94202_CUTR,
-                        (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_CUTR_Msk);
+    err |= isl94202_write_word(dev, ISL94202_CUTR,
+                               (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_CUTR_Msk);
 
     // Discharge over-temperature
     adc_voltage =
         interpolate(lut_temp_degc, lut_temp_volt, ARRAY_SIZE(lut_temp_degc), ic_conf->dis_ot_limit);
-    isl94202_write_word(dev, ISL94202_DOTS,
-                        (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DOTS_Msk);
+    err |= isl94202_write_word(dev, ISL94202_DOTS,
+                               (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DOTS_Msk);
 
     adc_voltage = interpolate(lut_temp_degc, lut_temp_volt, ARRAY_SIZE(lut_temp_degc),
                               ic_conf->dis_ot_limit - ic_conf->temp_limit_hyst);
-    isl94202_write_word(dev, ISL94202_DOTR,
-                        (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DOTR_Msk);
+    err |= isl94202_write_word(dev, ISL94202_DOTR,
+                               (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DOTR_Msk);
 
     // Discharge under-temperature
     adc_voltage =
         interpolate(lut_temp_degc, lut_temp_volt, ARRAY_SIZE(lut_temp_degc), ic_conf->dis_ut_limit);
-    isl94202_write_word(dev, ISL94202_DUTS,
-                        (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DUTS_Msk);
+    err |= isl94202_write_word(dev, ISL94202_DUTS,
+                               (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DUTS_Msk);
 
     adc_voltage = interpolate(lut_temp_degc, lut_temp_volt, ARRAY_SIZE(lut_temp_degc),
                               ic_conf->dis_ut_limit + ic_conf->temp_limit_hyst);
     isl94202_write_word(dev, ISL94202_DUTR,
                         (uint16_t)(adc_voltage * 4095 * 2 / 1.8F) & ISL94202_DUTR_Msk);
 
-    return 0;
+    return err == 0 ? 0 : -EIO;
 }
 
 static int isl94202_configure_balancing(const struct device *dev, struct bms_ic_conf *ic_conf)
@@ -182,17 +183,17 @@ static int isl94202_configure_balancing(const struct device *dev, struct bms_ic_
     int err = 0;
 
     // also apply balancing thresholds here
-    err += isl94202_write_voltage(dev, ISL94202_CBMIN, ic_conf->bal_cell_voltage_min, 0);
-    err += isl94202_write_voltage(dev, ISL94202_CBMAX, 4.5F, 0); // no upper limit for balancing
-    err += isl94202_write_voltage(dev, ISL94202_CBMINDV, ic_conf->bal_cell_voltage_diff, 0);
-    err +=
+    err |= isl94202_write_voltage(dev, ISL94202_CBMIN, ic_conf->bal_cell_voltage_min, 0);
+    err |= isl94202_write_voltage(dev, ISL94202_CBMAX, 4.5F, 0); // no upper limit for balancing
+    err |= isl94202_write_voltage(dev, ISL94202_CBMINDV, ic_conf->bal_cell_voltage_diff, 0);
+    err |=
         isl94202_write_voltage(dev, ISL94202_CBMAXDV, 1.0F, 0); // no tight limit for voltage delta
 
     // EOC condition needs to be set to bal_cell_voltage_min instead of cell_chg_voltage_limit to
     // enable balancing during idle
-    err += isl94202_write_voltage(dev, ISL94202_EOC, ic_conf->bal_cell_voltage_min, 0);
+    err |= isl94202_write_voltage(dev, ISL94202_EOC, ic_conf->bal_cell_voltage_min, 0);
 
-    return err;
+    return err == 0 ? 0 : -EIO;
 }
 
 static int bms_ic_isl94202_configure(const struct device *dev, struct bms_ic_conf *ic_conf,
