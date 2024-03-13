@@ -95,7 +95,7 @@
 		/* all NTCs configured with 18k pull-up */
 		ts1-pin-config = <0x07>;
 		ts3-pin-config = <0x07>;
-		dchg-pin-config = <0x07>;
+		dchg-pin-config = <0x0F>;
 		cell-temp-pins = <BQ769X2_PIN_TS1 BQ769X2_PIN_TS3>;
 		fet-temp-pin = <BQ769X2_PIN_DCHG>;
 		board-max-current = <100>;
