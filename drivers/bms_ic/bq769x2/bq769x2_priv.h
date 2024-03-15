@@ -70,6 +70,7 @@ struct bms_ic_bq769x2_data
 {
     struct bms_ic_data *ic_data;
     bool config_update_mode_enabled;
+    bool auto_balancing;
 };
 
 #endif /* DRIVERS_BMS_IC_BMS_IC_BQ769X2_PRIV_H_ */
