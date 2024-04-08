@@ -9,7 +9,6 @@
 
 /**
  * @file
- *
  * @brief Handling of ThingSet data nodes
  */
 

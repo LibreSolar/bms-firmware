@@ -7,10 +7,9 @@
 #ifndef DRIVERS_BMS_IC_BMS_IC_ISL94202_PRIV_H_
 #define DRIVERS_BMS_IC_BMS_IC_ISL94202_PRIV_H_
 
-/** @file
- *
- * @brief
- * Private functions and definitions for isl94202 IC driver
+/**
+ * @file
+ * @brief Private functions and definitions for isl94202 IC driver
  */
 
 #include <drivers/bms_ic.h>

@@ -13,10 +13,9 @@
 extern "C" {
 #endif
 
-/** @file
- *
- * @brief
- * Functions to handle on/off switch
+/**
+ * @file
+ * @brief Functions to handle on/off switch
  */
 
 /**

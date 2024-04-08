@@ -8,8 +8,8 @@
 #define ZEPHYR_BMS_BMS_H_
 
 /**
- * @brief
- * Battery Management System (BMS) high-level API
+ * @file
+ * @brief Battery Management System (BMS) high-level API
  */
 
 #ifdef __cplusplus
@@ -97,7 +97,7 @@ struct bms_context
  *
  * @param bms Pointer to BMS object.
  * @param type One of enum CellType (defined as int so that it can be set via Kconfig).
- * @param nominal_capacity Nominal capacity of the battery pack.
+ * @param capacity_Ah Nominal capacity of the battery pack.
  */
 void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float capacity_Ah);
 

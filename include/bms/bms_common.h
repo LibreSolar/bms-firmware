@@ -8,8 +8,8 @@
 #define INCLUDE_ZEPHYR_BMS_BMS_COMMON_H_
 
 /**
- * @brief
- * Battery Management System (BMS) common defines and structs
+ * @file
+ * @brief Battery Management System (BMS) common defines and structs
  */
 
 #ifdef __cplusplus

@@ -7,10 +7,9 @@
 #ifndef DRIVERS_BMS_IC_BMS_IC_BQ769X2_PRIV_H_
 #define DRIVERS_BMS_IC_BMS_IC_BQ769X2_PRIV_H_
 
-/** @file
- *
- * @brief
- * Private functions and definitions for bq769x2 IC driver
+/**
+ * @file
+ * @brief Private functions and definitions for bq769x2 IC driver
  */
 
 #include <drivers/bms_ic.h>

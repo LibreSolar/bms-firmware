@@ -7,10 +7,9 @@
 #ifndef HELPER_H
 #define HELPER_H
 
-/** @file
- *
- * @brief
- * General helper functions
+/**
+ * @file
+ * @brief General helper functions
  */
 
 #include <stdint.h>

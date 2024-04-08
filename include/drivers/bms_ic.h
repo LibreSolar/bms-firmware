@@ -8,8 +8,8 @@
 #define INCLUDE_DRIVERS_BMS_IC_H_
 
 /**
- * @brief
- * API for different Battery Management System (BMS) front-end ICs
+ * @file
+ * @brief API for different Battery Management System (BMS) front-end ICs
  */
 
 #ifdef __cplusplus
