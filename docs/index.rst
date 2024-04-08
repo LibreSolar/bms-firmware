@@ -39,5 +39,6 @@ The full license text is available at `<https://creativecommons.org/licenses/by-
     :hidden:
 
     src/api/bms
+    src/api/bms_ic
     src/api/data_objects
     src/api/misc
