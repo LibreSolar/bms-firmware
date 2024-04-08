@@ -34,6 +34,7 @@ jobs:
         working-directory: bms-firmware
         run: |
           cd app
+          west build -p -b native_sim
           west build -p -b bms_5s50_sc
           west build -p -b bms_8s50_ic@0.2 -- -DEXTRA_CONF_FILE=oled.conf -DSHIELD=uext_oled
           west build -p -b bms_8s50_ic_f072

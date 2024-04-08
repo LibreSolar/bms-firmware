@@ -31,6 +31,7 @@ The full license text is available at `<https://creativecommons.org/licenses/by-
     src/dev/workspace_setup
     src/dev/building_flashing
     src/dev/customization
+    src/dev/simulator
     src/dev/unit_tests
 
 .. toctree::

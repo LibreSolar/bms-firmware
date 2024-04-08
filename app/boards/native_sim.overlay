@@ -1,0 +1,77 @@
+/*
+ * Copyright (c) The Libre Solar Project Contributors
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <dt-bindings/bms_ic/bq769x2.h>
+
+/ {
+	pcb {
+		compatible = "bms";
+
+		type = "Native Simulator BMS";
+		version-str = "v0.1";
+		version-num = <1>;
+	};
+
+	chosen {
+		zephyr,canbus = &can0;
+		thingset,eeprom = &eeprom0;
+		thingset,serial = &uart1;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led1: led_0 {
+			gpios = <&gpio0 0 GPIO_ACTIVE_HIGH>;
+		};
+		led2: led_1 {
+			gpios = <&gpio0 1 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
+	gpio_keys {
+		compatible = "gpio-keys";
+		power_button: button {
+			gpios = <&gpio0 3 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
+	aliases {
+		led-red = &led1;
+		led-green = &led2;
+		sw-pwr = &power_button;
+		bms-ic = &bq769x2;
+	};
+};
+
+/*
+ * Set up a virtual CAN interface with following commands:
+ *
+ * sudo ip link add dev vcan0 type vcan
+ * sudo ip link set up vcan0
+ */
+&can0 {
+	status = "okay";
+	host-interface = "vcan0";
+};
+
+&i2c0 {
+	status = "okay";
+
+	bq769x2: bq76952@8 {
+		compatible = "ti,bq769x2-i2c";
+		reg = <0x08>;
+		alert-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+		used-cell-channels = <0xFFFF>;
+		/* all NTCs configured with 18k pull-up */
+		ts1-pin-config = <0x07>;
+		dchg-pin-config = <0x0F>;
+		cell-temp-pins = <BQ769X2_PIN_TS1>;
+		fet-temp-pin = <BQ769X2_PIN_DCHG>;
+		board-max-current = <50>;
+		shunt-resistor-uohm = <500>;
+		status = "okay";
+	};
+};
