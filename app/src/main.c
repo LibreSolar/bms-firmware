@@ -89,6 +89,6 @@ static int init_config(void)
 
 /*
  * The default configuration must be initialized before the ThingSet storage backend reads data
- * from EEPROM or flash (with THINGSET_INIT_PRIORITY_STORAGE = 30).
+ * from EEPROM or flash (with THINGSET_INIT_PRIORITY_STORAGE = 40).
  */
 SYS_INIT(init_config, APPLICATION, 0);

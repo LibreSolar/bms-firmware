@@ -261,7 +261,7 @@ void data_objects_update_conf(enum thingset_callback_reason reason)
         bms_ic_configure(bms.ic_dev, &bms.ic_conf, BMS_IC_CONF_ALL);
 
 #ifdef CONFIG_THINGSET_STORAGE
-        thingset_storage_save_queued();
+        thingset_storage_save_queued(true);
 #endif
     }
 }
@@ -276,7 +276,7 @@ int32_t bat_preset(enum bms_cell_type type)
 
 #ifdef CONFIG_THINGSET_STORAGE
     if (ret > 0) {
-        thingset_storage_save_queued();
+        thingset_storage_save_queued(true);
     }
 #endif
 
