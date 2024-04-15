@@ -17,19 +17,19 @@
 LOG_MODULE_REGISTER(bq769x2_emul, CONFIG_BMS_IC_LOG_LEVEL);
 
 /*
- * Memory layout of bq769x2 for direct commands and subcommands
+ * Memory layout of bq769x2 for direct commands, data and subcommands
  *
- * Used subcommand address space starts with 0x9180 and ends below 0x9400
+ * Subcommands and data memory don't overlap, so they are stored in the same array.
  */
 #define BQ_DIRECT_MEM_SIZE (0x80)
-#define BQ_SUBCMD_MEM_SIZE (0x9400)
+#define BQ_DATA_MEM_SIZE   (0x9400)
 
 struct bq769x0_emul_data
 {
     /* Memory of bq769x2 for direct commands */
     uint8_t direct_mem[BQ_DIRECT_MEM_SIZE];
     /* Memory of bq769x2 for subcommands / data */
-    uint8_t subcmd_mem[BQ_SUBCMD_MEM_SIZE];
+    uint8_t data_mem[BQ_DATA_MEM_SIZE];
     uint32_t cur_reg;
 };
 
@@ -56,14 +56,14 @@ uint8_t bq769x2_emul_get_data_mem(const struct emul *em, uint16_t addr)
 {
     struct bq769x0_emul_data *em_data = em->data;
 
-    return em_data->subcmd_mem[addr];
+    return em_data->data_mem[addr];
 }
 
 void bq769x2_emul_set_data_mem(const struct emul *em, uint16_t addr, uint8_t byte)
 {
     struct bq769x0_emul_data *em_data = em->data;
 
-    em_data->subcmd_mem[addr] = byte;
+    em_data->data_mem[addr] = byte;
 }
 
 /*
@@ -72,11 +72,11 @@ void bq769x2_emul_set_data_mem(const struct emul *em, uint16_t addr, uint8_t byt
  *
  * Currently only command-only subcmds are supported (without data).
  */
-static void bq769x0_emul_process_subcmd(const struct emul *em, const uint16_t subcmd_addr)
+static void bq769x0_emul_process_subcmd(const struct emul *em, const uint16_t data_addr)
 {
     struct bq769x0_emul_data *em_data = em->data;
 
-    switch (subcmd_addr) {
+    switch (data_addr) {
         case BQ769X2_SUBCMD_SET_CFGUPDATE:
             k_usleep(2000);
             em_data->direct_mem[BQ769X2_CMD_BATTERY_STATUS] = 0x01;
@@ -102,32 +102,31 @@ static int bq769x0_emul_write_bytes(const struct emul *em, const uint8_t reg_add
     if (reg_addr == BQ769X2_SUBCMD_DATA_CHECKSUM || reg_addr == BQ769X2_SUBCMD_DATA_LENGTH) {
         /* writing to BQ769X2_SUBCMD_DATA_LENGTH starts execution of a subcommand */
 
-        uint16_t subcmd_addr = (em_data->direct_mem[BQ769X2_CMD_SUBCMD_UPPER] << 8)
-                               + em_data->direct_mem[BQ769X2_CMD_SUBCMD_LOWER];
+        uint16_t data_addr = (em_data->direct_mem[BQ769X2_CMD_SUBCMD_UPPER] << 8)
+                             + em_data->direct_mem[BQ769X2_CMD_SUBCMD_LOWER];
         uint8_t subcmd_bytes =
             em_data->direct_mem[BQ769X2_SUBCMD_DATA_LENGTH] - BQ769X2_SUBCMD_OVERHEAD_BYTES;
 
-        if (subcmd_addr >= sizeof(em_data->subcmd_mem)) {
+        if (data_addr >= sizeof(em_data->data_mem)) {
             return -EINVAL;
         }
 
-        memcpy(&em_data->subcmd_mem[subcmd_addr], &em_data->direct_mem[BQ769X2_SUBCMD_DATA_START],
+        memcpy(&em_data->data_mem[data_addr], &em_data->direct_mem[BQ769X2_SUBCMD_DATA_START],
                subcmd_bytes);
     }
     else if (reg_addr == BQ769X2_CMD_SUBCMD_LOWER && num_bytes == 2) {
-        /* writing to SUBCMD register initiates a subcmd read */
+        /* writing to SUBCMD register initiates a subcmd / data read */
 
-        uint16_t subcmd_addr = (em_data->direct_mem[BQ769X2_CMD_SUBCMD_UPPER] << 8)
-                               + em_data->direct_mem[BQ769X2_CMD_SUBCMD_LOWER];
+        uint16_t data_addr = (em_data->direct_mem[BQ769X2_CMD_SUBCMD_UPPER] << 8)
+                             + em_data->direct_mem[BQ769X2_CMD_SUBCMD_LOWER];
 
-        if (subcmd_addr >= sizeof(em_data->subcmd_mem)) {
+        if (data_addr >= sizeof(em_data->data_mem)) {
             return -EINVAL;
         }
 
-        bq769x0_emul_process_subcmd(em, subcmd_addr);
+        bq769x0_emul_process_subcmd(em, data_addr);
 
-        memcpy(&em_data->direct_mem[BQ769X2_SUBCMD_DATA_START], &em_data->subcmd_mem[subcmd_addr],
-               4);
+        memcpy(&em_data->direct_mem[BQ769X2_SUBCMD_DATA_START], &em_data->data_mem[data_addr], 4);
 
         // always assume maximum data type length of 4 bytes
         uint8_t checksum = em_data->direct_mem[BQ769X2_CMD_SUBCMD_UPPER]
