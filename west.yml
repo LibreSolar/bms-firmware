@@ -13,7 +13,7 @@ manifest:
   projects:
     - name: zephyr
       remote: zephyrproject
-      revision: v3.5-branch
+      revision: v3.6-branch
       import:
         name-allowlist:
           - cmsis
@@ -23,7 +23,7 @@ manifest:
           - tinycrypt
     - name: thingset-zephyr-sdk
       remote: thingset
-      revision: d01f0621f9503616f9bda1e0c6b26398180f4f67
+      revision: 56fea6224ac06811465229c2d48111ed0f635e22
       path: thingset-zephyr-sdk
       import:
         name-allowlist:
