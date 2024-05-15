@@ -267,7 +267,7 @@ static int isl94202_read_voltages(const struct device *dev, struct bms_ic_data *
                 ic_data->cell_voltage_max = ic_data->cell_voltages[cell_index];
             }
             if (ic_data->cell_voltages[cell_index] < ic_data->cell_voltage_min
-                && ic_data->cell_voltages[cell_index] > 0.5)
+                && ic_data->cell_voltages[cell_index] > 0.5F)
             {
                 ic_data->cell_voltage_min = ic_data->cell_voltages[cell_index];
             }
@@ -294,12 +294,12 @@ static int isl94202_read_temperatures(const struct device *dev, struct bms_ic_da
     // Internal temperature
     isl94202_read_word(dev, ISL94202_IT, &adc_raw);
     adc_raw &= 0x0FFF;
-    ic_data->ic_temp = (float)adc_raw * 1.8 / 4095 * 1000 / 1.8527 - 273.15;
+    ic_data->ic_temp = (float)adc_raw * 1.8F / 4095 * 1000 / 1.8527F - 273.15F;
 
     // External temperature 1
     isl94202_read_word(dev, ISL94202_XT1, &adc_raw);
     adc_raw &= 0x0FFF;
-    float adc_v = (float)adc_raw * 1.8 / 4095 / 2;
+    float adc_v = (float)adc_raw * 1.8F / 4095 / 2;
 
     ic_data->cell_temp_avg =
         interpolate(lut_temp_volt, lut_temp_degc, ARRAY_SIZE(lut_temp_degc), adc_v);
@@ -311,7 +311,7 @@ static int isl94202_read_temperatures(const struct device *dev, struct bms_ic_da
     // External temperature 2 (used for MOSFET temperature sensing)
     isl94202_read_word(dev, ISL94202_XT2, &adc_raw);
     adc_raw &= 0x0FFF;
-    adc_v = (float)adc_raw * 1.8 / 4095 / 2;
+    adc_v = (float)adc_raw * 1.8F / 4095 / 2;
 
     ic_data->mosfet_temp =
         interpolate(lut_temp_volt, lut_temp_degc, ARRAY_SIZE(lut_temp_degc), adc_v);

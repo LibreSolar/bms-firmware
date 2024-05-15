@@ -112,7 +112,7 @@ int isl94202_write_voltage(const struct device *dev, uint8_t reg_addr, float vol
 {
     uint16_t reg = extra_bits << 12;
 
-    uint16_t voltage_raw = voltage * 4095 * 3 / 1.8 / 8;
+    uint16_t voltage_raw = voltage * 4095 * 3 / 1.8F / 8;
 
     if (voltage_raw > 0x0FFF) {
         return -1;

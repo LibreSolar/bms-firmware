@@ -99,7 +99,7 @@ ZTEST(isl94202, test_isl94202_read_current)
     isl94202_emul_set_byte(bms_ic_emul, 0x82, 0x00U);      // neither CHING nor DCHING
     isl94202_emul_set_byte(bms_ic_emul, 0x85, 0x02U << 4); // gain 500
     isl94202_emul_set_word(bms_ic_emul, 0x8E,
-                           1.14 / 1.8 * 4095 * 500 * shunt_res_mohm / 1000); // ADC reading
+                           1.14F / 1.8F * 4095 * 500 * shunt_res_mohm / 1000); // ADC reading
 
     bms_ic_read_data(bms.ic_dev, BMS_IC_DATA_CURRENT);
     zassert_equal(0.0F, roundf(bms.ic_data.current * 100) / 100);
@@ -174,31 +174,31 @@ ZTEST(isl94202, test_isl94202_read_temperatures)
     // assuming 22k resistor and gain 2
 
     // Internal temperature
-    isl94202_emul_set_word(bms_ic_emul, 0xA0, (22.0 + 273.15) * 1.8527 / 1000 / 1.8 * 4095);
+    isl94202_emul_set_word(bms_ic_emul, 0xA0, (22.0F + 273.15F) * 1.8527F / 1000 / 1.8F * 4095);
     bms_ic_read_data(bms.ic_dev, BMS_IC_DATA_TEMPERATURES);
-    zassert_equal(22.0, roundf(bms.ic_data.ic_temp * 10) / 10);
+    zassert_equal(22.0F, roundf(bms.ic_data.ic_temp * 10) / 10);
 
     // // External temperature 1 (check incl. interpolation)
-    isl94202_emul_set_word(bms_ic_emul, 0xA2, 0.463 * 2 / 1.8 * 4095); // 25°C
+    isl94202_emul_set_word(bms_ic_emul, 0xA2, 0.463F * 2 / 1.8F * 4095); // 25°C
     bms_ic_read_data(bms.ic_dev, BMS_IC_DATA_TEMPERATURES);
-    zassert_equal(25.0, roundf(bms.ic_data.cell_temp_avg * 10) / 10);
+    zassert_equal(25.0F, roundf(bms.ic_data.cell_temp_avg * 10) / 10);
 
-    isl94202_emul_set_word(bms_ic_emul, 0xA2, 0.150 * 2 / 1.8 * 4095); // >80°C
+    isl94202_emul_set_word(bms_ic_emul, 0xA2, 0.150F * 2 / 1.8F * 4095); // >80°C
     bms_ic_read_data(bms.ic_dev, BMS_IC_DATA_TEMPERATURES);
-    zassert_equal(80.0, roundf(bms.ic_data.cell_temp_avg * 10) / 10);
+    zassert_equal(80.0F, roundf(bms.ic_data.cell_temp_avg * 10) / 10);
 
-    isl94202_emul_set_word(bms_ic_emul, 0xA2, 0.760 * 2 / 1.8 * 4095); // <-40°C
+    isl94202_emul_set_word(bms_ic_emul, 0xA2, 0.760F * 2 / 1.8F * 4095); // <-40°C
     bms_ic_read_data(bms.ic_dev, BMS_IC_DATA_TEMPERATURES);
-    zassert_equal(-40.0, roundf(bms.ic_data.cell_temp_avg * 10) / 10);
+    zassert_equal(-40.0F, roundf(bms.ic_data.cell_temp_avg * 10) / 10);
 
-    isl94202_emul_set_word(bms_ic_emul, 0xA2, 0.4295 * 2 / 1.8 * 4095); // 30°C
+    isl94202_emul_set_word(bms_ic_emul, 0xA2, 0.4295F * 2 / 1.8F * 4095); // 30°C
     bms_ic_read_data(bms.ic_dev, BMS_IC_DATA_TEMPERATURES);
-    zassert_equal(30.0, roundf(bms.ic_data.cell_temp_avg * 10) / 10);
+    zassert_equal(30.0F, roundf(bms.ic_data.cell_temp_avg * 10) / 10);
 
     // External temperature 2 (simple check)
-    isl94202_emul_set_word(bms_ic_emul, 0xA4, 0.463 * 2 / 1.8 * 4095); // 25°C
+    isl94202_emul_set_word(bms_ic_emul, 0xA4, 0.463F * 2 / 1.8F * 4095); // 25°C
     bms_ic_read_data(bms.ic_dev, BMS_IC_DATA_TEMPERATURES);
-    zassert_equal(25.0, roundf(bms.ic_data.mosfet_temp * 10) / 10);
+    zassert_equal(25.0F, roundf(bms.ic_data.mosfet_temp * 10) / 10);
 }
 
 ZTEST(isl94202, test_isl94202_apply_dis_ocp)
@@ -243,21 +243,21 @@ ZTEST(isl94202, test_isl94202_apply_chg_ocp)
     bms.ic_conf.chg_oc_limit = 0.4;
     err = bms_ic_configure(bms.ic_dev, &bms.ic_conf, BMS_IC_CONF_CURRENT_LIMITS);
     zassert_equal(BMS_IC_CONF_CURRENT_LIMITS, err);
-    zassert_equal(0.5, bms.ic_conf.chg_oc_limit); // take lowest possible value
+    zassert_equal(0.5F, bms.ic_conf.chg_oc_limit); // take lowest possible value
     zassert_equal(delay | (0x0 << 12), isl94202_emul_get_word(bms_ic_emul, 0x18));
 
     // something in the middle
     bms.ic_conf.chg_oc_limit = 5.0;
     err = bms_ic_configure(bms.ic_dev, &bms.ic_conf, BMS_IC_CONF_CURRENT_LIMITS);
     zassert_equal(BMS_IC_CONF_CURRENT_LIMITS, err);
-    zassert_equal(4.0, bms.ic_conf.chg_oc_limit); // round to next lower value
+    zassert_equal(4.0F, bms.ic_conf.chg_oc_limit); // round to next lower value
     zassert_equal(delay | (0x4U << 12), isl94202_emul_get_word(bms_ic_emul, 0x18));
 
     // higher than maximum possible setting
     bms.ic_conf.chg_oc_limit = 50.0;
     err = bms_ic_configure(bms.ic_dev, &bms.ic_conf, BMS_IC_CONF_CURRENT_LIMITS);
     zassert_equal(BMS_IC_CONF_CURRENT_LIMITS, err);
-    zassert_equal(12.0, bms.ic_conf.chg_oc_limit);
+    zassert_equal(12.0F, bms.ic_conf.chg_oc_limit);
     zassert_equal(delay | (0x7U << 12), isl94202_emul_get_word(bms_ic_emul, 0x18));
 }
 

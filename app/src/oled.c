@@ -33,16 +33,16 @@ void oled_overview_screen()
     cfb_print(oled_dev, "Libre Solar", 0, 0);
     cfb_print(oled_dev, DT_PROP(DT_PATH(pcb), type), 0, 12);
 
-    len = snprintf(buf, sizeof(buf), "%.2fV", bms.ic_data.total_voltage);
+    len = snprintf(buf, sizeof(buf), "%.2fV", (double)bms.ic_data.total_voltage);
     cfb_print(oled_dev, buf, 0, 28);
 
-    len = snprintf(buf, sizeof(buf), "%.1fA", bms.ic_data.current);
+    len = snprintf(buf, sizeof(buf), "%.1fA", (double)bms.ic_data.current);
     cfb_print(oled_dev, buf, 64, 28);
 
-    len = snprintf(buf, sizeof(buf), "T:%.1f", bms.ic_data.cell_temp_avg);
+    len = snprintf(buf, sizeof(buf), "T:%.1f", (double)bms.ic_data.cell_temp_avg);
     cfb_print(oled_dev, buf, 0, 40);
 
-    len = snprintf(buf, sizeof(buf), "SOC:%.0f", bms.soc);
+    len = snprintf(buf, sizeof(buf), "SOC:%.0f", (double)bms.soc);
     cfb_print(oled_dev, buf, 64, 40);
 
     len = snprintf(buf, sizeof(buf), "Err:0x%X", bms.ic_data.error_flags);
@@ -62,7 +62,8 @@ void oled_cell_voltages_screen(int offset)
 
     for (int i = offset; i < CONFIG_BMS_IC_MAX_CELLS; i++) {
         if (blink_on || !(bms.ic_data.balancing_status & (1 << i))) {
-            len = snprintf(buf, sizeof(buf), "%d:%.2f", i + 1, bms.ic_data.cell_voltages[i]);
+            len =
+                snprintf(buf, sizeof(buf), "%d:%.2f", i + 1, (double)bms.ic_data.cell_voltages[i]);
             cfb_print(oled_dev, buf, (i % 2 == 0) ? 0 : 64, 16 + (i / 2) * 12);
         }
     }

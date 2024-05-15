@@ -537,8 +537,8 @@ static int bq769x0_read_temperatures(const struct device *dev, struct bms_ic_dat
         }
 
         adc_raw &= 0x3FFF;
-        vtsx = adc_raw * 0.382F;                 /* mV */
-        rts = 10000.0F * vtsx / (3300.0 - vtsx); /* Ohm */
+        vtsx = adc_raw * 0.382F;                  /* mV */
+        rts = 10000.0F * vtsx / (3300.0F - vtsx); /* Ohm */
 
         /*
          * Temperature calculation using Beta equation
@@ -546,7 +546,7 @@ static int bq769x0_read_temperatures(const struct device *dev, struct bms_ic_dat
          * - 25°C reference temperature for Beta equation assumed
          */
         tmp = 1.0F
-              / (1.0F / (273.15F + 25) + 1.0F / dev_config->thermistor_beta * log(rts / 10000.0F));
+              / (1.0F / (273.15F + 25) + 1.0F / dev_config->thermistor_beta * logf(rts / 10000.0F));
         ic_data->cell_temps[i] = tmp - 273.15F;
         if (i == 0) {
             ic_data->cell_temp_min = ic_data->cell_temps[i];
@@ -592,7 +592,7 @@ static int bq769x0_read_current(const struct device *dev, struct bms_ic_data *ic
     ic_data->current = current_mA / 1000.0;
 
     /* reset active timestamp */
-    if (fabs(ic_data->current) > dev_data->ic_conf.bal_idle_current) {
+    if (fabsf(ic_data->current) > dev_data->ic_conf.bal_idle_current) {
         dev_data->active_timestamp = k_uptime_get();
     }
 
