@@ -20,10 +20,11 @@ manifest:
           - edtt
           - hal_espressif
           - hal_stm32
+          - mcuboot
           - tinycrypt
     - name: thingset-zephyr-sdk
       remote: thingset
-      revision: 56fea6224ac06811465229c2d48111ed0f635e22
+      revision: 0889d3e1617db89ea74a7d98d63482dff15186fd
       path: thingset-zephyr-sdk
       import:
         name-allowlist:

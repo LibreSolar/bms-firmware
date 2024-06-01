@@ -42,6 +42,8 @@ jobs:
           west build -p -b bms_16s100_sc
           west build -p -b bms_16s100_sc_esp32c3@0.2
           west build -p -b bms_c1@0.4
+          rm -rf build
+          west build -b bms_c1@0.4 --sysbuild -p
 
       - name: Run unit-tests
         working-directory: bms-firmware
