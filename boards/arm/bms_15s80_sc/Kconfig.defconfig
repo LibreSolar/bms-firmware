@@ -7,3 +7,10 @@ config BOARD
 	default "bms_15s80_sc"
 
 endif # BOARD_BMS_15S80_SC
+
+if BMS_IC
+
+config BMS_IC_MAX_THERMISTORS
+	default 3
+
+endif # BMS_IC

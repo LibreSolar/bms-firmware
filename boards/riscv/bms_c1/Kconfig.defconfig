@@ -25,3 +25,10 @@ endchoice
 endif # BT
 
 endif # BOARD_BMS_C1 || BOARD_BMS_16S100_SC_ESP32C3
+
+if BMS_IC
+
+config BMS_IC_MAX_THERMISTORS
+	default 2
+
+endif # BMS_IC

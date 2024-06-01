@@ -7,3 +7,10 @@ config BOARD
 	default "bms_8s50_ic"
 
 endif # BOARD_BMS_8S50_IC
+
+if BMS_IC
+
+config BMS_IC_MAX_THERMISTORS
+	default 1
+
+endif # BMS_IC
