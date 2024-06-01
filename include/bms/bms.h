@@ -109,6 +109,13 @@ void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float cap
 void bms_state_machine(struct bms_context *bms);
 
 /**
+ * Switch off MOSFETs and go into the shutdown state
+ *
+ * @param bms Pointer to BMS object.
+ */
+void bms_shutdown(struct bms_context *bms);
+
+/**
  * Update SOC based on most recent current measurement
  *
  * Function should be called each time after a new current measurement was obtained.

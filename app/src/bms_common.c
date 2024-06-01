@@ -193,6 +193,13 @@ __weak void bms_state_machine(struct bms_context *bms)
     }
 }
 
+void bms_shutdown(struct bms_context *bms)
+{
+    bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS, false);
+    bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, false);
+    bms->state = BMS_STATE_SHUTDOWN;
+}
+
 bool bms_chg_error(uint32_t error_flags)
 {
     return error_flags

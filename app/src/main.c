@@ -69,8 +69,13 @@ int main(void)
 
         if (button_pressed_for_3s()) {
             LOG_WRN("Button pressed for 3s: shutdown...");
-            bms_ic_set_mode(bms.ic_dev, BMS_IC_MODE_OFF);
+            bms_shutdown(&bms);
+            /*
+             * Wait another 10s for the user to release the button again before actually turning off
+             * the BMS IC (otherwise it will immediately restart).
+             */
             k_sleep(K_MSEC(10000));
+            bms_ic_set_mode(bms.ic_dev, BMS_IC_MODE_OFF);
         }
 
         t_start += CONFIG_BMS_IC_POLLING_INTERVAL_MS;
