@@ -5,7 +5,7 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
 project(libre_solar_bms)
 
-add_subdirectory(src)
+add_subdirectory_ifndef(CONFIG_MCUBOOT src)
 
 # determine git tag and commit hash for automatic firmware versioning
 find_package(Git)

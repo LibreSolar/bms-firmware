@@ -10,19 +10,14 @@ config BOARD
 config ENTROPY_ESP32_RNG
 	default y if ENTROPY_GENERATOR
 
-if BT
-
 config HEAP_MEM_POOL_SIZE
 	default 98304 if WIFI
 	default 40960 if BT
 	default 4096
 
 choice BT_HCI_BUS_TYPE
-	default BT_ESP32
-
+	default BT_ESP32 if BT
 endchoice
-
-endif # BT
 
 endif # BOARD_BMS_C1 || BOARD_BMS_16S100_SC_ESP32C3
 
