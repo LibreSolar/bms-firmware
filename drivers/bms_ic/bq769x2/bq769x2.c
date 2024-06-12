@@ -123,7 +123,7 @@ static int bq769x2_detect_cells(const struct device *dev)
     const struct bms_ic_bq769x2_config *config = dev->config;
     uint8_t conn_cells = 0;
     uint16_t vcell_mode = 0;
-    uint16_t voltage = UINT16_MAX; /* init with implausible value */
+    int16_t voltage = INT16_MAX; /* init with implausible value */
     uint32_t stack_voltage_calc = 0;
     int err = 0;
 
