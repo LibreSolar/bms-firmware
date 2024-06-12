@@ -84,4 +84,3 @@ Flash with specific debug probe (runner), e.g. J-Link:
 .. code-block:: bash
 
     west flash -r jlink
-
