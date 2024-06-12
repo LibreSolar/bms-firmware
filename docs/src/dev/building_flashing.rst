@@ -77,7 +77,7 @@ for more details regarding board revision handling in Zephyr.
 +--------------------------------+----------------------+----------------+
 
 (*) Only for BMS-8S50-IC with STM32F072 MCU.
-Supported hardware is further described in :doc:`../supported_hardware`. 
+Supported hardware is further described in :doc:`../supported_hardware`.
 
 Flash with specific debug probe (runner), e.g. J-Link:
 
