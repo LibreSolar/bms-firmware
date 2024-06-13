@@ -11,6 +11,14 @@
 	};
 };
 
+&gpio0 {
+	deactivate-rs485 {
+		gpio-hog;
+		gpios = <6 GPIO_ACTIVE_HIGH>, <7 GPIO_ACTIVE_LOW>;
+		output-low;
+	};
+};
+
 &pinctrl {
 	i2c0_default: i2c0_default {
 		group1 {
