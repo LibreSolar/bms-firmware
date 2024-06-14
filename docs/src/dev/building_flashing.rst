@@ -87,3 +87,49 @@ We recommend ``picocom`` as a serial console under Linux:
     picocom -b 115200 /dev/ttyACM0
 
 Press Ctrl+a followed by q to exit.
+
+Device Firmware Upgrade (DFU) over CAN
+""""""""""""""""""""""""""""""""""""""
+
+For boards with large enough flash it is possible to enable support for upgrading the firmware over
+CAN (using ThingSet as the transport protocol). This has been tested with the BMS C1.
+
+First of all, the firmware has to be built with MCUboot support (using ``--sysbuild`` parameter):
+
+.. code-block:: bash
+
+    rm -rf build
+    west build -b <board-name>@<revision> --sysbuild
+    west flash
+
+With that firmware flashed to the board, the CAN communication needs to be set up on the Linux host
+computer (replace ``can0`` with your interface name):
+
+.. code-block:: bash
+
+    sudo ip link set can0 up type can bitrate 500000 restart-ms 500
+
+Test the CAN communication with ``candump can0``. You should see some published messages on the bus.
+
+For sending a new firmware image, use the Python script provided by the ThingSet SDK:
+
+.. code-block:: bash
+
+    ../thingset-zephyr-sdk/scripts/thingset-dfu-can.py -c can0 -t 0x01 build/app/zephyr/zephyr.signed.bin
+
+The node address on the CAN bus is printed on the console during boot-up. If no other device is on
+the bus, it ends up with ``0x01``. It can also be determined from the ``candump`` output. The source
+address of the published messages (which becomes the target address for the firmware upgrade) is the
+least-significant byte of the CAN ID (first byte from the right).
+
+See also the `ThingSet specification <https://thingset.io>`_ for further details regarding the CAN
+protocol.
+
+If everything worked correctly, you should see a progress bar on the console showing the firmware
+upgrade:
+
+.. code-block:: bash
+
+    Initializing DFU
+    Flashing |################################| 322/322 KiB = 100%
+    Finishing DFU
