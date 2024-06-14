@@ -34,7 +34,10 @@ struct bms_ic_isl94202_config
 struct bms_ic_isl94202_data
 {
     struct bms_ic_data *ic_data;
+    const struct device *dev;
+    struct k_work_delayable balancing_work;
     uint8_t fet_state;
+    bool auto_balancing;
 };
 
 #endif /* DRIVERS_BMS_IC_BMS_IC_ISL94202_PRIV_H_ */
