@@ -78,6 +78,7 @@ struct bms_ic_bq769x0_data
         float bal_cell_voltage_min;
         float bal_idle_current;
         uint16_t bal_idle_delay;
+        bool auto_balancing;
 
         uint32_t alert_mask;
     } ic_conf;
@@ -87,6 +88,8 @@ struct bms_ic_bq769x0_data
     uint32_t balancing_status;
     bool crc_enabled;
 };
+
+static int bq769x0_set_balancing_switches(const struct device *dev, uint32_t cells);
 
 /*
  * The bq769x0 drives the ALERT pin high if the SYS_STAT register contains
@@ -400,13 +403,22 @@ static int bq769x0_configure_dis_scp(const struct device *dev, struct bms_ic_con
 static int bq769x0_configure_balancing(const struct device *dev, struct bms_ic_conf *ic_conf)
 {
     struct bms_ic_bq769x0_data *dev_data = dev->data;
+    struct k_work_sync work_sync;
 
     dev_data->ic_conf.bal_cell_voltage_diff = ic_conf->bal_cell_voltage_diff;
     dev_data->ic_conf.bal_cell_voltage_min = ic_conf->bal_cell_voltage_min;
     dev_data->ic_conf.bal_idle_current = ic_conf->bal_idle_current;
     dev_data->ic_conf.bal_idle_delay = ic_conf->bal_idle_delay;
+    dev_data->ic_conf.auto_balancing = ic_conf->auto_balancing;
 
-    return 0;
+    if (ic_conf->auto_balancing) {
+        k_work_schedule(&dev_data->balancing_work, K_NO_WAIT);
+        return 0;
+    }
+    else {
+        k_work_cancel_delayable_sync(&dev_data->balancing_work, &work_sync);
+        return bq769x0_set_balancing_switches(dev, 0x0);
+    }
 }
 
 static int bq769x0_configure_alerts(const struct device *dev, struct bms_ic_conf *ic_conf)
@@ -823,6 +835,7 @@ static int bms_ic_bq769x0_set_switches(const struct device *dev, uint8_t switche
 static int bq769x0_set_balancing_switches(const struct device *dev, uint32_t cells)
 {
     const struct bms_ic_bq769x0_config *dev_config = dev->config;
+    struct bms_ic_bq769x0_data *dev_data = dev->data;
     int err;
 
     for (int section = 0; section < dev_config->num_sections; section++) {
@@ -837,6 +850,8 @@ static int bq769x0_set_balancing_switches(const struct device *dev, uint32_t cel
             return err;
         }
     }
+
+    dev_data->balancing_status = cells;
 
     return 0;
 }
@@ -929,28 +944,12 @@ static void bq769x0_balancing_work_handler(struct k_work *work)
 static int bms_ic_bq769x0_balance(const struct device *dev, uint32_t cells)
 {
     struct bms_ic_bq769x0_data *dev_data = dev->data;
-    struct k_work_sync work_sync;
-    int err = 0;
 
-    if (cells == BMS_IC_BALANCING_OFF) {
-        k_work_cancel_delayable_sync(&dev_data->balancing_work, &work_sync);
-        err = bq769x0_set_balancing_switches(dev, 0x0);
-        if (err == 0) {
-            dev_data->balancing_status = 0x0;
-        }
-    }
-    else if (cells == BMS_IC_BALANCING_AUTO) {
-        k_work_schedule(&dev_data->balancing_work, K_NO_WAIT);
-    }
-    else {
-        k_work_cancel_delayable_sync(&dev_data->balancing_work, &work_sync);
-        err = bq769x0_set_balancing_switches(dev, cells);
-        if (err == 0) {
-            dev_data->balancing_status = cells;
-        }
+    if (dev_data->ic_conf.auto_balancing) {
+        return -EBUSY;
     }
 
-    return err;
+    return bq769x0_set_balancing_switches(dev, cells);
 }
 
 static int bq769x0_activate(const struct device *dev)

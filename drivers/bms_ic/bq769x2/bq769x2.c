@@ -364,6 +364,7 @@ static int bq769x2_configure_dis_scp(const struct device *dev, struct bms_ic_con
 
 static int bq769x2_configure_balancing(const struct device *dev, struct bms_ic_conf *ic_conf)
 {
+    struct bms_ic_bq769x2_data *dev_data = dev->data;
     int err = 0;
 
     /*
@@ -394,8 +395,14 @@ static int bq769x2_configure_balancing(const struct device *dev, struct bms_ic_c
     /* allow balancing of up to 4 cells (instead of only 1 by default) */
     err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_CBAL_MAX_CELLS, 4);
 
-    /* enable CB_RLX and CB_CHG */
-    err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_CBAL_CONF, 0x03);
+    if (ic_conf->auto_balancing) {
+        /* enable CB_RLX and CB_CHG */
+        err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_CBAL_CONF, 0x03);
+    }
+    else {
+        err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_CBAL_CONF, 0x00);
+    }
+    dev_data->auto_balancing = ic_conf->auto_balancing;
 
     ic_conf->bal_cell_voltage_min = ic_conf->bal_cell_voltage_min;
     ic_conf->bal_cell_voltage_diff = ic_conf->bal_cell_voltage_diff;
@@ -863,25 +870,19 @@ static int bms_ic_bq769x2_set_switches(const struct device *dev, uint8_t switche
 
 static int bms_ic_bq769x2_balance(const struct device *dev, uint32_t cells)
 {
-    if (cells == BMS_IC_BALANCING_OFF) {
-        return bq769x2_datamem_write_u1(dev, BQ769X2_SET_CBAL_CONF, 0x00);
+    struct bms_ic_bq769x2_data *dev_data = dev->data;
+
+    if (dev_data->auto_balancing) {
+        return -EBUSY;
     }
-    else if (cells == BMS_IC_BALANCING_AUTO) {
-        /* enable CB_RLX and CB_CHG */
-        return bq769x2_datamem_write_u1(dev, BQ769X2_SET_CBAL_CONF, 0x03);
+
+    if (((cells << 1) & cells) || ((cells >> 1) & cells)) {
+        /* balancing of adjacent cells not allowed */
+        return -EINVAL;
     }
-    else {
-        if (((cells << 1) & cells) || ((cells >> 1) & cells)) {
-            /* balancing of adjacent cells not allowed */
-            return -EINVAL;
-        }
-        int err = bq769x2_datamem_write_u1(dev, BQ769X2_SET_CBAL_CONF, 0x00);
-        if (err != 0) {
-            return err;
-        }
-        /* ToDo: Consider bq chip number and gaps in CB_ACTIVE_CELLS */
-        return bq769x2_subcmd_write_u2(dev, BQ769X2_SUBCMD_CB_ACTIVE_CELLS, (uint16_t)cells);
-    }
+
+    /* ToDo: Consider bq chip number and gaps in CB_ACTIVE_CELLS */
+    return bq769x2_subcmd_write_u2(dev, BQ769X2_SUBCMD_CB_ACTIVE_CELLS, (uint16_t)cells);
 }
 
 static int bq769x2_activate(const struct device *dev)
