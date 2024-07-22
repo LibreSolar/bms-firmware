@@ -188,6 +188,11 @@ THINGSET_ADD_FN_INT32(APP_ID_CONF, APP_ID_CONF_PRESET_LFP, "xPresetLFP", &bat_pr
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF_PRESET_LFP, APP_ID_CONF_PRESET_LFP_CAPACITY, "fCapacity_Ah",
                         &new_capacity, 1, THINGSET_ANY_RW, 0);
 
+THINGSET_ADD_FN_INT32(APP_ID_CONF, APP_ID_CONF_PRESET_LTO, "xPresetLTO", &bat_preset_lto,
+                      THINGSET_ANY_RW);
+THINGSET_ADD_ITEM_FLOAT(APP_ID_CONF_PRESET_LTO, APP_ID_CONF_PRESET_LTO_CAPACITY, "fCapacity_Ah",
+                        &new_capacity, 1, THINGSET_ANY_RW, 0);
+
 // MEAS DATA ////////////////////////////////////////////////////////////
 
 THINGSET_ADD_GROUP(TS_ID_ROOT, APP_ID_MEAS, "Meas", THINGSET_NO_CALLBACK);
@@ -280,7 +285,9 @@ int32_t bat_preset(enum bms_cell_type type)
     }
 #endif
 
-    return ret;
+    // Always return 1 in case of success, as the flags returned by bms_ic_configure can be
+    // confusing for end users in the App. Actually applied config can be retrieved via ThingSet.
+    return ret > 0 ? 1 : ret;
 }
 
 int32_t bat_preset_nmc()
@@ -291,6 +298,11 @@ int32_t bat_preset_nmc()
 int32_t bat_preset_lfp()
 {
     return bat_preset(CELL_TYPE_LFP);
+}
+
+int32_t bat_preset_lto()
+{
+    return bat_preset(CELL_TYPE_LTO);
 }
 
 void print_registers()

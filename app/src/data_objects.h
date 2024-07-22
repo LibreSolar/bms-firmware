@@ -62,6 +62,8 @@
 #define APP_ID_CONF_PRESET_NMC_CAPACITY     0xA1
 #define APP_ID_CONF_PRESET_LFP              0xA2
 #define APP_ID_CONF_PRESET_LFP_CAPACITY     0xA3
+#define APP_ID_CONF_PRESET_LTO              0xA4
+#define APP_ID_CONF_PRESET_LTO_CAPACITY     0xA5
 #define APP_ID_CONF_OCV_POINTS              0xB0
 #define APP_ID_CONF_SOC_POINTS              0xB1
 
@@ -102,6 +104,11 @@ int32_t bat_preset_nmc();
  * Callback function to apply preset parameters for LFP type via ThingSet
  */
 int32_t bat_preset_lfp();
+
+/**
+ * Callback function to apply preset parameters for LTO type via ThingSet
+ */
+int32_t bat_preset_lto();
 
 /**
  * Callback to read and print common BMS registers via ThingSet
