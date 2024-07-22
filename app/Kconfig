@@ -13,12 +13,14 @@ config BAT_CAPACITY_AH
       Nominal battery capacity or sum of parallel cells capacity
 
 choice
-    prompt "Cell type"
+    prompt "Default cell type"
     default CELL_TYPE_LFP
     help
       Select the type of the single cells inside the battery
       to determine voltage set points. Total voltage set points
       are multiplied with the selected number of cells.
+
+      The default values based on this configuration can be overriden via ThingSet.
 
     config CELL_TYPE_LFP
         bool "LiFePO4, 3.3V nominal"
@@ -26,24 +28,17 @@ choice
     config CELL_TYPE_NMC
         bool "NMC/Graphite, 3.7V nominal, 4.2V max"
 
-    config CELL_TYPE_NMC_HV
-        bool "NMC/Graphite High Voltage, 3.7V nominal, 4.35 max"
-
     config CELL_TYPE_LTO
         bool "NMC/Titanate, 2.4 V nominal"
 
-    config CELL_TYPE_CUSTOM
-        bool "Enable manual configuration for all customizable parameters"
 endchoice
 
 # values must match enum CellType in bms.h
 config CELL_TYPE
     int
-    default 0 if CELL_TYPE_CUSTOM
-    default 1 if CELL_TYPE_LFP
-    default 2 if CELL_TYPE_NMC
-    default 3 if CELL_TYPE_NMC_HV
-    default 4 if CELL_TYPE_LTO
+    default 0 if CELL_TYPE_LFP
+    default 1 if CELL_TYPE_NMC
+    default 2 if CELL_TYPE_LTO
 
 endmenu
 

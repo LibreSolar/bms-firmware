@@ -22,7 +22,7 @@ Amongst all features inherited from underlying Zephyr, the BMS has the following
 
   - Pack layout
 
-    - Cell chemistry (LiFePO4, NMC, NCA)
+    - Cell chemistry (e.g. LiFePO4, NMC, NCA, LTO)
     - Nominal capacity
     - Number of cells
     - Thermistor type

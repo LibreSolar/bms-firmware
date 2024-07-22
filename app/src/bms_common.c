@@ -110,8 +110,6 @@ void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float nom
             bms->ic_conf.cell_uv_limit = 1.90F;
             memcpy(ocv_points, ocv_lto, sizeof(ocv_points));
             break;
-        case CELL_TYPE_CUSTOM:
-            break;
     }
 
     /* trigger alert for all possible errors by default */
