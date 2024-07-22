@@ -20,8 +20,8 @@
 #include <stdio.h>
 
 extern struct bms_context bms;
-extern float ocv_custom[OCV_POINTS];
-extern float soc_custom[OCV_POINTS];
+extern float ocv_points[NUM_OCV_POINTS];
+extern float soc_points[NUM_OCV_POINTS];
 
 static char manufacturer[] = "Libre Solar";
 static char device_type[] = DT_PROP(DT_PATH(pcb), type);
@@ -35,9 +35,9 @@ static THINGSET_DEFINE_FLOAT_ARRAY(cell_voltages_arr, 3, bms.ic_data.cell_voltag
 static THINGSET_DEFINE_FLOAT_ARRAY(cell_temps_arr, 1, bms.ic_data.cell_temps,
                                    ARRAY_SIZE(bms.ic_data.cell_temps));
 
-static THINGSET_DEFINE_FLOAT_ARRAY(ocv_points_arr, 3, ocv_custom, ARRAY_SIZE(ocv_custom));
+static THINGSET_DEFINE_FLOAT_ARRAY(ocv_points_arr, 3, ocv_points, ARRAY_SIZE(ocv_points));
 
-static THINGSET_DEFINE_FLOAT_ARRAY(soc_points_arr, 1, soc_custom, ARRAY_SIZE(soc_custom));
+static THINGSET_DEFINE_FLOAT_ARRAY(soc_points_arr, 1, soc_points, ARRAY_SIZE(soc_points));
 
 // used for xInitConf functions
 static float new_capacity = 0;

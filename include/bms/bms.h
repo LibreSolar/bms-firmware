@@ -24,7 +24,7 @@ extern "C" {
 #include <stdint.h>
 
 /* fixed number of OCV vs. SOC points */
-#define OCV_POINTS 21
+#define NUM_OCV_POINTS 21
 
 /**
  * Possible BMS states

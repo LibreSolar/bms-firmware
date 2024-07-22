@@ -13,26 +13,30 @@
 
 LOG_MODULE_REGISTER(bms, CONFIG_LOG_DEFAULT_LEVEL);
 
-static float ocv_lfp[OCV_POINTS] = { 3.392F, 3.314F, 3.309F, 3.308F, 3.304F, 3.296F, 3.283F,
-                                     3.275F, 3.271F, 3.268F, 3.265F, 3.264F, 3.262F, 3.252F,
-                                     3.240F, 3.226F, 3.213F, 3.190F, 3.177F, 3.132F, 2.833F };
+static const float ocv_lfp[NUM_OCV_POINTS] = {
+    3.392F, 3.314F, 3.309F, 3.308F, 3.304F, 3.296F, 3.283F, 3.275F, 3.271F, 3.268F, 3.265F,
+    3.264F, 3.262F, 3.252F, 3.240F, 3.226F, 3.213F, 3.190F, 3.177F, 3.132F, 2.833F,
+};
 
-static float ocv_nmc[OCV_POINTS] = { 4.198F, 4.135F, 4.089F, 4.056F, 4.026F, 3.993F, 3.962F,
-                                     3.924F, 3.883F, 3.858F, 3.838F, 3.819F, 3.803F, 3.787F,
-                                     3.764F, 3.745F, 3.726F, 3.702F, 3.684F, 3.588F, 2.800F };
+static const float ocv_nmc[NUM_OCV_POINTS] = {
+    4.198F, 4.135F, 4.089F, 4.056F, 4.026F, 3.993F, 3.962F, 3.924F, 3.883F, 3.858F, 3.838F,
+    3.819F, 3.803F, 3.787F, 3.764F, 3.745F, 3.726F, 3.702F, 3.684F, 3.588F, 2.800F,
+};
 
 // Source: DOI:10.3390/batteries5010031 (https://www.mdpi.com/2313-0105/5/1/31)
-static float ocv_lto[OCV_POINTS] = { 2.800F, 2.513F, 2.458F, 2.415F, 2.376F, 2.340F, 2.309F,
-                                     2.282F, 2.259F, 2.240F, 2.224F, 2.210F, 2.198F, 2.187F,
-                                     2.177F, 2.166F, 2.154F, 2.141F, 2.125F, 2.105F, 2.000F };
+static const float ocv_lto[NUM_OCV_POINTS] = {
+    2.800F, 2.513F, 2.458F, 2.415F, 2.376F, 2.340F, 2.309F, 2.282F, 2.259F, 2.240F, 2.224F,
+    2.210F, 2.198F, 2.187F, 2.177F, 2.166F, 2.154F, 2.141F, 2.125F, 2.105F, 2.000F,
+};
 
-float ocv_custom[OCV_POINTS] = { 0 };
+static const float soc_default[NUM_OCV_POINTS] = {
+    100.0F, 95.0F, 90.0F, 85.0F, 80.0F, 85.0F, 70.0F, 65.0F, 60.0F, 55.0F, 50.0F,
+    45.0F,  40.0F, 35.0F, 30.0F, 25.0F, 20.0F, 15.0F, 10.0F, 5.0F,  0.0F,
+};
 
-static float soc_pct[OCV_POINTS] = { 100.0F, 95.0F, 90.0F, 85.0F, 80.0F, 85.0F, 70.0F,
-                                     65.0F,  60.0F, 55.0F, 50.0F, 45.0F, 40.0F, 35.0F,
-                                     30.0F,  25.0F, 20.0F, 15.0F, 10.0F, 5.0F,  0.0F };
-
-float soc_custom[OCV_POINTS] = { 0 };
+// actually used OCV vs. SOC curve
+float ocv_points[NUM_OCV_POINTS] = { 0 };
+float soc_points[NUM_OCV_POINTS] = { 0 };
 
 void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float nominal_capacity_Ah)
 {
@@ -66,6 +70,11 @@ void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float nom
     bms->ic_conf.cell_ov_delay_ms = 2000;
     bms->ic_conf.cell_uv_delay_ms = 2000;
 
+    bms->ocv_points = ocv_points;
+    bms->soc_points = soc_points;
+
+    memcpy(soc_points, soc_default, sizeof(soc_points));
+
     switch (type) {
         case CELL_TYPE_LFP:
             bms->ic_conf.cell_ov_limit = 3.80F;
@@ -79,8 +88,7 @@ void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float nom
              * self-discharge
              */
             bms->ic_conf.cell_uv_limit = 2.50F;
-            bms->ocv_points = ocv_lfp;
-            bms->soc_points = soc_pct;
+            memcpy(ocv_points, ocv_lfp, sizeof(ocv_points));
             break;
         case CELL_TYPE_NMC:
             bms->ic_conf.cell_ov_limit = 4.25F;
@@ -90,8 +98,7 @@ void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float nom
             bms->ic_conf.cell_uv_reset = 3.50F;
             bms->ic_conf.cell_dis_voltage_limit = 3.20F;
             bms->ic_conf.cell_uv_limit = 3.00F;
-            bms->ocv_points = ocv_nmc;
-            bms->soc_points = soc_pct;
+            memcpy(ocv_points, ocv_nmc, sizeof(ocv_points));
             break;
         case CELL_TYPE_LTO:
             bms->ic_conf.cell_ov_limit = 2.85F;
@@ -101,12 +108,9 @@ void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float nom
             bms->ic_conf.cell_uv_reset = 2.10F;
             bms->ic_conf.cell_dis_voltage_limit = 2.00F;
             bms->ic_conf.cell_uv_limit = 1.90F;
-            bms->ocv_points = ocv_lto;
-            bms->soc_points = soc_pct;
+            memcpy(ocv_points, ocv_lto, sizeof(ocv_points));
             break;
         case CELL_TYPE_CUSTOM:
-            bms->ocv_points = ocv_custom;
-            bms->soc_points = soc_custom;
             break;
     }
 
