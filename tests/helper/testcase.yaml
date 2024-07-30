@@ -3,4 +3,4 @@
 tests:
   helper.test:
     integration_platforms:
-      - native_posix
+      - native_sim

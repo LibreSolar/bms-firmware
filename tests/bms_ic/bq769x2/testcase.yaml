@@ -3,4 +3,4 @@
 tests:
   bms_ic.bq769x2:
     integration_platforms:
-      - native_posix
+      - native_sim

@@ -1,0 +1,5 @@
+board:
+  name: bms_15s80_sc
+  vendor: libresolar
+  socs:
+    - name: stm32f072xb

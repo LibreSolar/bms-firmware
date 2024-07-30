@@ -1,0 +1,5 @@
+board:
+  name: bms_5s50_sc
+  vendor: libresolar
+  socs:
+    - name: stm32f072xb

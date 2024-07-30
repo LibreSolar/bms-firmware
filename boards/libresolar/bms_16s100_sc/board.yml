@@ -1,0 +1,5 @@
+board:
+  name: bms_16s100_sc
+  vendor: libresolar
+  socs:
+    - name: stm32g0b1xx

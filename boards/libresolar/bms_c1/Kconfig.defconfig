@@ -1,0 +1,17 @@
+# Copyright (c) The Libre Solar Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+config ENTROPY_ESP32_RNG
+	default y if ENTROPY_GENERATOR
+
+config HEAP_MEM_POOL_SIZE
+	default 98304 if WIFI
+	default 40960 if BT
+	default 4096
+
+if BMS_IC
+
+config BMS_IC_MAX_THERMISTORS
+	default 2
+
+endif # BMS_IC

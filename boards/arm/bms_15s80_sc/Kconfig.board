@@ -1,6 +1,0 @@
-# Copyright (c) The Libre Solar Project Contributors
-# SPDX-License-Identifier: Apache-2.0
-
-config BOARD_BMS_15S80_SC
-	bool "Libre Solar BMS 15S80 SC"
-	depends on SOC_STM32F072XB

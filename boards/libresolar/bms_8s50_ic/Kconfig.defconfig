@@ -1,0 +1,9 @@
+# Copyright (c) The Libre Solar Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+if BMS_IC
+
+config BMS_IC_MAX_THERMISTORS
+	default 1
+
+endif # BMS_IC

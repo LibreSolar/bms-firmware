@@ -1,6 +1,0 @@
-# Copyright (c) The Libre Solar Project Contributors
-# SPDX-License-Identifier: Apache-2.0
-
-config BOARD_BMS_5S50_SC
-	bool "Libre Solar BMS 5S50 SC"
-	depends on SOC_STM32F072XB
