@@ -1,6 +1,0 @@
-identifier: bms_16s100_sc_esp32c3
-name: BMS-16S100-SC-ESP32C3
-type: mcu
-arch: riscv
-toolchain:
-  - zephyr

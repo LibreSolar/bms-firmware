@@ -1,10 +1,9 @@
 # Copyright (c) The Libre Solar Project Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-if BOARD_BMS_C1 || BOARD_BMS_16S100_SC_ESP32C3
+if BOARD_BMS_C1
 
 config BOARD
-	default "bms_16s100_sc_esp32c3" if BOARD_BMS_16S100_SC_ESP32C3
 	default "bms_c1" if BOARD_BMS_C1
 
 config ENTROPY_ESP32_RNG
@@ -19,7 +18,7 @@ choice BT_HCI_BUS_TYPE
 	default BT_ESP32 if BT
 endchoice
 
-endif # BOARD_BMS_C1 || BOARD_BMS_16S100_SC_ESP32C3
+endif # BOARD_BMS_C1
 
 if BMS_IC
 
