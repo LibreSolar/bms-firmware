@@ -55,10 +55,6 @@ Boards with STM32 MCU
 +-----------------------------+----------------------+----------------+
 | Libre Solar BMS 8S50 IC     | bms_8s50_ic          | 0.2, 0.1       |
 +-----------------------------+----------------------+----------------+
-| Libre Solar BMS-8S50-IC *   | bms_8s50_ic_f072     | 0.1            |
-+-----------------------------+----------------------+----------------+
-
-(*) Only for BMS-8S50-IC with STM32F072 MCU.
 
 Supported hardware is further described in :doc:`../supported_hardware`.
 
