@@ -30,6 +30,7 @@
 		zephyr,shell-uart = &usb_serial;
 		zephyr,flash = &flash0;
 		zephyr,code-partition = &slot0_partition;
+		zephyr,bt-hci = &esp32_bt_hci;
 		thingset,can = &twai;
 		thingset,serial = &uart0;
 	};
@@ -64,10 +65,6 @@
 		sw-pwr = &power_button;
 		bms-ic = &bq76952;
 	};
-};
-
-&cpu0 {
-	clock-frequency = <ESP32_CLK_CPU_160M>;
 };
 
 &uart0 {
@@ -128,7 +125,7 @@
 	status = "okay";
 	pinctrl-0 = <&twai_default>;
 	pinctrl-names = "default";
-	bus-speed = <500000>;
+	bitrate = <500000>;
 	phys = <&transceiver0>;
 };
 
@@ -190,4 +187,8 @@
 	};
 
 	/* see version-specific overlays for I2C */
+};
+
+&esp32_bt_hci {
+	status = "okay";
 };

@@ -164,7 +164,7 @@ uext_i2c: &i2c1 {
 &can1 {
 	pinctrl-0 = <&can_rx_pb8 &can_tx_pb9>;
 	pinctrl-names = "default";
-	bus-speed = <500000>;
+	bitrate = <500000>;
 	phys = <&transceiver0>;
 	status = "okay";
 };

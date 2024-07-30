@@ -2,5 +2,4 @@
 # SPDX-License-Identifier: Apache-2.0
 
 config BOARD_BMS_16S100_SC
-	bool "Libre Solar BMS 16S100 SC"
-	depends on SOC_STM32G0B1XX
+	select SOC_STM32G0B1XX

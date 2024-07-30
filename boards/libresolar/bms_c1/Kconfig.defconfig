@@ -1,12 +1,13 @@
 # Copyright (c) The Libre Solar Project Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-if BOARD_BMS_16S100_SC
+config ENTROPY_ESP32_RNG
+	default y if ENTROPY_GENERATOR
 
-config BOARD
-	default "bms_16s100_sc"
-
-endif # BOARD_BMS_16S100_SC
+config HEAP_MEM_POOL_SIZE
+	default 98304 if WIFI
+	default 40960 if BT
+	default 4096
 
 if BMS_IC
 

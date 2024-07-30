@@ -1,0 +1,5 @@
+# Copyright (c) The Libre Solar Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD_BMS_8S50_IC
+	select SOC_STM32L452XX

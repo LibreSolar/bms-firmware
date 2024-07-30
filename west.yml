@@ -13,7 +13,7 @@ manifest:
   projects:
     - name: zephyr
       remote: zephyrproject
-      revision: v3.6-branch
+      revision: v3.7-branch
       import:
         name-allowlist:
           - cmsis
@@ -30,3 +30,8 @@ manifest:
         name-allowlist:
           - thingset-node-c
           - zcbor
+    - name: thingset-node-c
+      remote: thingset
+      revision: ecd807b7ab26f3b0fd818b2118b2258736851a22
+      path: modules/thingset-node-c
+      import: true

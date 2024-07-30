@@ -1,0 +1,11 @@
+board:
+  name: bms_c1
+  vendor: libresolar
+  socs:
+    - name: esp32c3
+  revision:
+    format: major.minor.patch
+    default: "0.4.0"
+    revisions:
+    - name: "0.4.0"
+    - name: "0.3.0"
