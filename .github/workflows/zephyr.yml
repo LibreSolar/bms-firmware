@@ -5,7 +5,9 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: zephyrprojectrtos/ci:latest
+    # Fixed container version to avoid picolibc compile error for v0.26.15 (latest)
+    # https://github.com/zephyrproject-rtos/docker-image/issues/205
+    container: zephyrprojectrtos/ci:v0.26.14
     env:
       CMAKE_PREFIX_PATH: /opt/toolchains
     steps:
