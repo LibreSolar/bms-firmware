@@ -1,0 +1,15 @@
+/*
+ * Copyright (c) The Libre Solar Project Contributors
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+        chosen {
+                /*
+                 * Workaround to speed up MCUboot 2nd stage bootloader.
+                 * See: https://github.com/LibreSolar/bms-firmware/pull/78
+                 */
+                zephyr,console = &uart0;
+        };
+};
