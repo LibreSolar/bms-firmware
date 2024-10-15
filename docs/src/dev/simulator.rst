@@ -11,3 +11,12 @@ Execute the following command to run the simulated application:
 .. code-block:: bash
 
     west build -b native_sim -t run
+
+In order to use a Linux host's Bluetooth adapter (here: ``hci0``) for Zephyr, install BlueZ utils
+and run the following commands:
+
+.. code-block:: bash
+
+    west build -b native_sim
+    sudo btmgmt power off
+    sudo build/zephyr/zephyr.exe --bt-dev=hci0

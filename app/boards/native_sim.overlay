@@ -10,7 +10,7 @@
 	pcb {
 		compatible = "bms";
 
-		type = "Native Simulator BMS";
+		type = "BMS Simulator";
 		version-str = "v0.1";
 		version-num = <1>;
 	};
