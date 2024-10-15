@@ -6,6 +6,9 @@
 build
 twister-out*
 
+# native_sim EEPROM file
+eeprom.bin
+
 # editors
 .vscode/*
 !.vscode/c_cpp_properties.json
