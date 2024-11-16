@@ -406,12 +406,11 @@ static int bq769x2_configure_balancing(const struct device *dev, struct bms_ic_c
 
 static int bq769x2_configure_alerts(const struct device *dev, struct bms_ic_conf *ic_conf)
 {
+    uint32_t alert_mask = 0;
     int err = 0;
 
     union bq769x2_reg_alarm_sf_alert_mask_a sf_alert_mask_a = { 0 };
     union bq769x2_reg_alarm_sf_alert_mask_b sf_alert_mask_b = { 0 };
-
-    ic_conf->alert_mask = 0;
 
     sf_alert_mask_a.CUV = !!(ic_conf->alert_mask & BMS_ERR_CELL_UNDERVOLTAGE);
     sf_alert_mask_a.COV = !!(ic_conf->alert_mask & BMS_ERR_CELL_OVERVOLTAGE);
@@ -419,11 +418,11 @@ static int bq769x2_configure_alerts(const struct device *dev, struct bms_ic_conf
     sf_alert_mask_a.OCD1 = !!(ic_conf->alert_mask & BMS_ERR_DIS_OVERCURRENT);
     sf_alert_mask_a.OCC = !!(ic_conf->alert_mask & BMS_ERR_CHG_OVERCURRENT);
 
-    ic_conf->alert_mask |= (ic_conf->alert_mask & BMS_ERR_CELL_UNDERVOLTAGE);
-    ic_conf->alert_mask |= (ic_conf->alert_mask & BMS_ERR_CELL_OVERVOLTAGE);
-    ic_conf->alert_mask |= (ic_conf->alert_mask & BMS_ERR_SHORT_CIRCUIT);
-    ic_conf->alert_mask |= (ic_conf->alert_mask & BMS_ERR_DIS_OVERCURRENT);
-    ic_conf->alert_mask |= (ic_conf->alert_mask & BMS_ERR_CHG_OVERCURRENT);
+    alert_mask |= (ic_conf->alert_mask & BMS_ERR_CELL_UNDERVOLTAGE);
+    alert_mask |= (ic_conf->alert_mask & BMS_ERR_CELL_OVERVOLTAGE);
+    alert_mask |= (ic_conf->alert_mask & BMS_ERR_SHORT_CIRCUIT);
+    alert_mask |= (ic_conf->alert_mask & BMS_ERR_DIS_OVERCURRENT);
+    alert_mask |= (ic_conf->alert_mask & BMS_ERR_CHG_OVERCURRENT);
 
     err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_ALARM_SF_ALERT_MASK_A, sf_alert_mask_a.byte);
 
@@ -434,17 +433,19 @@ static int bq769x2_configure_alerts(const struct device *dev, struct bms_ic_conf
     sf_alert_mask_b.OTINT = !!(ic_conf->alert_mask & BMS_ERR_INT_OVERTEMP);
     sf_alert_mask_b.OTF = !!(ic_conf->alert_mask & BMS_ERR_FET_OVERTEMP);
 
-    ic_conf->alert_mask |= (ic_conf->alert_mask & BMS_ERR_DIS_UNDERTEMP);
-    ic_conf->alert_mask |= (ic_conf->alert_mask & BMS_ERR_DIS_OVERTEMP);
-    ic_conf->alert_mask |= (ic_conf->alert_mask & BMS_ERR_CHG_UNDERTEMP);
-    ic_conf->alert_mask |= (ic_conf->alert_mask & BMS_ERR_CHG_OVERTEMP);
-    ic_conf->alert_mask |= (ic_conf->alert_mask & BMS_ERR_INT_OVERTEMP);
-    ic_conf->alert_mask |= (ic_conf->alert_mask & BMS_ERR_FET_OVERTEMP);
+    alert_mask |= (ic_conf->alert_mask & BMS_ERR_DIS_UNDERTEMP);
+    alert_mask |= (ic_conf->alert_mask & BMS_ERR_DIS_OVERTEMP);
+    alert_mask |= (ic_conf->alert_mask & BMS_ERR_CHG_UNDERTEMP);
+    alert_mask |= (ic_conf->alert_mask & BMS_ERR_CHG_OVERTEMP);
+    alert_mask |= (ic_conf->alert_mask & BMS_ERR_INT_OVERTEMP);
+    alert_mask |= (ic_conf->alert_mask & BMS_ERR_FET_OVERTEMP);
 
     err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_ALARM_SF_ALERT_MASK_B, sf_alert_mask_b.byte);
 
     /* enable alarm (triggering of ALERT pin) for SF alert masks configured above */
     err |= bq769x2_datamem_write_u2(dev, BQ769X2_SET_ALARM_DEFAULT_MASK, 0x1000);
+
+    ic_conf->alert_mask = alert_mask;
 
     return err == 0 ? 0 : -EIO;
 }
