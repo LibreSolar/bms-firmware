@@ -180,6 +180,9 @@ static int isl94202_configure_temp_limits(const struct device *dev, struct bms_i
 
 static int isl94202_configure_balancing(const struct device *dev, struct bms_ic_conf *ic_conf)
 {
+    struct bms_ic_isl94202_data *dev_data = dev->data;
+    struct k_work_sync work_sync;
+    uint8_t reg;
     int err = 0;
 
     // also apply balancing thresholds here
@@ -192,6 +195,21 @@ static int isl94202_configure_balancing(const struct device *dev, struct bms_ic_
     // EOC condition needs to be set to bal_cell_voltage_min instead of cell_chg_voltage_limit to
     // enable balancing during idle
     err |= isl94202_write_voltage(dev, ISL94202_EOC, ic_conf->bal_cell_voltage_min, 0);
+
+    if (ic_conf->auto_balancing) {
+        // Enable automatic balancing during charging and EOC conditions
+        reg = ISL94202_SETUP1_CBDC_Msk | ISL94202_SETUP1_CB_EOC_Msk;
+        err |= isl94202_write_bytes(dev, ISL94202_SETUP1, &reg, 1);
+        // Start work handler to adjust balancing timings depending on operation mode
+        k_work_schedule(&dev_data->balancing_work, K_NO_WAIT);
+    }
+    else {
+        // Disable balancing
+        reg = 0;
+        err |= isl94202_write_bytes(dev, ISL94202_SETUP1, &reg, 1);
+        k_work_cancel_delayable_sync(&dev_data->balancing_work, &work_sync);
+    }
+    dev_data->auto_balancing = ic_conf->auto_balancing;
 
     return err == 0 ? 0 : -EIO;
 }
@@ -528,43 +546,43 @@ static int bms_ic_isl94202_debug_print_mem(const struct device *dev)
     return 0;
 }
 
+static void isl94202_balancing_work_handler(struct k_work *work)
+{
+    struct k_work_delayable *dwork = k_work_delayable_from_work(work);
+    struct bms_ic_isl94202_data *dev_data =
+        CONTAINER_OF(dwork, struct bms_ic_isl94202_data, balancing_work);
+    const struct device *dev = dev_data->dev;
+
+    uint8_t stat3;
+    isl94202_read_bytes(dev, ISL94202_STAT3, &stat3, 1);
+
+    /*
+     * System scans for voltage, current and temperature measurements happen in different
+     * intervals depending on the mode. Cell balancing should be off during voltage scans.
+     *
+     * Each scan takes max. 1.7 ms. Choosing 16 ms off-time for voltages to settle.
+     */
+    if (stat3 & ISL94202_STAT3_INIDLE_Msk) {
+        /* IDLE mode: Scan every 256 ms */
+        isl94202_write_delay(dev, ISL94202_CBONT, ISL94202_DELAY_MS, 240, 0);
+    }
+    else if (stat3 & ISL94202_STAT3_INDOZE_Msk) {
+        /* DOZE mode: Scan every 512 ms */
+        isl94202_write_delay(dev, ISL94202_CBONT, ISL94202_DELAY_MS, 496, 0);
+    }
+    else if (!(stat3 & ISL94202_STAT3_INSLEEP_Msk)) {
+        /* NORMAL mode: Scan every 32 ms */
+        isl94202_write_delay(dev, ISL94202_CBONT, ISL94202_DELAY_MS, 16, 0);
+    }
+    isl94202_write_delay(dev, ISL94202_CBOFFT, ISL94202_DELAY_MS, 16, 0);
+
+    k_work_reschedule(dwork, K_SECONDS(1));
+}
+
 static int bms_ic_isl94202_balance(const struct device *dev, uint32_t cells)
 {
-    int err = 0;
-
-    if (cells == BMS_IC_BALANCING_OFF) {
-    }
-    else if (cells == BMS_IC_BALANCING_AUTO) {
-        uint8_t stat3;
-        isl94202_read_bytes(dev, ISL94202_STAT3, &stat3, 1);
-
-        /*
-         * System scans for voltage, current and temperature measurements happen in different
-         * intervals depending on the mode. Cell balancing should be off during voltage scans.
-         *
-         * Each scan takes max. 1.7 ms. Choosing 16 ms off-time for voltages to settle.
-         */
-        if (stat3 & ISL94202_STAT3_INIDLE_Msk) {
-            /* IDLE mode: Scan every 256 ms */
-            isl94202_write_delay(dev, ISL94202_CBONT, ISL94202_DELAY_MS, 240, 0);
-            isl94202_write_delay(dev, ISL94202_CBOFFT, ISL94202_DELAY_MS, 16, 0);
-        }
-        else if (stat3 & ISL94202_STAT3_INDOZE_Msk) {
-            /* DOZE mode: Scan every 512 ms */
-            isl94202_write_delay(dev, ISL94202_CBONT, ISL94202_DELAY_MS, 496, 0);
-            isl94202_write_delay(dev, ISL94202_CBOFFT, ISL94202_DELAY_MS, 16, 0);
-        }
-        else if (!(stat3 & ISL94202_STAT3_INSLEEP_Msk)) {
-            /* NORMAL mode: Scan every 32 ms */
-            isl94202_write_delay(dev, ISL94202_CBONT, ISL94202_DELAY_MS, 16, 0);
-            isl94202_write_delay(dev, ISL94202_CBOFFT, ISL94202_DELAY_MS, 16, 0);
-        }
-    }
-    else {
-        return -ENOTSUP;
-    }
-
-    return err;
+    /* manual balancing not yet supported */
+    return -ENOTSUP;
 }
 
 static int isl94202_activate(const struct device *dev)
@@ -590,14 +608,6 @@ static int isl94202_activate(const struct device *dev)
     err = isl94202_write_bytes(dev, ISL94202_SETUP0, &reg, 1);
     if (err) {
         LOG_ERR("Failed to set xTemp2 MOSFET monitoring: %d", err);
-        return err;
-    }
-
-    // Enable balancing during charging and EOC conditions
-    reg = ISL94202_SETUP1_CBDC_Msk | ISL94202_SETUP1_CB_EOC_Msk;
-    err = isl94202_write_bytes(dev, ISL94202_SETUP1, &reg, 1);
-    if (err) {
-        LOG_ERR("Failed to set balancing setup: %d", err);
         return err;
     }
 
@@ -636,6 +646,7 @@ static int bms_ic_isl94202_set_mode(const struct device *dev, enum bms_ic_mode m
 static int isl94202_init(const struct device *dev)
 {
     const struct bms_ic_isl94202_config *dev_config = dev->config;
+    struct bms_ic_isl94202_data *dev_data = dev->data;
 
     if (!i2c_is_ready_dt(&dev_config->i2c)) {
         LOG_ERR("I2C device not ready");
@@ -645,6 +656,10 @@ static int isl94202_init(const struct device *dev)
         LOG_ERR("I2C pull-up GPIO not ready");
         return -ENODEV;
     }
+
+    dev_data->dev = dev;
+
+    k_work_init_delayable(&dev_data->balancing_work, isl94202_balancing_work_handler);
 
     return 0;
 }
