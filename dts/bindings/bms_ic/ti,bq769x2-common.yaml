@@ -105,6 +105,14 @@ properties:
     description: |
       Enable automatic pre-discharge (bus precharge) before switching on DSG FETs.
 
+  reg0-config:
+    type: int
+    default: 0
+    description: |
+      Configuration of the REG0 Config Register. REG0 is the pre-regulator for REG1/2 and must be
+      enabled if REG1 or REG2 are used and REGIN is not supplied externally.
+      Valid values: 0 and 1
+
   reg12-config:
     type: int
     default: 0
