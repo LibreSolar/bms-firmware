@@ -59,6 +59,7 @@ struct bms_ic_bq769x2_config
     uint8_t fet_temp_pin;
     bool crc_enabled;
     bool auto_pdsg;
+    uint8_t reg0_config;
     uint8_t reg12_config;
     bq769x2_write_bytes_t write_bytes;
     bq769x2_read_bytes_t read_bytes;

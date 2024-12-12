@@ -454,7 +454,10 @@ static int bq769x2_configure_voltage_regs(const struct device *dev, struct bms_i
 {
     int err = 0;
 
+    uint8_t reg0_config = 0;
     uint8_t reg12_config;
+    uint8_t vregs_enable = 0;
+
     err = bq769x2_datamem_read_u1(dev, BQ769X2_SET_CONF_REG12, &reg12_config);
     if (err != 0) {
         return -EIO;
@@ -463,19 +466,30 @@ static int bq769x2_configure_voltage_regs(const struct device *dev, struct bms_i
     /* clear REG2_EN and REG1_EN bits and keep voltage setting untouched */
     reg12_config &= ~0x11;
 
+    if (ic_conf->vregs_enable & BIT(0)) {
+        reg0_config |= 0x01; /* REG0_EN */
+        vregs_enable |= BIT(0);
+    }
+
     if (ic_conf->vregs_enable & BIT(1)) {
         reg12_config |= 0x01; /* REG1_EN */
-        ic_conf->vregs_enable |= BIT(1);
+        vregs_enable |= BIT(1);
     }
 
     if (ic_conf->vregs_enable & BIT(2)) {
         reg12_config |= 0x10; /* REG2_EN */
-        ic_conf->vregs_enable |= BIT(2);
+        vregs_enable |= BIT(2);
     }
 
-    err = bq769x2_datamem_write_u1(dev, BQ769X2_SET_CONF_REG12, reg12_config);
+    err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_CONF_REG0, reg0_config);
+    err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_CONF_REG12, reg12_config);
+    if (err != 0) {
+        return -EIO;
+    }
 
-    return err == 0 ? 0 : -EIO;
+    ic_conf->vregs_enable = vregs_enable;
+
+    return 0;
 }
 
 static int bq769x2_init_config(const struct device *dev)
@@ -533,6 +547,9 @@ static int bq769x2_init_config(const struct device *dev)
         /* pin_config array is structured same as the config in memory */
         err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_CONF_CFETOFF + i, config->pin_config[i]);
     }
+
+    /* Configure REG0 (pre-regulator for REG1/2) */
+    err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_CONF_REG0, config->reg0_config);
 
     /* Configure REG1 and REG2 voltages and default enable/disable setting */
     err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_CONF_REG12, config->reg12_config);
@@ -984,6 +1001,7 @@ static const struct bms_ic_driver_api bq769x2_driver_api = {
 		.fet_temp_pin = DT_INST_PROP_OR(index, fet_temp_pin, UINT8_MAX),                   \
 		.crc_enabled = DT_INST_PROP(index, crc_enabled),                                   \
 		.auto_pdsg = DT_INST_PROP(index, auto_pdsg),                                       \
+		.reg0_config = DT_INST_PROP(index, reg0_config),                                   \
 		.reg12_config = DT_INST_PROP(index, reg12_config),                                 \
 		.write_bytes = bq769x2_write_bytes_i2c,                                            \
 		.read_bytes = bq769x2_read_bytes_i2c,                                              \
