@@ -392,9 +392,6 @@ static int bq769x2_configure_balancing(const struct device *dev, struct bms_ic_c
     err |= bq769x2_datamem_write_i2(dev, BQ769X2_SET_DSG_CURR_TH, idle_current_threshold);
     err |= bq769x2_datamem_write_i2(dev, BQ769X2_SET_CHG_CURR_TH, idle_current_threshold);
 
-    /* allow balancing of up to 4 cells (instead of only 1 by default) */
-    err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_CBAL_MAX_CELLS, 4);
-
     if (ic_conf->auto_balancing) {
         /* enable CB_RLX and CB_CHG */
         err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_CBAL_CONF, 0x03);
@@ -564,6 +561,9 @@ static int bq769x2_init_config(const struct device *dev)
 
     /* Configure REG1 and REG2 voltages and default enable/disable setting */
     err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_CONF_REG12, config->reg12_config);
+
+    /* Set max. number of cells allowed to be balanced at once (instead of only 1 by default) */
+    err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_CBAL_MAX_CELLS, config->max_balanced_cells);
 
     err |= bq769x2_detect_cells(dev);
 
@@ -984,33 +984,34 @@ static const struct bms_ic_driver_api bq769x2_driver_api = {
     BQ769X2_ASSERT_CURRENT_MONITORING_PROP_GREATER_ZERO(index, shunt_resistor_uohm); \
     BQ769X2_ASSERT_CURRENT_MONITORING_PROP_GREATER_ZERO(index, board_max_current); \
     static const struct bms_ic_bq769x2_config bq769x2_config_##index = {                   \
-		.i2c = I2C_DT_SPEC_INST_GET(index),                                                \
-		.alert_gpio = GPIO_DT_SPEC_INST_GET(index, alert_gpios),                           \
-		.shunt_resistor_uohm = DT_INST_PROP_OR(index, shunt_resistor_uohm, 1000),          \
-		.board_max_current = DT_INST_PROP_OR(index, board_max_current, 0),                 \
-		.used_cell_channels = DT_INST_PROP(index, used_cell_channels),                     \
-		.pin_config =                                                                      \
-			{                                                                              \
-				DT_INST_PROP_OR(index, cfetoff_pin_config, 0),                             \
-				DT_INST_PROP_OR(index, dfetoff_pin_config, 0),                             \
-				DT_INST_PROP_OR(index, alert_pin_config, 0),                               \
-				DT_INST_PROP_OR(index, ts1_pin_config, 0x07),                              \
-				DT_INST_PROP_OR(index, ts2_pin_config, 0),                                 \
-				DT_INST_PROP_OR(index, ts3_pin_config, 0),                                 \
-				DT_INST_PROP_OR(index, hdq_pin_config, 0),                                 \
-				DT_INST_PROP_OR(index, dchg_pin_config, 0),                                \
-				DT_INST_PROP_OR(index, ddsg_pin_config, 0),                                \
-			},                                                                             \
-		.cell_temp_pins = DT_INST_PROP(index, cell_temp_pins),                             \
-		.num_cell_temps = DT_INST_PROP_LEN(index, cell_temp_pins),                         \
-		.fet_temp_pin = DT_INST_PROP_OR(index, fet_temp_pin, UINT8_MAX),                   \
-		.crc_enabled = DT_INST_PROP(index, crc_enabled),                                   \
-		.auto_pdsg = DT_INST_PROP(index, auto_pdsg),                                       \
-		.reg0_config = DT_INST_PROP(index, reg0_config),                                   \
-		.reg12_config = DT_INST_PROP(index, reg12_config),                                 \
-		.write_bytes = bq769x2_write_bytes_i2c,                                            \
-		.read_bytes = bq769x2_read_bytes_i2c,                                              \
-	}; \
+        .i2c = I2C_DT_SPEC_INST_GET(index),                                                \
+        .alert_gpio = GPIO_DT_SPEC_INST_GET(index, alert_gpios),                           \
+        .shunt_resistor_uohm = DT_INST_PROP_OR(index, shunt_resistor_uohm, 1000),          \
+        .board_max_current = DT_INST_PROP_OR(index, board_max_current, 0),                 \
+        .used_cell_channels = DT_INST_PROP(index, used_cell_channels),                     \
+        .pin_config =                                                                      \
+            {                                                                              \
+                DT_INST_PROP_OR(index, cfetoff_pin_config, 0),                             \
+                DT_INST_PROP_OR(index, dfetoff_pin_config, 0),                             \
+                DT_INST_PROP_OR(index, alert_pin_config, 0),                               \
+                DT_INST_PROP_OR(index, ts1_pin_config, 0x07),                              \
+                DT_INST_PROP_OR(index, ts2_pin_config, 0),                                 \
+                DT_INST_PROP_OR(index, ts3_pin_config, 0),                                 \
+                DT_INST_PROP_OR(index, hdq_pin_config, 0),                                 \
+                DT_INST_PROP_OR(index, dchg_pin_config, 0),                                \
+                DT_INST_PROP_OR(index, ddsg_pin_config, 0),                                \
+            },                                                                             \
+        .cell_temp_pins = DT_INST_PROP(index, cell_temp_pins),                             \
+        .num_cell_temps = DT_INST_PROP_LEN(index, cell_temp_pins),                         \
+        .fet_temp_pin = DT_INST_PROP_OR(index, fet_temp_pin, UINT8_MAX),                   \
+        .crc_enabled = DT_INST_PROP(index, crc_enabled),                                   \
+        .auto_pdsg = DT_INST_PROP(index, auto_pdsg),                                       \
+        .reg0_config = DT_INST_PROP(index, reg0_config),                                   \
+        .reg12_config = DT_INST_PROP(index, reg12_config),                                 \
+        .max_balanced_cells = DT_INST_PROP(index, max_balanced_cells),                     \
+        .write_bytes = bq769x2_write_bytes_i2c,                                            \
+        .read_bytes = bq769x2_read_bytes_i2c,                                              \
+    }; \
     DEVICE_DT_INST_DEFINE(index, &bq769x2_init, NULL, &bq769x2_data_##index, \
                           &bq769x2_config_##index, POST_KERNEL, CONFIG_BMS_IC_INIT_PRIORITY, \
                           &bq769x2_driver_api);
