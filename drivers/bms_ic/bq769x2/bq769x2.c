@@ -397,9 +397,9 @@ static int bq769x2_configure_balancing(const struct device *dev, struct bms_ic_c
     /* enable CB_RLX and CB_CHG */
     err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_CBAL_CONF, 0x03);
 
-    ic_conf->bal_cell_voltage_min = ic_conf->bal_cell_voltage_min;
-    ic_conf->bal_cell_voltage_diff = ic_conf->bal_cell_voltage_diff;
-    ic_conf->bal_idle_current = ic_conf->bal_idle_current;
+    ic_conf->bal_cell_voltage_min = (float)cell_voltage_min * 0.001F;
+    ic_conf->bal_cell_voltage_diff = (float)cell_voltage_delta * 0.001F;
+    ic_conf->bal_idle_current = (float)idle_current_threshold * 0.001F;
 
     return err == 0 ? 0 : -EIO;
 }
