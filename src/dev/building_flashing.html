@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building and Flashing &mdash; Battery Management System  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Customization" href="customization.html" />
+    <link rel="prev" title="Workspace Setup" href="workspace_setup.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #005e83" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Battery Management System
+              <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v23.1
+
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../supported_hardware.html">Supported Hardware</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../supported_hardware.html#boards">Boards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../supported_hardware.html#bms-ics">BMS ICs</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="workspace_setup.html">Workspace Setup</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Building and Flashing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#boards-with-esp32-mcu">Boards with ESP32 MCU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#boards-with-stm32-mcu">Boards with STM32 MCU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#device-firmware-upgrade-dfu-over-can">Device Firmware Upgrade (DFU) over CAN</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="customization.html">Customization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="customization.html#hardware-specific-changes">Hardware-specific changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customization.html#application-firmware-configuration">Application firmware configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="customization.html#change-battery-capacity-cell-type-and-number-of-cells-in-series">Change battery capacity, cell type and number of cells in series</a></li>
+<li class="toctree-l3"><a class="reference internal" href="customization.html#configure-serial-interface">Configure serial interface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="customization.html#shields-for-uext-connector">Shields for UEXT connector</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="simulator.html">Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="unit_tests.html">Unit Tests</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/bms.html">BMS application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/bms_ic.html">BMS front-end IC driver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/data_objects.html">Data Objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/misc.html">Misc</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/misc.html#button">Button</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/misc.html#helper">Helper</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #005e83" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Battery Management System</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Building and Flashing</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/LibreSolar/bms-firmware/blob/main/docs/src/dev/building_flashing.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="building-and-flashing">
+<h1>Building and Flashing<a class="headerlink" href="#building-and-flashing" title="Permalink to this heading"></a></h1>
+<p>As the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch may contain unstable code, make sure to select the desired release branch
+(see GitHub for a list of releases and branches):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>switch<span class="w"> </span>&lt;your-release&gt;-branch
+west<span class="w"> </span>update
+</pre></div>
+</div>
+<section id="boards-with-esp32-mcu">
+<h2>Boards with ESP32 MCU<a class="headerlink" href="#boards-with-esp32-mcu" title="Permalink to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Board with ESP32 MCU</p></th>
+<th class="head"><p>board-name</p></th>
+<th class="head"><p>revision(s)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Libre Solar BMS C1</p></td>
+<td><p>bms_c1</p></td>
+<td><p>0.4, 0.3</p></td>
+</tr>
+</tbody>
+</table>
+<p>The ESP32 requires additional steps to get required binary blobs:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>west<span class="w"> </span>blobs<span class="w"> </span>fetch<span class="w"> </span>hal_espressif
+</pre></div>
+</div>
+<p>Afterwards you can build and flash the firmware using the board name and revision from the table
+above:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>west<span class="w"> </span>build<span class="w"> </span>-b<span class="w"> </span>&lt;board-name&gt;@&lt;revision&gt;
+west<span class="w"> </span>flash
+</pre></div>
+</div>
+<p>We recommend <code class="docutils literal notranslate"><span class="pre">picocom</span></code> as a serial console under Linux. Add <code class="docutils literal notranslate"><span class="pre">--lower-dtr</span></code> in order
+to reset the board before connecting, so that the entire log output during boot can be seen.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>picocom<span class="w"> </span>/dev/ttyACM0<span class="w"> </span>--lower-dtr
+</pre></div>
+</div>
+<p>Press Ctrl+a followed by q to exit.</p>
+</section>
+<section id="boards-with-stm32-mcu">
+<h2>Boards with STM32 MCU<a class="headerlink" href="#boards-with-stm32-mcu" title="Permalink to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Board with STM32 MCU</p></th>
+<th class="head"><p>board-name</p></th>
+<th class="head"><p>revision(s)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Libre Solar BMS 5S50 SC</p></td>
+<td><p>bms_5s50_sc</p></td>
+<td><p>0.1</p></td>
+</tr>
+<tr class="row-odd"><td><p>Libre Solar BMS 15S80 SC</p></td>
+<td><p>bms_15s80_sc</p></td>
+<td><p>0.1</p></td>
+</tr>
+<tr class="row-even"><td><p>Libre Solar BMS 16S100 SC</p></td>
+<td><p>bms_16s100_sc</p></td>
+<td><p>0.2</p></td>
+</tr>
+<tr class="row-odd"><td><p>Libre Solar BMS 8S50 IC</p></td>
+<td><p>bms_8s50_ic</p></td>
+<td><p>0.2, 0.1</p></td>
+</tr>
+</tbody>
+</table>
+<p>Supported hardware is further described in <a class="reference internal" href="../supported_hardware.html"><span class="doc">Supported Hardware</span></a>.</p>
+<p>Build and flash the firmware using the board name and revision from the table above:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>west<span class="w"> </span>build<span class="w"> </span>-b<span class="w"> </span>&lt;board-name&gt;@&lt;revision&gt;
+west<span class="w"> </span>flash
+</pre></div>
+</div>
+<p>The revision can be omitted if only a single board revision is available or if
+the default (most recent) version should be used. See also
+<a class="reference external" href="https://docs.zephyrproject.org/latest/application/index.html#application-board-version">here</a>
+for more details regarding board revision handling in Zephyr.</p>
+<p>For flashing with a specific debug probe (runner), e.g. J-Link, use the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>west<span class="w"> </span>flash<span class="w"> </span>-r<span class="w"> </span>jlink
+</pre></div>
+</div>
+<p>We recommend <code class="docutils literal notranslate"><span class="pre">picocom</span></code> as a serial console under Linux:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>picocom<span class="w"> </span>-b<span class="w"> </span><span class="m">115200</span><span class="w"> </span>/dev/ttyACM0
+</pre></div>
+</div>
+<p>Press Ctrl+a followed by q to exit.</p>
+</section>
+<section id="device-firmware-upgrade-dfu-over-can">
+<h2>Device Firmware Upgrade (DFU) over CAN<a class="headerlink" href="#device-firmware-upgrade-dfu-over-can" title="Permalink to this heading"></a></h2>
+<p>For boards with large enough flash it is possible to enable support for upgrading the firmware over
+CAN (using ThingSet as the transport protocol). This has been tested with the BMS C1.</p>
+<p>First of all, the firmware has to be built with MCUboot support (using <code class="docutils literal notranslate"><span class="pre">--sysbuild</span></code> parameter):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rm<span class="w"> </span>-rf<span class="w"> </span>build
+west<span class="w"> </span>build<span class="w"> </span>-b<span class="w"> </span>&lt;board-name&gt;@&lt;revision&gt;<span class="w"> </span>--sysbuild
+west<span class="w"> </span>flash
+</pre></div>
+</div>
+<p>With that firmware flashed to the board, the CAN communication needs to be set up on the Linux host
+computer (replace <code class="docutils literal notranslate"><span class="pre">can0</span></code> with your interface name):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>ip<span class="w"> </span>link<span class="w"> </span><span class="nb">set</span><span class="w"> </span>can0<span class="w"> </span>up<span class="w"> </span><span class="nb">type</span><span class="w"> </span>can<span class="w"> </span>bitrate<span class="w"> </span><span class="m">500000</span><span class="w"> </span>restart-ms<span class="w"> </span><span class="m">500</span>
+</pre></div>
+</div>
+<p>Test the CAN communication with <code class="docutils literal notranslate"><span class="pre">candump</span> <span class="pre">can0</span></code>. You should see some published messages on the bus.</p>
+<p>For sending a new firmware image, use the Python script provided by the ThingSet SDK:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>../thingset-zephyr-sdk/scripts/thingset-dfu-can.py<span class="w"> </span>-c<span class="w"> </span>can0<span class="w"> </span>-t<span class="w"> </span>0x01<span class="w"> </span>build/app/zephyr/zephyr.signed.bin
+</pre></div>
+</div>
+<p>The node address on the CAN bus is printed on the console during boot-up. If no other device is on
+the bus, it ends up with <code class="docutils literal notranslate"><span class="pre">0x01</span></code>. It can also be determined from the <code class="docutils literal notranslate"><span class="pre">candump</span></code> output. The source
+address of the published messages (which becomes the target address for the firmware upgrade) is the
+least-significant byte of the CAN ID (first byte from the right).</p>
+<p>See also the <a class="reference external" href="https://thingset.io">ThingSet specification</a> for further details regarding the CAN
+protocol.</p>
+<p>If everything worked correctly, you should see a progress bar on the console showing the firmware
+upgrade:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Initializing<span class="w"> </span>DFU
+Flashing<span class="w"> </span><span class="p">|</span><span class="c1">################################| 322/322 KiB = 100%</span>
+Finishing<span class="w"> </span>DFU
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="workspace_setup.html" class="btn btn-neutral float-left" title="Workspace Setup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="customization.html" class="btn btn-neutral float-right" title="Customization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025 The Libre Solar Project.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
