@@ -962,7 +962,7 @@ static int bq769x0_activate(const struct device *dev)
     k_sleep(K_TIMEOUT_ABS_MS(10));
 
     err = bq769x0_detect_crc(dev);
-    if (err != 0) {
+    if (err == 0) {
         uint8_t adcoffset;
         uint8_t adcgain1;
         uint8_t adcgain2;
