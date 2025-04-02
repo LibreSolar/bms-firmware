@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customization &mdash; Battery Management System  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Simulator" href="simulator.html" />
+    <link rel="prev" title="Building and Flashing" href="building_flashing.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #005e83" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Battery Management System
+              <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v23.1
+
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../supported_hardware.html">Supported Hardware</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../supported_hardware.html#boards">Boards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../supported_hardware.html#bms-ics">BMS ICs</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="workspace_setup.html">Workspace Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="building_flashing.html">Building and Flashing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="building_flashing.html#boards-with-esp32-mcu">Boards with ESP32 MCU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="building_flashing.html#boards-with-stm32-mcu">Boards with STM32 MCU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="building_flashing.html#device-firmware-upgrade-dfu-over-can">Device Firmware Upgrade (DFU) over CAN</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Customization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#hardware-specific-changes">Hardware-specific changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#application-firmware-configuration">Application firmware configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#change-battery-capacity-cell-type-and-number-of-cells-in-series">Change battery capacity, cell type and number of cells in series</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configure-serial-interface">Configure serial interface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#shields-for-uext-connector">Shields for UEXT connector</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="simulator.html">Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="unit_tests.html">Unit Tests</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/bms.html">BMS application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/bms_ic.html">BMS front-end IC driver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/data_objects.html">Data Objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/misc.html">Misc</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/misc.html#button">Button</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/misc.html#helper">Helper</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #005e83" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Battery Management System</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Customization</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/LibreSolar/bms-firmware/blob/main/docs/src/dev/customization.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="customization">
+<h1>Customization<a class="headerlink" href="#customization" title="Permalink to this heading"></a></h1>
+<p>This firmware is developed to allow easy addition of new boards and customization of the firmware.</p>
+<section id="hardware-specific-changes">
+<h2>Hardware-specific changes<a class="headerlink" href="#hardware-specific-changes" title="Permalink to this heading"></a></h2>
+<p>In Zephyr, all hardware-specific configuration is described in the
+<a class="reference external" href="https://docs.zephyrproject.org/latest/build/dts/index.html">Devicetree</a>.</p>
+<p>The file <code class="docutils literal notranslate"><span class="pre">boards/arm/board_name/board_name.dts</span></code> contains the default devicetree specification
+(DTS) for a board. It is based on the DTS of the used MCU, which is included from the main Zephyr
+repository.</p>
+<p>In order to overwrite the default devicetree specification, so-called overlays can be used. An
+overlay file can be specified via the west command line. If it is stored as <code class="docutils literal notranslate"><span class="pre">board_name.overlay</span></code>
+in the <code class="docutils literal notranslate"><span class="pre">app</span></code> subfolder, it will be recognized automatically when building the firmware for that
+board.</p>
+</section>
+<section id="application-firmware-configuration">
+<h2>Application firmware configuration<a class="headerlink" href="#application-firmware-configuration" title="Permalink to this heading"></a></h2>
+<p>For configuration of the application-specific features, Zephyr uses the
+<a class="reference external" href="https://docs.zephyrproject.org/latest/build/kconfig/index.html">Kconfig system</a>.</p>
+<p>The configuration can be changed using <code class="docutils literal notranslate"><span class="pre">west</span> <span class="pre">build</span> <span class="pre">-t</span> <span class="pre">menuconfig</span></code> command or manually by changing
+the prj.conf file (see <code class="docutils literal notranslate"><span class="pre">Kconfig</span></code> file for possible options).</p>
+<p>Similar to DTS overlays, Kconfig can also be customized per board. Create a folder <code class="docutils literal notranslate"><span class="pre">app/boards</span></code>
+and  a file <code class="docutils literal notranslate"><span class="pre">board_name.conf</span></code> in that folder. The configuration from this file will be merged with
+the <code class="docutils literal notranslate"><span class="pre">prj.conf</span></code> automatically.</p>
+<section id="change-battery-capacity-cell-type-and-number-of-cells-in-series">
+<h3>Change battery capacity, cell type and number of cells in series<a class="headerlink" href="#change-battery-capacity-cell-type-and-number-of-cells-in-series" title="Permalink to this heading"></a></h3>
+<p>By default, the BMS is configured for LiFePO4 cells (<code class="docutils literal notranslate"><span class="pre">CONFIG_CELL_TYPE_LFP</span></code>).
+Possible other pre-defined options are <code class="docutils literal notranslate"><span class="pre">CONFIG_BAT_TYPE_NMC</span></code>, <code class="docutils literal notranslate"><span class="pre">CONFIG_BAT_TYPE_NMC_HV</span></code> and
+<code class="docutils literal notranslate"><span class="pre">CONFIG_BAT_TYPE_LTO</span></code>.</p>
+<p>The number of cells only has to be specified via <code class="docutils literal notranslate"><span class="pre">CONFIG_BMS_IC_ISL94202_NUM_CELLS</span></code> for boards
+with the ISL94202 chip. For all other chips it is detected automatically.</p>
+<p>To compile the firmware with default settings e.g. for a 24V LiFePO4 battery with a nominal capacity
+of 100Ah, add the following to <code class="docutils literal notranslate"><span class="pre">prj.conf</span></code> or the board-specific <code class="docutils literal notranslate"><span class="pre">.conf</span></code> file:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CONFIG_BAT_CAPACITY_AH</span><span class="o">=</span><span class="m">100</span>
+<span class="nv">CONFIG_CELL_TYPE_LFP</span><span class="o">=</span>y
+</pre></div>
+</div>
+</section>
+<section id="configure-serial-interface">
+<h3>Configure serial interface<a class="headerlink" href="#configure-serial-interface" title="Permalink to this heading"></a></h3>
+<p>The BMS exposes its data using the <a class="reference external" href="https://libre.solar/thingset/">ThingSet protocol</a>.</p>
+<p>By default, live data is published on a serial interface in a 1 second interval.</p>
+<p>The used serial interface can be configured via Devicetree, e.g. with the following snippet in
+<code class="docutils literal notranslate"><span class="pre">board_name.overlay</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>/<span class="w"> </span><span class="o">{</span>
+<span class="w">    </span>chosen<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>thingset,serial<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">&amp;</span>usart2<span class="p">;</span>
+<span class="w">        </span><span class="o">}</span><span class="p">;</span>
+<span class="o">}</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>To disable regular data publication at startup, add the following to <code class="docutils literal notranslate"><span class="pre">prj.conf</span></code> or the
+board-specific <code class="docutils literal notranslate"><span class="pre">.conf</span></code> file:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CONFIG_THINGSET_REPORTING_LIVE_ENABLE_PRESET</span><span class="o">=</span>n
+</pre></div>
+</div>
+<p>The default period for data publication can be changed with the following Kconfig option:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CONFIG_THINGSET_REPORTING_LIVE_PERIOD_PRESET</span><span class="o">=</span><span class="m">10</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="shields-for-uext-connector">
+<h2>Shields for UEXT connector<a class="headerlink" href="#shields-for-uext-connector" title="Permalink to this heading"></a></h2>
+<p>There are some shields like an OLED display which can be connected to the UEXT connector.</p>
+<p>See the full list of shields in the <code class="docutils literal notranslate"><span class="pre">boards/shields</span></code> folder.</p>
+<p>The below example compiles the firmware with the OLED shield enabled.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>west<span class="w"> </span>build<span class="w"> </span>-b<span class="w"> </span>bms_8s50_ic@0.2<span class="w"> </span>app<span class="w"> </span>--<span class="w"> </span>-DEXTRA_CONF_FILE<span class="o">=</span>oled.conf<span class="w"> </span>-DSHIELD<span class="o">=</span>uext_oled
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="building_flashing.html" class="btn btn-neutral float-left" title="Building and Flashing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="simulator.html" class="btn btn-neutral float-right" title="Simulator" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025 The Libre Solar Project.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

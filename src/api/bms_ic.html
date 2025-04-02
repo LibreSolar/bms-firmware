@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BMS front-end IC driver &mdash; Battery Management System  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Data Objects" href="data_objects.html" />
+    <link rel="prev" title="BMS application" href="bms.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #005e83" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Battery Management System
+              <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v23.1
+
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../supported_hardware.html">Supported Hardware</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../supported_hardware.html#boards">Boards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../supported_hardware.html#bms-ics">BMS ICs</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/workspace_setup.html">Workspace Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/building_flashing.html">Building and Flashing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dev/building_flashing.html#boards-with-esp32-mcu">Boards with ESP32 MCU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/building_flashing.html#boards-with-stm32-mcu">Boards with STM32 MCU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/building_flashing.html#device-firmware-upgrade-dfu-over-can">Device Firmware Upgrade (DFU) over CAN</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/customization.html">Customization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dev/customization.html#hardware-specific-changes">Hardware-specific changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/customization.html#application-firmware-configuration">Application firmware configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../dev/customization.html#change-battery-capacity-cell-type-and-number-of-cells-in-series">Change battery capacity, cell type and number of cells in series</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dev/customization.html#configure-serial-interface">Configure serial interface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/customization.html#shields-for-uext-connector">Shields for UEXT connector</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/simulator.html">Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/unit_tests.html">Unit Tests</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="bms.html">BMS application</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">BMS front-end IC driver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_objects.html">Data Objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="misc.html">Misc</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="misc.html#button">Button</a></li>
+<li class="toctree-l2"><a class="reference internal" href="misc.html#helper">Helper</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #005e83" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Battery Management System</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">BMS front-end IC driver</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/LibreSolar/bms-firmware/blob/main/docs/src/api/bms_ic.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bms-front-end-ic-driver">
+<h1>BMS front-end IC driver<a class="headerlink" href="#bms-front-end-ic-driver" title="Permalink to this heading"></a></h1>
+<p>API for different Battery Management System (BMS) front-end ICs. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-defines">Defines</p>
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.BMS_IC_CONF_VOLTAGE_LIMITS">
+<span class="target" id="bms__ic_8h_1ae2d326e33dd988b20df804c1e9357c1a"></span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_CONF_VOLTAGE_LIMITS</span></span></span><a class="headerlink" href="#c.BMS_IC_CONF_VOLTAGE_LIMITS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.BMS_IC_CONF_TEMP_LIMITS">
+<span class="target" id="bms__ic_8h_1afd76a61f2888b8d163aa81fbb4d25b85"></span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_CONF_TEMP_LIMITS</span></span></span><a class="headerlink" href="#c.BMS_IC_CONF_TEMP_LIMITS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.BMS_IC_CONF_CURRENT_LIMITS">
+<span class="target" id="bms__ic_8h_1a1c0c2e196aa9531707ab5ad554442d4e"></span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_CONF_CURRENT_LIMITS</span></span></span><a class="headerlink" href="#c.BMS_IC_CONF_CURRENT_LIMITS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.BMS_IC_CONF_BALANCING">
+<span class="target" id="bms__ic_8h_1a132b70e0dad6c3f3c57adfbe51965efd"></span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_CONF_BALANCING</span></span></span><a class="headerlink" href="#c.BMS_IC_CONF_BALANCING" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.BMS_IC_CONF_ALERTS">
+<span class="target" id="bms__ic_8h_1ac4e2a27f4a98c1ca2aa351fa65282fb0"></span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_CONF_ALERTS</span></span></span><a class="headerlink" href="#c.BMS_IC_CONF_ALERTS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.BMS_IC_CONF_VOLTAGE_REGS">
+<span class="target" id="bms__ic_8h_1aac28683950dd34c355bec34ef26af9c2"></span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_CONF_VOLTAGE_REGS</span></span></span><a class="headerlink" href="#c.BMS_IC_CONF_VOLTAGE_REGS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.BMS_IC_CONF_ALL">
+<span class="target" id="bms__ic_8h_1a3651f0dccca103e3a2a0914b121edd39"></span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_CONF_ALL</span></span></span><a class="headerlink" href="#c.BMS_IC_CONF_ALL" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.BMS_IC_DATA_CELL_VOLTAGES">
+<span class="target" id="bms__ic_8h_1ab417aeb9b6b7f20f22d8d8a92ddfeaf1"></span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_DATA_CELL_VOLTAGES</span></span></span><a class="headerlink" href="#c.BMS_IC_DATA_CELL_VOLTAGES" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.BMS_IC_DATA_PACK_VOLTAGES">
+<span class="target" id="bms__ic_8h_1a14ccdfc962d216e16d11885d14f3d68a"></span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_DATA_PACK_VOLTAGES</span></span></span><a class="headerlink" href="#c.BMS_IC_DATA_PACK_VOLTAGES" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.BMS_IC_DATA_TEMPERATURES">
+<span class="target" id="bms__ic_8h_1a71f078878d32232ae1f2a8d3c5e47431"></span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_DATA_TEMPERATURES</span></span></span><a class="headerlink" href="#c.BMS_IC_DATA_TEMPERATURES" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.BMS_IC_DATA_CURRENT">
+<span class="target" id="bms__ic_8h_1a160ef4d4743a850b60782547790257d7"></span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_DATA_CURRENT</span></span></span><a class="headerlink" href="#c.BMS_IC_DATA_CURRENT" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.BMS_IC_DATA_BALANCING">
+<span class="target" id="bms__ic_8h_1a804b53ec6dfd8c9abb949006f40b6c33"></span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_DATA_BALANCING</span></span></span><a class="headerlink" href="#c.BMS_IC_DATA_BALANCING" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.BMS_IC_DATA_ERROR_FLAGS">
+<span class="target" id="bms__ic_8h_1a76b23f157a6e7ac9f8790a9d0cd847f5"></span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_DATA_ERROR_FLAGS</span></span></span><a class="headerlink" href="#c.BMS_IC_DATA_ERROR_FLAGS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.BMS_IC_DATA_ALL">
+<span class="target" id="bms__ic_8h_1a2f9859df88358c70c6e2bc38db09c575"></span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_DATA_ALL</span></span></span><a class="headerlink" href="#c.BMS_IC_DATA_ALL" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-enums">Enums</p>
+<dl class="c enum">
+<dt class="sig sig-object c" id="c.bms_ic_mode">
+<span class="target" id="bms__ic_8h_1a2b8a2db62baf995e63668d12a76061b2"></span><span class="k"><span class="pre">enum</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bms_ic_mode</span></span></span><a class="headerlink" href="#c.bms_ic_mode" title="Permalink to this definition"></a><br /></dt>
+<dd><p>BMS IC operation modes </p>
+<p><em>Values:</em></p>
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.bms_ic_mode.BMS_IC_MODE_ACTIVE">
+<span class="target" id="bms__ic_8h_1a2b8a2db62baf995e63668d12a76061b2aa6c5b08289d34e3e35c2efc6e38a978a"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_MODE_ACTIVE</span></span></span><a class="headerlink" href="#c.bms_ic_mode.BMS_IC_MODE_ACTIVE" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Normal operation </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.bms_ic_mode.BMS_IC_MODE_IDLE">
+<span class="target" id="bms__ic_8h_1a2b8a2db62baf995e63668d12a76061b2abc8ef280179a7cb4c335a45f4a0a37d7"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_MODE_IDLE</span></span></span><a class="headerlink" href="#c.bms_ic_mode.BMS_IC_MODE_IDLE" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Low-power mode with FETs still enabled </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.bms_ic_mode.BMS_IC_MODE_STANDBY">
+<span class="target" id="bms__ic_8h_1a2b8a2db62baf995e63668d12a76061b2ad11cfe9896a9645c1d4c6ab18dbfa7a4"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_MODE_STANDBY</span></span></span><a class="headerlink" href="#c.bms_ic_mode.BMS_IC_MODE_STANDBY" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Low-power mode with FETs off, but regulators still enabled, e.g. to power host MCU </p>
+</dd></dl>
+
+<dl class="c enumerator">
+<dt class="sig sig-object c" id="c.bms_ic_mode.BMS_IC_MODE_OFF">
+<span class="target" id="bms__ic_8h_1a2b8a2db62baf995e63668d12a76061b2ab0bfb36f424229b0f1725574565acd22"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">BMS_IC_MODE_OFF</span></span></span><a class="headerlink" href="#c.bms_ic_mode.BMS_IC_MODE_OFF" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Lowest power mode with all FETs and regulators disabled </p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-functions">Functions</p>
+<dl class="c function">
+<dt class="sig sig-object c" id="c.bms_ic_configure">
+<span class="target" id="bms__ic_8h_1a32492c87db625d69bc14fb2793a38646"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bms_ic_configure</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">device</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">dev</span></span>, <span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.bms_ic_conf" title="bms_ic_conf"><span class="n"><span class="pre">bms_ic_conf</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ic_conf</span></span>, <span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="n"><span class="pre">flags</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.bms_ic_configure" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Write config to IC. </p>
+<p>Most BMS ICs can apply configuration values only in discrete steps or with limited resolution. The actually applied configuration is written back to ic_conf.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dev</strong> – Pointer to the device structure for the driver instance. </p></li>
+<li><p><strong>ic_conf</strong> – BMS configuration to apply. </p></li>
+<li><p><strong>flags</strong> – Flags to specify which parts of the configuration should be applied. See BMS_IC_CONF_* defines for valid flags.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return values<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>appl_flags</strong> – successfully applied configuration flags (may be different than requested) </p></li>
+<li><p><strong>-ENOTSUP</strong> – if none of the requested flags is supported </p></li>
+<li><p><strong>-EIO</strong> – for communication error </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.bms_ic_assign_data">
+<span class="target" id="bms__ic_8h_1ad7ec5d69f007e9001ada47e7bc89dad6"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bms_ic_assign_data</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">device</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">dev</span></span>, <span class="k"><span class="pre">struct</span></span><span class="w"> </span><a class="reference internal" href="#c.bms_ic_data" title="bms_ic_data"><span class="n"><span class="pre">bms_ic_data</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">ic_data</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.bms_ic_assign_data" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Assign <a class="reference internal" href="#structbms__ic__data"><span class="std std-ref">bms_ic_data</span></a> object to use for reading data from the IC. </p>
+<p>This data is updated by calls to <em>bms_ic_read_data</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dev</strong> – Pointer to the device structure for the driver instance. </p></li>
+<li><p><strong>ic_data</strong> – Pointer to a statically allocated <a class="reference internal" href="#structbms__ic__data"><span class="std std-ref">bms_ic_data</span></a> object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 for success or negative error code otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.bms_ic_read_data">
+<span class="target" id="bms__ic_8h_1a6c66210c552b1e8f91bce7fdb2ba557d"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bms_ic_read_data</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">device</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">dev</span></span>, <span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="n"><span class="pre">flags</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.bms_ic_read_data" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Read data from the IC. </p>
+<p><em>bms_ic_assign_data</em> must be called before using this function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dev</strong> – Pointer to the device structure for the driver instance. </p></li>
+<li><p><strong>flags</strong> – Flags to specify which parts of the data should be updated. See BMS_IC_DATA_* defines for valid flags.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return values<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>0</strong> – for success </p></li>
+<li><p><strong>-EINVAL</strong> – if not all requested data is provided by the IC </p></li>
+<li><p><strong>-EIO</strong> – for communication error </p></li>
+<li><p><strong>-ENOMEM</strong> – if the data was not assigned with <em>bms_ic_assign_data</em></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.bms_ic_balance">
+<span class="target" id="bms__ic_8h_1a5fa48ad0a436f22f1bfbf952959cd265"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bms_ic_balance</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">device</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">dev</span></span>, <span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="n"><span class="pre">cells</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.bms_ic_balance" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Manually set balancing switches of the IC. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dev</strong> – Pointer to the device structure for the driver instance. </p></li>
+<li><p><strong>cells</strong> – Bitset defining the cell(s) to be balanced. Set to 0 to disable balancing.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return values<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>0</strong> – for success </p></li>
+<li><p><strong>-EBUSY</strong> – if automatic balancing was enabled through bms_ic_configure </p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>-EINVAL if an invalid set of cells is requested to be balanced </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.bms_ic_set_mode">
+<span class="target" id="bms__ic_8h_1a03a496ec4f0fdbf563e4d2ad417e9c31"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bms_ic_set_mode</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">device</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">dev</span></span>, <span class="k"><span class="pre">enum</span></span><span class="w"> </span><a class="reference internal" href="#c.bms_ic_mode" title="bms_ic_mode"><span class="n"><span class="pre">bms_ic_mode</span></span></a><span class="w"> </span><span class="n"><span class="pre">mode</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.bms_ic_set_mode" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Request the IC to go into specified operating mode. </p>
+<p>Usually used to set the device into different sleep modes for reduced power consumption.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dev</strong> – Pointer to the device structure for the driver instance. </p></li>
+<li><p><strong>mode</strong> – Desired BMS IC operating mode.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 for success or negative error code otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.bms_ic_read_mem">
+<span class="target" id="bms__ic_8h_1aa04ec0810bb2008166f69cb0fd3ed82b"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bms_ic_read_mem</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">device</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">dev</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="n"><span class="pre">addr</span></span>, <span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.bms_ic_read_mem" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.bms_ic_write_mem">
+<span class="target" id="bms__ic_8h_1a313826906b40b264eb4102d5b2c8d036"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bms_ic_write_mem</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">device</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">dev</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="n"><span class="pre">addr</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">data</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n"><span class="pre">len</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.bms_ic_write_mem" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.bms_ic_debug_print_mem">
+<span class="target" id="bms__ic_8h_1aa79e57ca4123ff79536bea4fd27acf99"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bms_ic_debug_print_mem</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="n"><span class="pre">device</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">dev</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.bms_ic_debug_print_mem" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<dl class="c struct">
+<dt class="sig sig-object c" id="c.bms_ic_conf">
+<span class="target" id="structbms__ic__conf"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bms_ic_conf</span></span></span><a class="headerlink" href="#c.bms_ic_conf" title="Permalink to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;bms_ic.h&gt;</em></div>
+<p>BMS configuration values, stored in RAM. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.cell_chg_voltage_limit">
+<span class="target" id="structbms__ic__conf_1a79e5c10fc6e3948eb19ddc55af0ad408"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cell_chg_voltage_limit</span></span></span><a class="headerlink" href="#c.bms_ic_conf.cell_chg_voltage_limit" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Cell target charge voltage (V) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.cell_dis_voltage_limit">
+<span class="target" id="structbms__ic__conf_1ae3bfe573243ce947fa70d316d4c562d0"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cell_dis_voltage_limit</span></span></span><a class="headerlink" href="#c.bms_ic_conf.cell_dis_voltage_limit" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Cell discharge voltage limit (V) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.cell_ov_limit">
+<span class="target" id="structbms__ic__conf_1afd2298e902b9db5375510209767a06e9"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cell_ov_limit</span></span></span><a class="headerlink" href="#c.bms_ic_conf.cell_ov_limit" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Cell over-voltage limit (V) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.cell_ov_reset">
+<span class="target" id="structbms__ic__conf_1ac570bea102a5cebd5f70fa9142864f2d"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cell_ov_reset</span></span></span><a class="headerlink" href="#c.bms_ic_conf.cell_ov_reset" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Cell over-voltage error reset threshold (V) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.cell_ov_delay_ms">
+<span class="target" id="structbms__ic__conf_1a906ae425fdac1c833cfff4c837bb5be6"></span><span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cell_ov_delay_ms</span></span></span><a class="headerlink" href="#c.bms_ic_conf.cell_ov_delay_ms" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Cell over-voltage delay (ms) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.cell_uv_limit">
+<span class="target" id="structbms__ic__conf_1a19e2a4696328f9e6889b7f2bed7a3d29"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cell_uv_limit</span></span></span><a class="headerlink" href="#c.bms_ic_conf.cell_uv_limit" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Cell under-voltage limit (V) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.cell_uv_reset">
+<span class="target" id="structbms__ic__conf_1aa8f6046845e0504b5d6d76d9a328182a"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cell_uv_reset</span></span></span><a class="headerlink" href="#c.bms_ic_conf.cell_uv_reset" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Cell under-voltage error reset threshold (V) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.cell_uv_delay_ms">
+<span class="target" id="structbms__ic__conf_1ae02c303dd4349b40739e31e7a4b2b536"></span><span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cell_uv_delay_ms</span></span></span><a class="headerlink" href="#c.bms_ic_conf.cell_uv_delay_ms" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Cell under-voltage delay (ms) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.dis_ot_limit">
+<span class="target" id="structbms__ic__conf_1ac59dcb62fdc51b51ebcb2812c519095c"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">dis_ot_limit</span></span></span><a class="headerlink" href="#c.bms_ic_conf.dis_ot_limit" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Discharge over-temperature (DOT) limit (°C) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.dis_ut_limit">
+<span class="target" id="structbms__ic__conf_1a4adb93cb2b3ab8ad40d10bdbe90044fc"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">dis_ut_limit</span></span></span><a class="headerlink" href="#c.bms_ic_conf.dis_ut_limit" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Discharge under-temperature (DUT) limit (°C) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.chg_ot_limit">
+<span class="target" id="structbms__ic__conf_1a95c59f5242d2d9ea10fcc542d75d098f"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">chg_ot_limit</span></span></span><a class="headerlink" href="#c.bms_ic_conf.chg_ot_limit" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Charge over-temperature (COT) limit (°C) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.chg_ut_limit">
+<span class="target" id="structbms__ic__conf_1a5a38aa61a4d0d6158da2f9ad7b657341"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">chg_ut_limit</span></span></span><a class="headerlink" href="#c.bms_ic_conf.chg_ut_limit" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Charge under-temperature (CUT) limit (°C) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.temp_limit_hyst">
+<span class="target" id="structbms__ic__conf_1acc17fedb58375ebfb3dd213798723722"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">temp_limit_hyst</span></span></span><a class="headerlink" href="#c.bms_ic_conf.temp_limit_hyst" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Temperature limit hysteresis (°C) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.bal_cell_voltage_diff">
+<span class="target" id="structbms__ic__conf_1a0d9e397fc1529d027500078711c6e02b"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bal_cell_voltage_diff</span></span></span><a class="headerlink" href="#c.bms_ic_conf.bal_cell_voltage_diff" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Balancing cell voltage target difference (V) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.bal_cell_voltage_min">
+<span class="target" id="structbms__ic__conf_1a0eb25346914e3da5073d854cbf7f9fc0"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bal_cell_voltage_min</span></span></span><a class="headerlink" href="#c.bms_ic_conf.bal_cell_voltage_min" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Minimum cell voltage to start balancing (V) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.bal_idle_current">
+<span class="target" id="structbms__ic__conf_1a61ccece9ca451026af2af9d6c5d79379"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bal_idle_current</span></span></span><a class="headerlink" href="#c.bms_ic_conf.bal_idle_current" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Current threshold to be considered idle (A) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.bal_idle_delay">
+<span class="target" id="structbms__ic__conf_1a27a996651e03b0bda86fde4bd39166fd"></span><span class="n"><span class="pre">uint16_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bal_idle_delay</span></span></span><a class="headerlink" href="#c.bms_ic_conf.bal_idle_delay" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Minimum idle duration before balancing (s) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.auto_balancing">
+<span class="target" id="structbms__ic__conf_1ae0690e8ea70ebc8d23434bc2bbb05093"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">auto_balancing</span></span></span><a class="headerlink" href="#c.bms_ic_conf.auto_balancing" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Enable/disable automatic balancing (controlled by the IC or driver) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.vregs_enable">
+<span class="target" id="structbms__ic__conf_1a1fff830fc1430b51d7932e2a0f03aac0"></span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">vregs_enable</span></span></span><a class="headerlink" href="#c.bms_ic_conf.vregs_enable" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Bitfield to enable/disable built-in voltage regulators (usually LDOs). The bit positions correspond to the regulator numbers in the manufacturer datasheet (e.g. 0x2 would enable REG1). </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_conf.alert_mask">
+<span class="target" id="structbms__ic__conf_1a8309fa49fb42d42606b19cfc90354600"></span><span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">alert_mask</span></span></span><a class="headerlink" href="#c.bms_ic_conf.alert_mask" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Error flags which should trigger an alert action (if supported by the IC) </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="c struct">
+<dt class="sig sig-object c" id="c.bms_ic_data">
+<span class="target" id="structbms__ic__data"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bms_ic_data</span></span></span><a class="headerlink" href="#c.bms_ic_data" title="Permalink to this definition"></a><br /></dt>
+<dd><div class="docutils container">
+<em>#include &lt;bms_ic.h&gt;</em></div>
+<p>Current BMS IC status including measurements and error flags </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_data.cell_voltages">
+<span class="target" id="structbms__ic__data_1ae7d523214df880e143e3049256173cd4"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cell_voltages</span></span></span><span class="p"><span class="pre">[</span></span><span class="n"><span class="pre">CONFIG_BMS_IC_MAX_CELLS</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#c.bms_ic_data.cell_voltages" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Single cell voltages (V) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_data.cell_voltage_max">
+<span class="target" id="structbms__ic__data_1a0ae1510ce8e9f3b6cfb68035247fbed4"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cell_voltage_max</span></span></span><a class="headerlink" href="#c.bms_ic_data.cell_voltage_max" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Maximum cell voltage (V) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_data.cell_voltage_min">
+<span class="target" id="structbms__ic__data_1af657338a0db693fe6ea1b13fd5d3d5e1"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cell_voltage_min</span></span></span><a class="headerlink" href="#c.bms_ic_data.cell_voltage_min" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Minimum cell voltage (V) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_data.cell_voltage_avg">
+<span class="target" id="structbms__ic__data_1ae1d67b1b0a45c2e635fa7f31e24db519"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cell_voltage_avg</span></span></span><a class="headerlink" href="#c.bms_ic_data.cell_voltage_avg" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Average cell voltage (V) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_data.total_voltage">
+<span class="target" id="structbms__ic__data_1abd0a3aa5d3c200b58e1da89ea8b82e60"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">total_voltage</span></span></span><a class="headerlink" href="#c.bms_ic_data.total_voltage" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Battery internal stack voltage (V) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_data.cell_temps">
+<span class="target" id="structbms__ic__data_1a46fb6e9cebb7db4ff3e07af0a0d5c8fc"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cell_temps</span></span></span><span class="p"><span class="pre">[</span></span><span class="n"><span class="pre">CONFIG_BMS_IC_MAX_THERMISTORS</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#c.bms_ic_data.cell_temps" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Cell temperatures (°C) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_data.cell_temp_max">
+<span class="target" id="structbms__ic__data_1a6ca62ae6a07f5d606744b08c3799c09f"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cell_temp_max</span></span></span><a class="headerlink" href="#c.bms_ic_data.cell_temp_max" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Maximum cell temperature (°C) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_data.cell_temp_min">
+<span class="target" id="structbms__ic__data_1a93552f3994224bc9bca28cb9c6fa932d"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cell_temp_min</span></span></span><a class="headerlink" href="#c.bms_ic_data.cell_temp_min" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Minimum cell temperature (°C) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_data.cell_temp_avg">
+<span class="target" id="structbms__ic__data_1ad393ce28c4c62c4095ccb63c88c7bce7"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">cell_temp_avg</span></span></span><a class="headerlink" href="#c.bms_ic_data.cell_temp_avg" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Average cell temperature (°C) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_data.ic_temp">
+<span class="target" id="structbms__ic__data_1a338d2b9545bab982ab3325238b7b1380"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ic_temp</span></span></span><a class="headerlink" href="#c.bms_ic_data.ic_temp" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Internal BMS IC temperature (°C) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_data.connected_cells">
+<span class="target" id="structbms__ic__data_1a6701f62ba1d9bd5d5d210a1834bcfe9c"></span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">connected_cells</span></span></span><a class="headerlink" href="#c.bms_ic_data.connected_cells" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Actual number of cells connected (may be less than CONFIG_BMS_IC_MAX_CELLS) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_data.used_thermistors">
+<span class="target" id="structbms__ic__data_1ade43fe4ee5d347a9c24b3da6f1ad95c7"></span><span class="n"><span class="pre">uint8_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">used_thermistors</span></span></span><a class="headerlink" href="#c.bms_ic_data.used_thermistors" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Actual number of thermistors used (may be less than CONFIG_BMS_IC_MAX_THERMISTORS) </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_data.balancing_status">
+<span class="target" id="structbms__ic__data_1ac4fc114aee90c3677509093eb7814aa6"></span><span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">balancing_status</span></span></span><a class="headerlink" href="#c.bms_ic_data.balancing_status" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Balancing channels on/off status </p>
+</dd></dl>
+
+<dl class="c var">
+<dt class="sig sig-object c" id="c.bms_ic_data.error_flags">
+<span class="target" id="structbms__ic__data_1a84786f21b27c2680e0eeed30fe4689bd"></span><span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">error_flags</span></span></span><a class="headerlink" href="#c.bms_ic_data.error_flags" title="Permalink to this definition"></a><br /></dt>
+<dd><p>BMS errors stored as BMS_ERR_* flags </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bms.html" class="btn btn-neutral float-left" title="BMS application" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="data_objects.html" class="btn btn-neutral float-right" title="Data Objects" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025 The Libre Solar Project.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
