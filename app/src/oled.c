@@ -106,7 +106,7 @@ void oled_thread()
 
     LOG_DBG("x_res %d, y_res %d, ppt %d, rows %d, cols %d",
             cfb_get_display_parameter(oled_dev, CFB_DISPLAY_WIDTH),
-            cfb_get_display_parameter(oled_dev, CFB_DISPLAY_HEIGH), ppt, rows,
+            cfb_get_display_parameter(oled_dev, CFB_DISPLAY_HEIGHT), ppt, rows,
             cfb_get_display_parameter(oled_dev, CFB_DISPLAY_COLS));
 
     while (true) {
