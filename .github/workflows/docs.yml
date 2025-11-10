@@ -2,16 +2,16 @@ name: Documentation
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  build:
+  docs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
         with:
-          fetch-depth: 0      # necessary to get tags
+          fetch-depth: 0 # necessary to get tags
 
       - name: Install dependencies
         run: |

@@ -3,41 +3,45 @@ name: Code check and build tests
 on: [push, pull_request]
 
 jobs:
-  build:
+  zephyr:
     # Avoid running twice if pushing to a PR branch in the base repo
     if: >
       github.event_name != 'pull_request' ||
       github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     runs-on: ubuntu-latest
-    # Fixed container version to avoid picolibc compile error for v0.26.15 (latest)
-    # https://github.com/zephyrproject-rtos/docker-image/issues/205
-    container: zephyrprojectrtos/ci:v0.26.14
-    env:
-      CMAKE_PREFIX_PATH: /opt/toolchains
+    defaults:
+      run:
+        working-directory: firmware
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
         with:
-          path: bms-firmware
-          fetch-depth: 0
+          path: firmware
+          fetch-depth: 0 # necessary to get tags
 
-      - name: Initialize
-        working-directory: bms-firmware
-        run: |
-          west init -l .
-          west update --narrow
-          west blobs fetch hal_espressif
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Zephyr project setup
+        uses: zephyrproject-rtos/action-zephyr-setup@v1
+        with:
+          app-path: firmware
+          toolchains: arm-zephyr-eabi:riscv64-zephyr-elf
 
       - name: Coding style check
-        working-directory: bms-firmware
         run: |
-          apt-get update
-          apt-get install -y clang-format-15 colordiff
+          sudo apt-get update
+          sudo apt-get install -y clang-format-15 colordiff
           git status
           bash scripts/check-style.sh
 
+      - name: Fetch hal_espressif binary blobs
+        run: |
+          west blobs fetch hal_espressif
+
       - name: Build firmware
-        working-directory: bms-firmware
         run: |
           cd app
           west build -p -b native_sim
@@ -50,6 +54,5 @@ jobs:
           west build -b bms_c1@0.4 --sysbuild -p
 
       - name: Run unit-tests
-        working-directory: bms-firmware
         run: |
           ../zephyr/scripts/twister -T ./tests --integration --inline-logs -n
