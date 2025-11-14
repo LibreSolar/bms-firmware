@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Objects &mdash; Battery Management System  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Misc" href="misc.html" />
+    <link rel="prev" title="BMS front-end IC driver" href="bms_ic.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #005e83" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Battery Management System
+              <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v23.1
+
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../supported_hardware.html">Supported Hardware</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../supported_hardware.html#boards">Boards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../supported_hardware.html#bms-ics">BMS ICs</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/workspace_setup.html">Workspace Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/building_flashing.html">Building and Flashing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dev/building_flashing.html#boards-with-esp32-mcu">Boards with ESP32 MCU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/building_flashing.html#boards-with-stm32-mcu">Boards with STM32 MCU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/building_flashing.html#device-firmware-upgrade-dfu-over-can">Device Firmware Upgrade (DFU) over CAN</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/customization.html">Customization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dev/customization.html#hardware-specific-changes">Hardware-specific changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/customization.html#application-firmware-configuration">Application firmware configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../dev/customization.html#change-battery-capacity-cell-type-and-number-of-cells-in-series">Change battery capacity, cell type and number of cells in series</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dev/customization.html#configure-serial-interface">Configure serial interface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/customization.html#shields-for-uext-connector">Shields for UEXT connector</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/simulator.html">Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/unit_tests.html">Unit Tests</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="bms.html">BMS application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bms_ic.html">BMS front-end IC driver</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Data Objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="misc.html">Misc</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="misc.html#button">Button</a></li>
+<li class="toctree-l2"><a class="reference internal" href="misc.html#helper">Helper</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #005e83" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Battery Management System</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Data Objects</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/LibreSolar/bms-firmware/blob/main/docs/src/api/data_objects.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="data-objects">
+<h1>Data Objects<a class="headerlink" href="#data-objects" title="Permalink to this heading"></a></h1>
+<p>Handling of ThingSet data nodes. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-defines">Defines</p>
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_DEVICE">
+<span class="target" id="data__objects_8h_1aa69e992764c5db6acae419657f78cac3"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_DEVICE</span></span></span><a class="headerlink" href="#c.APP_ID_DEVICE" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_DEVICE_MANUFACTURER">
+<span class="target" id="data__objects_8h_1a1624bffaef663bc62fe0e43c177636cd"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_DEVICE_MANUFACTURER</span></span></span><a class="headerlink" href="#c.APP_ID_DEVICE_MANUFACTURER" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_DEVICE_TYPE">
+<span class="target" id="data__objects_8h_1a72d4c05355003a509b0fe2184bda1504"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_DEVICE_TYPE</span></span></span><a class="headerlink" href="#c.APP_ID_DEVICE_TYPE" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_DEVICE_HW_VER">
+<span class="target" id="data__objects_8h_1ad88b23c756032906c95706ef176f83fa"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_DEVICE_HW_VER</span></span></span><a class="headerlink" href="#c.APP_ID_DEVICE_HW_VER" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_DEVICE_FW_VER">
+<span class="target" id="data__objects_8h_1a2d9d7e4cea920a159f4899a2c083aab7"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_DEVICE_FW_VER</span></span></span><a class="headerlink" href="#c.APP_ID_DEVICE_FW_VER" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_DEVICE_SHUTDOWN">
+<span class="target" id="data__objects_8h_1a9fa2602e5e54d83cc8476ef0f8fcbf4e"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_DEVICE_SHUTDOWN</span></span></span><a class="headerlink" href="#c.APP_ID_DEVICE_SHUTDOWN" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_DEVICE_RESET">
+<span class="target" id="data__objects_8h_1ad2b230713368d13ce0e23e0a8fa47eac"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_DEVICE_RESET</span></span></span><a class="headerlink" href="#c.APP_ID_DEVICE_RESET" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_DEVICE_PRINT_REG">
+<span class="target" id="data__objects_8h_1a4a6c83c82d563363a25c6ed62b1ddf3e"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_DEVICE_PRINT_REG</span></span></span><a class="headerlink" href="#c.APP_ID_DEVICE_PRINT_REG" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_DEVICE_PRINT_REG_ADDR">
+<span class="target" id="data__objects_8h_1a271a350fd0833ee3fd2f1b801659e4c7"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_DEVICE_PRINT_REG_ADDR</span></span></span><a class="headerlink" href="#c.APP_ID_DEVICE_PRINT_REG_ADDR" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_DEVICE_PRINT_REGS">
+<span class="target" id="data__objects_8h_1a240e8933758eb4a74c65e4c54ef58982"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_DEVICE_PRINT_REGS</span></span></span><a class="headerlink" href="#c.APP_ID_DEVICE_PRINT_REGS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF">
+<span class="target" id="data__objects_8h_1a944c4c44189d252f835de312ee1b255b"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF</span></span></span><a class="headerlink" href="#c.APP_ID_CONF" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_NOMINAL_CAPACITY">
+<span class="target" id="data__objects_8h_1a919d4272ab3c068cd4de705035d73d9e"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_NOMINAL_CAPACITY</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_NOMINAL_CAPACITY" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_SHORT_CIRCUIT_CURRENT">
+<span class="target" id="data__objects_8h_1a39c35fd23bba5de94c8ac34a4d236fca"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_SHORT_CIRCUIT_CURRENT</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_SHORT_CIRCUIT_CURRENT" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_SHORT_CIRCUIT_DELAY">
+<span class="target" id="data__objects_8h_1a2437452f8f32cdc05a8847f8debfd8dc"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_SHORT_CIRCUIT_DELAY</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_SHORT_CIRCUIT_DELAY" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_DIS_OVERCURRENT">
+<span class="target" id="data__objects_8h_1ae04a3db34e6ae5275fd10f83d6a6711c"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_DIS_OVERCURRENT</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_DIS_OVERCURRENT" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_DIS_OVERCURRENT_DELAY">
+<span class="target" id="data__objects_8h_1abbae2b947d2c200869de8f73da4960de"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_DIS_OVERCURRENT_DELAY</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_DIS_OVERCURRENT_DELAY" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_CHG_OVERCURRENT">
+<span class="target" id="data__objects_8h_1a471f434f9892c1687b147c3b2c22acc1"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_CHG_OVERCURRENT</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_CHG_OVERCURRENT" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_CHG_OVERCURRENT_DELAY">
+<span class="target" id="data__objects_8h_1a7a98fe5c8be8a5e4afd74124d75af1e0"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_CHG_OVERCURRENT_DELAY</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_CHG_OVERCURRENT_DELAY" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_DIS_MAX_TEMP">
+<span class="target" id="data__objects_8h_1ae26f3495b424ac9e2be5dbaac41b4f70"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_DIS_MAX_TEMP</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_DIS_MAX_TEMP" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_DIS_MIN_TEMP">
+<span class="target" id="data__objects_8h_1a88bcf16c8fd7a34266de0b1fbf24690e"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_DIS_MIN_TEMP</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_DIS_MIN_TEMP" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_CHG_MAX_TEMP">
+<span class="target" id="data__objects_8h_1a3ec5d3aeebb50a3b630be6072a57285a"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_CHG_MAX_TEMP</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_CHG_MAX_TEMP" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_CHG_MIN_TEMP">
+<span class="target" id="data__objects_8h_1abfa79a0375e7afab1eb215ba4306cd59"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_CHG_MIN_TEMP</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_CHG_MIN_TEMP" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_TEMP_HYST">
+<span class="target" id="data__objects_8h_1ab20332a48d82a2e69913e0d5d725d589"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_TEMP_HYST</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_TEMP_HYST" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_CELL_OVERVOLTAGE">
+<span class="target" id="data__objects_8h_1a568de8d30e8660004d36c28036698336"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_CELL_OVERVOLTAGE</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_CELL_OVERVOLTAGE" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_CELL_OVERVOLTAGE_RESET">
+<span class="target" id="data__objects_8h_1a98c68d01f993fdcf2be6c58f70e401b3"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_CELL_OVERVOLTAGE_RESET</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_CELL_OVERVOLTAGE_RESET" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_CELL_OVERVOLTAGE_DELAY">
+<span class="target" id="data__objects_8h_1ae85d1d0f81b06e15b1a9f784b3d5f902"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_CELL_OVERVOLTAGE_DELAY</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_CELL_OVERVOLTAGE_DELAY" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_CELL_UNDERVOLTAGE">
+<span class="target" id="data__objects_8h_1adabcb639f4debc69befe0fab0c6e4d70"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_CELL_UNDERVOLTAGE</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_CELL_UNDERVOLTAGE" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_CELL_UNDERVOLTAGE_RESET">
+<span class="target" id="data__objects_8h_1afc89b289fc648a7784ddacc296237738"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_CELL_UNDERVOLTAGE_RESET</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_CELL_UNDERVOLTAGE_RESET" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_CELL_UNDERVOLTAGE_DELAY">
+<span class="target" id="data__objects_8h_1a47b3f56e02bb8060810471647abb6f4e"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_CELL_UNDERVOLTAGE_DELAY</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_CELL_UNDERVOLTAGE_DELAY" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_BAL_TARGET_DIFF">
+<span class="target" id="data__objects_8h_1a8ac793ee9d51820baa45abaf2a61cf40"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_BAL_TARGET_DIFF</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_BAL_TARGET_DIFF" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_BAL_MIN_VOLTAGE">
+<span class="target" id="data__objects_8h_1afcda1358eaf725f4a293bf2ee8e9abb1"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_BAL_MIN_VOLTAGE</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_BAL_MIN_VOLTAGE" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_BAL_IDLE_DELAY">
+<span class="target" id="data__objects_8h_1af5623254167db636fe7a0e4dcdd7f9cf"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_BAL_IDLE_DELAY</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_BAL_IDLE_DELAY" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_BAL_IDLE_CURRENT">
+<span class="target" id="data__objects_8h_1a2e0551a04e6e5e06abc70c4d52e9bc45"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_BAL_IDLE_CURRENT</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_BAL_IDLE_CURRENT" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_PRESET_NMC">
+<span class="target" id="data__objects_8h_1a8d5e0ff326b821dd05e3a408ac7c424d"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_PRESET_NMC</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_PRESET_NMC" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_PRESET_NMC_CAPACITY">
+<span class="target" id="data__objects_8h_1ac1daf47b4637805b5574674ba35144fb"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_PRESET_NMC_CAPACITY</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_PRESET_NMC_CAPACITY" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_PRESET_LFP">
+<span class="target" id="data__objects_8h_1a2dc9d24976555db1e5a2880b6d3ca906"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_PRESET_LFP</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_PRESET_LFP" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_PRESET_LFP_CAPACITY">
+<span class="target" id="data__objects_8h_1a717d68f7bbd96bcae35b833f2814882d"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_PRESET_LFP_CAPACITY</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_PRESET_LFP_CAPACITY" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_PRESET_LTO">
+<span class="target" id="data__objects_8h_1ac8b071bb45877281aaa2c5c5bcc15d72"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_PRESET_LTO</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_PRESET_LTO" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_PRESET_LTO_CAPACITY">
+<span class="target" id="data__objects_8h_1a26cbb0d3885794e5a5b3f663ee63849d"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_PRESET_LTO_CAPACITY</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_PRESET_LTO_CAPACITY" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_OCV_POINTS">
+<span class="target" id="data__objects_8h_1aa63ab9272963bd45236adcbc53c8cc95"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_OCV_POINTS</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_OCV_POINTS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_CONF_SOC_POINTS">
+<span class="target" id="data__objects_8h_1a84e24abf41f93ba0f920dcb6432c13f0"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_CONF_SOC_POINTS</span></span></span><a class="headerlink" href="#c.APP_ID_CONF_SOC_POINTS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_MEAS">
+<span class="target" id="data__objects_8h_1a35cefadb7cf6fb6b53dc47f6f6332d5c"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_MEAS</span></span></span><a class="headerlink" href="#c.APP_ID_MEAS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_MEAS_PACK_VOLTAGE">
+<span class="target" id="data__objects_8h_1a180a27d8b3cd8306fdc980d60ab887b1"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_MEAS_PACK_VOLTAGE</span></span></span><a class="headerlink" href="#c.APP_ID_MEAS_PACK_VOLTAGE" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_MEAS_STACK_VOLTAGE">
+<span class="target" id="data__objects_8h_1a1c3717f6efd9840693228abd38fd1e75"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_MEAS_STACK_VOLTAGE</span></span></span><a class="headerlink" href="#c.APP_ID_MEAS_STACK_VOLTAGE" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_MEAS_PACK_CURRENT">
+<span class="target" id="data__objects_8h_1a738a6460a61a8b7d1cbff1ba8f3a56e0"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_MEAS_PACK_CURRENT</span></span></span><a class="headerlink" href="#c.APP_ID_MEAS_PACK_CURRENT" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_MEAS_CELL_TEMPS">
+<span class="target" id="data__objects_8h_1af771cbfc0e52d18e4aa25fa391e89740"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_MEAS_CELL_TEMPS</span></span></span><a class="headerlink" href="#c.APP_ID_MEAS_CELL_TEMPS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_MEAS_IC_TEMP">
+<span class="target" id="data__objects_8h_1a9f521447e1b8fa142baa8a61738c84e4"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_MEAS_IC_TEMP</span></span></span><a class="headerlink" href="#c.APP_ID_MEAS_IC_TEMP" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_MEAS_MCU_TEMP">
+<span class="target" id="data__objects_8h_1a4c184d578d236e596b73f65fb8f473fc"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_MEAS_MCU_TEMP</span></span></span><a class="headerlink" href="#c.APP_ID_MEAS_MCU_TEMP" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_MEAS_MOSFET_TEMP">
+<span class="target" id="data__objects_8h_1aab3919de280a35c4d746b4b1aca74d8a"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_MEAS_MOSFET_TEMP</span></span></span><a class="headerlink" href="#c.APP_ID_MEAS_MOSFET_TEMP" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_MEAS_SOC">
+<span class="target" id="data__objects_8h_1a8c9a5e3c89c7141f087ce9a0fabc6229"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_MEAS_SOC</span></span></span><a class="headerlink" href="#c.APP_ID_MEAS_SOC" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_MEAS_ERROR_FLAGS">
+<span class="target" id="data__objects_8h_1aaac05412f0275b059586d9f2d39b1ee7"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_MEAS_ERROR_FLAGS</span></span></span><a class="headerlink" href="#c.APP_ID_MEAS_ERROR_FLAGS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_MEAS_BMS_STATE">
+<span class="target" id="data__objects_8h_1af292d57e20093fe9ed1aac934fe2ec59"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_MEAS_BMS_STATE</span></span></span><a class="headerlink" href="#c.APP_ID_MEAS_BMS_STATE" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_MEAS_CELL_VOLTAGES">
+<span class="target" id="data__objects_8h_1aafe9984efa4c8c58223143abe6a177a7"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_MEAS_CELL_VOLTAGES</span></span></span><a class="headerlink" href="#c.APP_ID_MEAS_CELL_VOLTAGES" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_MEAS_CELL_AVG_VOLTAGE">
+<span class="target" id="data__objects_8h_1ae4dd5ad035c5139accd1bf69df686b94"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_MEAS_CELL_AVG_VOLTAGE</span></span></span><a class="headerlink" href="#c.APP_ID_MEAS_CELL_AVG_VOLTAGE" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_MEAS_CELL_MIN_VOLTAGE">
+<span class="target" id="data__objects_8h_1a178a7bfa268f9fc467a0fa572ff03e14"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_MEAS_CELL_MIN_VOLTAGE</span></span></span><a class="headerlink" href="#c.APP_ID_MEAS_CELL_MIN_VOLTAGE" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_MEAS_CELL_MAX_VOLTAGE">
+<span class="target" id="data__objects_8h_1afc9abf7fd73ae8cddb72a724471ece11"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_MEAS_CELL_MAX_VOLTAGE</span></span></span><a class="headerlink" href="#c.APP_ID_MEAS_CELL_MAX_VOLTAGE" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_MEAS_BALANCING_STATUS">
+<span class="target" id="data__objects_8h_1a9a848b2e78b3446a6774e905d0d130db"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_MEAS_BALANCING_STATUS</span></span></span><a class="headerlink" href="#c.APP_ID_MEAS_BALANCING_STATUS" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_INPUT">
+<span class="target" id="data__objects_8h_1a5d25d0e3e092e7023f28e3e59c7a6baf"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_INPUT</span></span></span><a class="headerlink" href="#c.APP_ID_INPUT" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_INPUT_CHG_ENABLE">
+<span class="target" id="data__objects_8h_1a47d729d521046cac45623677f0be1f38"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_INPUT_CHG_ENABLE</span></span></span><a class="headerlink" href="#c.APP_ID_INPUT_CHG_ENABLE" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.APP_ID_INPUT_DIS_ENABLE">
+<span class="target" id="data__objects_8h_1a7d72867670abde27aa0745caea56ac35"></span><span class="sig-name descname"><span class="n"><span class="pre">APP_ID_INPUT_DIS_ENABLE</span></span></span><a class="headerlink" href="#c.APP_ID_INPUT_DIS_ENABLE" title="Permalink to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-functions">Functions</p>
+<dl class="c function">
+<dt class="sig sig-object c" id="c.data_objects_update_conf">
+<span class="target" id="data__objects_8h_1a29ccb7411c664ca41cfc83924ce6953d"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">data_objects_update_conf</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">enum</span></span><span class="w"> </span><span class="n"><span class="pre">thingset_callback_reason</span></span><span class="w"> </span><span class="n"><span class="pre">reason</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.data_objects_update_conf" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Callback function to be called when conf values were changed </p>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.bat_preset_nmc">
+<span class="target" id="data__objects_8h_1a4bd6ed69e362bfafc2705dece6242293"></span><span class="n"><span class="pre">int32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bat_preset_nmc</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#c.bat_preset_nmc" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Callback function to apply preset parameters for NMC type via ThingSet </p>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.bat_preset_lfp">
+<span class="target" id="data__objects_8h_1aab5c022aa03a850ce4c1f6c9f5c77929"></span><span class="n"><span class="pre">int32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bat_preset_lfp</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#c.bat_preset_lfp" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Callback function to apply preset parameters for LFP type via ThingSet </p>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.bat_preset_lto">
+<span class="target" id="data__objects_8h_1ae3c18d15d7126af48b9543f9a07f13a0"></span><span class="n"><span class="pre">int32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bat_preset_lto</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#c.bat_preset_lto" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Callback function to apply preset parameters for LTO type via ThingSet </p>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.print_registers">
+<span class="target" id="data__objects_8h_1a443d8ebaaf7d2251347e71a58f2bafa0"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">print_registers</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#c.print_registers" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Callback to read and print common BMS registers via ThingSet </p>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.reset_device">
+<span class="target" id="data__objects_8h_1a99ecd64ace3a2da5deb6872c73c058ea"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">reset_device</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#c.reset_device" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Callback to reset device (obviously…) </p>
+</dd></dl>
+
+<dl class="c function">
+<dt class="sig sig-object c" id="c.shutdown">
+<span class="target" id="data__objects_8h_1a7861ee1569802186a619778efc85af13"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">shutdown</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#c.shutdown" title="Permalink to this definition"></a><br /></dt>
+<dd><p>Callback to invoke bms_shutdown via ThingSet </p>
+</dd></dl>
+
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bms_ic.html" class="btn btn-neutral float-left" title="BMS front-end IC driver" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="misc.html" class="btn btn-neutral float-right" title="Misc" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025 The Libre Solar Project.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
