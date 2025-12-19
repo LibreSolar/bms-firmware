@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Index &mdash; Battery Management System  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #005e83" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Battery Management System
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v23.1
+
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="src/features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/supported_hardware.html">Supported Hardware</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src/supported_hardware.html#boards">Boards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/supported_hardware.html#bms-ics">BMS ICs</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="src/dev/workspace_setup.html">Workspace Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/dev/building_flashing.html">Building and Flashing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src/dev/building_flashing.html#boards-with-esp32-mcu">Boards with ESP32 MCU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/dev/building_flashing.html#boards-with-stm32-mcu">Boards with STM32 MCU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/dev/building_flashing.html#device-firmware-upgrade-dfu-over-can">Device Firmware Upgrade (DFU) over CAN</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="src/dev/customization.html">Customization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src/dev/customization.html#hardware-specific-changes">Hardware-specific changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/dev/customization.html#application-firmware-configuration">Application firmware configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="src/dev/customization.html#change-battery-capacity-cell-type-and-number-of-cells-in-series">Change battery capacity, cell type and number of cells in series</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src/dev/customization.html#configure-serial-interface">Configure serial interface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="src/dev/customization.html#shields-for-uext-connector">Shields for UEXT connector</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="src/dev/simulator.html">Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/dev/unit_tests.html">Unit Tests</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="src/api/bms.html">BMS application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/api/bms_ic.html">BMS front-end IC driver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/api/data_objects.html">Data Objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="src/api/misc.html">Misc</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="src/api/misc.html#button">Button</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src/api/misc.html#helper">Helper</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #005e83" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Battery Management System</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Index</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/LibreSolar/bms-firmware/blob/main/docs/genindex" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ 
+</div>
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF">APP_ID_CONF (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_BAL_IDLE_CURRENT">APP_ID_CONF_BAL_IDLE_CURRENT (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_BAL_IDLE_DELAY">APP_ID_CONF_BAL_IDLE_DELAY (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_BAL_MIN_VOLTAGE">APP_ID_CONF_BAL_MIN_VOLTAGE (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_BAL_TARGET_DIFF">APP_ID_CONF_BAL_TARGET_DIFF (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_CELL_OVERVOLTAGE">APP_ID_CONF_CELL_OVERVOLTAGE (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_CELL_OVERVOLTAGE_DELAY">APP_ID_CONF_CELL_OVERVOLTAGE_DELAY (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_CELL_OVERVOLTAGE_RESET">APP_ID_CONF_CELL_OVERVOLTAGE_RESET (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_CELL_UNDERVOLTAGE">APP_ID_CONF_CELL_UNDERVOLTAGE (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_CELL_UNDERVOLTAGE_DELAY">APP_ID_CONF_CELL_UNDERVOLTAGE_DELAY (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_CELL_UNDERVOLTAGE_RESET">APP_ID_CONF_CELL_UNDERVOLTAGE_RESET (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_CHG_MAX_TEMP">APP_ID_CONF_CHG_MAX_TEMP (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_CHG_MIN_TEMP">APP_ID_CONF_CHG_MIN_TEMP (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_CHG_OVERCURRENT">APP_ID_CONF_CHG_OVERCURRENT (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_CHG_OVERCURRENT_DELAY">APP_ID_CONF_CHG_OVERCURRENT_DELAY (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_DIS_MAX_TEMP">APP_ID_CONF_DIS_MAX_TEMP (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_DIS_MIN_TEMP">APP_ID_CONF_DIS_MIN_TEMP (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_DIS_OVERCURRENT">APP_ID_CONF_DIS_OVERCURRENT (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_DIS_OVERCURRENT_DELAY">APP_ID_CONF_DIS_OVERCURRENT_DELAY (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_NOMINAL_CAPACITY">APP_ID_CONF_NOMINAL_CAPACITY (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_OCV_POINTS">APP_ID_CONF_OCV_POINTS (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_PRESET_LFP">APP_ID_CONF_PRESET_LFP (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_PRESET_LFP_CAPACITY">APP_ID_CONF_PRESET_LFP_CAPACITY (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_PRESET_LTO">APP_ID_CONF_PRESET_LTO (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_PRESET_LTO_CAPACITY">APP_ID_CONF_PRESET_LTO_CAPACITY (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_PRESET_NMC">APP_ID_CONF_PRESET_NMC (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_PRESET_NMC_CAPACITY">APP_ID_CONF_PRESET_NMC_CAPACITY (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_SHORT_CIRCUIT_CURRENT">APP_ID_CONF_SHORT_CIRCUIT_CURRENT (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_SHORT_CIRCUIT_DELAY">APP_ID_CONF_SHORT_CIRCUIT_DELAY (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_SOC_POINTS">APP_ID_CONF_SOC_POINTS (C macro)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src/api/data_objects.html#c.APP_ID_CONF_TEMP_HYST">APP_ID_CONF_TEMP_HYST (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_DEVICE">APP_ID_DEVICE (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_DEVICE_FW_VER">APP_ID_DEVICE_FW_VER (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_DEVICE_HW_VER">APP_ID_DEVICE_HW_VER (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_DEVICE_MANUFACTURER">APP_ID_DEVICE_MANUFACTURER (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_DEVICE_PRINT_REG">APP_ID_DEVICE_PRINT_REG (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_DEVICE_PRINT_REG_ADDR">APP_ID_DEVICE_PRINT_REG_ADDR (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_DEVICE_PRINT_REGS">APP_ID_DEVICE_PRINT_REGS (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_DEVICE_RESET">APP_ID_DEVICE_RESET (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_DEVICE_SHUTDOWN">APP_ID_DEVICE_SHUTDOWN (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_DEVICE_TYPE">APP_ID_DEVICE_TYPE (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_INPUT">APP_ID_INPUT (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_INPUT_CHG_ENABLE">APP_ID_INPUT_CHG_ENABLE (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_INPUT_DIS_ENABLE">APP_ID_INPUT_DIS_ENABLE (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_MEAS">APP_ID_MEAS (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_MEAS_BALANCING_STATUS">APP_ID_MEAS_BALANCING_STATUS (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_MEAS_BMS_STATE">APP_ID_MEAS_BMS_STATE (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_MEAS_CELL_AVG_VOLTAGE">APP_ID_MEAS_CELL_AVG_VOLTAGE (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_MEAS_CELL_MAX_VOLTAGE">APP_ID_MEAS_CELL_MAX_VOLTAGE (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_MEAS_CELL_MIN_VOLTAGE">APP_ID_MEAS_CELL_MIN_VOLTAGE (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_MEAS_CELL_TEMPS">APP_ID_MEAS_CELL_TEMPS (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_MEAS_CELL_VOLTAGES">APP_ID_MEAS_CELL_VOLTAGES (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_MEAS_ERROR_FLAGS">APP_ID_MEAS_ERROR_FLAGS (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_MEAS_IC_TEMP">APP_ID_MEAS_IC_TEMP (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_MEAS_MCU_TEMP">APP_ID_MEAS_MCU_TEMP (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_MEAS_MOSFET_TEMP">APP_ID_MEAS_MOSFET_TEMP (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_MEAS_PACK_CURRENT">APP_ID_MEAS_PACK_CURRENT (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_MEAS_PACK_VOLTAGE">APP_ID_MEAS_PACK_VOLTAGE (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_MEAS_SOC">APP_ID_MEAS_SOC (C macro)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.APP_ID_MEAS_STACK_VOLTAGE">APP_ID_MEAS_STACK_VOLTAGE (C macro)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src/api/data_objects.html#c.bat_preset_lfp">bat_preset_lfp (C function)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.bat_preset_lto">bat_preset_lto (C function)</a>
+</li>
+      <li><a href="src/api/data_objects.html#c.bat_preset_nmc">bat_preset_nmc (C function)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_cell_type">bms_cell_type (C enum)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_cell_type.CELL_TYPE_LFP">bms_cell_type.CELL_TYPE_LFP (C enumerator)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_cell_type.CELL_TYPE_LTO">bms_cell_type.CELL_TYPE_LTO (C enumerator)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_cell_type.CELL_TYPE_NMC">bms_cell_type.CELL_TYPE_NMC (C enumerator)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_chg_allowed">bms_chg_allowed (C function)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_chg_error">bms_chg_error (C function)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_context">bms_context (C struct)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_context.chg_enable">bms_context.chg_enable (C var)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_context.dis_enable">bms_context.dis_enable (C var)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_context.empty">bms_context.empty (C var)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_context.full">bms_context.full (C var)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_context.ic_conf">bms_context.ic_conf (C var)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_context.ic_data">bms_context.ic_data (C var)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_context.ic_dev">bms_context.ic_dev (C var)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_context.nominal_capacity_Ah">bms_context.nominal_capacity_Ah (C var)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_context.ocv_points">bms_context.ocv_points (C var)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_context.soc">bms_context.soc (C var)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_context.soc_points">bms_context.soc_points (C var)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_context.state">bms_context.state (C var)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_dis_allowed">bms_dis_allowed (C function)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_dis_error">bms_dis_error (C function)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_ERR_ALL">BMS_ERR_ALL (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_ERR_CELL_FAILURE">BMS_ERR_CELL_FAILURE (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_ERR_CELL_OVERVOLTAGE">BMS_ERR_CELL_OVERVOLTAGE (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_ERR_CELL_UNDERVOLTAGE">BMS_ERR_CELL_UNDERVOLTAGE (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_ERR_CHG_OFF">BMS_ERR_CHG_OFF (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_ERR_CHG_OVERCURRENT">BMS_ERR_CHG_OVERCURRENT (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_ERR_CHG_OVERTEMP">BMS_ERR_CHG_OVERTEMP (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_ERR_CHG_UNDERTEMP">BMS_ERR_CHG_UNDERTEMP (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_ERR_DIS_OFF">BMS_ERR_DIS_OFF (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_ERR_DIS_OVERCURRENT">BMS_ERR_DIS_OVERCURRENT (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_ERR_DIS_OVERTEMP">BMS_ERR_DIS_OVERTEMP (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_ERR_DIS_UNDERTEMP">BMS_ERR_DIS_UNDERTEMP (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_ERR_FET_OVERTEMP">BMS_ERR_FET_OVERTEMP (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_ERR_INT_OVERTEMP">BMS_ERR_INT_OVERTEMP (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_ERR_OPEN_WIRE">BMS_ERR_OPEN_WIRE (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_ERR_SHORT_CIRCUIT">BMS_ERR_SHORT_CIRCUIT (C macro)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_assign_data">bms_ic_assign_data (C function)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_balance">bms_ic_balance (C function)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf">bms_ic_conf (C struct)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.alert_mask">bms_ic_conf.alert_mask (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.auto_balancing">bms_ic_conf.auto_balancing (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.bal_cell_voltage_diff">bms_ic_conf.bal_cell_voltage_diff (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.bal_cell_voltage_min">bms_ic_conf.bal_cell_voltage_min (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.bal_idle_current">bms_ic_conf.bal_idle_current (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.bal_idle_delay">bms_ic_conf.bal_idle_delay (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.cell_chg_voltage_limit">bms_ic_conf.cell_chg_voltage_limit (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.cell_dis_voltage_limit">bms_ic_conf.cell_dis_voltage_limit (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.cell_ov_delay_ms">bms_ic_conf.cell_ov_delay_ms (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.cell_ov_limit">bms_ic_conf.cell_ov_limit (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.cell_ov_reset">bms_ic_conf.cell_ov_reset (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.cell_uv_delay_ms">bms_ic_conf.cell_uv_delay_ms (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.cell_uv_limit">bms_ic_conf.cell_uv_limit (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.cell_uv_reset">bms_ic_conf.cell_uv_reset (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.chg_ot_limit">bms_ic_conf.chg_ot_limit (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.chg_ut_limit">bms_ic_conf.chg_ut_limit (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.dis_ot_limit">bms_ic_conf.dis_ot_limit (C var)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.dis_ut_limit">bms_ic_conf.dis_ut_limit (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.temp_limit_hyst">bms_ic_conf.temp_limit_hyst (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_conf.vregs_enable">bms_ic_conf.vregs_enable (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.BMS_IC_CONF_ALERTS">BMS_IC_CONF_ALERTS (C macro)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.BMS_IC_CONF_ALL">BMS_IC_CONF_ALL (C macro)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.BMS_IC_CONF_BALANCING">BMS_IC_CONF_BALANCING (C macro)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.BMS_IC_CONF_CURRENT_LIMITS">BMS_IC_CONF_CURRENT_LIMITS (C macro)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.BMS_IC_CONF_TEMP_LIMITS">BMS_IC_CONF_TEMP_LIMITS (C macro)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.BMS_IC_CONF_VOLTAGE_LIMITS">BMS_IC_CONF_VOLTAGE_LIMITS (C macro)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.BMS_IC_CONF_VOLTAGE_REGS">BMS_IC_CONF_VOLTAGE_REGS (C macro)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_configure">bms_ic_configure (C function)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_data">bms_ic_data (C struct)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_data.balancing_status">bms_ic_data.balancing_status (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_data.cell_temp_avg">bms_ic_data.cell_temp_avg (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_data.cell_temp_max">bms_ic_data.cell_temp_max (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_data.cell_temp_min">bms_ic_data.cell_temp_min (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_data.cell_temps">bms_ic_data.cell_temps (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_data.cell_voltage_avg">bms_ic_data.cell_voltage_avg (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_data.cell_voltage_max">bms_ic_data.cell_voltage_max (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_data.cell_voltage_min">bms_ic_data.cell_voltage_min (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_data.cell_voltages">bms_ic_data.cell_voltages (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_data.connected_cells">bms_ic_data.connected_cells (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_data.error_flags">bms_ic_data.error_flags (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_data.ic_temp">bms_ic_data.ic_temp (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_data.total_voltage">bms_ic_data.total_voltage (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_data.used_thermistors">bms_ic_data.used_thermistors (C var)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.BMS_IC_DATA_ALL">BMS_IC_DATA_ALL (C macro)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.BMS_IC_DATA_BALANCING">BMS_IC_DATA_BALANCING (C macro)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.BMS_IC_DATA_CELL_VOLTAGES">BMS_IC_DATA_CELL_VOLTAGES (C macro)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.BMS_IC_DATA_CURRENT">BMS_IC_DATA_CURRENT (C macro)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.BMS_IC_DATA_ERROR_FLAGS">BMS_IC_DATA_ERROR_FLAGS (C macro)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.BMS_IC_DATA_PACK_VOLTAGES">BMS_IC_DATA_PACK_VOLTAGES (C macro)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.BMS_IC_DATA_TEMPERATURES">BMS_IC_DATA_TEMPERATURES (C macro)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_debug_print_mem">bms_ic_debug_print_mem (C function)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_mode">bms_ic_mode (C enum)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_mode.BMS_IC_MODE_ACTIVE">bms_ic_mode.BMS_IC_MODE_ACTIVE (C enumerator)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_mode.BMS_IC_MODE_IDLE">bms_ic_mode.BMS_IC_MODE_IDLE (C enumerator)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_mode.BMS_IC_MODE_OFF">bms_ic_mode.BMS_IC_MODE_OFF (C enumerator)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_mode.BMS_IC_MODE_STANDBY">bms_ic_mode.BMS_IC_MODE_STANDBY (C enumerator)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_read_data">bms_ic_read_data (C function)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_read_mem">bms_ic_read_mem (C function)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_set_mode">bms_ic_set_mode (C function)</a>
+</li>
+      <li><a href="src/api/bms_ic.html#c.bms_ic_write_mem">bms_ic_write_mem (C function)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_init_config">bms_init_config (C function)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_shutdown">bms_shutdown (C function)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_soc_reset">bms_soc_reset (C function)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_soc_update">bms_soc_update (C function)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_state">bms_state (C enum)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_state.BMS_STATE_CHG">bms_state.BMS_STATE_CHG (C enumerator)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_state.BMS_STATE_DIS">bms_state.BMS_STATE_DIS (C enumerator)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_state.BMS_STATE_NORMAL">bms_state.BMS_STATE_NORMAL (C enumerator)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_state.BMS_STATE_OFF">bms_state.BMS_STATE_OFF (C enumerator)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_state.BMS_STATE_SHUTDOWN">bms_state.BMS_STATE_SHUTDOWN (C enumerator)</a>
+</li>
+      <li><a href="src/api/bms.html#c.bms_state_machine">bms_state_machine (C function)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_SWITCH_CHG">BMS_SWITCH_CHG (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_SWITCH_DIS">BMS_SWITCH_DIS (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_SWITCH_PCHG">BMS_SWITCH_PCHG (C macro)</a>
+</li>
+      <li><a href="src/api/bms.html#c.BMS_SWITCH_PDSG">BMS_SWITCH_PDSG (C macro)</a>
+</li>
+      <li><a href="src/api/misc.html#c.button_init">button_init (C function)</a>
+</li>
+      <li><a href="src/api/misc.html#c.button_pressed_for_3s">button_pressed_for_3s (C function)</a>
+</li>
+      <li><a href="src/api/misc.html#c.byte2bitstr">byte2bitstr (C function)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src/api/data_objects.html#c.data_objects_update_conf">data_objects_update_conf (C function)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src/api/misc.html#c.interpolate">interpolate (C function)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src/api/misc.html#c.is_empty">is_empty (C function)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src/api/bms.html#c.NUM_OCV_POINTS">NUM_OCV_POINTS (C macro)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src/api/data_objects.html#c.print_registers">print_registers (C function)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src/api/data_objects.html#c.reset_device">reset_device (C function)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="src/api/data_objects.html#c.shutdown">shutdown (C function)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025 The Libre Solar Project.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
