@@ -12,6 +12,7 @@ eeprom.bin
 # editors
 .vscode/*
 !.vscode/c_cpp_properties.json
+.zed/
 *.swp
 *~
 
