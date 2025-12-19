@@ -26,7 +26,7 @@ manifest:
           - zcbor
     - name: thingset-zephyr-sdk
       remote: thingset
-      revision: b9d300777b669cf3830556cb1a7b41c59b0608e2
+      revision: 5d5c6b031ba543d67a3dc6904ccfc987ebdadc52
       path: thingset-zephyr-sdk
       import:
         name-allowlist:

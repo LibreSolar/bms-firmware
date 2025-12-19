@@ -258,7 +258,8 @@ THINGSET_ADD_ITEM_BOOL(APP_ID_INPUT, APP_ID_INPUT_CHG_ENABLE, "wChgEnable", &bms
 THINGSET_ADD_ITEM_BOOL(APP_ID_INPUT, APP_ID_INPUT_DIS_ENABLE, "wDisEnable", &bms.dis_enable,
                        THINGSET_ANY_R | THINGSET_ANY_W, 0);
 
-void data_objects_update_conf(enum thingset_callback_reason reason)
+int data_objects_update_conf(enum thingset_callback_reason reason,
+                             const struct thingset_data_object *obj)
 {
     if (reason == THINGSET_CALLBACK_POST_WRITE) {
         // ToDo: Validate new settings before applying them
@@ -269,6 +270,7 @@ void data_objects_update_conf(enum thingset_callback_reason reason)
         thingset_storage_save_queued(true);
 #endif
     }
+    return 0;
 }
 
 int32_t bat_preset(enum bms_cell_type type)

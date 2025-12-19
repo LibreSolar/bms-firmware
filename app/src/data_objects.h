@@ -93,7 +93,8 @@
 /**
  * Callback function to be called when conf values were changed
  */
-void data_objects_update_conf(enum thingset_callback_reason reason);
+int data_objects_update_conf(enum thingset_callback_reason reason,
+                             const struct thingset_data_object *obj);
 
 /**
  * Callback function to apply preset parameters for NMC type via ThingSet

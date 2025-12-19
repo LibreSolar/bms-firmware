@@ -74,11 +74,12 @@ board-specific ``.conf`` file:
 
     CONFIG_THINGSET_REPORTING_LIVE_ENABLE_PRESET=n
 
-The default period for data publication can be changed with the following Kconfig option:
+The default period for data publication can be changed with the following Kconfig option (value in
+milliseconds):
 
 .. code-block:: bash
 
-    CONFIG_THINGSET_REPORTING_LIVE_PERIOD_PRESET=10
+    CONFIG_THINGSET_REPORTING_LIVE_PERIOD_PRESET=10000
 
 Shields for UEXT connector
 --------------------------
