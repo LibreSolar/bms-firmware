@@ -60,6 +60,8 @@ struct bms_ic_bq769x2_config
     uint8_t shunt_temp_pin;
     bool crc_enabled;
     bool auto_pdsg;
+    uint16_t pdsg_timeout_ms;
+    uint16_t pdsg_stop_delta_mv;
     uint8_t reg0_config;
     uint8_t reg12_config;
     uint8_t max_balanced_cells;

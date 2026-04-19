@@ -123,6 +123,37 @@ properties:
     description: |
       Enable automatic pre-discharge (bus precharge) before switching on DSG FETs.
 
+  pdsg-timeout-ms:
+    type: int
+    default: 2000
+    description: |
+      Maximum duration of the PDSG (bus precharge) phase in milliseconds. The BQ76952
+      transitions from PDSG to DSG when the bus voltage reaches the pack voltage minus
+      PDSG Stop Delta, OR when this timeout expires, whichever happens first.
+
+      Setting this to 0 disables the timeout (voltage-based exit only), which is NOT
+      recommended for boards with current-limited precharge resistors: a short-circuit
+      load prevents the voltage condition from ever being met, keeping PDSG active
+      indefinitely and overloading the precharge resistor.
+
+      Default 2000 ms covers a typical DC-link capacitance up to ~10 mF with safety
+      margin. Set to 0 only if the precharge resistor can survive indefinite loading.
+
+      Granularity is 10 ms (values are rounded down to nearest 10 ms). Maximum
+      effective value is 2550 ms (BQ76952 TRM SLUUBY2B §13.3.6.5).
+
+      Only relevant when auto-pdsg is set.
+
+  pdsg-stop-delta-mv:
+    type: int
+    default: 500
+    description: |
+      Voltage delta in millivolts for the PDSG exit condition. PDSG ends when the LD pin
+      voltage is within this delta of the top-of-stack voltage. Default 500 mV matches
+      the BQ76952 factory default. Granularity is 10 mV, max 2550 mV.
+
+      Only relevant when auto-pdsg is set.
+
   reg0-config:
     type: int
     default: 0

@@ -540,10 +540,22 @@ static int bq769x2_init_config(const struct device *dev)
         err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_FET_OPTIONS, 0x1D);
 
         /*
-         * Disable pre-discharge timeout (DSG FETs are only turned on based on bus voltage).
-         * PDSG voltage settings in BQ769X2_SET_FET_PDSG_STOP_DV are kept at default 500 mV.
+         * PDSG timeout in 10 ms units (TRM SLUUBY2B §13.3.6.5, max 2550 ms). A value
+         * of 0 disables the timeout (voltage-only exit) — unsafe on boards with
+         * current-limited precharge resistors under short-circuit load.
          */
-        err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_FET_PDSG_TIMEOUT, 0);
+        uint16_t timeout_10ms = config->pdsg_timeout_ms / 10;
+        if (timeout_10ms > UINT8_MAX) {
+            timeout_10ms = UINT8_MAX;
+        }
+        err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_FET_PDSG_TIMEOUT, (uint8_t)timeout_10ms);
+
+        /* PDSG stop voltage delta in 10 mV units (TRM §13.3.6.6, max 2550 mV). */
+        uint16_t stop_dv_10mv = config->pdsg_stop_delta_mv / 10;
+        if (stop_dv_10mv > UINT8_MAX) {
+            stop_dv_10mv = UINT8_MAX;
+        }
+        err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_FET_PDSG_STOP_DV, (uint8_t)stop_dv_10mv);
     }
     else {
         /* Disable automatic pre-discharge before switching on DSG FETs */
@@ -1016,6 +1028,8 @@ static const struct bms_ic_driver_api bq769x2_driver_api = {
         .shunt_temp_pin = DT_INST_PROP_OR(index, shunt_temp_pin, UINT8_MAX),               \
         .crc_enabled = DT_INST_PROP(index, crc_enabled),                                   \
         .auto_pdsg = DT_INST_PROP(index, auto_pdsg),                                       \
+        .pdsg_timeout_ms = DT_INST_PROP(index, pdsg_timeout_ms),                           \
+        .pdsg_stop_delta_mv = DT_INST_PROP(index, pdsg_stop_delta_mv),                     \
         .reg0_config = DT_INST_PROP(index, reg0_config),                                   \
         .reg12_config = DT_INST_PROP(index, reg12_config),                                 \
         .max_balanced_cells = DT_INST_PROP(index, max_balanced_cells),                     \
