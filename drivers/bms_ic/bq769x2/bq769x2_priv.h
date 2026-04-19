@@ -73,6 +73,9 @@ struct bms_ic_bq769x2_data
     struct bms_ic_data *ic_data;
     bool config_update_mode_enabled;
     bool auto_balancing;
+    /* Which FETs should currently be on (BMS_SWITCH_* bitmask). Mirrors the desired state
+     * so cascaded set_switches calls compose instead of overwriting each other. */
+    uint8_t fet_enabled_mask;
 };
 
 #endif /* DRIVERS_BMS_IC_BMS_IC_BQ769X2_PRIV_H_ */

@@ -503,6 +503,7 @@ static int bq769x2_configure_voltage_regs(const struct device *dev, struct bms_i
 static int bq769x2_init_config(const struct device *dev)
 {
     const struct bms_ic_bq769x2_config *config = dev->config;
+    struct bms_ic_bq769x2_data *dev_data = dev->data;
     int err = 0;
 
     /* Shunt value based on nominal value of VREF2 (could be improved by calibration) */
@@ -512,8 +513,9 @@ static int bq769x2_init_config(const struct device *dev)
     /* Set resolution for CC2 current to 10 mA and stack/pack voltage to 10 mV */
     err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_CONF_DA, 0x06);
 
-    /* Disable automatic turn-on of all MOSFETs */
+    /* Disable automatic turn-on of all MOSFETs; mirror state locally */
     err |= bq769x2_subcmd_cmd_only(dev, BQ769X2_SUBCMD_ALL_FETS_OFF);
+    dev_data->fet_enabled_mask = 0;
 
     /*
      * Setting FET_EN is required to exit the default FET test mode and enable normal FET
@@ -864,37 +866,43 @@ static void bms_ic_bq769x2_assign_data(const struct device *dev, struct bms_ic_d
 
 static int bms_ic_bq769x2_set_switches(const struct device *dev, uint8_t switches, bool enabled)
 {
-    union bq769x2_reg_fet_status fet_status;
-    int err;
-
-    err = bq769x2_direct_read_u1(dev, BQ769X2_CMD_FET_STATUS, &fet_status.byte);
-    if (err != 0) {
-        return err;
-    }
-
-    /* only lower 4 bytes relevant for FET_CONTROL */
-    fet_status.byte &= 0x0F;
-
-    if (switches & BMS_SWITCH_CHG) {
-        fet_status.CHG_FET = enabled ? 1 : 0;
-    }
-    if (switches & BMS_SWITCH_DIS) {
-        fet_status.DSG_FET = enabled ? 1 : 0;
-    }
-    if (switches & BMS_SWITCH_PDSG) {
-        fet_status.PDSG_FET = enabled ? 1 : 0;
-    }
-    if (switches & BMS_SWITCH_PCHG) {
-        fet_status.PCHG_FET = enabled ? 1 : 0;
-    }
-
-    err = bq769x2_subcmd_write_u1(dev, BQ769X2_SUBCMD_FET_CONTROL, fet_status.byte);
+    struct bms_ic_bq769x2_data *dev_data = dev->data;
+    uint8_t fet_control;
 
     if (enabled) {
-        err |= bq769x2_subcmd_cmd_only(dev, BQ769X2_SUBCMD_ALL_FETS_ON);
+        dev_data->fet_enabled_mask |= switches;
+    }
+    else {
+        dev_data->fet_enabled_mask &= ~switches;
     }
 
-    return err == 0 ? 0 : -EIO;
+    /*
+     * FET_STATUS (direct cmd 0x7F) and FET_CONTROL (subcmd 0x0097) have different bit
+     * layouts AND inverted semantics:
+     *   FET_STATUS:  bit 0 = CHG_FET, 1 = ON
+     *   FET_CONTROL: bit 0 = DSG_OFF, 1 = FORCE_OFF
+     * See BQ76952 TRM SLUUBY2B Tables 12-21 and 12-29, and TI E2E thread 1453973.
+     *
+     * FET_CONTROL is write-only, so we track the desired state in fet_enabled_mask and
+     * rewrite the full byte atomically — cascaded set_switches calls must not race on
+     * a read-modify-write of FET_STATUS (which would silently release previously set
+     * force-off bits).
+     */
+    fet_control = 0;
+    if (!(dev_data->fet_enabled_mask & BMS_SWITCH_DIS)) {
+        fet_control |= BIT(0); /* DSG_OFF */
+    }
+    if (!(dev_data->fet_enabled_mask & BMS_SWITCH_PDSG)) {
+        fet_control |= BIT(1); /* PDSG_OFF */
+    }
+    if (!(dev_data->fet_enabled_mask & BMS_SWITCH_CHG)) {
+        fet_control |= BIT(2); /* CHG_OFF */
+    }
+    if (!(dev_data->fet_enabled_mask & BMS_SWITCH_PCHG)) {
+        fet_control |= BIT(3); /* PCHG_OFF */
+    }
+
+    return bq769x2_subcmd_write_u1(dev, BQ769X2_SUBCMD_FET_CONTROL, fet_control) == 0 ? 0 : -EIO;
 }
 
 #endif /* CONFIG_BMS_IC_SWITCHES */
