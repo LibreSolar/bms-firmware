@@ -866,6 +866,7 @@ static void bms_ic_bq769x2_assign_data(const struct device *dev, struct bms_ic_d
 
 static int bms_ic_bq769x2_set_switches(const struct device *dev, uint8_t switches, bool enabled)
 {
+    const struct bms_ic_bq769x2_config *config = dev->config;
     struct bms_ic_bq769x2_data *dev_data = dev->data;
     uint8_t fet_control;
 
@@ -887,12 +888,15 @@ static int bms_ic_bq769x2_set_switches(const struct device *dev, uint8_t switche
      * rewrite the full byte atomically — cascaded set_switches calls must not race on
      * a read-modify-write of FET_STATUS (which would silently release previously set
      * force-off bits).
+     *
+     * When auto_pdsg is configured, PDSG is managed autonomously by the BQ for bus
+     * pre-discharge, so we must not assert PDSG_OFF.
      */
     fet_control = 0;
     if (!(dev_data->fet_enabled_mask & BMS_SWITCH_DIS)) {
         fet_control |= BIT(0); /* DSG_OFF */
     }
-    if (!(dev_data->fet_enabled_mask & BMS_SWITCH_PDSG)) {
+    if (!config->auto_pdsg && !(dev_data->fet_enabled_mask & BMS_SWITCH_PDSG)) {
         fet_control |= BIT(1); /* PDSG_OFF */
     }
     if (!(dev_data->fet_enabled_mask & BMS_SWITCH_CHG)) {
