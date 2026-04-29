@@ -99,6 +99,7 @@
 		shunt-temp-pin = <BQ769X2_PIN_DFETOFF>;
 		board-max-current = <100>;
 		shunt-resistor-uohm = <300>;
+		auto-pdsg;
 		status = "okay";
 	};
 };
