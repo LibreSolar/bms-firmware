@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: Apache-2.0
+
+sample:
+  name: Libre Solar BMS Firmware
+
+tests:
+  bms.native_sim:
+    build_only: true
+    platform_allow: native_sim
+
+  bms.5s50_sc:
+    build_only: true
+    platform_allow: bms_5s50_sc
+
+  bms.8s50_ic.oled:
+    build_only: true
+    platform_allow: bms_8s50_ic@0.2.0
+    extra_args:
+      - EXTRA_CONF_FILE=oled.conf
+      - SHIELD=uext_oled
+
+  bms.15s80_sc:
+    build_only: true
+    platform_allow: bms_15s80_sc
+
+  bms.16s100_sc:
+    build_only: true
+    platform_allow: bms_16s100_sc
+
+  bms.c1:
+    build_only: true
+    platform_allow: bms_c1@0.4.0
+
+  bms.c1.sysbuild:
+    build_only: true
+    platform_allow: bms_c1@0.4.0
+    sysbuild: true
