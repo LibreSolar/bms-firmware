@@ -739,7 +739,7 @@ static int bq769x2_read_temperatures(const struct device *dev, struct bms_ic_dat
     }
 #endif
 
-#ifdef CONFIG_BMS_IC_CURRENT_MONITORING
+#ifdef CONFIG_BMS_IC_SHUNT_TEMP
     /* Read shunt temperature if a pin was defined in Devicetree */
     if (config->shunt_temp_pin < ARRAY_SIZE(config->pin_config)) {
         err |= bq769x2_direct_read_i2(dev, BQ769X2_CMD_TEMP_CFETOFF + config->shunt_temp_pin * 2U,

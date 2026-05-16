@@ -18,6 +18,12 @@ config BMS_IC_HAS_CURRENT_MONITORING
 	help
 	  Select to indicate that the IC supports current monitoring.
 
+config BMS_IC_HAS_SHUNT_TEMP
+	bool
+	help
+	  Select to indicate that the IC supports shunt temperature sensing
+	  via a configurable pin.
+
 module = BMS_IC
 module-str = bms_ic
 source "subsys/logging/Kconfig.template.log_config"
@@ -36,6 +42,7 @@ config BMS_IC_BQ769X2
 	bool "Texas Instruments bq769x2 series"
 	depends on DT_HAS_TI_BQ769X2_I2C_ENABLED || DT_HAS_TI_BQ769X2_SPI_ENABLED
 	select BMS_IC_HAS_CURRENT_MONITORING
+	select BMS_IC_HAS_SHUNT_TEMP
 	select BMS_IC_HAS_SWITCHES
 	select CRC
 	default y
@@ -72,6 +79,19 @@ config BMS_IC_CURRENT_MONITORING
 	help
 	  Use the current monitoring features if available in the IC. Can be disabled to reduce
 	  code size.
+
+config BMS_IC_SHUNT_TEMP
+	bool "Read shunt temperature via BMS IC"
+	depends on BMS_IC_HAS_SHUNT_TEMP
+	depends on $(dt_node_has_prop,bms-ic,shunt-temp-pin)
+	default y
+	help
+	  Enable reading of the shunt temperature through the BMS IC's configurable
+	  thermistor pin. Only visible when the bms-ic devicetree node has the
+	  shunt-temp-pin property set (the *-pin-config of that pin must also be
+	  configured as NTC input). Hardware support is board-revision-specific,
+	  so this is automatically hidden on boards/revisions that do not wire a
+	  shunt NTC.
 
 config BMS_IC_SWITCHES
 	bool "Control switches via BMS IC"
