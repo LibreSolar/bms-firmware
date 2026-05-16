@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <dt-bindings/bms_ic/bq769x2.h>
+
 / {
 	pcb {
 		version-str = "v0.4";
@@ -29,4 +31,10 @@
 			output-high;
 		};
 	};
+};
+
+&bq76952 {
+	/* DFETOFF wired to shunt NTC on v0.4 only */
+	dfetoff-pin-config = <0x07>;
+	shunt-temp-pin = <BQ769X2_PIN_DFETOFF>;
 };

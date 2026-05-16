@@ -171,7 +171,7 @@ struct bms_ic_data
     /** MOSFET temperature (°C) */
     float mosfet_temp;
 #endif
-#ifdef CONFIG_BMS_IC_CURRENT_MONITORING
+#ifdef CONFIG_BMS_IC_SHUNT_TEMP
     /** Shunt temperature (°C) */
     float shunt_temp;
 #endif
