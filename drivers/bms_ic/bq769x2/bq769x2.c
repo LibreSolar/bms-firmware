@@ -789,7 +789,7 @@ static int bq769x2_read_error_flags(const struct device *dev, struct bms_ic_data
     int err;
 
     /*
-     * Safety alert: immediately set if a fault condition occured
+     * Safety alert: immediately set if a fault condition occurred
      * Safety fault (status registers): only set if alert persists for specified time
      */
 
