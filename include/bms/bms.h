@@ -69,6 +69,12 @@ struct bms_context
     /** Calculated State of Charge (%) */
     float soc;
 
+    /** Accumulated charge since the last SOC update (mA s) */
+    float soc_coulomb_counter_mAs;
+
+    /** Timestamp of the previous current sample (ms), or -1 before the first sample */
+    int64_t soc_last_update_ms;
+
     /** Nominal capacity of battery pack (Ah) */
     float nominal_capacity_Ah;
 
