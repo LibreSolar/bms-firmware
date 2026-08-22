@@ -10,6 +10,9 @@
 
 void bms_soc_reset(struct bms_context *bms, int percent)
 {
+    bms->soc_coulomb_counter_mAs = 0.0F;
+    bms->soc_last_update_ms = -1;
+
     if (percent <= 100 && percent >= 0) {
         bms->soc = percent;
     }
@@ -32,19 +35,22 @@ void bms_soc_reset(struct bms_context *bms, int percent)
 
 void bms_soc_update(struct bms_context *bms)
 {
-    static float coulomb_counter_mAs = 0;
-    static int64_t last_update = 0;
     int64_t now = k_uptime_get();
 
-    coulomb_counter_mAs += bms->ic_data.current * (now - last_update);
-    float soc_delta = coulomb_counter_mAs / (bms->nominal_capacity_Ah * 3.6e4F);
+    if (bms->soc_last_update_ms < 0) {
+        bms->soc_last_update_ms = now;
+        return;
+    }
+
+    bms->soc_coulomb_counter_mAs += bms->ic_data.current * (now - bms->soc_last_update_ms);
+    bms->soc_last_update_ms = now;
+
+    float soc_delta = bms->soc_coulomb_counter_mAs / (bms->nominal_capacity_Ah * 3.6e4F);
 
     if (soc_delta > 0.1F || soc_delta < -0.1F) {
         // only update SoC after significant changes to maintain higher resolution
         float soc_tmp = bms->soc + soc_delta;
         bms->soc = CLAMP(soc_tmp, 0.0F, 100.0F);
-        coulomb_counter_mAs = 0;
+        bms->soc_coulomb_counter_mAs = 0.0F;
     }
-
-    last_update = now;
 }

@@ -41,6 +41,8 @@ float soc_points[NUM_OCV_POINTS] = { 0 };
 void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float nominal_capacity_Ah)
 {
     bms->nominal_capacity_Ah = nominal_capacity_Ah;
+    bms->soc_coulomb_counter_mAs = 0.0F;
+    bms->soc_last_update_ms = -1;
 
     bms->chg_enable = true;
     bms->dis_enable = true;

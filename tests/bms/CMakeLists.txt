@@ -8,4 +8,7 @@ project(bms_common_test)
 FILE(GLOB app_sources src/*.c)
 target_sources(app PRIVATE ${app_sources})
 
-target_sources(app PRIVATE ../../app/src/bms_common.c)
+target_sources(app PRIVATE
+        ../../app/src/bms_common.c
+        ../../app/src/bms_soc.c
+)
