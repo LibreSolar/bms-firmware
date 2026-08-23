@@ -144,7 +144,7 @@ uext_i2c: &i2c1 {
 		address-width = <8>;
 		/*
 		 * timeout of 5 ms as suggested in datasheet seems too optimistic
-		 * (several write errors occured during testing)
+		 * (several write errors occurred during testing)
 		 */
 		timeout = <7>;
 	};
