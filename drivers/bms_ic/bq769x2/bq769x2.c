@@ -408,7 +408,9 @@ static int bq769x2_configure_balancing(const struct device *dev, struct bms_ic_c
         dev_data->auto_balancing = ic_conf->auto_balancing;
         ic_conf->bal_cell_voltage_min = (float)cell_voltage_min * 0.001F;
         ic_conf->bal_cell_voltage_diff = (float)cell_voltage_delta * 0.001F;
-        ic_conf->bal_idle_current = (float)idle_current_threshold * BQ769X2_USER_AMPS;
+        /* round to mA, so the value read back is stored as configured (e.g. 0.1 A) */
+        ic_conf->bal_idle_current =
+            roundf(idle_current_threshold * BQ769X2_USER_AMPS * 1000.0F) / 1000.0F;
         return 0;
     }
     else {
