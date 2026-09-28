@@ -505,6 +505,33 @@ ZTEST(bq769x2_functions, test_apply_temp_limits)
                   bq769x2_emul_get_data_mem(bms_ic_emul, 0x9262));
 }
 
+ZTEST(bq769x2_functions, test_apply_balancing_idle_current)
+{
+    int err;
+
+    /* Dsg/Chg Current Threshold are in user-amps (10 mA as configured by the driver) */
+    bms.ic_conf.bal_idle_current = 0.1F;
+    err = bms_ic_configure(bms.ic_dev, &bms.ic_conf, BMS_IC_CONF_BALANCING);
+    zassert_equal(BMS_IC_CONF_BALANCING, err);
+    zassert_equal(10, bq769x2_emul_get_data_mem(bms_ic_emul, 0x9310));
+    zassert_equal(0, bq769x2_emul_get_data_mem(bms_ic_emul, 0x9311));
+    zassert_equal(10, bq769x2_emul_get_data_mem(bms_ic_emul, 0x9312));
+    zassert_equal(0, bq769x2_emul_get_data_mem(bms_ic_emul, 0x9313));
+    zassert_within(0.1F, bms.ic_conf.bal_idle_current, 1e-6F);
+}
+
+ZTEST(bq769x2_functions, test_read_current)
+{
+    /* CC2 current in user-amps (10 mA): -1234 = -12.34 A */
+    int16_t raw = -1234;
+    bq769x2_emul_set_direct_mem(bms_ic_emul, 0x3A, raw & 0xFF);
+    bq769x2_emul_set_direct_mem(bms_ic_emul, 0x3B, (raw >> 8) & 0xFF);
+
+    int err = bms_ic_read_data(bms.ic_dev, BMS_IC_DATA_CURRENT);
+    zassert_equal(0, err);
+    zassert_within(-12.34F, bms.ic_data.current, 1e-3F);
+}
+
 ZTEST(bq769x2_functions, test_read_shunt_temp)
 {
     /* 25°C = 298.15 K = 2981 in 0.1K units */
