@@ -27,6 +27,9 @@
 
 LOG_MODULE_REGISTER(bms_ic_bq769x2, CONFIG_BMS_IC_LOG_LEVEL);
 
+/* unit of current values in the IC (user-amps), as selected in DA Configuration */
+#define BQ769X2_USER_AMPS 0.01F
+
 static int bq769x2_write_bytes_i2c(const struct device *dev, const uint8_t reg_addr,
                                    const uint8_t *data, const size_t num_bytes)
 {
@@ -388,7 +391,8 @@ static int bq769x2_configure_balancing(const struct device *dev, struct bms_ic_c
     err |= bq769x2_datamem_write_i1(dev, BQ769X2_SET_CBAL_MAX_CELL_TEMP, otd_threshold);
 
     /* relaxed status is defined based on global idle current thresholds */
-    int16_t idle_current_threshold = ic_conf->bal_idle_current * 1000.0F;
+    int16_t idle_current_threshold =
+        CLAMP(lroundf(ic_conf->bal_idle_current / BQ769X2_USER_AMPS), 0, INT16_MAX);
     err |= bq769x2_datamem_write_i2(dev, BQ769X2_SET_DSG_CURR_TH, idle_current_threshold);
     err |= bq769x2_datamem_write_i2(dev, BQ769X2_SET_CHG_CURR_TH, idle_current_threshold);
 
@@ -404,7 +408,7 @@ static int bq769x2_configure_balancing(const struct device *dev, struct bms_ic_c
         dev_data->auto_balancing = ic_conf->auto_balancing;
         ic_conf->bal_cell_voltage_min = (float)cell_voltage_min * 0.001F;
         ic_conf->bal_cell_voltage_diff = (float)cell_voltage_delta * 0.001F;
-        ic_conf->bal_idle_current = (float)idle_current_threshold * 0.001F;
+        ic_conf->bal_idle_current = (float)idle_current_threshold * BQ769X2_USER_AMPS;
         return 0;
     }
     else {
@@ -510,7 +514,7 @@ static int bq769x2_init_config(const struct device *dev)
     err |= bq769x2_datamem_write_f4(dev, BQ769X2_CAL_CURR_CC_GAIN,
                                     7568.4F / config->shunt_resistor_uohm);
 
-    /* Set resolution for CC2 current to 10 mA and stack/pack voltage to 10 mV */
+    /* Set user-amps to 10 mA (BQ769X2_USER_AMPS) and stack/pack voltage to 10 mV */
     err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_CONF_DA, 0x06);
 
     /* Disable automatic turn-on of all MOSFETs; mirror state locally */
@@ -759,7 +763,7 @@ static int bq769x2_read_current(const struct device *dev, struct bms_ic_data *ic
     int err;
 
     err = bq769x2_direct_read_i2(dev, BQ769X2_CMD_CURRENT_CC2, &current);
-    ic_data->current = current * 1e-2F;
+    ic_data->current = current * BQ769X2_USER_AMPS;
 
     return err;
 }
