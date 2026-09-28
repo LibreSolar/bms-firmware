@@ -517,7 +517,7 @@ ZTEST(bq769x2_functions, test_apply_balancing_idle_current)
     zassert_equal(0, bq769x2_emul_get_data_mem(bms_ic_emul, 0x9311));
     zassert_equal(10, bq769x2_emul_get_data_mem(bms_ic_emul, 0x9312));
     zassert_equal(0, bq769x2_emul_get_data_mem(bms_ic_emul, 0x9313));
-    zassert_within(0.1F, bms.ic_conf.bal_idle_current, 1e-6F);
+    zassert_equal(0.1F, bms.ic_conf.bal_idle_current);
 }
 
 ZTEST(bq769x2_functions, test_read_current)
