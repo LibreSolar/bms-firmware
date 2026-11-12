@@ -11,5 +11,12 @@
                  * See: https://github.com/LibreSolar/bms-firmware/pull/78
                  */
                 zephyr,console = &uart0;
+
+                /*
+                 * Same as MCUboot's default app.overlay, which is not applied because this
+                 * board overlay takes precedence. Required since Zephyr v4.5 to flash MCUboot
+                 * at the boot partition offset instead of slot 0.
+                 */
+                zephyr,code-partition = &boot_partition;
         };
 };

@@ -165,25 +165,29 @@ uext_i2c: &i2c1 {
 
 &flash0 {
 	partitions {
-		compatible = "fixed-partitions";
 		#address-cells = <1>;
 		#size-cells = <1>;
+		ranges;
 
 		boot_partition: partition@0 {
+			compatible = "zephyr,mapped-partition";
 			label = "mcuboot";
 			reg = <0x00000000 0x0000C000>;
 			read-only;
 		};
 		slot0_partition: partition@C000 {
+			compatible = "zephyr,mapped-partition";
 			label = "image-0";
 			reg = <0x0000C000 0x00032000>;
 		};
 		slot1_partition: partition@3E000 {
+			compatible = "zephyr,mapped-partition";
 			label = "image-1";
 			reg = <0x0003E000 0x00032000>;
 		};
 		/* final 64KiB reserved for app storage partition */
 		storage_partition: partition@70000 {
+			compatible = "zephyr,mapped-partition";
 			label = "storage";
 			reg = <0x00070000 0x00010000>;
 		};

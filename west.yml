@@ -13,7 +13,7 @@ manifest:
   projects:
     - name: zephyr
       remote: zephyrproject
-      revision: v4.4-branch
+      revision: v4.5-branch
       import:
         name-allowlist:
           - cmsis_6
@@ -27,7 +27,7 @@ manifest:
           - zcbor
     - name: thingset-zephyr-sdk
       remote: thingset
-      revision: 8b32f7db1898dc51daa1834b3f8058de6a67166f
+      revision: d43beb494feaa938655b8768a2f77a943c17c98e
       path: thingset-zephyr-sdk
       import:
         name-allowlist:
