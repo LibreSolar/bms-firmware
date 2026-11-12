@@ -1,8 +1,8 @@
 BMS application
 ===============
 
-.. doxygenfile:: include/bms/bms_common.h
+.. doxygenfile:: bms_common.h
    :project: app
 
-.. doxygenfile:: include/bms/bms.h
+.. doxygenfile:: bms.h
    :project: app
