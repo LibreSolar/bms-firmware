@@ -7,10 +7,13 @@ DEFAULT_BRANCH="origin/main"
 
 if [ -x "$(command -v clang-format-diff)" ]; then
 CLANG_FORMAT_DIFF="clang-format-diff"
-elif [ -x "$(command -v clang-format-diff-15)" ]; then
-CLANG_FORMAT_DIFF="clang-format-diff-15"
+elif [ -n "$(compgen -c clang-format-diff- | sort -V | tail -n1)" ]; then
+CLANG_FORMAT_DIFF="$(compgen -c clang-format-diff- | sort -V | tail -n1)"
 elif [ -x "$(command -v /usr/share/clang/clang-format-diff.py)" ]; then
 CLANG_FORMAT_DIFF="/usr/share/clang/clang-format-diff.py -v"
+else
+echo "clang-format-diff not found"
+exit 1
 fi
 
 echo "Style check for diff between branch $DEFAULT_BRANCH"

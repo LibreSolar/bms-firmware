@@ -33,7 +33,7 @@ jobs:
       - name: Coding style check
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-format-15 colordiff
+          sudo apt-get install -y clang-format colordiff
           git status
           bash scripts/check-style.sh
 
