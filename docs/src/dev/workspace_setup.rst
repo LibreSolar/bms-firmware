@@ -3,7 +3,7 @@ Workspace Setup
 ===============
 
 This guide assumes you have already installed the Zephyr SDK and the ``west`` tool according to the
-`Zephyr documentation <https://docs.zephyrproject.org/latest/getting_started/>`_.
+`Zephyr documentation <https://docs.zephyrproject.org/latest/develop/getting_started/index.html>`_.
 
 Below commands initialize a new workspace and pull all required source files:
 
