@@ -1,11 +1,13 @@
 name: Documentation
 
-on:
-  push:
-    branches: [main]
+on: [push, pull_request]
 
 jobs:
   docs:
+    # Avoid running twice if pushing to a PR branch in the base repo
+    if: >
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,6 +26,8 @@ jobs:
           make html
 
       - name: Deploy to gh-pages
+        # Build docs on all branches to catch errors early, but only publish main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
