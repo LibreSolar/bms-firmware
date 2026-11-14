@@ -187,8 +187,15 @@ __weak void bms_state_machine(struct bms_context *bms)
         case BMS_STATE_NORMAL:
             if (!bms_dis_allowed(bms)) {
                 bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS, false);
-                bms->state = BMS_STATE_CHG;
-                LOG_INF("NORMAL -> CHG (error flags: 0x%08x)", bms->ic_data.error_flags);
+                if (!bms_chg_allowed(bms)) {
+                    bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, false);
+                    bms->state = BMS_STATE_OFF;
+                    LOG_INF("NORMAL -> OFF (error flags: 0x%08x)", bms->ic_data.error_flags);
+                }
+                else {
+                    bms->state = BMS_STATE_CHG;
+                    LOG_INF("NORMAL -> CHG (error flags: 0x%08x)", bms->ic_data.error_flags);
+                }
             }
             else if (!bms_chg_allowed(bms)) {
                 bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, false);

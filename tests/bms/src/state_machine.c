@@ -232,3 +232,31 @@ ZTEST(state_machine, test_balancing2normal_if_done)
 */
 
 ZTEST_SUITE(state_machine, NULL, NULL, NULL, NULL, NULL);
+
+ZTEST(state_machine, test_normal2off_when_both_manually_disabled)
+{
+    init_conf();
+    bms.state = BMS_STATE_NORMAL;
+    bms.chg_enable = false;
+    bms.dis_enable = false;
+    bms_state_machine(&bms);
+    zassert_equal(BMS_STATE_OFF, bms.state);
+}
+
+ZTEST(state_machine, test_normal2off_on_common_error)
+{
+    init_conf();
+    bms.state = BMS_STATE_NORMAL;
+    bms.ic_data.error_flags = BMS_ERR_INT_OVERTEMP;
+    bms_state_machine(&bms);
+    zassert_equal(BMS_STATE_OFF, bms.state);
+}
+
+ZTEST(state_machine, test_normal2off_on_independent_direction_errors)
+{
+    init_conf();
+    bms.state = BMS_STATE_NORMAL;
+    bms.ic_data.error_flags = BMS_ERR_CHG_OVERTEMP | BMS_ERR_DIS_UNDERTEMP;
+    bms_state_machine(&bms);
+    zassert_equal(BMS_STATE_OFF, bms.state);
+}
