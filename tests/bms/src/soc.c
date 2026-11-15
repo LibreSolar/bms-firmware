@@ -130,3 +130,29 @@ ZTEST(soc, test_explicit_soc_overrides_curve)
     zassert_equal(bms.soc_last_update_ms, -1);
     zassert_equal(bms.soc_coulomb_counter_mAs, 0.0F);
 }
+
+static void check_invalid_capacity(float capacity)
+{
+    struct bms_context bms = soc_test_context(1.0F);
+    bms.nominal_capacity_Ah = capacity;
+    bms_soc_reset(&bms, 50);
+    bms_soc_update(&bms);
+    k_sleep(K_MSEC(10000));
+    bms_soc_update(&bms);
+    zassert_equal(bms.soc, 50.0F);
+
+    bms.nominal_capacity_Ah = 0.001F;
+    k_sleep(K_MSEC(10));
+    bms_soc_update(&bms);
+    zassert_within(bms.soc, 50.0F + 10.0F / 36.0F, 0.0001F);
+}
+
+ZTEST(soc, test_zero_capacity_does_not_invent_full_charge)
+{
+    check_invalid_capacity(0.0F);
+}
+
+ZTEST(soc, test_negative_capacity_does_not_reverse_charge_direction)
+{
+    check_invalid_capacity(-1.0F);
+}

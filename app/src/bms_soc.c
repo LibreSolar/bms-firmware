@@ -37,6 +37,12 @@ void bms_soc_update(struct bms_context *bms)
 {
     int64_t now = k_uptime_get();
 
+    if (bms->nominal_capacity_Ah <= 0.0F) {
+        bms->soc_last_update_ms = now;
+        bms->soc_coulomb_counter_mAs = 0.0F;
+        return;
+    }
+
     if (bms->soc_last_update_ms < 0) {
         bms->soc_last_update_ms = now;
         return;
