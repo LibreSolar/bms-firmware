@@ -205,7 +205,7 @@ THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_PACK_VOLTAGE, "rPackVoltage_V",
                         &bms.ic_data.external_voltage, 2, THINGSET_ANY_R, TS_SUBSET_LIVE);
 #endif
 
-#ifdef CONFIG_BMS_IC_SWITCHES
+#ifdef BMS_IC_HAS_CURRENT_MONITORING
 THINGSET_ADD_ITEM_FLOAT(APP_ID_MEAS, APP_ID_MEAS_PACK_CURRENT, "rPackCurrent_A",
                         &bms.ic_data.current, 2, THINGSET_ANY_R, TS_SUBSET_LIVE);
 #endif
