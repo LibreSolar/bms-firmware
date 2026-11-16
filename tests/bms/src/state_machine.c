@@ -260,3 +260,24 @@ ZTEST(state_machine, test_normal2off_on_independent_direction_errors)
     bms_state_machine(&bms);
     zassert_equal(BMS_STATE_OFF, bms.state);
 }
+
+ZTEST(state_machine, test_off2normal_if_both_ok)
+{
+    init_conf();
+    bms_state_machine(&bms);
+    zassert_equal(BMS_STATE_NORMAL, bms.state);
+}
+
+ZTEST(state_machine, test_off_stays_off_if_both_nok)
+{
+    init_conf();
+    bms.chg_enable = false;
+    bms.dis_enable = false;
+    bms_state_machine(&bms);
+    zassert_equal(BMS_STATE_OFF, bms.state);
+
+    init_conf();
+    bms.ic_data.error_flags = BMS_ERR_INT_OVERTEMP;
+    bms_state_machine(&bms);
+    zassert_equal(BMS_STATE_OFF, bms.state);
+}
