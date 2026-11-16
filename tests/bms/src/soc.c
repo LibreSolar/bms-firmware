@@ -142,9 +142,11 @@ static void check_invalid_capacity(float capacity)
     zassert_equal(bms.soc, 50.0F);
 
     bms.nominal_capacity_Ah = 0.001F;
+    int64_t previous_update_ms = bms.soc_last_update_ms;
     k_sleep(K_MSEC(10));
     bms_soc_update(&bms);
-    zassert_within(bms.soc, 50.0F + 10.0F / 36.0F, 0.0001F);
+    float elapsed_ms = bms.soc_last_update_ms - previous_update_ms;
+    zassert_within(bms.soc, 50.0F + elapsed_ms / 36.0F, 0.0001F);
 }
 
 ZTEST(soc, test_zero_capacity_does_not_invent_full_charge)
