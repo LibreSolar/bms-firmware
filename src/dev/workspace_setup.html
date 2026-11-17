@@ -1,0 +1,404 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workspace Setup &mdash; Battery Management System  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Building and Flashing" href="building_flashing.html" />
+    <link rel="prev" title="Supported Hardware" href="../supported_hardware.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #005e83" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Battery Management System
+              <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../supported_hardware.html">Supported Hardware</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../supported_hardware.html#boards">Boards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../supported_hardware.html#bms-ics">BMS ICs</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Workspace Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="building_flashing.html">Building and Flashing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="building_flashing.html#boards-with-esp32-mcu">Boards with ESP32 MCU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="building_flashing.html#boards-with-stm32-mcu">Boards with STM32 MCU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="building_flashing.html#device-firmware-upgrade-dfu-over-can">Device Firmware Upgrade (DFU) over CAN</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="customization.html">Customization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="customization.html#hardware-specific-changes">Hardware-specific changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customization.html#application-firmware-configuration">Application firmware configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="customization.html#change-battery-capacity-cell-type-and-number-of-cells-in-series">Change battery capacity, cell type and number of cells in series</a></li>
+<li class="toctree-l3"><a class="reference internal" href="customization.html#configure-serial-interface">Configure serial interface</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="customization.html#shields-for-uext-connector">Shields for UEXT connector</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="simulator.html">Simulator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="unit_tests.html">Unit Tests</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/bms.html">BMS application</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_SWITCH_CHG"><code class="docutils literal notranslate"><span class="pre">BMS_SWITCH_CHG</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_SWITCH_DIS"><code class="docutils literal notranslate"><span class="pre">BMS_SWITCH_DIS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_SWITCH_PDSG"><code class="docutils literal notranslate"><span class="pre">BMS_SWITCH_PDSG</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_SWITCH_PCHG"><code class="docutils literal notranslate"><span class="pre">BMS_SWITCH_PCHG</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_ERR_CELL_UNDERVOLTAGE"><code class="docutils literal notranslate"><span class="pre">BMS_ERR_CELL_UNDERVOLTAGE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_ERR_CELL_OVERVOLTAGE"><code class="docutils literal notranslate"><span class="pre">BMS_ERR_CELL_OVERVOLTAGE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_ERR_SHORT_CIRCUIT"><code class="docutils literal notranslate"><span class="pre">BMS_ERR_SHORT_CIRCUIT</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_ERR_DIS_OVERCURRENT"><code class="docutils literal notranslate"><span class="pre">BMS_ERR_DIS_OVERCURRENT</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_ERR_CHG_OVERCURRENT"><code class="docutils literal notranslate"><span class="pre">BMS_ERR_CHG_OVERCURRENT</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_ERR_OPEN_WIRE"><code class="docutils literal notranslate"><span class="pre">BMS_ERR_OPEN_WIRE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_ERR_DIS_UNDERTEMP"><code class="docutils literal notranslate"><span class="pre">BMS_ERR_DIS_UNDERTEMP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_ERR_DIS_OVERTEMP"><code class="docutils literal notranslate"><span class="pre">BMS_ERR_DIS_OVERTEMP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_ERR_CHG_UNDERTEMP"><code class="docutils literal notranslate"><span class="pre">BMS_ERR_CHG_UNDERTEMP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_ERR_CHG_OVERTEMP"><code class="docutils literal notranslate"><span class="pre">BMS_ERR_CHG_OVERTEMP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_ERR_INT_OVERTEMP"><code class="docutils literal notranslate"><span class="pre">BMS_ERR_INT_OVERTEMP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_ERR_CELL_FAILURE"><code class="docutils literal notranslate"><span class="pre">BMS_ERR_CELL_FAILURE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_ERR_DIS_OFF"><code class="docutils literal notranslate"><span class="pre">BMS_ERR_DIS_OFF</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_ERR_CHG_OFF"><code class="docutils literal notranslate"><span class="pre">BMS_ERR_CHG_OFF</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_ERR_FET_OVERTEMP"><code class="docutils literal notranslate"><span class="pre">BMS_ERR_FET_OVERTEMP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.BMS_ERR_ALL"><code class="docutils literal notranslate"><span class="pre">BMS_ERR_ALL</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.NUM_OCV_POINTS"><code class="docutils literal notranslate"><span class="pre">NUM_OCV_POINTS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.bms_state"><code class="docutils literal notranslate"><span class="pre">bms_state</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_state.BMS_STATE_OFF"><code class="docutils literal notranslate"><span class="pre">BMS_STATE_OFF</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_state.BMS_STATE_CHG"><code class="docutils literal notranslate"><span class="pre">BMS_STATE_CHG</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_state.BMS_STATE_DIS"><code class="docutils literal notranslate"><span class="pre">BMS_STATE_DIS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_state.BMS_STATE_NORMAL"><code class="docutils literal notranslate"><span class="pre">BMS_STATE_NORMAL</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_state.BMS_STATE_SHUTDOWN"><code class="docutils literal notranslate"><span class="pre">BMS_STATE_SHUTDOWN</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.bms_cell_type"><code class="docutils literal notranslate"><span class="pre">bms_cell_type</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_cell_type.CELL_TYPE_LFP"><code class="docutils literal notranslate"><span class="pre">CELL_TYPE_LFP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_cell_type.CELL_TYPE_NMC"><code class="docutils literal notranslate"><span class="pre">CELL_TYPE_NMC</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_cell_type.CELL_TYPE_LTO"><code class="docutils literal notranslate"><span class="pre">CELL_TYPE_LTO</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.bms_init_config"><code class="docutils literal notranslate"><span class="pre">bms_init_config()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.bms_state_machine"><code class="docutils literal notranslate"><span class="pre">bms_state_machine()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.bms_shutdown"><code class="docutils literal notranslate"><span class="pre">bms_shutdown()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.bms_soc_update"><code class="docutils literal notranslate"><span class="pre">bms_soc_update()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.bms_soc_reset"><code class="docutils literal notranslate"><span class="pre">bms_soc_reset()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.bms_chg_error"><code class="docutils literal notranslate"><span class="pre">bms_chg_error()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.bms_dis_error"><code class="docutils literal notranslate"><span class="pre">bms_dis_error()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.bms_chg_allowed"><code class="docutils literal notranslate"><span class="pre">bms_chg_allowed()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.bms_dis_allowed"><code class="docutils literal notranslate"><span class="pre">bms_dis_allowed()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms.html#c.bms_context"><code class="docutils literal notranslate"><span class="pre">bms_context</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_context.state"><code class="docutils literal notranslate"><span class="pre">state</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_context.chg_enable"><code class="docutils literal notranslate"><span class="pre">chg_enable</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_context.dis_enable"><code class="docutils literal notranslate"><span class="pre">dis_enable</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_context.full"><code class="docutils literal notranslate"><span class="pre">full</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_context.empty"><code class="docutils literal notranslate"><span class="pre">empty</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_context.soc"><code class="docutils literal notranslate"><span class="pre">soc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_context.soc_coulomb_counter_mAs"><code class="docutils literal notranslate"><span class="pre">soc_coulomb_counter_mAs</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_context.soc_last_update_ms"><code class="docutils literal notranslate"><span class="pre">soc_last_update_ms</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_context.nominal_capacity_Ah"><code class="docutils literal notranslate"><span class="pre">nominal_capacity_Ah</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_context.ocv_points"><code class="docutils literal notranslate"><span class="pre">ocv_points</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_context.soc_points"><code class="docutils literal notranslate"><span class="pre">soc_points</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_context.ic_dev"><code class="docutils literal notranslate"><span class="pre">ic_dev</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_context.ic_conf"><code class="docutils literal notranslate"><span class="pre">ic_conf</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms.html#c.bms_context.ic_data"><code class="docutils literal notranslate"><span class="pre">ic_data</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/bms_ic.html">BMS front-end IC driver</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.BMS_IC_CONF_VOLTAGE_LIMITS"><code class="docutils literal notranslate"><span class="pre">BMS_IC_CONF_VOLTAGE_LIMITS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.BMS_IC_CONF_TEMP_LIMITS"><code class="docutils literal notranslate"><span class="pre">BMS_IC_CONF_TEMP_LIMITS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.BMS_IC_CONF_CURRENT_LIMITS"><code class="docutils literal notranslate"><span class="pre">BMS_IC_CONF_CURRENT_LIMITS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.BMS_IC_CONF_BALANCING"><code class="docutils literal notranslate"><span class="pre">BMS_IC_CONF_BALANCING</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.BMS_IC_CONF_ALERTS"><code class="docutils literal notranslate"><span class="pre">BMS_IC_CONF_ALERTS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.BMS_IC_CONF_VOLTAGE_REGS"><code class="docutils literal notranslate"><span class="pre">BMS_IC_CONF_VOLTAGE_REGS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.BMS_IC_CONF_ALL"><code class="docutils literal notranslate"><span class="pre">BMS_IC_CONF_ALL</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.BMS_IC_DATA_CELL_VOLTAGES"><code class="docutils literal notranslate"><span class="pre">BMS_IC_DATA_CELL_VOLTAGES</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.BMS_IC_DATA_PACK_VOLTAGES"><code class="docutils literal notranslate"><span class="pre">BMS_IC_DATA_PACK_VOLTAGES</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.BMS_IC_DATA_TEMPERATURES"><code class="docutils literal notranslate"><span class="pre">BMS_IC_DATA_TEMPERATURES</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.BMS_IC_DATA_CURRENT"><code class="docutils literal notranslate"><span class="pre">BMS_IC_DATA_CURRENT</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.BMS_IC_DATA_BALANCING"><code class="docutils literal notranslate"><span class="pre">BMS_IC_DATA_BALANCING</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.BMS_IC_DATA_ERROR_FLAGS"><code class="docutils literal notranslate"><span class="pre">BMS_IC_DATA_ERROR_FLAGS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.BMS_IC_DATA_ALL"><code class="docutils literal notranslate"><span class="pre">BMS_IC_DATA_ALL</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_mode"><code class="docutils literal notranslate"><span class="pre">bms_ic_mode</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_mode.BMS_IC_MODE_ACTIVE"><code class="docutils literal notranslate"><span class="pre">BMS_IC_MODE_ACTIVE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_mode.BMS_IC_MODE_IDLE"><code class="docutils literal notranslate"><span class="pre">BMS_IC_MODE_IDLE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_mode.BMS_IC_MODE_STANDBY"><code class="docutils literal notranslate"><span class="pre">BMS_IC_MODE_STANDBY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_mode.BMS_IC_MODE_OFF"><code class="docutils literal notranslate"><span class="pre">BMS_IC_MODE_OFF</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_configure"><code class="docutils literal notranslate"><span class="pre">bms_ic_configure()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_assign_data"><code class="docutils literal notranslate"><span class="pre">bms_ic_assign_data()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_read_data"><code class="docutils literal notranslate"><span class="pre">bms_ic_read_data()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_balance"><code class="docutils literal notranslate"><span class="pre">bms_ic_balance()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_set_mode"><code class="docutils literal notranslate"><span class="pre">bms_ic_set_mode()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_read_mem"><code class="docutils literal notranslate"><span class="pre">bms_ic_read_mem()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_write_mem"><code class="docutils literal notranslate"><span class="pre">bms_ic_write_mem()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_debug_print_mem"><code class="docutils literal notranslate"><span class="pre">bms_ic_debug_print_mem()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf"><code class="docutils literal notranslate"><span class="pre">bms_ic_conf</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.cell_chg_voltage_limit"><code class="docutils literal notranslate"><span class="pre">cell_chg_voltage_limit</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.cell_dis_voltage_limit"><code class="docutils literal notranslate"><span class="pre">cell_dis_voltage_limit</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.cell_ov_limit"><code class="docutils literal notranslate"><span class="pre">cell_ov_limit</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.cell_ov_reset"><code class="docutils literal notranslate"><span class="pre">cell_ov_reset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.cell_ov_delay_ms"><code class="docutils literal notranslate"><span class="pre">cell_ov_delay_ms</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.cell_uv_limit"><code class="docutils literal notranslate"><span class="pre">cell_uv_limit</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.cell_uv_reset"><code class="docutils literal notranslate"><span class="pre">cell_uv_reset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.cell_uv_delay_ms"><code class="docutils literal notranslate"><span class="pre">cell_uv_delay_ms</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.dis_ot_limit"><code class="docutils literal notranslate"><span class="pre">dis_ot_limit</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.dis_ut_limit"><code class="docutils literal notranslate"><span class="pre">dis_ut_limit</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.chg_ot_limit"><code class="docutils literal notranslate"><span class="pre">chg_ot_limit</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.chg_ut_limit"><code class="docutils literal notranslate"><span class="pre">chg_ut_limit</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.temp_limit_hyst"><code class="docutils literal notranslate"><span class="pre">temp_limit_hyst</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.bal_cell_voltage_diff"><code class="docutils literal notranslate"><span class="pre">bal_cell_voltage_diff</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.bal_cell_voltage_min"><code class="docutils literal notranslate"><span class="pre">bal_cell_voltage_min</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.bal_idle_current"><code class="docutils literal notranslate"><span class="pre">bal_idle_current</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.bal_idle_delay"><code class="docutils literal notranslate"><span class="pre">bal_idle_delay</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.auto_balancing"><code class="docutils literal notranslate"><span class="pre">auto_balancing</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.vregs_enable"><code class="docutils literal notranslate"><span class="pre">vregs_enable</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_conf.alert_mask"><code class="docutils literal notranslate"><span class="pre">alert_mask</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_data"><code class="docutils literal notranslate"><span class="pre">bms_ic_data</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_data.cell_voltages"><code class="docutils literal notranslate"><span class="pre">cell_voltages</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_data.cell_voltage_max"><code class="docutils literal notranslate"><span class="pre">cell_voltage_max</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_data.cell_voltage_min"><code class="docutils literal notranslate"><span class="pre">cell_voltage_min</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_data.cell_voltage_avg"><code class="docutils literal notranslate"><span class="pre">cell_voltage_avg</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_data.total_voltage"><code class="docutils literal notranslate"><span class="pre">total_voltage</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_data.cell_temps"><code class="docutils literal notranslate"><span class="pre">cell_temps</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_data.cell_temp_max"><code class="docutils literal notranslate"><span class="pre">cell_temp_max</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_data.cell_temp_min"><code class="docutils literal notranslate"><span class="pre">cell_temp_min</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_data.cell_temp_avg"><code class="docutils literal notranslate"><span class="pre">cell_temp_avg</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_data.ic_temp"><code class="docutils literal notranslate"><span class="pre">ic_temp</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_data.connected_cells"><code class="docutils literal notranslate"><span class="pre">connected_cells</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_data.used_thermistors"><code class="docutils literal notranslate"><span class="pre">used_thermistors</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_data.balancing_status"><code class="docutils literal notranslate"><span class="pre">balancing_status</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/bms_ic.html#c.bms_ic_data.error_flags"><code class="docutils literal notranslate"><span class="pre">error_flags</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/data_objects.html">Data Objects</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_DEVICE"><code class="docutils literal notranslate"><span class="pre">APP_ID_DEVICE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_DEVICE_MANUFACTURER"><code class="docutils literal notranslate"><span class="pre">APP_ID_DEVICE_MANUFACTURER</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_DEVICE_TYPE"><code class="docutils literal notranslate"><span class="pre">APP_ID_DEVICE_TYPE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_DEVICE_HW_VER"><code class="docutils literal notranslate"><span class="pre">APP_ID_DEVICE_HW_VER</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_DEVICE_FW_VER"><code class="docutils literal notranslate"><span class="pre">APP_ID_DEVICE_FW_VER</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_DEVICE_SHUTDOWN"><code class="docutils literal notranslate"><span class="pre">APP_ID_DEVICE_SHUTDOWN</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_DEVICE_RESET"><code class="docutils literal notranslate"><span class="pre">APP_ID_DEVICE_RESET</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_DEVICE_PRINT_REG"><code class="docutils literal notranslate"><span class="pre">APP_ID_DEVICE_PRINT_REG</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_DEVICE_PRINT_REG_ADDR"><code class="docutils literal notranslate"><span class="pre">APP_ID_DEVICE_PRINT_REG_ADDR</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_DEVICE_PRINT_REGS"><code class="docutils literal notranslate"><span class="pre">APP_ID_DEVICE_PRINT_REGS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_NOMINAL_CAPACITY"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_NOMINAL_CAPACITY</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_SHORT_CIRCUIT_CURRENT"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_SHORT_CIRCUIT_CURRENT</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_SHORT_CIRCUIT_DELAY"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_SHORT_CIRCUIT_DELAY</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_DIS_OVERCURRENT"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_DIS_OVERCURRENT</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_DIS_OVERCURRENT_DELAY"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_DIS_OVERCURRENT_DELAY</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_CHG_OVERCURRENT"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_CHG_OVERCURRENT</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_CHG_OVERCURRENT_DELAY"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_CHG_OVERCURRENT_DELAY</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_DIS_MAX_TEMP"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_DIS_MAX_TEMP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_DIS_MIN_TEMP"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_DIS_MIN_TEMP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_CHG_MAX_TEMP"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_CHG_MAX_TEMP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_CHG_MIN_TEMP"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_CHG_MIN_TEMP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_TEMP_HYST"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_TEMP_HYST</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_CELL_OVERVOLTAGE"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_CELL_OVERVOLTAGE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_CELL_OVERVOLTAGE_RESET"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_CELL_OVERVOLTAGE_RESET</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_CELL_OVERVOLTAGE_DELAY"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_CELL_OVERVOLTAGE_DELAY</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_CELL_UNDERVOLTAGE"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_CELL_UNDERVOLTAGE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_CELL_UNDERVOLTAGE_RESET"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_CELL_UNDERVOLTAGE_RESET</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_CELL_UNDERVOLTAGE_DELAY"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_CELL_UNDERVOLTAGE_DELAY</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_BAL_TARGET_DIFF"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_BAL_TARGET_DIFF</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_BAL_MIN_VOLTAGE"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_BAL_MIN_VOLTAGE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_BAL_IDLE_DELAY"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_BAL_IDLE_DELAY</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_BAL_IDLE_CURRENT"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_BAL_IDLE_CURRENT</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_PRESET_NMC"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_PRESET_NMC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_PRESET_NMC_CAPACITY"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_PRESET_NMC_CAPACITY</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_PRESET_LFP"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_PRESET_LFP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_PRESET_LFP_CAPACITY"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_PRESET_LFP_CAPACITY</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_PRESET_LTO"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_PRESET_LTO</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_PRESET_LTO_CAPACITY"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_PRESET_LTO_CAPACITY</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_OCV_POINTS"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_OCV_POINTS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_CONF_SOC_POINTS"><code class="docutils literal notranslate"><span class="pre">APP_ID_CONF_SOC_POINTS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_MEAS"><code class="docutils literal notranslate"><span class="pre">APP_ID_MEAS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_MEAS_PACK_VOLTAGE"><code class="docutils literal notranslate"><span class="pre">APP_ID_MEAS_PACK_VOLTAGE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_MEAS_STACK_VOLTAGE"><code class="docutils literal notranslate"><span class="pre">APP_ID_MEAS_STACK_VOLTAGE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_MEAS_PACK_CURRENT"><code class="docutils literal notranslate"><span class="pre">APP_ID_MEAS_PACK_CURRENT</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_MEAS_CELL_TEMPS"><code class="docutils literal notranslate"><span class="pre">APP_ID_MEAS_CELL_TEMPS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_MEAS_IC_TEMP"><code class="docutils literal notranslate"><span class="pre">APP_ID_MEAS_IC_TEMP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_MEAS_MCU_TEMP"><code class="docutils literal notranslate"><span class="pre">APP_ID_MEAS_MCU_TEMP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_MEAS_MOSFET_TEMP"><code class="docutils literal notranslate"><span class="pre">APP_ID_MEAS_MOSFET_TEMP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_MEAS_SHUNT_TEMP"><code class="docutils literal notranslate"><span class="pre">APP_ID_MEAS_SHUNT_TEMP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_MEAS_SOC"><code class="docutils literal notranslate"><span class="pre">APP_ID_MEAS_SOC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_MEAS_ERROR_FLAGS"><code class="docutils literal notranslate"><span class="pre">APP_ID_MEAS_ERROR_FLAGS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_MEAS_BMS_STATE"><code class="docutils literal notranslate"><span class="pre">APP_ID_MEAS_BMS_STATE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_MEAS_CELL_VOLTAGES"><code class="docutils literal notranslate"><span class="pre">APP_ID_MEAS_CELL_VOLTAGES</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_MEAS_CELL_AVG_VOLTAGE"><code class="docutils literal notranslate"><span class="pre">APP_ID_MEAS_CELL_AVG_VOLTAGE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_MEAS_CELL_MIN_VOLTAGE"><code class="docutils literal notranslate"><span class="pre">APP_ID_MEAS_CELL_MIN_VOLTAGE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_MEAS_CELL_MAX_VOLTAGE"><code class="docutils literal notranslate"><span class="pre">APP_ID_MEAS_CELL_MAX_VOLTAGE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_MEAS_BALANCING_STATUS"><code class="docutils literal notranslate"><span class="pre">APP_ID_MEAS_BALANCING_STATUS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_INPUT"><code class="docutils literal notranslate"><span class="pre">APP_ID_INPUT</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_INPUT_CHG_ENABLE"><code class="docutils literal notranslate"><span class="pre">APP_ID_INPUT_CHG_ENABLE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.APP_ID_INPUT_DIS_ENABLE"><code class="docutils literal notranslate"><span class="pre">APP_ID_INPUT_DIS_ENABLE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.data_objects_update_conf"><code class="docutils literal notranslate"><span class="pre">data_objects_update_conf()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.bat_preset_nmc"><code class="docutils literal notranslate"><span class="pre">bat_preset_nmc()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.bat_preset_lfp"><code class="docutils literal notranslate"><span class="pre">bat_preset_lfp()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.bat_preset_lto"><code class="docutils literal notranslate"><span class="pre">bat_preset_lto()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.print_registers"><code class="docutils literal notranslate"><span class="pre">print_registers()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.reset_device"><code class="docutils literal notranslate"><span class="pre">reset_device()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/data_objects.html#c.shutdown"><code class="docutils literal notranslate"><span class="pre">shutdown()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api/misc.html">Misc</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/misc.html#button">Button</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/misc.html#c.button_init"><code class="docutils literal notranslate"><span class="pre">button_init()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/misc.html#c.button_pressed_for_3s"><code class="docutils literal notranslate"><span class="pre">button_pressed_for_3s()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/misc.html#helper">Helper</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/misc.html#c.interpolate"><code class="docutils literal notranslate"><span class="pre">interpolate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/misc.html#c.byte2bitstr"><code class="docutils literal notranslate"><span class="pre">byte2bitstr()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/misc.html#c.is_empty"><code class="docutils literal notranslate"><span class="pre">is_empty()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #005e83" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Battery Management System</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Workspace Setup</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/LibreSolar/bms-firmware/blob/main/docs/src/dev/workspace_setup.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="workspace-setup">
+<h1>Workspace Setup<a class="headerlink" href="#workspace-setup" title="Link to this heading"></a></h1>
+<p>This guide assumes you have already installed the Zephyr SDK and the <code class="docutils literal notranslate"><span class="pre">west</span></code> tool according to the
+<a class="reference external" href="https://docs.zephyrproject.org/latest/develop/getting_started/index.html">Zephyr documentation</a>.</p>
+<p>Below commands initialize a new workspace and pull all required source files:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># create a new west workspace and pull the BMS firmware</span>
+west<span class="w"> </span>init<span class="w"> </span>-m<span class="w"> </span>https://github.com/LibreSolar/bms-firmware<span class="w"> </span>west-workspace
+<span class="nb">cd</span><span class="w"> </span>west-workspace/bms-firmware
+
+<span class="c1"># pull Zephyr upstream repository and modules (may take a while)</span>
+west<span class="w"> </span>update
+</pre></div>
+</div>
+<p>Afterwards, most important folders in your workspace will look like this:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>west-workspace/<span class="w">         </span><span class="c1"># contains .west/config</span>
+│
+├──<span class="w"> </span>bms-firmware/<span class="w">       </span><span class="c1"># application firmware repository</span>
+│<span class="w">   </span>├──<span class="w"> </span>app/<span class="w">            </span><span class="c1"># application source files</span>
+│<span class="w">   </span>├──<span class="w"> </span>boards/<span class="w">         </span><span class="c1"># board specifications</span>
+│<span class="w">   </span>├──<span class="w"> </span>tests/<span class="w">          </span><span class="c1"># unit test source files</span>
+│<span class="w">   </span>└──<span class="w"> </span>west.yml<span class="w">        </span><span class="c1"># main manifest file</span>
+│
+├──<span class="w"> </span>modules/<span class="w">            </span><span class="c1"># modules imported by Zephyr and BMS firmware</span>
+<span class="p">|</span>
+├──<span class="w"> </span>tools/<span class="w">              </span><span class="c1"># tools used by Zephyr</span>
+│
+└──<span class="w"> </span>zephyr/<span class="w">             </span><span class="c1"># upstream Zephyr repository</span>
+</pre></div>
+</div>
+<p>If you already have a west workspace set up (e.g. for other Libre Solar firmware), you can also
+re-use it to avoid having many copies of upstream Zephyr and modules:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># go to your workspace directory</span>
+<span class="nb">cd</span><span class="w"> </span>your-zephyr-workspace
+
+<span class="c1"># pull the BMS firmware</span>
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/LibreSolar/bms-firmware
+<span class="nb">cd</span><span class="w"> </span>bms-firmware
+
+<span class="c1"># re-configure and update the workspace</span>
+<span class="c1"># (to be done each time you switch between applications in same workspace)</span>
+west<span class="w"> </span>config<span class="w"> </span>manifest.path<span class="w"> </span>bms-firmware
+west<span class="w"> </span>update
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../supported_hardware.html" class="btn btn-neutral float-left" title="Supported Hardware" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="building_flashing.html" class="btn btn-neutral float-right" title="Building and Flashing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026 The Libre Solar Project.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
