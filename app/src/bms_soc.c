@@ -45,6 +45,10 @@ void bms_soc_update(struct bms_context *bms)
     bms->soc_coulomb_counter_mAs += bms->ic_data.current * (now - bms->soc_last_update_ms);
     bms->soc_last_update_ms = now;
 
+    if (bms->nominal_capacity_Ah <= 0.0F) {
+        return;
+    }
+
     float soc_delta = bms->soc_coulomb_counter_mAs / (bms->nominal_capacity_Ah * 3.6e4F);
 
     if (soc_delta > 0.1F || soc_delta < -0.1F) {
